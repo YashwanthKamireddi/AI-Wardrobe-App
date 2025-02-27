@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface WeatherData {
   location: string;
@@ -9,9 +10,12 @@ interface WeatherData {
   icon: string;
 }
 
-export function useWeather() {
+export function useWeather(customLocation?: string) {
+  // Build query string with location parameter if provided
+  const queryString = customLocation ? `?location=${encodeURIComponent(customLocation)}` : "";
+
   return useQuery<WeatherData, Error>({
-    queryKey: ["/api/weather"],
+    queryKey: ["/api/weather", customLocation], // Include location in the query key for proper caching
     refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
   });
 }

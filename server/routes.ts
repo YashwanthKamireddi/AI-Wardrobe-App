@@ -296,17 +296,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Weather API route - mock for now
   app.get("/api/weather", (req: Request, res: Response) => {
     // In a real application, we would integrate with a weather API
-    // For now, we'll return mock data
-    const mockWeather = {
-      location: "New York City",
-      temperature: 22,
-      condition: "Sunny",
-      humidity: 45,
-      windSpeed: 10,
-      icon: "sun"
-    };
-    
-    res.json(mockWeather);
+    // For now, we'll return mock data based on the location parameter
+    const location = req.query.location as string || "New York City";
+
+    // Use the getWeatherForLocation function from weather.ts
+    import("./weather").then(({ getWeatherForLocation }) => {
+      getWeatherForLocation(location).then(weatherData => {
+        // Map the weather data to the expected response format
+        const response = {
+          location: location,
+          temperature: weatherData.temperature,
+          condition: weatherData.description,
+          humidity: weatherData.humidity,
+          windSpeed: weatherData.windSpeed,
+          icon: weatherData.type // We use the weather type as the icon identifier
+        };
+
+        res.json(response);
+      });
+    });
   });
 
   const httpServer = createServer(app);

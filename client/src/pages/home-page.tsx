@@ -8,59 +8,69 @@ import MoodSelector from "@/components/mood-selector";
 import OutfitRecommendation from "@/components/outfit-recommendation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { MapPin, RefreshCcw } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 
 export default function HomePage() {
   const { user } = useAuth();
-  const { data: weather, isLoading: weatherLoading } = useWeather();
+  const [location, setLocation] = useState("New York City");
+  const [locationInput, setLocationInput] = useState("New York City");
+  const { data: weather, isLoading: weatherLoading } = useWeather(location);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
-  
+
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
-  
+
+  // Function to handle location update
+  const handleLocationUpdate = () => {
+    setLocation(locationInput);
+  };
+
   // Function to generate outfit recommendation based on weather and mood
   const generateOutfitRecommendation = (): WardrobeItem[] => {
     if (!wardrobeItems || wardrobeItems.length === 0) {
       return [];
     }
-    
+
     // Filter items by the recommended clothing types from weather
     const weatherAppropriateItems = wardrobeItems.filter(item => 
       weatherRecommendations.clothingTypes.includes(item.category)
     );
-    
+
     // If we don't have enough weather-appropriate items, fall back to all items
     const itemPool = weatherAppropriateItems.length > 3 ? weatherAppropriateItems : wardrobeItems;
-    
+
     // For a real application, this would be a more sophisticated algorithm
     // considering color coordination, style matching, item pairing preferences, etc.
     const recommendedItems: WardrobeItem[] = [];
-    
+
     // Try to get one item from each essential category
     const categories = ["tops", "bottoms", "outerwear", "shoes", "accessories"];
-    
+
     for (const category of categories) {
       const categoryItems = itemPool.filter(item => item.category === category);
-      
+
       if (categoryItems.length > 0) {
         // For now, just pick a random item from each category
         const randomIndex = Math.floor(Math.random() * categoryItems.length);
         recommendedItems.push(categoryItems[randomIndex]);
       }
     }
-    
+
     return recommendedItems;
   };
-  
+
   const recommendedOutfit = generateOutfitRecommendation();
-  
+
   return (
     <div className="min-h-screen bg-background">
       <NavigationBar />
-      
+
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Welcome to Cher's Closet, {user?.name || user?.username}!</h1>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Weather Card */}
           <Card>
@@ -71,6 +81,29 @@ export default function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Location selector */}
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="relative flex-1">
+                  <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Enter location"
+                    className="pl-8"
+                    value={locationInput}
+                    onChange={(e) => setLocationInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleLocationUpdate()}
+                  />
+                </div>
+                <Button 
+                  size="sm" 
+                  onClick={handleLocationUpdate}
+                  variant="outline"
+                >
+                  <RefreshCcw className="h-4 w-4 mr-1" />
+                  Update
+                </Button>
+              </div>
+
               {weatherLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-12 w-full" />
@@ -81,7 +114,7 @@ export default function HomePage() {
               )}
             </CardContent>
           </Card>
-          
+
           {/* Mood Card */}
           <Card>
             <CardHeader>
@@ -98,7 +131,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Outfit Recommendation */}
         <Card className="mb-8">
           <CardHeader>
@@ -133,7 +166,7 @@ export default function HomePage() {
             )}
           </CardContent>
         </Card>
-        
+
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card className="hover:bg-accent transition-colors cursor-pointer">
@@ -161,7 +194,7 @@ export default function HomePage() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
@@ -185,7 +218,7 @@ export default function HomePage() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
