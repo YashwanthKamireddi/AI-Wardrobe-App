@@ -1,7 +1,7 @@
-import { WeatherType } from "@shared/schema";
+import { weatherTypes } from "@shared/schema";
 
 interface WeatherData {
-  type: WeatherType;
+  type: string;
   temperature: number;
   description: string;
   humidity: number;
@@ -13,7 +13,7 @@ interface WeatherData {
 export async function getWeatherForLocation(location: string): Promise<WeatherData> {
   // Mock API call delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   // A simple hash function to generate consistent weather based on location
   const hashCode = (str: string) => {
     let hash = 0;
@@ -24,24 +24,24 @@ export async function getWeatherForLocation(location: string): Promise<WeatherDa
     }
     return Math.abs(hash);
   };
-  
+
   const hash = hashCode(location);
-  
+
   // Use the hash to deterministically generate weather data
-  const weatherTypes: WeatherType[] = ['sunny', 'cloudy', 'rainy', 'snowy', 'windy'];
-  const weatherDescriptions = {
+  const weatherTypesList = weatherTypes.map(t => t.value);
+  const weatherDescriptions: Record<string, string[]> = {
     sunny: ["Clear skies", "Bright sunshine", "Sunny and pleasant"],
     cloudy: ["Partly cloudy", "Overcast", "Gray skies"],
     rainy: ["Light rain", "Heavy showers", "Drizzle"],
     snowy: ["Light snowfall", "Heavy snow", "Flurries"],
     windy: ["Strong winds", "Light breeze", "Gusty conditions"]
   };
-  
-  const weatherTypeIndex = hash % weatherTypes.length;
-  const weatherType = weatherTypes[weatherTypeIndex];
+
+  const weatherTypeIndex = hash % weatherTypesList.length;
+  const weatherType = weatherTypesList[weatherTypeIndex];
   const descriptionIndex = hash % 3;
   const description = weatherDescriptions[weatherType][descriptionIndex];
-  
+
   // Generate temperature based on weather type
   let temperature;
   switch (weatherType) {
@@ -63,7 +63,7 @@ export async function getWeatherForLocation(location: string): Promise<WeatherDa
     default:
       temperature = 20;
   }
-  
+
   return {
     type: weatherType,
     temperature,
@@ -74,7 +74,7 @@ export async function getWeatherForLocation(location: string): Promise<WeatherDa
 }
 
 // Helper function to determine if an item is appropriate for the weather
-export function isAppropriateForWeather(category: string, type: string, weather: WeatherType): boolean {
+export function isAppropriateForWeather(category: string, type: string, weather: string): boolean {
   switch (weather) {
     case 'sunny':
       return !['winter coat', 'heavy jacket', 'rain coat', 'thick sweater'].includes(type);

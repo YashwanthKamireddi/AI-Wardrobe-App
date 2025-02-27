@@ -4,52 +4,29 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { insertUserSchema, User } from "@shared/schema";
+import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
 
 type AuthContextType = {
-  user: User | null;
+  user: SelectUser | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<User, Error, LoginData>;
+  loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<User, Error, RegisterData>;
+  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
 };
 
-type LoginData = {
-  username: string;
-  password: string;
-};
-
-type RegisterData = {
-  username: string;
-  password: string;
-  name?: string;
-  location?: string;
-};
-
-const registerSchema = insertUserSchema.pick({
-  username: true,
-  password: true,
-  name: true,
-  location: true,
-}).extend({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+type LoginData = Pick<InsertUser, "username" | "password">;
 
 export const AuthContext = createContext<AuthContextType | null>(null);
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  
   const {
     data: user,
     error,
     isLoading,
-  } = useQuery<User | null, Error>({
+  } = useQuery<SelectUser | undefined, Error>({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
@@ -59,11 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/login", credentials);
       return await res.json();
     },
-    onSuccess: (userData: User) => {
-      queryClient.setQueryData(["/api/user"], userData);
+    onSuccess: (user: SelectUser) => {
+      queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Login successful",
-        description: `Welcome back, ${userData.name || userData.username}!`,
+        description: `Welcome back, ${user.username}!`,
       });
     },
     onError: (error: Error) => {
@@ -76,18 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (userData: RegisterData) => {
-      // Validate the data
-      registerSchema.parse(userData);
-      
-      const res = await apiRequest("POST", "/api/register", userData);
+    mutationFn: async (credentials: InsertUser) => {
+      const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
-    onSuccess: (userData: User) => {
-      queryClient.setQueryData(["/api/user"], userData);
+    onSuccess: (user: SelectUser) => {
+      queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Registration successful",
-        description: `Welcome to Cher's Closet, ${userData.name || userData.username}!`,
+        description: `Welcome to Cher's Closet, ${user.username}!`,
       });
     },
     onError: (error: Error) => {
@@ -106,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
       toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
+        title: "Logout successful",
+        description: "You have been logged out.",
       });
     },
     onError: (error: Error) => {
