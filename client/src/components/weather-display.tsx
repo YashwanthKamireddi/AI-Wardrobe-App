@@ -31,10 +31,12 @@ interface WeatherDisplayProps {
 }
 
 export default function WeatherDisplay({ weather, recommendations }: WeatherDisplayProps) {
+  console.log("Rendering WeatherDisplay with:", weather);
+
   const getWeatherIcon = () => {
     const condition = weather.condition.toLowerCase();
     const iconSize = "h-12 w-12";
-    
+
     if (condition.includes("rain")) {
       return <CloudRain className={`${iconSize} text-blue-500`} />;
     } else if (condition.includes("snow")) {
@@ -51,7 +53,7 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       return <CloudSun className={`${iconSize} text-slate-400`} />;
     }
   };
-  
+
   // Determine temperature color based on value
   const getTempColor = () => {
     if (weather.temperature < 5) return "text-blue-500";
@@ -60,7 +62,7 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
     if (weather.temperature < 30) return "text-amber-500";
     return "text-red-500";
   };
-  
+
   // Get temperature descriptor
   const getTempDescription = () => {
     if (weather.temperature < 5) return "Very Cold";
@@ -69,7 +71,7 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
     if (weather.temperature < 30) return "Warm";
     return "Hot";
   };
-  
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -91,17 +93,17 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             <span>Wind: {weather.windSpeed} km/h</span>
           </div>
         </div>
-        
+
         <div className="text-center">
           {getWeatherIcon()}
           <p className="text-sm font-medium">{weather.condition}</p>
         </div>
       </div>
-      
+
       <div className="p-3 bg-muted/30 rounded-lg">
         <h4 className="font-medium mb-1">Outfit Recommendation</h4>
         <p className="text-sm text-muted-foreground">{recommendations.recommendation}</p>
-        
+
         <div className="flex flex-wrap gap-1 mt-2">
           {recommendations.clothingTypes.map((type, index) => (
             <Badge key={index} variant="secondary" className="text-xs">

@@ -17,7 +17,7 @@ export default function HomePage() {
   const { user } = useAuth();
   const [location, setLocation] = useState("New York City");
   const [locationInput, setLocationInput] = useState("New York City");
-  const { data: weather, isLoading: weatherLoading } = useWeather(location);
+  const { data: weather, isLoading: weatherLoading, refetch } = useWeather(location);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
@@ -27,6 +27,8 @@ export default function HomePage() {
   // Function to handle location update
   const handleLocationUpdate = () => {
     setLocation(locationInput);
+    // Explicitly trigger refetch when location changes
+    setTimeout(() => refetch(), 100);
   };
 
   // Function to generate outfit recommendation based on weather and mood
@@ -65,7 +67,8 @@ export default function HomePage() {
 
   // Regenerate outfit when weather or mood changes
   useEffect(() => {
-    if (!weatherLoading && weather) {
+    if (weather) {
+      console.log("Weather updated:", weather);
       const newOutfit = generateOutfitRecommendation();
       setRecommendedOutfit(newOutfit);
     }
@@ -116,8 +119,12 @@ export default function HomePage() {
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-3/4" />
                 </div>
+              ) : weather ? (
+                <WeatherDisplay weather={weather} recommendations={weatherRecommendations} />
               ) : (
-                <WeatherDisplay weather={weather!} recommendations={weatherRecommendations} />
+                <div className="p-4 bg-muted rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground">Unable to load weather data</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -163,12 +170,9 @@ export default function HomePage() {
                 <p className="text-lg text-muted-foreground mb-4">
                   You haven't added any items to your wardrobe yet.
                 </p>
-                <a
-                  href="/wardrobe"
-                  className="text-primary font-medium hover:underline"
-                >
-                  Start building your wardrobe
-                </a>
+                <Button asChild>
+                  <a href="/wardrobe">Manage Wardrobe</a>
+                </Button>
               </div>
             )}
           </CardContent>

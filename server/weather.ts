@@ -40,7 +40,11 @@ export async function getWeatherForLocation(location: string): Promise<WeatherDa
   const weatherTypeIndex = hash % weatherTypesList.length;
   const weatherType = weatherTypesList[weatherTypeIndex];
   const descriptionIndex = hash % 3;
-  const description = weatherDescriptions[weatherType][descriptionIndex];
+
+  // Defensive check to ensure the weather type exists in descriptions
+  // If not, default to a generic description
+  const description = weatherDescriptions[weatherType]?.[descriptionIndex] || 
+                     "Moderate conditions";
 
   // Generate temperature based on weather type
   let temperature;
