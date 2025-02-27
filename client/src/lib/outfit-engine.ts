@@ -1,4 +1,8 @@
-import { WardrobeItem, MoodType, WeatherType } from "@shared/schema";
+import { WardrobeItem } from "@shared/schema";
+
+// Types based on schema.ts values
+type MoodType = "happy" | "confident" | "relaxed" | "energetic" | "romantic" | "professional" | "creative";
+type WeatherType = "sunny" | "cloudy" | "rainy" | "snowy" | "windy";
 
 // Outfit Engine: Recommends outfits based on weather, mood, and available items
 
@@ -32,29 +36,29 @@ function getColorFamily(color: string): string {
 // Check if colors complement each other
 function checkColorHarmony(item1: WardrobeItem, item2: WardrobeItem): number {
   if (!item1.color || !item2.color) return 0.5; // Neutral score if color info missing
-  
+
   const family1 = getColorFamily(item1.color);
   const family2 = getColorFamily(item2.color);
-  
+
   // Same color family (monochromatic)
   if (family1 === family2) return 0.8;
-  
+
   // Complementary colors
   const complementaryPairs = [
     ["red", "green"],
     ["blue", "orange"],
     ["yellow", "purple"]
   ];
-  
+
   if (complementaryPairs.some(pair => 
     (pair[0] === family1 && pair[1] === family2) || 
     (pair[1] === family1 && pair[0] === family2))) {
     return 1.0;
   }
-  
+
   // Neutrals go with everything
   if (family1 === "neutral" || family2 === "neutral") return 0.9;
-  
+
   // Default harmony score
   return 0.6;
 }
@@ -69,35 +73,35 @@ function getWeatherScore(item: WardrobeItem, weather: WeatherType): number {
     snowy: ["coat", "boots", "scarf", "gloves", "sweater", "hat", "jacket"],
     windy: ["jacket", "windbreaker", "jeans", "sweater", "hoodie"]
   };
-  
+
   const tags = [
     ...(item.tags || []),
-    item.type || '',
+    item.subcategory || '',
     item.category
   ].map(t => t.toLowerCase());
-  
+
   // Check if any tags match the weather-appropriate items
   if (weatherAppropriateMap[weather].some(appropriate => 
     tags.some(tag => tag.includes(appropriate)))) {
     return 1.0;
   }
-  
+
   // Season-based scores
   if (item.season) {
     switch (weather) {
       case 'sunny':
         return item.season.includes('summer') ? 0.9 : 0.5;
       case 'cloudy':
-        return ['spring', 'fall', 'autumn'].some(s => item.season?.includes(s)) ? 0.8 : 0.6;
+        return ['spring', "fall", "autumn"].some(s => item.season?.includes(s)) ? 0.8 : 0.6;
       case 'rainy':
-        return ['spring', 'fall', 'autumn'].some(s => item.season?.includes(s)) ? 0.8 : 0.5;
+        return ['spring', "fall", "autumn"].some(s => item.season?.includes(s)) ? 0.8 : 0.5;
       case 'snowy':
         return item.season.includes('winter') ? 0.9 : 0.3;
       case 'windy':
-        return ['fall', 'autumn', 'spring'].some(s => item.season?.includes(s)) ? 0.8 : 0.6;
+        return ['fall', "autumn", "spring"].some(s => item.season?.includes(s)) ? 0.8 : 0.6;
     }
   }
-  
+
   return 0.5; // Default score
 }
 
@@ -136,39 +140,40 @@ function getMoodScore(item: WardrobeItem, mood: MoodType): number {
     professional: {
       "suit": 1.0, "blazer": 1.0, "business": 1.0, "formal": 0.9, "office": 1.0,
       "shirt": 0.8, "tie": 1.0, "slacks": 1.0
+    },
+    happy: {
+      "colorful": 1.0, "bright": 1.0, "casual": 0.9, "fun": 1.0, "print": 0.9,
+      "yellow": 1.0, "orange": 0.9
+    },
+    creative: {
+      "unique": 1.0, "pattern": 1.0, "colorful": 0.9, "artistic": 1.0, "bold": 0.9,
+      "mixed": 1.0, "unconventional": 1.0
     }
-  };
-  
+  } as Record<MoodType, Record<string, number>>;
+
   const tags = [
     ...(item.tags || []),
-    item.type || '',
+    item.subcategory || '',
     item.category,
     item.color || ''
   ].map(t => t.toLowerCase());
-  
+
   // Check if any tags match the mood-appropriate items
   let highestScore = 0.5; // Default score
-  
+
   for (const tag of tags) {
-    for (const [key, score] of Object.entries(moodAppropriateMap[mood])) {
+    for (const [key, score] of Object.entries(moodAppropriateMap[mood] || {})) {
       if (tag.includes(key) && score > highestScore) {
         highestScore = score;
       }
     }
   }
-  
-  // Also check occasions if available
-  if (item.occasions) {
-    if (mood === 'formal' && item.occasions.includes('formal')) highestScore = Math.max(highestScore, 1.0);
-    if (mood === 'casual' && item.occasions.includes('casual')) highestScore = Math.max(highestScore, 1.0);
-    if (mood === 'professional' && item.occasions.includes('business')) highestScore = Math.max(highestScore, 1.0);
-  }
-  
+
   // Favorite items get a bonus for any mood
   if (item.favorite) {
     highestScore = Math.min(1.0, highestScore + 0.1);
   }
-  
+
   return highestScore;
 }
 
@@ -176,7 +181,7 @@ function getMoodScore(item: WardrobeItem, mood: MoodType): number {
 function calculateItemScore(item: WardrobeItem, weather: WeatherType, mood: MoodType): number {
   const weatherScore = getWeatherScore(item, weather);
   const moodScore = getMoodScore(item, mood);
-  
+
   return (weatherScore * WEATHER_MATCH_WEIGHT) + (moodScore * MOOD_MATCH_WEIGHT);
 }
 
@@ -189,20 +194,20 @@ function calculateOutfitScore(
   // Average of individual item scores
   const individualScores = outfitItems.map(item => calculateItemScore(item, weather, mood));
   const avgIndividualScore = individualScores.reduce((sum, score) => sum + score, 0) / individualScores.length;
-  
+
   // Color harmony between items
   let totalHarmony = 0;
   let harmonyPairs = 0;
-  
+
   for (let i = 0; i < outfitItems.length; i++) {
     for (let j = i + 1; j < outfitItems.length; j++) {
       totalHarmony += checkColorHarmony(outfitItems[i], outfitItems[j]);
       harmonyPairs++;
     }
   }
-  
+
   const avgColorHarmony = harmonyPairs > 0 ? totalHarmony / harmonyPairs : 0.5;
-  
+
   // Weighted total score
   return (avgIndividualScore * (1 - COLOR_HARMONY_WEIGHT)) + (avgColorHarmony * COLOR_HARMONY_WEIGHT);
 }
@@ -230,26 +235,26 @@ export function generateOutfitRecommendations(
 ): OutfitRecommendation[] {
   // Group items by category
   const itemsByCategory: Record<string, WardrobeItem[]> = {};
-  
+
   for (const item of wardrobeItems) {
     if (!itemsByCategory[item.category]) {
       itemsByCategory[item.category] = [];
     }
     itemsByCategory[item.category].push(item);
   }
-  
+
   const recommendations: OutfitRecommendation[] = [];
-  
+
   // Base case: no items
   if (Object.keys(itemsByCategory).length === 0) {
     return recommendations;
   }
-  
+
   // Try to create unique outfit combinations
   for (let i = 0; i < count * 3 && recommendations.length < count; i++) {
     // Either dress-based outfit or top+bottom
     const useDress = Math.random() > 0.6 && itemsByCategory.dresses && itemsByCategory.dresses.length > 0;
-    
+
     const outfit: OutfitRecommendation = {
       outfitItems: [],
       score: 0,
@@ -258,7 +263,7 @@ export function generateOutfitRecommendations(
         makeup: [],
       }
     };
-    
+
     // Add base outfit (dress or top+bottom)
     if (useDress) {
       const dresses = itemsByCategory.dresses || [];
@@ -281,7 +286,7 @@ export function generateOutfitRecommendations(
         outfit.categories.tops = tops[selectedTopIndex];
         outfit.outfitItems.push(tops[selectedTopIndex]);
       }
-      
+
       // Add a bottom
       const bottoms = itemsByCategory.bottoms || [];
       if (bottoms.length > 0) {
@@ -289,23 +294,23 @@ export function generateOutfitRecommendations(
         bottoms.sort((a, b) => {
           const scoreA = calculateItemScore(a, weather, mood);
           const scoreB = calculateItemScore(b, weather, mood);
-          
+
           if (outfit.categories.tops) {
             const harmonyA = checkColorHarmony(a, outfit.categories.tops);
             const harmonyB = checkColorHarmony(b, outfit.categories.tops);
             return (scoreB + harmonyB) - (scoreA + harmonyA);
           }
-          
+
           return scoreB - scoreA;
         });
-        
+
         const bottomCount = Math.min(3, bottoms.length);
         const selectedBottomIndex = Math.floor(Math.random() * bottomCount);
         outfit.categories.bottoms = bottoms[selectedBottomIndex];
         outfit.outfitItems.push(bottoms[selectedBottomIndex]);
       }
     }
-    
+
     // Add outerwear if appropriate for the weather
     if (['cloudy', 'rainy', 'snowy', 'windy'].includes(weather)) {
       const outerwear = itemsByCategory.outerwear || [];
@@ -317,7 +322,7 @@ export function generateOutfitRecommendations(
         outfit.outfitItems.push(outerwear[selectedOuterwearIndex]);
       }
     }
-    
+
     // Add shoes
     const shoes = itemsByCategory.shoes || [];
     if (shoes.length > 0) {
@@ -327,47 +332,47 @@ export function generateOutfitRecommendations(
       outfit.categories.shoes = shoes[selectedShoesIndex];
       outfit.outfitItems.push(shoes[selectedShoesIndex]);
     }
-    
+
     // Add accessories (1-2)
     const accessories = itemsByCategory.accessories || [];
     if (accessories.length > 0) {
       accessories.sort((a, b) => calculateItemScore(b, weather, mood) - calculateItemScore(a, weather, mood));
       const accessoryCount = Math.min(Math.floor(Math.random() * 2) + 1, accessories.length);
-      
+
       for (let j = 0; j < accessoryCount; j++) {
         outfit.categories.accessories?.push(accessories[j]);
         outfit.outfitItems.push(accessories[j]);
       }
     }
-    
+
     // Add makeup
     const makeup = itemsByCategory.makeup || [];
     if (makeup.length > 0) {
       makeup.sort((a, b) => calculateItemScore(b, weather, mood) - calculateItemScore(a, weather, mood));
       const makeupCount = Math.min(Math.floor(Math.random() * 2) + 1, makeup.length);
-      
+
       for (let j = 0; j < makeupCount; j++) {
         outfit.categories.makeup?.push(makeup[j]);
         outfit.outfitItems.push(makeup[j]);
       }
     }
-    
+
     // Calculate overall outfit score
     outfit.score = calculateOutfitScore(outfit.outfitItems, weather, mood);
-    
+
     // Only add unique outfit combinations
     const isDuplicate = recommendations.some(rec => 
       JSON.stringify(rec.outfitItems.map(item => item.id).sort()) === 
       JSON.stringify(outfit.outfitItems.map(item => item.id).sort())
     );
-    
+
     if (!isDuplicate && outfit.outfitItems.length >= 2) {
       recommendations.push(outfit);
     }
   }
-  
+
   // Sort by score
   recommendations.sort((a, b) => b.score - a.score);
-  
+
   return recommendations.slice(0, count);
 }

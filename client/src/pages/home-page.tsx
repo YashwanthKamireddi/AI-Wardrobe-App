@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useWeather, getWeatherBasedRecommendations } from "@/hooks/use-weather";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
@@ -20,6 +20,7 @@ export default function HomePage() {
   const { data: weather, isLoading: weatherLoading } = useWeather(location);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
+  const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
 
@@ -30,7 +31,7 @@ export default function HomePage() {
 
   // Function to generate outfit recommendation based on weather and mood
   const generateOutfitRecommendation = (): WardrobeItem[] => {
-    if (!wardrobeItems || wardrobeItems.length === 0) {
+    if (!wardrobeItems || wardrobeItems.length === 0 || !weatherRecommendations) {
       return [];
     }
 
@@ -62,7 +63,13 @@ export default function HomePage() {
     return recommendedItems;
   };
 
-  const recommendedOutfit = generateOutfitRecommendation();
+  // Regenerate outfit when weather or mood changes
+  useEffect(() => {
+    if (!weatherLoading && weather) {
+      const newOutfit = generateOutfitRecommendation();
+      setRecommendedOutfit(newOutfit);
+    }
+  }, [weather, selectedMood, wardrobeItems]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,7 +148,7 @@ export default function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {wardrobeLoading ? (
+            {wardrobeLoading || weatherLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-[300px] w-full" />
               </div>
