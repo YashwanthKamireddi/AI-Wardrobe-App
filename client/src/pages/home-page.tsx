@@ -36,7 +36,7 @@ export default function HomePage() {
     }
 
     // Filter items by the recommended clothing types from weather
-    const weatherAppropriateItems = wardrobeItems.filter(item => 
+    const weatherAppropriateItems = wardrobeItems.filter(item =>
       weatherRecommendations.clothingTypes.includes(item.category)
     );
 
@@ -101,8 +101,8 @@ export default function HomePage() {
                     onKeyDown={(e) => e.key === "Enter" && handleLocationUpdate()}
                   />
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={handleLocationUpdate}
                   variant="outline"
                 >
@@ -131,9 +131,9 @@ export default function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <MoodSelector 
-                selectedMood={selectedMood} 
-                setSelectedMood={setSelectedMood} 
+              <MoodSelector
+                selectedMood={selectedMood}
+                setSelectedMood={setSelectedMood}
               />
             </CardContent>
           </Card>
@@ -153,8 +153,8 @@ export default function HomePage() {
                 <Skeleton className="h-[300px] w-full" />
               </div>
             ) : wardrobeItems && wardrobeItems.length > 0 ? (
-              <OutfitRecommendation 
-                items={recommendedOutfit} 
+              <OutfitRecommendation
+                items={recommendedOutfit}
                 weather={weather}
                 mood={selectedMood}
               />
@@ -163,8 +163,8 @@ export default function HomePage() {
                 <p className="text-lg text-muted-foreground mb-4">
                   You haven't added any items to your wardrobe yet.
                 </p>
-                <a 
-                  href="/wardrobe" 
+                <a
+                  href="/wardrobe"
                   className="text-primary font-medium hover:underline"
                 >
                   Start building your wardrobe
@@ -176,7 +176,7 @@ export default function HomePage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card className="hover:bg-accent transition-colors cursor-pointer">
+          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/wardrobe"}>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +202,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:bg-accent transition-colors cursor-pointer">
+          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/outfits"}>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -226,7 +226,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:bg-accent transition-colors cursor-pointer">
+          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/inspirations"}>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

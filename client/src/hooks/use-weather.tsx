@@ -16,6 +16,13 @@ export function useWeather(customLocation?: string) {
 
   return useQuery<WeatherData, Error>({
     queryKey: ["/api/weather", customLocation], // Include location in the query key for proper caching
+    queryFn: async () => {
+      const response = await fetch(`/api/weather${queryString}`);
+      if (!response.ok) {
+        throw new Error('Weather data fetch failed');
+      }
+      return response.json();
+    },
     refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
   });
 }
