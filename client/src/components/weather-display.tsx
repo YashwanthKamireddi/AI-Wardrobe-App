@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { 
   CloudSun, 
@@ -25,94 +26,237 @@ interface WeatherRecommendations {
   clothingTypes: string[];
 }
 
-interface WeatherDisplayProps {
-  weather: WeatherData;
-  recommendations: WeatherRecommendations;
-}
+export function WeatherDisplay({ 
+  weather, 
+  temperatureUnit = "celsius" 
+}: { 
+  weather: WeatherData, 
+  temperatureUnit?: "celsius" | "fahrenheit" 
+}) {
+  if (!weather) return null;
 
-export default function WeatherDisplay({ weather, recommendations }: WeatherDisplayProps) {
-  console.log("Rendering WeatherDisplay with:", weather);
-
-  const getWeatherIcon = () => {
-    const condition = weather.condition.toLowerCase();
-    const iconSize = "h-12 w-12";
-
-    if (condition.includes("rain")) {
-      return <CloudRain className={`${iconSize} text-blue-500`} />;
-    } else if (condition.includes("snow")) {
-      return <CloudSnow className={`${iconSize} text-slate-300`} />;
-    } else if (condition.includes("cloud")) {
-      return <Cloud className={`${iconSize} text-slate-400`} />;
-    } else if (condition.includes("wind")) {
-      return <Wind className={`${iconSize} text-slate-500`} />;
-    } else if (condition.includes("sun") || condition.includes("clear")) {
-      return <Sun className={`${iconSize} text-amber-400`} />;
-    } else if (condition.includes("part")) {
-      return <CloudSun className={`${iconSize} text-slate-400`} />;
-    } else {
-      return <CloudSun className={`${iconSize} text-slate-400`} />;
-    }
-  };
-
-  // Determine temperature color based on value
-  const getTempColor = () => {
-    if (weather.temperature < 5) return "text-blue-500";
-    if (weather.temperature < 15) return "text-teal-500";
-    if (weather.temperature < 25) return "text-green-500";
-    if (weather.temperature < 30) return "text-amber-500";
-    return "text-red-500";
-  };
-
-  // Get temperature descriptor
-  const getTempDescription = () => {
-    if (weather.temperature < 5) return "Very Cold";
-    if (weather.temperature < 15) return "Cool";
-    if (weather.temperature < 25) return "Mild";
-    if (weather.temperature < 30) return "Warm";
-    return "Hot";
-  };
+  // Convert temperature if needed
+  const displayTemp = temperatureUnit === "fahrenheit" 
+    ? Math.round(weather.temperature * 9/5 + 32) 
+    : Math.round(weather.temperature);
+  
+  // Get appropriate icon
+  const WeatherIcon = getWeatherIcon(weather.icon);
+  
+  // Get color scheme based on weather type
+  const colorScheme = getWeatherColorScheme(weather.icon);
+  
+  // Get recommendations
+  const recommendations = getWeatherRecommendations(weather.icon);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className={`rounded-lg p-4 ${colorScheme.bg} transition-all duration-300 hover:shadow-lg`}>
+      <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-lg font-medium">{weather.location}</h3>
-          <div className="flex items-center">
-            <Thermometer className="h-4 w-4 mr-1 text-muted-foreground" />
-            <span className={`text-2xl font-bold ${getTempColor()}`}>
-              {weather.temperature}°C
-            </span>
-            <Badge variant="outline" className="ml-2">
-              {getTempDescription()}
-            </Badge>
-          </div>
-          <div className="flex items-center mt-1 text-sm text-muted-foreground">
-            <Cloud className="h-3 w-3 mr-1" />
-            <span className="mr-3">Humidity: {weather.humidity}%</span>
-            <Wind className="h-3 w-3 mr-1" />
-            <span>Wind: {weather.windSpeed} km/h</span>
-          </div>
+          <h3 className={`text-xl font-bold ${colorScheme.text}`}>{weather.location}</h3>
+          <p className={`text-sm ${colorScheme.subtext}`}>{weather.condition}</p>
         </div>
-
-        <div className="text-center">
-          {getWeatherIcon()}
-          <p className="text-sm font-medium">{weather.condition}</p>
+        <div className={`p-2 rounded-full ${colorScheme.iconBg}`}>
+          <WeatherIcon className={`h-10 w-10 ${colorScheme.icon}`} />
         </div>
       </div>
-
-      <div className="p-3 bg-muted/30 rounded-lg">
-        <h4 className="font-medium mb-1">Outfit Recommendation</h4>
-        <p className="text-sm text-muted-foreground">{recommendations.recommendation}</p>
-
-        <div className="flex flex-wrap gap-1 mt-2">
+      
+      <div className="mt-4 flex items-center">
+        <Thermometer className={`mr-2 h-5 w-5 ${colorScheme.subtext}`} />
+        <span className={`text-2xl font-bold ${colorScheme.text}`}>
+          {displayTemp}°{temperatureUnit === "celsius" ? "C" : "F"}
+        </span>
+      </div>
+      
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className={`p-2 rounded-lg ${colorScheme.statBg}`}>
+          <p className={`text-xs ${colorScheme.subtext}`}>Humidity</p>
+          <p className={`text-sm font-bold ${colorScheme.text}`}>{weather.humidity}%</p>
+        </div>
+        <div className={`p-2 rounded-lg ${colorScheme.statBg}`}>
+          <p className={`text-xs ${colorScheme.subtext}`}>Wind</p>
+          <p className={`text-sm font-bold ${colorScheme.text}`}>{weather.windSpeed} km/h</p>
+        </div>
+      </div>
+      
+      <div className="mt-4">
+        <p className={`text-sm font-medium ${colorScheme.text}`}>Recommended for today:</p>
+        <div className="mt-2 flex flex-wrap gap-2">
           {recommendations.clothingTypes.map((type, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {type === "outerwear" && <Snowflake className="h-3 w-3 mr-1" />}
+            <Badge key={index} variant="outline" className={`${colorScheme.badgeBg} ${colorScheme.badgeText}`}>
               {type}
             </Badge>
           ))}
         </div>
+        <p className={`mt-2 text-sm ${colorScheme.subtext}`}>{recommendations.recommendation}</p>
       </div>
     </div>
   );
+}
+
+function getWeatherIcon(icon: string) {
+  switch (icon) {
+    case 'sunny':
+      return Sun;
+    case 'cloudy':
+      return Cloud;
+    case 'rainy':
+      return CloudRain;
+    case 'snowy':
+      return CloudSnow;
+    case 'windy':
+      return Wind;
+    case 'hot':
+      return Sun;
+    case 'cold':
+      return Snowflake;
+    default:
+      return CloudSun;
+  }
+}
+
+function getWeatherColorScheme(icon: string) {
+  switch (icon) {
+    case 'sunny':
+      return {
+        bg: 'bg-amber-50',
+        text: 'text-amber-900',
+        subtext: 'text-amber-700',
+        icon: 'text-amber-500',
+        iconBg: 'bg-amber-100',
+        statBg: 'bg-amber-100',
+        badgeBg: 'bg-amber-100',
+        badgeText: 'text-amber-800'
+      };
+    case 'cloudy':
+      return {
+        bg: 'bg-slate-50',
+        text: 'text-slate-900',
+        subtext: 'text-slate-600',
+        icon: 'text-slate-400',
+        iconBg: 'bg-slate-100',
+        statBg: 'bg-slate-100',
+        badgeBg: 'bg-slate-200',
+        badgeText: 'text-slate-800'
+      };
+    case 'rainy':
+      return {
+        bg: 'bg-blue-50',
+        text: 'text-blue-900',
+        subtext: 'text-blue-700',
+        icon: 'text-blue-500',
+        iconBg: 'bg-blue-100',
+        statBg: 'bg-blue-100',
+        badgeBg: 'bg-blue-100',
+        badgeText: 'text-blue-800'
+      };
+    case 'snowy':
+      return {
+        bg: 'bg-indigo-50',
+        text: 'text-indigo-900',
+        subtext: 'text-indigo-700',
+        icon: 'text-indigo-400',
+        iconBg: 'bg-indigo-100',
+        statBg: 'bg-indigo-100',
+        badgeBg: 'bg-indigo-100',
+        badgeText: 'text-indigo-800'
+      };
+    case 'windy':
+      return {
+        bg: 'bg-teal-50',
+        text: 'text-teal-900',
+        subtext: 'text-teal-700',
+        icon: 'text-teal-500',
+        iconBg: 'bg-teal-100',
+        statBg: 'bg-teal-100',
+        badgeBg: 'bg-teal-100',
+        badgeText: 'text-teal-800'
+      };
+    case 'hot':
+      return {
+        bg: 'bg-red-50',
+        text: 'text-red-900',
+        subtext: 'text-red-700',
+        icon: 'text-red-500',
+        iconBg: 'bg-red-100',
+        statBg: 'bg-red-100',
+        badgeBg: 'bg-red-100',
+        badgeText: 'text-red-800'
+      };
+    case 'cold':
+      return {
+        bg: 'bg-cyan-50',
+        text: 'text-cyan-900',
+        subtext: 'text-cyan-700',
+        icon: 'text-cyan-500',
+        iconBg: 'bg-cyan-100',
+        statBg: 'bg-cyan-100',
+        badgeBg: 'bg-cyan-100',
+        badgeText: 'text-cyan-800'
+      };
+    default:
+      return {
+        bg: 'bg-gray-50',
+        text: 'text-gray-900',
+        subtext: 'text-gray-600',
+        icon: 'text-gray-500',
+        iconBg: 'bg-gray-100',
+        statBg: 'bg-gray-100',
+        badgeBg: 'bg-gray-200',
+        badgeText: 'text-gray-800'
+      };
+  }
+}
+
+function getWeatherRecommendations(weatherType: string): WeatherRecommendations {
+  switch (weatherType) {
+    case 'sunny':
+      return {
+        condition: 'Sunny',
+        recommendation: 'Perfect day for light clothing and sun protection!',
+        clothingTypes: ['Sunglasses', 'Hat', 'T-shirt', 'Shorts', 'Sunscreen']
+      };
+    case 'cloudy':
+      return {
+        condition: 'Cloudy',
+        recommendation: 'It might get chilly, bring a light jacket just in case.',
+        clothingTypes: ['Light jacket', 'Long sleeve', 'Jeans', 'Sneakers']
+      };
+    case 'rainy':
+      return {
+        condition: 'Rainy',
+        recommendation: 'Don\'t forget your umbrella and waterproof shoes!',
+        clothingTypes: ['Rain coat', 'Umbrella', 'Waterproof shoes', 'Hoodie']
+      };
+    case 'snowy':
+      return {
+        condition: 'Snowy',
+        recommendation: 'Bundle up! Layers are essential today.',
+        clothingTypes: ['Winter coat', 'Gloves', 'Scarf', 'Boots', 'Hat']
+      };
+    case 'windy':
+      return {
+        condition: 'Windy',
+        recommendation: 'Wear something that won\'t fly away! Secure hairstyles recommended.',
+        clothingTypes: ['Windbreaker', 'Jeans', 'Sweater', 'Boots']
+      };
+    case 'hot':
+      return {
+        condition: 'Hot',
+        recommendation: 'Stay cool and hydrated. Light and breathable fabrics are best.',
+        clothingTypes: ['Tank top', 'Shorts', 'Sandals', 'Sunscreen', 'Hat']
+      };
+    case 'cold':
+      return {
+        condition: 'Cold',
+        recommendation: 'Layer up! Don\'t forget gloves and a hat to stay warm.',
+        clothingTypes: ['Thermal', 'Sweater', 'Winter coat', 'Beanie', 'Gloves']
+      };
+    default:
+      return {
+        condition: 'Mild',
+        recommendation: 'A normal day, dress comfortably for the temperature.',
+        clothingTypes: ['Casual wear', 'Light layers']
+      };
+  }
 }

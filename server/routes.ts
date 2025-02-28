@@ -293,10 +293,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Weather API route - mock for now
+  // Weather API route - enhanced mock implementation
   app.get("/api/weather", (req: Request, res: Response) => {
-    // In a real application, we would integrate with a weather API
-    // For now, we'll return mock data based on the location parameter
+    console.log("Fetching weather for location:", req.query.location);
+    
+    // Get location from query parameter, defaulting to New York City
     const location = req.query.location as string || "New York City";
 
     // Use the getWeatherForLocation function from weather.ts
@@ -304,12 +305,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       getWeatherForLocation(location).then(weatherData => {
         // Check if the response is an error
         if ('error' in weatherData) {
+          console.log("Weather API error:", weatherData.error, weatherData.message);
           return res.status(400).json(weatherData);
         }
 
         // Map the weather data to the expected response format
         const response = {
-          location: location,
+          location: weatherData.type === 'snowy' || weatherData.type === 'cold' 
+            ? location + " ❄️" 
+            : weatherData.type === 'hot' || weatherData.type === 'sunny'
+              ? location + " ☀️"
+              : weatherData.type === 'rainy'
+                ? location + " 🌧️"
+                : weatherData.type === 'windy'
+                  ? location + " 💨"
+                  : location + " ☁️",
           temperature: weatherData.temperature,
           condition: weatherData.description,
           humidity: weatherData.humidity,
@@ -317,8 +327,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           icon: weatherData.type // We use the weather type as the icon identifier
         };
 
+        console.log("Weather data received:", response);
         res.json(response);
       });
+    });
+  });
+
+  // Weather suggestions API endpoint
+  app.get("/api/weather-suggestions", async (req: Request, res: Response) => {
+    const query = (req.query.q as string || "").toLowerCase();
+    
+    if (!query || query.length < 2) {
+      return res.json([]);
+    }
+    
+    // Filter the valid locations from weather.ts
+    import("./weather").then(({ validLocations }) => {
+      const suggestions = validLocations
+        .filter(location => location.toLowerCase().includes(query))
+        .slice(0, 10);
+      
+      res.json(suggestions);
+    }).catch(error => {
+      console.error("Error fetching location suggestions:", error);
+      res.status(500).json({ error: "Failed to fetch location suggestions" });
     });
   });
 

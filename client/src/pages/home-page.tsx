@@ -86,35 +86,79 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Weather Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Today's Weather</CardTitle>
+          <Card className="overflow-hidden border-2 border-primary/20 shadow-lg transition-all duration-300 hover:shadow-primary/10">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
+              <div className="flex items-center">
+                <CloudSun className="mr-2 h-6 w-6 text-primary" />
+                <CardTitle>Today's Weather</CardTitle>
+              </div>
               <CardDescription>
                 Dress appropriately for the conditions
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              {/* Location selector */}
-              <div className="flex items-center space-x-2 mb-4">
+            <CardContent className="pt-6">
+              {/* Location selector with autocomplete suggestions */}
+              <div className="flex flex-col space-y-2 mb-4">
                 <div className="relative flex-1">
-                  <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-primary" />
                   <Input
                     type="text"
-                    placeholder="Enter location"
-                    className="pl-8"
+                    placeholder="Enter city name (e.g., New York, London, Tokyo)"
+                    className="pl-8 border-primary/30 focus:border-primary/60"
                     value={locationInput}
                     onChange={(e) => setLocationInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleLocationUpdate()}
                   />
+                  {locationInput.length > 2 && (
+                    <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-md max-h-60 overflow-y-auto">
+                      {["New York", "London", "Tokyo", "Paris", "Berlin", "Singapore", "Sydney", "Delhi", "Mumbai", "San Francisco", "Los Angeles", "Chicago", "Toronto", "Vancouver"].filter(city => 
+                        city.toLowerCase().includes(locationInput.toLowerCase())
+                      ).slice(0, 5).map((city, index) => (
+                        <div 
+                          key={index}
+                          className="px-4 py-2 hover:bg-primary/10 cursor-pointer"
+                          onClick={() => {
+                            setLocationInput(city);
+                            handleLocationUpdate(city);
+                          }}
+                        >
+                          <MapPin className="inline-block mr-2 h-3 w-3 text-primary" />
+                          {city}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <Button
-                  size="sm"
-                  onClick={handleLocationUpdate}
-                  variant="outline"
-                >
-                  <RefreshCcw className="h-4 w-4 mr-1" />
-                  Update
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleLocationUpdate()}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    <RefreshCcw className="h-4 w-4 mr-1" />
+                    Update Weather
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-primary/30 hover:bg-primary/10 text-primary"
+                    onClick={() => navigator.geolocation && navigator.geolocation.getCurrentPosition(
+                      position => {
+                        // This is a mock implementation - in a real app you would use reverse geocoding
+                        setLocationInput("Current Location");
+                        handleLocationUpdate("New York");
+                      },
+                      error => {
+                        console.error("Error getting location:", error);
+                        setLocationInput("New York");
+                        handleLocationUpdate();
+                      }
+                    )}
+                  >
+                    <MapPin className="h-4 w-4 mr-1" />
+                    Use My Location
+                  </Button>
+                </div>
               </div>
 
               {weatherLoading ? (
