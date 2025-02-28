@@ -65,13 +65,12 @@ export default function NavigationBar() {
             </Button>
 
             <a href="/" className="flex items-center gap-2">
-              {/* Vibrant logo design with gradient */}
-              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-primary to-purple-500 shadow-lg flex items-center justify-center">
-                <div className="absolute inset-0 bg-white opacity-20 mix-blend-overlay"></div>
-                <span className="text-white font-bold text-xl">CC</span>
+              {/* More subtle logo design */}
+              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-primary/20 shadow-sm flex items-center justify-center">
+                <span className="text-primary font-bold text-xl">CC</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-semibold text-xl tracking-tight bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Cher's Closet</span>
+                <span className="font-semibold text-xl">Cher's Closet</span>
                 <span className="text-xs text-muted-foreground">Style with Weather</span>
               </div>
             </a>
@@ -99,7 +98,7 @@ export default function NavigationBar() {
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar>
                     <AvatarImage src={user?.profilePicture || ""} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-purple-500 text-white">
+                    <AvatarFallback className="bg-primary/20 text-primary">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
@@ -112,7 +111,7 @@ export default function NavigationBar() {
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings")}> {/*Corrected the navigation path here */}
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
@@ -132,7 +131,7 @@ export default function NavigationBar() {
         <SheetContent side="left">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-medium">
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium">
                 CC
               </div>
               <span>Cher's Closet</span>

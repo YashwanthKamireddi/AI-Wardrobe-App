@@ -1,26 +1,27 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/hooks/use-theme";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import NavigationBar from "@/components/navigation-bar";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
 export default function ProfilePage() {
   const { user, isLoading, updateUserMutation, logoutMutation } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("profile");
 
@@ -81,7 +83,7 @@ export default function ProfilePage() {
   const settingsForm = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
-      darkMode: false, // This would be fetched from user preferences
+      darkMode: theme === "dark",
       emailNotifications: true,
       pushNotifications: true,
       temperatureUnit: "celsius",
@@ -111,7 +113,9 @@ export default function ProfilePage() {
   // Handle settings form submission
   const onSettingsSubmit = async (data: SettingsFormValues) => {
     try {
-      // Mock update for now - replace with real API call later
+      // Apply dark mode setting
+      setTheme(data.darkMode ? "dark" : "light");
+
       toast({
         title: "Settings updated",
         description: "Your settings have been updated successfully.",
@@ -269,8 +273,8 @@ export default function ProfilePage() {
                         )}
                       />
 
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         className="mr-2"
                         disabled={updateUserMutation.isPending}
                       >
@@ -315,7 +319,10 @@ export default function ProfilePage() {
                                   <Sun className="h-4 w-4 mr-2" />
                                   <Switch
                                     checked={field.value}
-                                    onCheckedChange={field.onChange}
+                                    onCheckedChange={(checked) => {
+                                      field.onChange(checked);
+                                      setTheme(checked ? "dark" : "light"); // Apply theme immediately on toggle
+                                    }}
                                   />
                                   <Moon className="h-4 w-4 ml-2" />
                                 </div>
