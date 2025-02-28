@@ -17,11 +17,11 @@ import { useLocation } from "wouter";
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [cityLocation, setCityLocation] = useState("New York City");
-  const [locationInput, setLocationInput] = useState<string>(
+  const [weatherLocation, setWeatherLocation] = useState(() => 
     localStorage.getItem("weatherLocation") || "New York City"
   );
-  const { data: weather, isLoading: weatherLoading, refetch, error: weatherError } = useWeather(cityLocation);
+  const [locationInput, setLocationInput] = useState<string>(weatherLocation);
+  const { data: weather, isLoading: weatherLoading, refetch, error: weatherError } = useWeather(weatherLocation);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
@@ -35,7 +35,14 @@ export default function HomePage() {
     const locationToUse = newLocation || locationInput;
     // Save to localStorage for persistence between page navigations
     localStorage.setItem("weatherLocation", locationToUse);
-    setCityLocation(locationToUse);
+    setWeatherLocation(locationToUse);
+
+    // Hide autocomplete suggestions by clearing input if a suggestion was clicked
+    if (newLocation) {
+      setLocationInput("");
+      setTimeout(() => setLocationInput(newLocation), 10);
+    }
+
     setTimeout(() => refetch(), 100);
   };
 
