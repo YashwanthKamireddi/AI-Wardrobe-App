@@ -54,10 +54,10 @@ const NavigationBar: React.FC = () => {
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-2">
           <Link href="/">
-            <a className="font-bold text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center">
+            <span className="font-bold text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center">
               <span className="hidden sm:inline">Cher's Closet</span>
               <span className="sm:hidden">CC</span>
-            </a>
+            </span>
           </Link>
         </div>
 
@@ -66,8 +66,7 @@ const NavigationBar: React.FC = () => {
             const isActive = location === item.path;
             return (
               <Link key={item.path} href={item.path}>
-                <a className="relative">
-                  <Button
+                <Button
                     variant="ghost"
                     size="sm"
                     className={cn(
@@ -84,7 +83,6 @@ const NavigationBar: React.FC = () => {
                       layoutId="nav-underline"
                     />
                   )}
-                </a>
               </Link>
             );
           })}
