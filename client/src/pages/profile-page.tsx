@@ -29,8 +29,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { User, Settings, Bell, Moon, Sun, LogOut } from "lucide-react";
-import { Upload } from "lucide-react"; // Added import for Upload icon
-
 
 // Profile form schema
 const profileFormSchema = z.object({
@@ -264,37 +262,56 @@ export default function ProfilePage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Profile Picture</FormLabel>
-                            <div className="space-y-2">
-                              <Input 
-                                placeholder="URL to your profile picture" 
-                                {...field}
-                                value={field.value || ''} 
-                              />
-                              <div className="p-2 border rounded-md bg-muted/50">
-                                <Label htmlFor="profile-upload" className="block cursor-pointer py-2 px-4 bg-primary text-primary-foreground rounded-md text-center hover:bg-primary/90 transition-colors">
-                                  Upload from device
-                                </Label>
-                                <Input 
-                                  id="profile-upload" 
-                                  type="file" 
-                                  accept="image/*" 
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      // Convert to data URL for preview
-                                      const reader = new FileReader();
-                                      reader.onload = (e) => {
-                                        field.onChange(e.target?.result);
-                                      };
-                                      reader.readAsDataURL(file);
-                                    }
-                                  }}
+                            <div className="space-y-4">
+                              {field.value && (
+                                <div className="relative h-24 w-24 rounded-full overflow-hidden border border-border">
+                                  <img 
+                                    src={field.value} 
+                                    alt="Profile" 
+                                    className="object-cover w-full h-full" 
+                                  />
+                                </div>
+                              )}
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="relative">
+                                  <Input
+                                    type="file"
+                                    id="profile-upload"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                          field.onChange(event.target?.result);
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                  >
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Upload Photo
+                                  </Button>
+                                </div>
+                                
+                                <Input
+                                  type="url"
+                                  placeholder="Or enter image URL"
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  className="w-full"
                                 />
                               </div>
                             </div>
                             <FormDescription>
-                              Enter a URL or upload a profile picture.
+                              Upload an image from your computer or enter a URL.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
