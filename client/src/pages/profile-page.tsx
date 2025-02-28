@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings, Bell, Moon, Sun, LogOut } from "lucide-react";
+import { User, Settings, Bell, Moon, Sun, LogOut, Upload } from "lucide-react";
 
 // Profile form schema
 const profileFormSchema = z.object({
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                                   />
                                 </div>
                               )}
-                              
+
                               <div className="grid grid-cols-2 gap-2">
                                 <div className="relative">
                                   <Input
@@ -300,7 +300,7 @@ export default function ProfilePage() {
                                     Upload Photo
                                   </Button>
                                 </div>
-                                
+
                                 <Input
                                   type="url"
                                   placeholder="Or enter image URL"
