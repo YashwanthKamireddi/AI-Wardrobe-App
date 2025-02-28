@@ -24,7 +24,6 @@ const NavigationBar: React.FC = () => {
   const navItems = [
     { path: "/", icon: <Home className="h-5 w-5" />, label: "Home" },
     { path: "/wardrobe", icon: <Shirt className="h-5 w-5" />, label: "Wardrobe" },
-    { path: "/weather", icon: <CloudSun className="h-5 w-5" />, label: "Weather" },
     { path: "/inspirations", icon: <Sparkles className="h-5 w-5" />, label: "Inspirations" },
     { path: "/profile", icon: <User className="h-5 w-5" />, label: "Profile" },
   ];
