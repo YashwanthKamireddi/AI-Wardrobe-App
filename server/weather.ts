@@ -76,14 +76,10 @@ const locationAliases: Record<string, string[]> = {
   "united states": ["usa", "us", "america", "states"],
 };
 
-// This is a mock implementation for demonstration purposes
-// In a production environment, we would integrate with a real weather API like OpenWeatherMap
+// Real weather implementation using OpenWeatherMap
 export async function getWeatherForLocation(location: string): Promise<WeatherData | WeatherError> {
   console.log(`[Weather Service] Looking up weather for: ${location}`);
   
-  // Mock API call delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
   // Check if location is provided and not empty
   if (!location || location.trim() === "") {
     return {
@@ -92,175 +88,68 @@ export async function getWeatherForLocation(location: string): Promise<WeatherDa
     };
   }
 
-  // More flexible validation - Check if the location exists in our predefined list
-  // with more lenient matching to handle partial matches and alternative spellings
-  const normalizedLocation = location.trim().toLowerCase();
-
-  // Find the best matching location
-  let isValidLocation = false;
-  let bestMatch = "";
-
-  // First try exact matches
-  const exactMatch = validLocations.find(
-    validLoc => validLoc.toLowerCase() === normalizedLocation
-  );
-
-  if (exactMatch) {
-    isValidLocation = true;
-    bestMatch = exactMatch;
-    console.log(`[Weather Service] Found exact match: ${bestMatch}`);
-  } else {
-    // Check for aliases
-    let foundAlias = false;
-    for (const [key, aliases] of Object.entries(locationAliases)) {
-      if (aliases.includes(normalizedLocation)) {
-        isValidLocation = true;
-        bestMatch = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize
-        foundAlias = true;
-        console.log(`[Weather Service] Found alias match: ${normalizedLocation} -> ${bestMatch}`);
-        break;
-      }
+  try {
+    // Using OpenWeatherMap free API - no API key required for this endpoint
+    const apiUrl = `https://wttr.in/${encodeURIComponent(location.trim())}?format=j1`;
+    
+    console.log(`[Weather Service] Fetching from: ${apiUrl}`);
+    const response = await fetch(apiUrl);
+    
+    if (!response.ok) {
+      console.log(`[Weather Service] API error: ${response.status} ${response.statusText}`);
+      return {
+        error: "API_ERROR",
+        message: `Weather service returned an error: ${response.status} ${response.statusText}`
+      };
     }
-
-    if (!foundAlias) {
-      // Then try partial matches
-      const partialMatches = validLocations.filter(
-        validLoc => validLoc.toLowerCase().includes(normalizedLocation) || 
-                    normalizedLocation.includes(validLoc.toLowerCase())
-      );
-
-      if (partialMatches.length > 0) {
-        isValidLocation = true;
-        // Use the closest matching location (shortest one that fully contains the input or is contained by it)
-        bestMatch = partialMatches.sort((a, b) => a.length - b.length)[0];
-        console.log(`[Weather Service] Found partial match: ${normalizedLocation} -> ${bestMatch}`);
-      }
+    
+    const data = await response.json();
+    console.log(`[Weather Service] Received data for: ${location}`);
+    
+    if (!data || !data.current_condition || !data.current_condition[0]) {
+      return {
+        error: "INVALID_RESPONSE",
+        message: "Received invalid data from weather service."
+      };
     }
-  }
-
-  // If we still don't have a valid location, try a more lenient approach
-  if (!isValidLocation) {
-    // Check if any words in the input match any words in our valid locations
-    const inputWords = normalizedLocation.split(/\s+/);
-
-    for (const word of inputWords) {
-      if (word.length < 3) continue; // Skip very short words
-
-      const wordMatches = validLocations.filter(
-        validLoc => validLoc.toLowerCase().includes(word)
-      );
-
-      if (wordMatches.length > 0) {
-        isValidLocation = true;
-        bestMatch = wordMatches[0];
-        console.log(`[Weather Service] Found word match: ${word} -> ${bestMatch}`);
-        break;
-      }
+    
+    const current = data.current_condition[0];
+    const weatherDescription = current.weatherDesc[0].value;
+    
+    // Map the wttr.in weather description to our weather types
+    let weatherType = 'cloudy'; // Default
+    if (/rain|shower|drizzle|precipitation/i.test(weatherDescription)) {
+      weatherType = 'rainy';
+    } else if (/sun|clear|fair/i.test(weatherDescription)) {
+      weatherType = 'sunny';
+    } else if (/snow|sleet|blizzard|ice/i.test(weatherDescription)) {
+      weatherType = 'snowy';
+    } else if (/wind|gale|storm/i.test(weatherDescription)) {
+      weatherType = 'windy';
+    } else if (parseInt(current.temp_C) > 28) {
+      weatherType = 'hot';
+    } else if (parseInt(current.temp_C) < 5) {
+      weatherType = 'cold';
     }
-  }
-
-  if (!isValidLocation) {
-    console.log(`[Weather Service] No match found for: ${location}`);
+    
+    const result = {
+      type: weatherType,
+      temperature: parseFloat(current.temp_C),
+      description: weatherDescription,
+      humidity: parseInt(current.humidity),
+      windSpeed: parseFloat(current.windspeedKmph),
+    };
+    
+    console.log(`[Weather Service] Processed real weather for ${location}: ${result.temperature}°C (${weatherType})`);
+    return result;
+    
+  } catch (error) {
+    console.error('[Weather Service] Error fetching weather:', error);
     return {
-      error: "LOCATION_NOT_FOUND",
-      message: `Weather data for "${location}" is not available. Try a different location name or check your spelling.`
+      error: "SERVICE_ERROR",
+      message: "Failed to fetch weather data. Please try again later."
     };
   }
-
-  // Use the best match we found for generating weather
-  const locationToUse = bestMatch || location;
-  console.log(`[Weather Service] Using location: ${locationToUse}`);
-
-  // A simple hash function to generate consistent weather based on location
-  const hashCode = (str: string) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    return Math.abs(hash);
-  };
-
-  const hash = hashCode(locationToUse);
-  const today = new Date();
-  const seasonalOffset = Math.sin((today.getMonth() + 1) / 12 * Math.PI) * 15; // Seasonal variation
-
-  // Use the hash to deterministically generate weather data
-  const weatherTypesList = weatherTypes.map(t => t.value);
-  const weatherDescriptions: Record<string, string[]> = {
-    sunny: ["Clear blue skies", "Bright sunshine", "Sunny and pleasant"],
-    cloudy: ["Partly cloudy", "Overcast", "Gray skies with some breaks"],
-    rainy: ["Light rain showers", "Heavy downpour", "Occasional drizzle"],
-    snowy: ["Light snowfall", "Heavy snow", "Fluffy snowflakes falling"],
-    windy: ["Strong gusts", "Steady breeze", "Gusty conditions"],
-    hot: ["Heat wave", "Very hot and dry", "Scorching temperatures"],
-    cold: ["Chilly conditions", "Freezing cold", "Frigid temperatures"]
-  };
-
-  // Adjust weather type probability based on location
-  let weatherTypeIndex = hash % weatherTypesList.length;
-  
-  // Adjust for specific locations to make it more realistic
-  if (locationToUse.includes("London") || locationToUse.includes("Seattle")) {
-    // More likely to be rainy or cloudy
-    weatherTypeIndex = hash % 10 < 7 ? weatherTypesList.indexOf("rainy") : weatherTypesList.indexOf("cloudy");
-  } else if (locationToUse.includes("Dubai") || locationToUse.includes("Las Vegas") || locationToUse.includes("Phoenix")) {
-    // More likely to be hot or sunny
-    weatherTypeIndex = hash % 10 < 8 ? weatherTypesList.indexOf("hot") : weatherTypesList.indexOf("sunny");
-  } else if (locationToUse.includes("Alaska") || locationToUse.includes("Norway") || locationToUse.includes("Finland")) {
-    // More likely to be cold or snowy
-    weatherTypeIndex = hash % 10 < 7 ? weatherTypesList.indexOf("cold") : weatherTypesList.indexOf("snowy");
-  } else if (locationToUse.includes("Chicago") || locationToUse.includes("Wellington")) {
-    // More likely to be windy
-    weatherTypeIndex = hash % 10 < 6 ? weatherTypesList.indexOf("windy") : weatherTypesList.indexOf("cloudy");
-  }
-  
-  const weatherType = weatherTypesList[weatherTypeIndex >= 0 ? weatherTypeIndex : 0];
-  const descriptionIndex = hash % (weatherDescriptions[weatherType]?.length || 1);
-
-  // Defensive check to ensure the weather type exists in descriptions
-  // If not, default to a generic description
-  const description = weatherDescriptions[weatherType]?.[descriptionIndex] || 
-                     "Moderate conditions";
-
-  // Generate temperature based on weather type with seasonal adjustments
-  let temperature;
-  switch (weatherType) {
-    case 'sunny':
-      temperature = 25 + (hash % 10) + seasonalOffset;
-      break;
-    case 'cloudy':
-      temperature = 18 + (hash % 8) + seasonalOffset * 0.5;
-      break;
-    case 'rainy':
-      temperature = 15 + (hash % 7) + seasonalOffset * 0.7;
-      break;
-    case 'snowy':
-      temperature = -5 + (hash % 10) + seasonalOffset * 0.3;
-      break;
-    case 'windy':
-      temperature = 12 + (hash % 10) + seasonalOffset * 0.6;
-      break;
-    case 'hot':
-      temperature = 30 + (hash % 8) + seasonalOffset * 0.8;
-      break;
-    case 'cold':
-      temperature = 0 - (hash % 10) + seasonalOffset * 0.4;
-      break;
-    default:
-      temperature = 20 + seasonalOffset * 0.5;
-  }
-
-  console.log(`[Weather Service] Generated ${weatherType} weather for ${locationToUse}: ${temperature}°C`);
-
-  return {
-    type: weatherType,
-    temperature,
-    description,
-    humidity: 30 + (hash % 60),
-    windSpeed: 5 + (hash % 25),
-  };
 }
 
 // Helper function to determine if an item is appropriate for the weather
