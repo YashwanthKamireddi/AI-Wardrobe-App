@@ -1,109 +1,79 @@
-import React from "react";
-import { Link, useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { LogOut, User, Home, Shirt, Palette, UserCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
-import { Button } from "@/components/ui/button";
-import { 
-  Sun, 
-  Moon, 
-  Home, 
-  Shirt, 
-  CloudSun, 
-  Sparkles, 
-  User, 
-  LogOut 
-} from "lucide-react";
-import { motion } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
+import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NavigationBar: React.FC = () => {
+const NavigationBar = () => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
-  const [location] = useLocation();
+  const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState("/"); // Set default active tab
+
+  useEffect(() => {
+    setMounted(true);
+    // Update active tab based on current path
+    setActiveTab(window.location.pathname);
+  }, []);
 
   const navItems = [
-    { path: "/", icon: <Home className="h-5 w-5" />, label: "Home" },
-    { path: "/wardrobe", icon: <Shirt className="h-5 w-5" />, label: "Wardrobe" },
-    { path: "/weather", icon: <CloudSun className="h-5 w-5" />, label: "Weather" },
-    { path: "/inspirations", icon: <Sparkles className="h-5 w-5" />, label: "Inspirations" },
-    { path: "/profile", icon: <User className="h-5 w-5" />, label: "Profile" },
+    { icon: Home, name: "Home", path: "/" },
+    { icon: Shirt, name: "Wardrobe", path: "/wardrobe" },
+    { icon: Palette, name: "Outfits", path: "/outfits" },
+    { icon: UserCircle, name: "Profile", path: "/profile" },
   ];
-
-  const getGradient = (path: string) => {
-    if (location === path) {
-      switch (path) {
-        case "/":
-          return "from-blue-500 to-purple-500";
-        case "/wardrobe":
-          return "from-pink-500 to-orange-500";
-        case "/weather":
-          return "from-sky-500 to-emerald-500";
-        case "/inspirations":
-          return "from-amber-500 to-pink-500";
-        case "/profile":
-          return "from-indigo-500 to-pink-500";
-        default:
-          return "from-primary to-secondary";
-      }
-    }
-    return "from-muted to-muted";
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between py-4">
-        <div className="flex items-center gap-2">
-          <Link href="/">
-            <a className="font-bold text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center">
-              <span className="hidden sm:inline">Cher's Closet</span>
-              <span className="sm:hidden">CC</span>
-            </a>
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link href="/" className="mr-6 flex items-center space-x-2">
+            <span className="hidden font-bold text-xl sm:inline-block bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Mood Wardrobe
+            </span>
           </Link>
-        </div>
-
-        <nav className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => {
-            const isActive = location === item.path;
-            return (
-              <Link key={item.path} href={item.path}>
-                <a className="relative">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "px-3 flex items-center gap-2 relative",
-                      isActive ? "text-primary font-medium" : "text-muted-foreground"
-                    )}
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </Button>
-                  {isActive && (
-                    <motion.div
-                      className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
-                      layoutId="nav-underline"
-                    />
+          <nav className="flex items-center space-x-1 text-sm font-medium">
+            {navItems.map((item) => {
+              const isActive = activeTab === item.path;
+              return (
+                <Link 
+                  key={item.path}
+                  href={item.path} 
+                  onClick={() => setActiveTab(item.path)}
+                  className={cn(
+                    "flex items-center px-3 py-2 rounded-md transition-all hover:text-primary",
+                    isActive 
+                      ? "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary font-medium" 
+                      : "text-muted-foreground"
                   )}
-                </a>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
-
+                >
+                  <item.icon className={cn(
+                    "h-4 w-4 mr-2",
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          {mounted && (
+            <div className="flex items-center mr-2">
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Switch 
+                id="theme-toggle"
+                className="mx-2"
+                checked={theme === "dark"}
+                onCheckedChange={() => setTheme(theme === "dark" ? "light" : "dark")}
+              />
+              <Moon className="h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </div>
+          )}
           {user && (
             <Button
               variant="ghost"
@@ -114,32 +84,6 @@ const NavigationBar: React.FC = () => {
               <LogOut className="h-5 w-5" />
             </Button>
           )}
-
-          <div className="block md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {/* Toggle mobile menu */}}
-              aria-label="Menu"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-              >
-                <line x1="4" x2="20" y1="12" y2="12" />
-                <line x1="4" x2="20" y1="6" y2="6" />
-                <line x1="4" x2="20" y1="18" y2="18" />
-              </svg>
-            </Button>
-          </div>
         </div>
       </div>
     </header>
