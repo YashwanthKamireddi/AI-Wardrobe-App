@@ -65,8 +65,9 @@ const NavigationBar: React.FC = () => {
           {navItems.map((item) => {
             const isActive = location === item.path;
             return (
-              <Link key={item.path} href={item.path}>
-                <Button
+              <div key={item.path} className="relative">
+                <Link href={item.path}>
+                  <Button
                     variant="ghost"
                     size="sm"
                     className={cn(
@@ -77,13 +78,14 @@ const NavigationBar: React.FC = () => {
                     {item.icon}
                     <span>{item.label}</span>
                   </Button>
-                  {isActive && (
-                    <motion.div
-                      className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
-                      layoutId="nav-underline"
-                    />
-                  )}
-              </Link>
+                </Link>
+                {isActive && (
+                  <motion.div
+                    className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
+                    layoutId="nav-underline"
+                  />
+                )}
+              </div>
             );
           })}
         </nav>
