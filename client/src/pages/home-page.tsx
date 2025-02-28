@@ -10,14 +10,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin, RefreshCcw, AlertCircle, CloudSun, Sun, Cloud } from "lucide-react";
+import { MapPin, RefreshCcw, AlertCircle, CloudSun, Sun, Cloud, Layers } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function HomePage() {
   const { user } = useAuth();
+  const locationHook = useLocation();
+  const navigate = useNavigate();
   const [location, setLocation] = useState("New York City");
-  const [locationInput, setLocationInput] = useState("New York City");
+  const [locationInput, setLocationInput] = useState<string>(
+    localStorage.getItem("weatherLocation") || "New York City"
+  );
   const { data: weather, isLoading: weatherLoading, refetch, error: weatherError } = useWeather(location);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
@@ -26,12 +31,12 @@ export default function HomePage() {
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
 
   // Function to handle location update
-  const handleLocationUpdate = () => {
-    if (locationInput.trim()) {
-      setLocation(locationInput);
-      // Explicitly trigger refetch when location changes
-      setTimeout(() => refetch(), 100);
-    }
+  const handleLocationUpdate = async (location?: string) => {
+    const locationToUse = location || locationInput;
+    // Save to localStorage for persistence between page navigations
+    localStorage.setItem("weatherLocation", locationToUse);
+    setLocation(locationToUse);
+    setTimeout(() => refetch(), 100);
   };
 
   // Function to generate outfit recommendation based on weather and mood
@@ -111,10 +116,10 @@ export default function HomePage() {
                   />
                   {locationInput.length > 2 && (
                     <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-md max-h-60 overflow-y-auto">
-                      {["New York", "London", "Tokyo", "Paris", "Berlin", "Singapore", "Sydney", "Delhi", "Mumbai", "San Francisco", "Los Angeles", "Chicago", "Toronto", "Vancouver"].filter(city => 
+                      {["New York", "London", "Tokyo", "Paris", "Berlin", "Singapore", "Sydney", "Delhi", "Mumbai", "San Francisco", "Los Angeles", "Chicago", "Toronto", "Vancouver"].filter(city =>
                         city.toLowerCase().includes(locationInput.toLowerCase())
                       ).slice(0, 5).map((city, index) => (
-                        <div 
+                        <div
                           key={index}
                           className="px-4 py-2 hover:bg-primary/10 cursor-pointer"
                           onClick={() => {
@@ -144,14 +149,15 @@ export default function HomePage() {
                     className="border-primary/30 hover:bg-primary/10 text-primary"
                     onClick={() => navigator.geolocation && navigator.geolocation.getCurrentPosition(
                       position => {
-                        // This is a mock implementation - in a real app you would use reverse geocoding
-                        setLocationInput("Current Location");
-                        handleLocationUpdate("New York");
+                        const { latitude, longitude } = position.coords;
+                        // In a real app, use a geocoding service (like Google Maps Geocoding API) to get the city name from latitude and longitude
+                        const cityName = "Current Location"; // Replace with actual city name from geocoding
+                        setLocationInput(cityName);
+                        handleLocationUpdate(cityName);
                       },
                       error => {
                         console.error("Error getting location:", error);
-                        setLocationInput("New York");
-                        handleLocationUpdate();
+                        // Handle location error appropriately (e.g., display an error message)
                       }
                     )}
                   >
@@ -241,7 +247,7 @@ export default function HomePage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/wardrobe"}>
+          <div onClick={() => navigate("/wardrobe")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -265,9 +271,9 @@ export default function HomePage() {
                 Add, organize, and update your clothing items
               </p>
             </CardContent>
-          </Card>
+          </div>
 
-          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/outfits"}>
+          <div onClick={() => navigate("/outfits")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -289,9 +295,9 @@ export default function HomePage() {
                 Design and save your favorite outfit combinations
               </p>
             </CardContent>
-          </Card>
+          </div>
 
-          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/inspirations"}>
+          <div onClick={() => navigate("/inspirations")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -313,9 +319,9 @@ export default function HomePage() {
                 Browse trending styles and fashion ideas
               </p>
             </CardContent>
-          </Card>
+          </div>
 
-          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/profile"}>
+          <div onClick={() => navigate("/profile")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -337,7 +343,7 @@ export default function HomePage() {
                 Manage your account and preferences
               </p>
             </CardContent>
-          </Card>
+          </div>
         </div>
       </main>
     </div>

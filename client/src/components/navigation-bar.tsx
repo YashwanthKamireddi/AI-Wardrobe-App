@@ -86,6 +86,12 @@ const NavigationBar: React.FC = () => {
                   <motion.div
                     className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
                     layoutId="nav-underline"
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 25,
+                      duration: 0.2
+                    }}
                   />
                 )}
               </div>
