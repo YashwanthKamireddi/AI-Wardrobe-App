@@ -25,7 +25,7 @@ export default function HomePage() {
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
-  const [path, setUrlLocation] = useLocation(); 
+  const [_, setUrlLocation] = useLocation(); 
 
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
