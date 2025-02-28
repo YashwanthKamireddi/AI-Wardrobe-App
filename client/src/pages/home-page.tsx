@@ -13,12 +13,10 @@ import { Button } from "@/components/ui/button";
 import { MapPin, RefreshCcw, AlertCircle, CloudSun, Sun, Cloud, Layers } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, navigate } from "wouter"; // Replaced react-router-dom with wouter
 
 export default function HomePage() {
   const { user } = useAuth();
-  const locationHook = useLocation();
-  const navigate = useNavigate();
   const [location, setLocation] = useState("New York City");
   const [locationInput, setLocationInput] = useState<string>(
     localStorage.getItem("weatherLocation") || "New York City"
@@ -27,6 +25,8 @@ export default function HomePage() {
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
+  const locationHook = useLocation(); // This line remains, as it is used in the component
+  
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
 
