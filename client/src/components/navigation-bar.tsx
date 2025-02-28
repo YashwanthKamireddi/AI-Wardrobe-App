@@ -27,18 +27,18 @@ export default function NavigationBar() {
   const [location, navigate] = useLocation();
   const { user, logoutMutation } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  
+
   const handleLogout = () => {
     logoutMutation.mutate();
   };
-  
+
   const navItems = [
     { name: "Home", path: "/", icon: <Home className="h-5 w-5" /> },
     { name: "Wardrobe", path: "/wardrobe", icon: <Shirt className="h-5 w-5" /> },
     { name: "Outfits", path: "/outfits", icon: <ShoppingBag className="h-5 w-5" /> },
-    { name: "Inspiration", path: "/inspiration", icon: <Grid2X2 className="h-5 w-5" /> },
+    { name: "Inspiration", path: "/inspirations", icon: <Grid2X2 className="h-5 w-5" /> },
   ];
-  
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -47,13 +47,13 @@ export default function NavigationBar() {
       .toUpperCase()
       .substring(0, 2);
   };
-  
+
   const userInitials = user?.name 
     ? getInitials(user.name) 
     : user?.username 
       ? user.username.substring(0, 2).toUpperCase() 
-      : "UC";
-  
+      : "CC";
+
   return (
     <header className="bg-background border-b sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -63,15 +63,20 @@ export default function NavigationBar() {
               <Menu className="h-6 w-6" />
               <span className="sr-only">Open menu</span>
             </Button>
-            
+
             <a href="/" className="flex items-center gap-2">
-              <div className="bg-primary rounded-md h-8 w-8 flex items-center justify-center text-white font-medium">
-                CC
+              {/* Vibrant logo design with gradient */}
+              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-primary to-purple-500 shadow-lg flex items-center justify-center">
+                <div className="absolute inset-0 bg-white opacity-20 mix-blend-overlay"></div>
+                <span className="text-white font-bold text-xl">CC</span>
               </div>
-              <span className="font-semibold text-xl">Cher's Closet</span>
+              <div className="flex flex-col">
+                <span className="font-semibold text-xl tracking-tight bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Cher's Closet</span>
+                <span className="text-xs text-muted-foreground">Style with Weather</span>
+              </div>
             </a>
           </div>
-          
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
@@ -86,7 +91,7 @@ export default function NavigationBar() {
               </Button>
             ))}
           </nav>
-          
+
           {/* User Menu */}
           <div className="flex items-center gap-2">
             <DropdownMenu>
@@ -94,7 +99,7 @@ export default function NavigationBar() {
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar>
                     <AvatarImage src={user?.profilePicture || ""} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-purple-500 text-white">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
@@ -103,11 +108,11 @@ export default function NavigationBar() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/")}>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings")}> {/*Corrected the navigation path here */}
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
@@ -121,13 +126,13 @@ export default function NavigationBar() {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile Navigation Sheet */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <div className="bg-primary rounded-md h-8 w-8 flex items-center justify-center text-white font-medium">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-medium">
                 CC
               </div>
               <span>Cher's Closet</span>
@@ -148,7 +153,19 @@ export default function NavigationBar() {
                 <span className="ml-2">{item.name}</span>
               </Button>
             ))}
-            
+
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => {
+                navigate("/profile");
+                setMobileOpen(false);
+              }}
+            >
+              <User className="h-5 w-5" />
+              <span className="ml-2">Profile</span>
+            </Button>
+
             <Button
               variant="ghost"
               className="justify-start text-destructive hover:text-destructive hover:bg-destructive/10 mt-4"

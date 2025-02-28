@@ -48,14 +48,14 @@ type RegisterValues = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const [location, navigate] = useLocation();
   const { user, loginMutation, registerMutation, isLoading } = useAuth();
-  
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate("/");
     }
   }, [user, navigate]);
-  
+
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -63,7 +63,7 @@ export default function AuthPage() {
       password: "",
     },
   });
-  
+
   const registerForm = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -74,16 +74,16 @@ export default function AuthPage() {
       email: "",
     },
   });
-  
+
   function onLoginSubmit(values: LoginValues) {
     loginMutation.mutate(values);
   }
-  
+
   function onRegisterSubmit(values: RegisterValues) {
     const { confirmPassword, ...userData } = values;
     registerMutation.mutate(userData);
   }
-  
+
   return (
     <div className="min-h-screen grid md:grid-cols-2 bg-background">
       {/* Hero Section */}
@@ -95,7 +95,7 @@ export default function AuthPage() {
           <p className="text-lg text-muted-foreground mb-8">
             Your personal stylist, helping you look your best every day with outfit recommendations based on your mood and the weather.
           </p>
-          
+
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
               <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
@@ -109,7 +109,7 @@ export default function AuthPage() {
                 <p className="text-muted-foreground">Easily organize your clothing with AI categorization</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3">
               <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
@@ -131,7 +131,7 @@ export default function AuthPage() {
                 <p className="text-muted-foreground">Get outfit recommendations based on current weather</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3">
               <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
@@ -151,7 +151,7 @@ export default function AuthPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Auth Forms */}
       <div className="flex items-center justify-center p-8">
         <Card className="w-full max-w-md">
@@ -168,7 +168,7 @@ export default function AuthPage() {
                 Your personal stylist app for perfect outfits every day
               </CardDescription>
             </CardHeader>
-            
+
             <TabsContent value="login">
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
@@ -201,9 +201,9 @@ export default function AuthPage() {
                     />
                   </CardContent>
                   <CardFooter>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
+                    <Button
+                      type="submit"
+                      className="w-full"
                       disabled={loginMutation.isPending}
                     >
                       {loginMutation.isPending ? (
@@ -219,7 +219,7 @@ export default function AuthPage() {
                 </form>
               </Form>
             </TabsContent>
-            
+
             <TabsContent value="register">
               <Form {...registerForm}>
                 <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
@@ -244,7 +244,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Full Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your name" {...field} />
+                            <Input placeholder="Your name" {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -291,9 +291,9 @@ export default function AuthPage() {
                     />
                   </CardContent>
                   <CardFooter>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
+                    <Button
+                      type="submit"
+                      className="w-full"
                       disabled={registerMutation.isPending}
                     >
                       {registerMutation.isPending ? (

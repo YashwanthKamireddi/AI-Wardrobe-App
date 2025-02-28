@@ -10,6 +10,7 @@ import AuthPage from "@/pages/auth-page";
 import WardrobePage from "@/pages/wardrobe-page";
 import OutfitPage from "@/pages/outfit-page";
 import InspirationPage from "@/pages/inspiration-page";
+import ProfilePage from "@/pages/profile-page";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,7 +19,8 @@ function Router() {
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/wardrobe" component={WardrobePage} />
       <ProtectedRoute path="/outfits" component={OutfitPage} />
-      <ProtectedRoute path="/inspiration" component={InspirationPage} />
+      <ProtectedRoute path="/inspirations" component={InspirationPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

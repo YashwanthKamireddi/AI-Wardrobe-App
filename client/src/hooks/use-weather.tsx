@@ -10,6 +10,11 @@ interface WeatherData {
   icon: string;
 }
 
+interface WeatherError {
+  error: string;
+  message: string;
+}
+
 export function useWeather(customLocation?: string) {
   // Build query string with location parameter if provided
   const queryString = customLocation ? `?location=${encodeURIComponent(customLocation)}` : "";
@@ -19,14 +24,18 @@ export function useWeather(customLocation?: string) {
     queryFn: async () => {
       console.log(`Fetching weather for location: ${customLocation || 'default'}`);
       const response = await fetch(`/api/weather${queryString}`);
-      if (!response.ok) {
-        throw new Error('Weather data fetch failed');
-      }
       const data = await response.json();
+
+      // Check if the response has an error property
+      if (response.status !== 200 || data.error) {
+        throw new Error(data.message || 'Weather data fetch failed');
+      }
+
       console.log('Weather data received:', data);
       return data;
     },
     refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
+    retry: 1, // Only retry once for invalid locations
   });
 }
 

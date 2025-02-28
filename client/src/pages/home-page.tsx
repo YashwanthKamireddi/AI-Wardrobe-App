@@ -10,14 +10,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin, RefreshCcw } from "lucide-react";
+import { MapPin, RefreshCcw, AlertCircle } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function HomePage() {
   const { user } = useAuth();
   const [location, setLocation] = useState("New York City");
   const [locationInput, setLocationInput] = useState("New York City");
-  const { data: weather, isLoading: weatherLoading, refetch } = useWeather(location);
+  const { data: weather, isLoading: weatherLoading, refetch, error: weatherError } = useWeather(location);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
@@ -26,9 +27,11 @@ export default function HomePage() {
 
   // Function to handle location update
   const handleLocationUpdate = () => {
-    setLocation(locationInput);
-    // Explicitly trigger refetch when location changes
-    setTimeout(() => refetch(), 100);
+    if (locationInput.trim()) {
+      setLocation(locationInput);
+      // Explicitly trigger refetch when location changes
+      setTimeout(() => refetch(), 100);
+    }
   };
 
   // Function to generate outfit recommendation based on weather and mood
@@ -119,6 +122,13 @@ export default function HomePage() {
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-3/4" />
                 </div>
+              ) : weatherError ? (
+                <Alert variant="destructive" className="border-red-200 bg-red-50">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="ml-2">
+                    {weatherError.message || "Could not find weather for this location. Try a major city name."}
+                  </AlertDescription>
+                </Alert>
               ) : weather ? (
                 <WeatherDisplay weather={weather} recommendations={weatherRecommendations} />
               ) : (
@@ -159,12 +169,19 @@ export default function HomePage() {
               <div className="space-y-2">
                 <Skeleton className="h-[300px] w-full" />
               </div>
-            ) : wardrobeItems && wardrobeItems.length > 0 ? (
+            ) : weather && wardrobeItems && wardrobeItems.length > 0 ? (
               <OutfitRecommendation
                 items={recommendedOutfit}
                 weather={weather}
                 mood={selectedMood}
               />
+            ) : weatherError ? (
+              <div className="text-center py-8 bg-muted rounded-lg">
+                <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                <p className="text-lg text-muted-foreground mb-4">
+                  Enter a valid location to get weather-based outfit recommendations.
+                </p>
+              </div>
             ) : (
               <div className="text-center py-8">
                 <p className="text-lg text-muted-foreground mb-4">
@@ -179,7 +196,7 @@ export default function HomePage() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/wardrobe"}>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
@@ -250,6 +267,30 @@ export default function HomePage() {
               <h3 className="text-lg font-medium mb-1">Get Inspiration</h3>
               <p className="text-sm text-muted-foreground">
                 Browse trending styles and fashion ideas
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => window.location.href = "/profile"}>
+            <CardContent className="p-6 flex flex-col items-center text-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-10 w-10 mb-4 text-primary"
+              >
+                <circle cx="12" cy="8" r="5" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+              <h3 className="text-lg font-medium mb-1">Profile & Settings</h3>
+              <p className="text-sm text-muted-foreground">
+                Manage your account and preferences
               </p>
             </CardContent>
           </Card>

@@ -15,6 +15,7 @@ type AuthContextType = {
   loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
   registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  updateUserMutation: UseMutationResult<SelectUser, Error, Partial<InsertUser>>;
 };
 
 type LoginData = Pick<InsertUser, "username" | "password">;
@@ -73,6 +74,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  const updateUserMutation = useMutation({
+    mutationFn: async (userData: Partial<InsertUser>) => {
+      const res = await apiRequest("PATCH", "/api/user", userData);
+      return await res.json();
+    },
+    onSuccess: (updatedUser: SelectUser) => {
+      queryClient.setQueryData(["/api/user"], updatedUser);
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
@@ -102,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         logoutMutation,
         registerMutation,
+        updateUserMutation,
       }}
     >
       {children}
