@@ -13,11 +13,11 @@ import { Button } from "@/components/ui/button";
 import { MapPin, RefreshCcw, AlertCircle, CloudSun, Sun, Cloud, Layers } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLocation, navigate } from "wouter"; 
+import { useLocation } from "wouter"; 
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [location, setLocation] = useState("New York City");
+  const [location, setLocationState] = useState("New York City");
   const [locationInput, setLocationInput] = useState<string>(
     localStorage.getItem("weatherLocation") || "New York City"
   );
@@ -25,7 +25,7 @@ export default function HomePage() {
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
-  const locationHook = useLocation(); 
+  const [location, setLocation] = useLocation(); 
 
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
@@ -35,7 +35,7 @@ export default function HomePage() {
     const locationToUse = location || locationInput;
     // Save to localStorage for persistence between page navigations
     localStorage.setItem("weatherLocation", locationToUse);
-    setLocation(locationToUse);
+    setLocationState(locationToUse);
     setTimeout(() => refetch(), 100);
   };
 
@@ -247,7 +247,7 @@ export default function HomePage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div onClick={() => navigate("/wardrobe")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => { const [_, setLocation] = useLocation(); setLocation("/wardrobe"); }} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -273,7 +273,7 @@ export default function HomePage() {
             </CardContent>
           </div>
 
-          <div onClick={() => navigate("/outfits")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => { const [_, setLocation] = useLocation(); setLocation("/outfits"); }} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -297,7 +297,7 @@ export default function HomePage() {
             </CardContent>
           </div>
 
-          <div onClick={() => navigate("/inspirations")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => { const [_, setLocation] = useLocation(); setLocation("/inspirations"); }} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -321,7 +321,7 @@ export default function HomePage() {
             </CardContent>
           </div>
 
-          <div onClick={() => navigate("/profile")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => { const [_, setLocation] = useLocation(); setLocation("/profile"); }} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
