@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, RefreshCcw, AlertCircle, CloudSun, Sun, Cloud, Layers } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLocation, navigate } from "wouter"; // Replaced react-router-dom with wouter
+import { useLocation, navigate } from "wouter"; 
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -25,8 +25,8 @@ export default function HomePage() {
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
-  const locationHook = useLocation(); // This line remains, as it is used in the component
-  
+  const locationHook = useLocation(); 
+
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
 
@@ -151,7 +151,7 @@ export default function HomePage() {
                       position => {
                         const { latitude, longitude } = position.coords;
                         // In a real app, use a geocoding service (like Google Maps Geocoding API) to get the city name from latitude and longitude
-                        const cityName = "Current Location"; // Replace with actual city name from geocoding
+                        const cityName = "Current Location"; 
                         setLocationInput(cityName);
                         handleLocationUpdate(cityName);
                       },
