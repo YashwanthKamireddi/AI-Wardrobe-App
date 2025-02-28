@@ -11,7 +11,8 @@ import {
   CloudSun, 
   Sparkles, 
   User, 
-  LogOut 
+  LogOut,
+  Layers
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ const NavigationBar: React.FC = () => {
   const navItems = [
     { path: "/", icon: <Home className="h-5 w-5" />, label: "Home" },
     { path: "/wardrobe", icon: <Shirt className="h-5 w-5" />, label: "Wardrobe" },
+    { path: "/outfits", icon: <Layers className="h-5 w-5" />, label: "Outfits" }, // Added Outfits section
     { path: "/inspirations", icon: <Sparkles className="h-5 w-5" />, label: "Inspirations" },
     { path: "/profile", icon: <User className="h-5 w-5" />, label: "Profile" },
   ];
@@ -41,6 +43,8 @@ const NavigationBar: React.FC = () => {
           return "from-amber-500 to-pink-500";
         case "/profile":
           return "from-indigo-500 to-pink-500";
+        case "/outfits": // Added case for Outfits
+          return "from-green-500 to-teal-500"; // Added gradient for Outfits
         default:
           return "from-primary to-secondary";
       }
