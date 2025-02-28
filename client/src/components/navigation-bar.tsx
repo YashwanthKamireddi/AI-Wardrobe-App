@@ -1,184 +1,149 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import React from "react";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { 
-  Grid2X2, 
+  Sun, 
+  Moon, 
   Home, 
   Shirt, 
-  ShoppingBag, 
-  LogOut, 
-  Menu, 
+  CloudSun, 
+  Sparkles, 
   User, 
-  Settings 
+  LogOut 
 } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-export default function NavigationBar() {
-  const [location, navigate] = useLocation();
-  const { user, logoutMutation } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
+const NavigationBar: React.FC = () => {
+  const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const [location] = useLocation();
 
   const navItems = [
-    { name: "Home", path: "/", icon: <Home className="h-5 w-5" /> },
-    { name: "Wardrobe", path: "/wardrobe", icon: <Shirt className="h-5 w-5" /> },
-    { name: "Outfits", path: "/outfits", icon: <ShoppingBag className="h-5 w-5" /> },
-    { name: "Inspiration", path: "/inspirations", icon: <Grid2X2 className="h-5 w-5" /> },
+    { path: "/", icon: <Home className="h-5 w-5" />, label: "Home" },
+    { path: "/wardrobe", icon: <Shirt className="h-5 w-5" />, label: "Wardrobe" },
+    { path: "/weather", icon: <CloudSun className="h-5 w-5" />, label: "Weather" },
+    { path: "/inspirations", icon: <Sparkles className="h-5 w-5" />, label: "Inspirations" },
+    { path: "/profile", icon: <User className="h-5 w-5" />, label: "Profile" },
   ];
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+  const getGradient = (path: string) => {
+    if (location === path) {
+      switch (path) {
+        case "/":
+          return "from-blue-500 to-purple-500";
+        case "/wardrobe":
+          return "from-pink-500 to-orange-500";
+        case "/weather":
+          return "from-sky-500 to-emerald-500";
+        case "/inspirations":
+          return "from-amber-500 to-pink-500";
+        case "/profile":
+          return "from-indigo-500 to-pink-500";
+        default:
+          return "from-primary to-secondary";
+      }
+    }
+    return "from-muted to-muted";
   };
 
-  const userInitials = user?.name 
-    ? getInitials(user.name) 
-    : user?.username 
-      ? user.username.substring(0, 2).toUpperCase() 
-      : "CC";
-
   return (
-    <header className="bg-background border-b sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}>
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-
-            <a href="/" className="flex items-center gap-2">
-              {/* More subtle logo design */}
-              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-primary/20 shadow-sm flex items-center justify-center">
-                <span className="text-primary font-bold text-xl">CC</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-xl">Cher's Closet</span>
-                <span className="text-xs text-muted-foreground">Style with Weather</span>
-              </div>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between py-4">
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <a className="font-bold text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center">
+              <span className="hidden sm:inline">Cher's Closet</span>
+              <span className="sm:hidden">CC</span>
             </a>
-          </div>
+          </Link>
+        </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <Button
-                key={item.path}
-                variant={location === item.path ? "secondary" : "ghost"}
-                className="flex items-center gap-2"
-                onClick={() => navigate(item.path)}
+        <nav className="hidden md:flex items-center gap-1">
+          {navItems.map((item) => {
+            const isActive = location === item.path;
+            return (
+              <Link key={item.path} href={item.path}>
+                <a className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "px-3 flex items-center gap-2 relative",
+                      isActive ? "text-primary font-medium" : "text-muted-foreground"
+                    )}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Button>
+                  {isActive && (
+                    <motion.div
+                      className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
+                      layoutId="nav-underline"
+                    />
+                  )}
+                </a>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
+
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => logout()}
+              aria-label="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          )}
+
+          <div className="block md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {/* Toggle mobile menu */}}
+              aria-label="Menu"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
               >
-                {item.icon}
-                <span>{item.name}</span>
-              </Button>
-            ))}
-          </nav>
-
-          {/* User Menu */}
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar>
-                    <AvatarImage src={user?.profilePicture || ""} />
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {userInitials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-destructive" onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <line x1="4" x2="20" y1="12" y2="12" />
+                <line x1="4" x2="20" y1="6" y2="6" />
+                <line x1="4" x2="20" y1="18" y2="18" />
+              </svg>
+            </Button>
           </div>
         </div>
       </div>
-
-      {/* Mobile Navigation Sheet */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium">
-                CC
-              </div>
-              <span>Cher's Closet</span>
-            </SheetTitle>
-          </SheetHeader>
-          <nav className="flex flex-col gap-2 mt-8">
-            {navItems.map((item) => (
-              <Button
-                key={item.path}
-                variant={location === item.path ? "secondary" : "ghost"}
-                className="justify-start"
-                onClick={() => {
-                  navigate(item.path);
-                  setMobileOpen(false);
-                }}
-              >
-                {item.icon}
-                <span className="ml-2">{item.name}</span>
-              </Button>
-            ))}
-
-            <Button
-              variant="ghost"
-              className="justify-start"
-              onClick={() => {
-                navigate("/profile");
-                setMobileOpen(false);
-              }}
-            >
-              <User className="h-5 w-5" />
-              <span className="ml-2">Profile</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="justify-start text-destructive hover:text-destructive hover:bg-destructive/10 mt-4"
-              onClick={() => {
-                handleLogout();
-                setMobileOpen(false);
-              }}
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="ml-2">Log out</span>
-            </Button>
-          </nav>
-        </SheetContent>
-      </Sheet>
     </header>
   );
-}
+};
+
+export default NavigationBar;

@@ -261,12 +261,57 @@ export default function ProfilePage() {
                         name="profilePicture"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Profile Picture URL</FormLabel>
-                            <FormControl>
-                              <Input {...field} value={field.value || ''} />
-                            </FormControl>
+                            <FormLabel>Profile Picture</FormLabel>
+                            <div className="space-y-4">
+                              {field.value && (
+                                <div className="relative h-24 w-24 rounded-full overflow-hidden border border-border">
+                                  <img 
+                                    src={field.value} 
+                                    alt="Profile" 
+                                    className="object-cover w-full h-full" 
+                                  />
+                                </div>
+                              )}
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="relative">
+                                  <Input
+                                    type="file"
+                                    id="profile-upload"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                          field.onChange(event.target?.result);
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                  >
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Upload Photo
+                                  </Button>
+                                </div>
+                                
+                                <Input
+                                  type="url"
+                                  placeholder="Or enter image URL"
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
                             <FormDescription>
-                              Enter a URL for your profile picture.
+                              Upload an image from your computer or enter a URL.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
