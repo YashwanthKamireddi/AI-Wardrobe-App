@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation } from "react-router-dom";
 import { 
   Home, 
   Shirt, 
@@ -15,7 +15,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 export function FunNavigation({ className }: { className?: string }) {
-  const [location] = useLocation();
+  const location = useLocation();
 
   const navItems = [
     {
@@ -77,7 +77,7 @@ export function FunNavigation({ className }: { className?: string }) {
         </div>
         <div className="ml-auto flex items-center space-x-4">
           {navItems.map((item) => {
-            const isActive = location === item.href;
+            const isActive = location.pathname === item.href;
             return (
               <Link
                 key={item.name}
