@@ -7,8 +7,13 @@ import {
   Wind, 
   Sun, 
   Snowflake,
-  Thermometer
+  Thermometer,
+  Droplets
 } from "lucide-react";
+import { memo, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { fadeIn, slideIn } from "@/lib/animation-utils";
 
 interface WeatherData {
   location: string;
@@ -18,6 +23,25 @@ interface WeatherData {
   windSpeed: number;
   icon: string;
 }
+
+// Memorize the weather icon component for better performance
+const WeatherIcon = memo(({ icon, className }: { icon: string, className?: string }) => {
+  const IconComponent = useMemo(() => {
+    switch (icon.toLowerCase()) {
+      case 'sunny': return Sun;
+      case 'cloudy': return Cloud;
+      case 'partly-cloudy': return CloudSun;
+      case 'rainy': return CloudRain;
+      case 'snowy': return CloudSnow;
+      case 'windy': return Wind;
+      case 'cold': return Snowflake;
+      default: return Sun;
+    }
+  }, [icon]);
+
+  return <IconComponent className={cn("h-8 w-8", className)} />;
+});
+WeatherIcon.displayName = "WeatherIcon";
 
 interface WeatherDisplayProps {
   weather: WeatherData;

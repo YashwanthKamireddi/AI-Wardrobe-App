@@ -13,29 +13,36 @@ import { Button } from "@/components/ui/button";
 import { MapPin, RefreshCcw, AlertCircle, CloudSun, Sun, Cloud, Layers } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLocation, navigate } from "wouter"; // Replaced react-router-dom with wouter
+import { useLocation } from "wouter"; 
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [location, setLocation] = useState("New York City");
-  const [locationInput, setLocationInput] = useState<string>(
+  const [weatherLocation, setWeatherLocation] = useState(() => 
     localStorage.getItem("weatherLocation") || "New York City"
   );
-  const { data: weather, isLoading: weatherLoading, refetch, error: weatherError } = useWeather(location);
+  const [locationInput, setLocationInput] = useState<string>(weatherLocation);
+  const { data: weather, isLoading: weatherLoading, refetch, error: weatherError } = useWeather(weatherLocation);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
-  const locationHook = useLocation(); // This line remains, as it is used in the component
-  
+  const [path, setUrlLocation] = useLocation(); 
+
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
 
   // Function to handle location update
-  const handleLocationUpdate = async (location?: string) => {
-    const locationToUse = location || locationInput;
+  const handleLocationUpdate = (newLocation?: string) => {
+    const locationToUse = newLocation || locationInput;
     // Save to localStorage for persistence between page navigations
     localStorage.setItem("weatherLocation", locationToUse);
-    setLocation(locationToUse);
+    setWeatherLocation(locationToUse);
+
+    // Hide autocomplete suggestions by clearing input if a suggestion was clicked
+    if (newLocation) {
+      setLocationInput("");
+      setTimeout(() => setLocationInput(newLocation), 10);
+    }
+
     setTimeout(() => refetch(), 100);
   };
 
@@ -151,7 +158,7 @@ export default function HomePage() {
                       position => {
                         const { latitude, longitude } = position.coords;
                         // In a real app, use a geocoding service (like Google Maps Geocoding API) to get the city name from latitude and longitude
-                        const cityName = "Current Location"; // Replace with actual city name from geocoding
+                        const cityName = "Current Location"; 
                         setLocationInput(cityName);
                         handleLocationUpdate(cityName);
                       },
@@ -247,7 +254,7 @@ export default function HomePage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div onClick={() => navigate("/wardrobe")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => setUrlLocation("/wardrobe")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -273,7 +280,7 @@ export default function HomePage() {
             </CardContent>
           </div>
 
-          <div onClick={() => navigate("/outfits")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => setUrlLocation("/outfits")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -297,7 +304,7 @@ export default function HomePage() {
             </CardContent>
           </div>
 
-          <div onClick={() => navigate("/inspirations")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => setUrlLocation("/inspirations")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -321,7 +328,7 @@ export default function HomePage() {
             </CardContent>
           </div>
 
-          <div onClick={() => navigate("/profile")} className="hover:bg-accent transition-colors cursor-pointer">
+          <div onClick={() => setUrlLocation("/profile")} className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
