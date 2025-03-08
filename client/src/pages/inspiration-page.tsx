@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import NavigationBar from "@/components/navigation-bar";
 import InspirationCard from "@/components/inspiration-card";
@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, Search, Heart, Share2, Bookmark, X } from "lucide-react";
+import { Loader2, Search, Heart, Share2, Bookmark, X, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,10 +17,31 @@ export default function InspirationPage() {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedInspiration, setSelectedInspiration] = useState<Inspiration | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: inspirations, isLoading } = useQuery<Inspiration[], Error>({
+  // Query with automatic background updates
+  const { data: inspirations, isLoading, refetch } = useQuery<Inspiration[], Error>({
     queryKey: ["/api/inspirations"],
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    staleTime: 4 * 60 * 1000, // Consider data stale after 4 minutes
   });
+
+  const handleRefresh = async () => {
+    try {
+      await fetch('/api/inspirations/refresh', { method: 'POST' });
+      await refetch();
+      toast({
+        title: "Content refreshed",
+        description: "New fashion inspirations have been loaded.",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh failed",
+        description: "Could not load new inspirations. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleFilterClick = (filter: string) => {
     setActiveFilters(prev => 
@@ -40,7 +61,7 @@ export default function InspirationPage() {
     const matchesFilters = 
       activeFilters.length === 0 ||
       (inspiration.tags && inspiration.tags.some(tag => activeFilters.includes(tag))) ||
-      activeFilters.includes(inspiration.category);
+      (inspiration.category && activeFilters.includes(inspiration.category));
 
     return matchesSearch && matchesFilters;
   }) || [];
@@ -65,6 +86,12 @@ export default function InspirationPage() {
     });
   };
 
+  // Auto-refresh effect
+  useEffect(() => {
+    const autoRefresh = setInterval(handleRefresh, 30 * 60 * 1000); // Refresh every 30 minutes
+    return () => clearInterval(autoRefresh);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <NavigationBar />
@@ -73,15 +100,25 @@ export default function InspirationPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h1 className="text-3xl font-bold mb-4 sm:mb-0">Fashion Inspiration</h1>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              type="search" 
-              placeholder="Search inspirations..." 
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="flex gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input 
+                type="search" 
+                placeholder="Search inspirations..." 
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handleRefresh}
+              className="shrink-0"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -108,12 +145,16 @@ export default function InspirationPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <div className="aspect-[3/4] animate-pulse bg-muted" />
+              </Card>
+            ))}
           </div>
         ) : filteredInspirations.length > 0 ? (
           <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4"
             layout
           >
             {filteredInspirations.map((inspiration) => (
