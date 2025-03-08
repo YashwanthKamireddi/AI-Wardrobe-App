@@ -204,7 +204,6 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  // Add sample inspirations to the database
   private async addSampleInspirations() {
     const existingInspirations = await db.select({ count: { value: inspirations.id } })
       .from(inspirations);
@@ -213,58 +212,108 @@ export class DatabaseStorage implements IStorage {
     if (existingInspirations.length === 0 || existingInspirations[0].count.value === 0) {
       const sampleInspirations: InsertInspiration[] = [
         {
-          title: "Summer Casual",
-          description: "Light and breezy summer outfit perfect for hot days.",
-          imageUrl: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600",
-          tags: ["summer", "casual", "trending"],
+          title: "Minimalist Chic",
+          description: "Clean lines and neutral tones create a timeless wardrobe foundation",
+          imageUrl: "https://images.pexels.com/photos/2043590/pexels-photo-2043590.jpeg",
+          tags: ["minimalist", "neutral", "classic", "elegant"],
           category: "casual",
-          source: "Fashion Magazine"
+          source: "Fashion Editor's Pick"
         },
         {
-          title: "Office Chic",
-          description: "Professional outfit that maintains style and comfort.",
-          imageUrl: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600",
-          tags: ["office", "professional", "formal"],
-          category: "formal",
-          source: "Corporate Style Blog"
-        },
-        {
-          title: "Weekend Comfort",
-          description: "Relaxed outfit perfect for weekend errands or coffee with friends.",
-          imageUrl: "https://images.unsplash.com/photo-1614093302611-8efc4de858db?auto=format&fit=crop&w=600",
-          tags: ["casual", "weekend", "comfortable"],
+          title: "Street Style Edge",
+          description: "Urban fashion with attitude and personality",
+          imageUrl: "https://images.pexels.com/photos/2901915/pexels-photo-2901915.jpeg",
+          tags: ["streetwear", "urban", "edgy", "trendy"],
           category: "casual",
-          source: "Street Style"
+          source: "Street Fashion"
         },
         {
-          title: "Evening Elegance",
-          description: "Sophisticated outfit for dinner dates or evening events.",
-          imageUrl: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?auto=format&fit=crop&w=600",
-          tags: ["elegant", "evening", "date"],
+          title: "Professional Power",
+          description: "Modern workwear that commands attention",
+          imageUrl: "https://images.pexels.com/photos/2584269/pexels-photo-2584269.jpeg",
+          tags: ["business", "professional", "workwear", "formal"],
           category: "formal",
-          source: "Fashion Week"
+          source: "Business Style"
+        },
+        {
+          title: "Bohemian Dreams",
+          description: "Free-spirited fashion with romantic details",
+          imageUrl: "https://images.pexels.com/photos/4725133/pexels-photo-4725133.jpeg",
+          tags: ["boho", "romantic", "flowy", "summer"],
+          category: "casual",
+          source: "Lifestyle Fashion"
+        },
+        {
+          title: "Evening Glamour",
+          description: "Sophisticated evening wear for special occasions",
+          imageUrl: "https://images.pexels.com/photos/1755428/pexels-photo-1755428.jpeg",
+          tags: ["evening", "glamour", "formal", "luxury"],
+          category: "formal",
+          source: "Evening Style"
+        },
+        {
+          title: "Sporty Luxe",
+          description: "Athletic wear meets high fashion",
+          imageUrl: "https://images.pexels.com/photos/2475878/pexels-photo-2475878.jpeg",
+          tags: ["athleisure", "sporty", "comfortable", "modern"],
+          category: "casual",
+          source: "Active Style"
+        },
+        {
+          title: "Vintage Revival",
+          description: "Classic styles reimagined for today",
+          imageUrl: "https://images.pexels.com/photos/4725117/pexels-photo-4725117.jpeg",
+          tags: ["vintage", "retro", "classic", "timeless"],
+          category: "casual",
+          source: "Vintage Collection"
+        },
+        {
+          title: "Modern Minimalism",
+          description: "Contemporary takes on minimalist fashion",
+          imageUrl: "https://images.pexels.com/photos/2681751/pexels-photo-2681751.jpeg",
+          tags: ["minimal", "modern", "clean", "sophisticated"],
+          category: "casual",
+          source: "Modern Style"
+        },
+        {
+          title: "Urban Explorer",
+          description: "City-ready looks for the fashion adventurer",
+          imageUrl: "https://images.pexels.com/photos/2905238/pexels-photo-2905238.jpeg",
+          tags: ["urban", "explorer", "streetwear", "practical"],
+          category: "casual",
+          source: "Urban Fashion"
+        },
+        {
+          title: "Resort Elegance",
+          description: "Vacation-ready looks with refined style",
+          imageUrl: "https://images.pexels.com/photos/4725119/pexels-photo-4725119.jpeg",
+          tags: ["resort", "summer", "elegant", "vacation"],
+          category: "casual",
+          source: "Resort Collection"
         },
         {
           title: "Autumn Layers",
-          description: "Stylish layered look for fall weather.",
-          imageUrl: "https://images.unsplash.com/photo-1511085583985-642f67a47dba?auto=format&fit=crop&w=600",
-          tags: ["autumn", "layers", "seasonal"],
+          description: "Sophisticated layering for fall weather",
+          imageUrl: "https://images.pexels.com/photos/2887766/pexels-photo-2887766.jpeg",
+          tags: ["autumn", "layers", "cozy", "seasonal"],
           category: "casual",
-          source: "Seasonal Trends"
+          source: "Seasonal Edit"
         },
         {
-          title: "Spring Fresh",
-          description: "Light and colorful outfit for spring days.",
-          imageUrl: "https://images.unsplash.com/photo-1550614000-4895a10e1bfd?auto=format&fit=crop&w=600",
-          tags: ["spring", "colorful", "fresh"],
+          title: "Weekend Casual",
+          description: "Effortless style for your days off",
+          imageUrl: "https://images.pexels.com/photos/2896840/pexels-photo-2896840.jpeg",
+          tags: ["casual", "weekend", "relaxed", "comfortable"],
           category: "casual",
-          source: "Spring Collection"
+          source: "Casual Style"
         }
       ];
 
       for (const inspiration of sampleInspirations) {
         await db.insert(inspirations).values(inspiration);
       }
+
+      console.log('Added sample inspirations to the database');
     }
   }
 }
