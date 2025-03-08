@@ -124,8 +124,10 @@ export class DatabaseStorage implements IStorage {
   async getWardrobeItemsByCategory(userId: number, category: string): Promise<WardrobeItem[]> {
     return db.select()
       .from(wardrobeItems)
-      .where(eq(wardrobeItems.userId, userId))
-      .where(eq(wardrobeItems.category, category));
+      .where(
+        eq(wardrobeItems.userId, userId) && 
+        eq(wardrobeItems.category, category)
+      );
   }
 
   // Outfit methods
