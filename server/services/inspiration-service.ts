@@ -13,7 +13,17 @@ const FASHION_QUERIES = [
   'modern fashion',
   'minimal style',
   'vintage fashion',
-  'contemporary fashion'
+  'contemporary fashion',
+  'business casual',
+  'bohemian style',
+  'athleisure fashion',
+  'evening wear',
+  'urban fashion',
+  'spring outfits',
+  'fall fashion',
+  'luxury fashion',
+  'minimalist style',
+  'fashion accessories'
 ];
 
 async function cleanupOldInspirations() {
@@ -29,10 +39,10 @@ export async function fetchLatestInspirations(): Promise<Inspiration[]> {
   const inspirations: Inspiration[] = [];
 
   try {
-    // Select 4 random queries to get diverse content
+    // Select 6 random queries to get diverse content
     const selectedQueries = FASHION_QUERIES
       .sort(() => 0.5 - Math.random())
-      .slice(0, 4);
+      .slice(0, 6);
 
     console.log('Fetching inspirations with queries:', selectedQueries);
 
@@ -40,7 +50,7 @@ export async function fetchLatestInspirations(): Promise<Inspiration[]> {
       const response = await axios.get(`${PEXELS_API_ENDPOINT}/search`, {
         params: {
           query,
-          per_page: 10,
+          per_page: 15,
           orientation: 'portrait',
           size: 'large'
         },
@@ -59,7 +69,7 @@ export async function fetchLatestInspirations(): Promise<Inspiration[]> {
           description: `Style inspiration by ${photo.photographer}. ${generateDescription(query, tags)}`,
           imageUrl: photo.src.large2x || photo.src.large,
           source: 'Pexels',
-          category: query.split(' ')[0],
+          category: determineCategory(query),
           tags
         });
       });
@@ -82,6 +92,25 @@ export async function fetchLatestInspirations(): Promise<Inspiration[]> {
   }
 }
 
+function determineCategory(query: string): string {
+  const categories = {
+    casual: ['street style', 'casual', 'athleisure', 'minimal', 'urban'],
+    formal: ['formal', 'business', 'evening wear', 'luxury'],
+    seasonal: ['summer', 'winter', 'spring', 'fall'],
+    vintage: ['vintage', 'bohemian', 'retro'],
+    trending: ['trendy', 'contemporary', 'modern'],
+    accessories: ['accessories']
+  };
+
+  for (const [category, keywords] of Object.entries(categories)) {
+    if (keywords.some(keyword => query.toLowerCase().includes(keyword))) {
+      return category;
+    }
+  }
+
+  return 'other';
+}
+
 function generateTitle(query: string, alt: string | null): string {
   const baseTitle = alt || query;
   const titles = [
@@ -89,7 +118,10 @@ function generateTitle(query: string, alt: string | null): string {
     `Trending: ${baseTitle}`,
     `Style Inspiration: ${baseTitle}`,
     `Fashion Focus: ${baseTitle}`,
-    `Today's Pick: ${baseTitle}`
+    `Today's Pick: ${baseTitle}`,
+    `Must-Try: ${baseTitle}`,
+    `Style Guide: ${baseTitle}`,
+    `Fashion Edit: ${baseTitle}`
   ];
   return titles[Math.floor(Math.random() * titles.length)];
 }
@@ -100,7 +132,10 @@ function generateDescription(query: string, tags: string[]): string {
     `Featuring the latest trends in ${query}.`,
     `A stunning combination of ${tags.slice(0, 2).join(' and ')}.`,
     `Elevate your style with this ${query} inspiration.`,
-    `Discover the perfect blend of ${tags.slice(0, 2).join(' and ')}.`
+    `Discover the perfect blend of ${tags.slice(0, 2).join(' and ')}.`,
+    `Make a statement with this ${query} ensemble.`,
+    `Stand out with this curated ${tags[0]} look.`,
+    `The perfect choice for your next ${tags[0]} occasion.`
   ];
   return descriptions[Math.floor(Math.random() * descriptions.length)];
 }
@@ -126,14 +161,28 @@ function generateTags(query: string, alt: string | null): string[] {
   tags.add(seasons[Math.floor(Math.random() * seasons.length)]);
 
   // Style tags
-  const styles = ['casual', 'formal', 'streetwear', 'vintage', 'modern', 'minimalist', 'trendy'];
-  tags.add(styles[Math.floor(Math.random() * styles.length)]);
+  const styles = [
+    'casual', 'formal', 'streetwear', 'vintage', 'modern', 
+    'minimalist', 'trendy', 'elegant', 'chic', 'bohemian', 
+    'classic', 'contemporary', 'luxurious', 'urban'
+  ];
+  const selectedStyles = styles
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 2);
+  selectedStyles.forEach(style => tags.add(style));
 
-  return Array.from(tags).slice(0, 5); // Limit to 5 tags
+  // Occasion tags
+  const occasions = [
+    'everyday', 'work', 'party', 'weekend', 'special',
+    'casual', 'formal', 'outdoor', 'travel', 'date'
+  ];
+  tags.add(occasions[Math.floor(Math.random() * occasions.length)]);
+
+  return Array.from(tags).slice(0, 7); // Allow more tags
 }
 
-// Refresh interval: 1 hour
-const REFRESH_INTERVAL = 60 * 60 * 1000;
+// Refresh interval: 30 minutes
+const REFRESH_INTERVAL = 30 * 60 * 1000;
 
 export function startInspirationRefresh() {
   console.log('Starting inspiration refresh service');
