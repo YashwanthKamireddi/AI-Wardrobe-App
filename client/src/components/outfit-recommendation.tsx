@@ -63,18 +63,18 @@ export default function OutfitRecommendation({ items, weather, mood }: OutfitRec
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
         {weather && (
-          <Badge variant="outline" className="text-xs">
-            <Cloud className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="text-xs backdrop-blur-sm bg-background/50 shadow-sm">
+            <Cloud className="h-3 w-3 mr-1 text-primary" />
             {weather.condition || "Weather-based"}
           </Badge>
         )}
-        <Badge variant="outline" className="text-xs">
-          <ThumbsUp className="h-3 w-3 mr-1" />
+        <Badge variant="outline" className="text-xs backdrop-blur-sm bg-background/50 shadow-sm">
+          <ThumbsUp className="h-3 w-3 mr-1 text-primary" />
           {getMoodLabel(mood)}
         </Badge>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-slide-up">
         {/* Main clothing items */}
         {(categories.dresses.length > 0 || (categories.tops.length > 0 && categories.bottoms.length > 0)) && (
           <Card className="col-span-1 md:col-span-2 overflow-hidden">

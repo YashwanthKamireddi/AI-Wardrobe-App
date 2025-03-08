@@ -58,6 +58,20 @@ export default function MoodSelector({ selectedMood, setSelectedMood }: MoodSele
       default: return "Select a mood for personalized recommendations";
     }
   };
+  
+  // Mood button style helper
+  const getMoodButtonStyle = (moodValue: string, selectedMood: string | null) => {
+    const isSelected = selectedMood === moodValue;
+    return cn(
+      "relative flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300",
+      "border hover:border-primary/50 hover:bg-primary/5",
+      isSelected 
+        ? "border-primary bg-primary/10 shadow-soft" 
+        : "border-border bg-card/80",
+      "transform hover:scale-105 active:scale-100",
+      "animate-fade-in"
+    );
+  };
 
   return (
     <div className="space-y-4">

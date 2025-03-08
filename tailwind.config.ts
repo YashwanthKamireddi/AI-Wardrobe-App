@@ -9,6 +9,18 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 2px)",
+        "2xl": "calc(var(--radius) + 4px)",
+      },
+      boxShadow: {
+        'soft': '0 4px 15px rgba(0, 0, 0, 0.05)',
+        'hover': '0 8px 20px rgba(0, 0, 0, 0.1)',
+        'button': '0 2px 5px rgba(0, 0, 0, 0.08)',
+        'card': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-soft': 'linear-gradient(to bottom right, var(--tw-gradient-stops))',
       },
       colors: {
         background: "hsl(var(--background))",

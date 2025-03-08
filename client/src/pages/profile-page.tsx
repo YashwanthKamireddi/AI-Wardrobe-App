@@ -352,10 +352,10 @@ export default function ProfilePage() {
                           control={settingsForm.control}
                           name="darkMode"
                           render={({ field }) => (
-                            <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                              <div className="space-y-0.5">
-                                <FormLabel>Dark Mode</FormLabel>
-                                <FormDescription>
+                            <FormItem className="flex items-center justify-between rounded-xl border p-4 shadow-soft hover:shadow-hover transition-all duration-300 bg-card/50 backdrop-blur-sm">
+                              <div className="space-y-1">
+                                <FormLabel className="text-lg font-medium">Dark Mode</FormLabel>
+                                <FormDescription className="text-muted-foreground">
                                   Switch between light and dark theme.
                                 </FormDescription>
                               </div>
