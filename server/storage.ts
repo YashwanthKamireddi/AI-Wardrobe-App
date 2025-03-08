@@ -42,6 +42,7 @@ export interface IStorage {
   getInspirations(): Promise<Inspiration[]>;
   getInspiration(id: number): Promise<Inspiration | undefined>;
   createInspiration(inspiration: InsertInspiration): Promise<Inspiration>;
+  deleteAllInspirations(): Promise<void>; // Add this new method
 
   // Weather preference operations
   getWeatherPreferences(userId: number): Promise<WeatherPreference[]>;
@@ -125,7 +126,7 @@ export class DatabaseStorage implements IStorage {
     return db.select()
       .from(wardrobeItems)
       .where(
-        eq(wardrobeItems.userId, userId) && 
+        eq(wardrobeItems.userId, userId) &&
         eq(wardrobeItems.category, category)
       );
   }
@@ -168,8 +169,18 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Add the new method for inspiration cleanup
+  async deleteAllInspirations(): Promise<void> {
+    console.log('Deleting all existing inspirations...');
+    await db.delete(inspirations);
+    console.log('Successfully deleted all inspirations');
+  }
+
+  // Improve logging in createInspiration
   async createInspiration(inspiration: InsertInspiration): Promise<Inspiration> {
+    console.log('Creating new inspiration:', inspiration.title);
     const result = await db.insert(inspirations).values(inspiration).returning();
+    console.log('Successfully created inspiration:', result[0].id);
     return result[0];
   }
 
