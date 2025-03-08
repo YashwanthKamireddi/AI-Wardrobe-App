@@ -75,9 +75,6 @@ export async function fetchLatestInspirations(): Promise<Inspiration[]> {
       });
     }
 
-    // Clean up old inspirations before saving new ones
-    await cleanupOldInspirations();
-
     // Store new inspirations in the database
     const savedInspirations = await Promise.all(
       inspirations.map(inspiration => storage.createInspiration(inspiration))
@@ -156,27 +153,30 @@ function generateTags(query: string, alt: string | null): string[] {
       .forEach(word => tags.add(word));
   }
 
-  // Season tags
-  const seasons = ['spring', 'summer', 'autumn', 'winter'];
-  tags.add(seasons[Math.floor(Math.random() * seasons.length)]);
-
-  // Style tags
+  // Add style tags
   const styles = [
     'casual', 'formal', 'streetwear', 'vintage', 'modern', 
     'minimalist', 'trendy', 'elegant', 'chic', 'bohemian', 
     'classic', 'contemporary', 'luxurious', 'urban'
   ];
-  const selectedStyles = styles
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 2);
-  selectedStyles.forEach(style => tags.add(style));
 
-  // Occasion tags
+  // Add 2-3 random style tags
+  styles
+    .sort(() => 0.5 - Math.random())
+    .slice(0, Math.floor(Math.random() * 2) + 2)
+    .forEach(style => tags.add(style));
+
+  // Add occasion tags
   const occasions = [
     'everyday', 'work', 'party', 'weekend', 'special',
     'casual', 'formal', 'outdoor', 'travel', 'date'
   ];
-  tags.add(occasions[Math.floor(Math.random() * occasions.length)]);
+
+  // Add 1-2 random occasion tags
+  occasions
+    .sort(() => 0.5 - Math.random())
+    .slice(0, Math.floor(Math.random() * 2) + 1)
+    .forEach(occasion => tags.add(occasion));
 
   return Array.from(tags).slice(0, 7); // Allow more tags
 }
@@ -194,6 +194,7 @@ export function startInspirationRefresh() {
   setInterval(async () => {
     console.log('Running scheduled inspiration refresh');
     try {
+      await cleanupOldInspirations();
       await fetchLatestInspirations();
       console.log('Completed scheduled inspiration refresh');
     } catch (error) {

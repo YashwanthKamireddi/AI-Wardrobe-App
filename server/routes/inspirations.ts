@@ -8,13 +8,13 @@ const router = Router();
 router.get('/api/inspirations', async (req, res) => {
   try {
     const inspirations = await storage.getInspirations();
-    
+
     // If we have less than 10 inspirations, fetch new ones
     if (inspirations.length < 10) {
       const newInspirations = await fetchLatestInspirations();
       return res.json(newInspirations);
     }
-    
+
     res.json(inspirations);
   } catch (error) {
     console.error('Error fetching inspirations:', error);
@@ -25,7 +25,13 @@ router.get('/api/inspirations', async (req, res) => {
 // Refresh inspirations
 router.post('/api/inspirations/refresh', async (req, res) => {
   try {
+    // First clean up old inspirations
+    await storage.deleteAllInspirations();
+    console.log('Old inspirations deleted, fetching new ones...');
+
     const newInspirations = await fetchLatestInspirations();
+    console.log(`Successfully fetched ${newInspirations.length} new inspirations`);
+
     res.json(newInspirations);
   } catch (error) {
     console.error('Error refreshing inspirations:', error);
