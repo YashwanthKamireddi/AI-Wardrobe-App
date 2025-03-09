@@ -6,7 +6,7 @@ import NavigationBar from "@/components/navigation-bar";
 import WeatherDisplay from "@/components/weather-display";
 import MoodSelector from "@/components/mood-selector";
 import OutfitRecommendation from "@/components/outfit-recommendation";
-import AIOutfitRecommendation from "@/components/ai-outfit-recommendation";
+import AIOutfitRecommender from "@/components/ai-outfit-recommendation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ export default function HomePage() {
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
+  const [activeTab, setActiveTab] = useState("classic");
   const [_, setUrlLocation] = useLocation(); 
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
@@ -251,10 +252,10 @@ export default function HomePage() {
                 >
                   <Layers className="mr-2 h-6 w-6 text-primary" />
                 </motion.div>
-                <CardTitle>Your Outfit Recommendation</CardTitle>
+                <CardTitle>Outfit Recommendations</CardTitle>
               </div>
               <CardDescription>
-                Based on today's weather and your mood
+                Get classic or AI-powered outfits for your day
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -268,11 +269,39 @@ export default function HomePage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <OutfitRecommendation
-                    items={recommendedOutfit}
-                    weather={weather}
-                    mood={selectedMood}
-                  />
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger 
+                        value="classic" 
+                        className="flex items-center gap-2"
+                      >
+                        <Layers className="h-4 w-4" />
+                        Classic
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="ai" 
+                        className="flex items-center gap-2"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        AI-Powered
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="classic" className="space-y-4">
+                      <OutfitRecommendation
+                        items={recommendedOutfit}
+                        weather={weather}
+                        mood={selectedMood}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="ai" className="space-y-4">
+                      <AIOutfitRecommender
+                        weather={weather}
+                        wardrobeItems={wardrobeItems}
+                      />
+                    </TabsContent>
+                  </Tabs>
                 </motion.div>
               ) : weatherError ? (
                 <div className="text-center py-8 bg-muted rounded-lg">
