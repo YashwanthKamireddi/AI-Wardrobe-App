@@ -185,6 +185,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/outfits/:id", async (req: Request, res: Response) => {
+
+  // Calendar outfit planning routes
+  app.get("/api/calendar-outfits", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: "Start date and end date are required" });
+      }
+
+      // In a real implementation, you would fetch outfits planned for specific dates
+      // For now, we'll return the user's outfits with mock dates
+      const outfits = await storage.getOutfits(req.user!.id);
+      
+      // Simulate outfits being assigned to days in the requested range
+      const start = new Date(startDate as string);
+      const end = new Date(endDate as string);
+      
+      const calendarOutfits = outfits.map((outfit, index) => {
+        // Distribute outfits across the requested date range
+        const date = new Date(start);
+        date.setDate(date.getDate() + (index % Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))));
+        
+        return {
+          ...outfit,
+          plannedDate: date.toISOString().split('T')[0]
+        };
+      });
+      
+      res.json(calendarOutfits);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch calendar outfits" });
+    }
+  });
+
+  app.post("/api/calendar-outfits", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const { outfitId, date } = req.body;
+      
+      if (!outfitId || !date) {
+        return res.status(400).json({ message: "Outfit ID and date are required" });
+      }
+
+      // Verify outfit exists and belongs to user
+      const outfit = await storage.getOutfit(outfitId);
+      if (!outfit) {
+
+  // Outfit sharing
+  app.post("/api/outfits/:id/share", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const id = parseInt(req.params.id);
+      const outfit = await storage.getOutfit(id);
+
+      if (!outfit) {
+        return res.status(404).json({ message: "Outfit not found" });
+      }
+
+      if (outfit.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Generate a sharing token/ID
+      const shareId = Buffer.from(`${outfit.id}-${Date.now()}`).toString('base64');
+      
+      // In a real implementation, store this sharing information in the database
+      // await storage.createOutfitShare(outfit.id, shareId);
+      
+      // Generate a shareable link
+      const shareableLink = `${req.protocol}://${req.get('host')}/shared-outfit/${shareId}`;
+      
+      res.status(200).json({ 
+        message: "Outfit shared successfully",
+        shareableLink
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to share outfit" });
+    }
+  });
+
+  // Get a shared outfit (public endpoint)
+  app.get("/api/shared-outfit/:shareId", async (req: Request, res: Response) => {
+    try {
+      const { shareId } = req.params;
+      
+      // In a real implementation, get the outfit ID from the share record
+      // const share = await storage.getOutfitShareByShareId(shareId);
+      // if (!share) {
+      //   return res.status(404).json({ message: "Shared outfit not found" });
+      // }
+      
+      // For demo purposes, parse the outfit ID from the share ID
+      let outfitId: number;
+      try {
+        const decoded = Buffer.from(shareId, 'base64').toString();
+        outfitId = parseInt(decoded.split('-')[0]);
+      } catch (e) {
+        return res.status(400).json({ message: "Invalid share ID" });
+      }
+      
+      const outfit = await storage.getOutfit(outfitId);
+      if (!outfit) {
+        return res.status(404).json({ message: "Shared outfit not found" });
+      }
+      
+      // For shared outfits, we'll need to include item details
+      const outfitItems = await Promise.all(
+        outfit.items.map(async (itemId) => {
+          return await storage.getWardrobeItem(itemId);
+        })
+      );
+      
+      // Filter out any null items (in case some items were deleted)
+      const validItems = outfitItems.filter(Boolean);
+      
+      // Return a sanitized version for public sharing
+      const publicOutfit = {
+        id: outfit.id,
+        name: outfit.name,
+        items: validItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          subcategory: item.subcategory,
+          color: item.color,
+          season: item.season,
+          imageUrl: item.imageUrl,
+          tags: item.tags
+        })),
+        occasion: outfit.occasion,
+        season: outfit.season,
+        weatherConditions: outfit.weatherConditions,
+        mood: outfit.mood,
+        shared: true
+      };
+      
+      res.json(publicOutfit);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch shared outfit" });
+    }
+  });
+
+        return res.status(404).json({ message: "Outfit not found" });
+      }
+
+      if (outfit.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      // In a real implementation, you would store the outfit planning for this date
+      // For now, just return a success message
+      res.status(201).json({ 
+        message: "Outfit scheduled successfully",
+        plannedOutfit: {
+          ...outfit,
+          plannedDate: date
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to schedule outfit" });
+    }
+  });
+
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
     try {
