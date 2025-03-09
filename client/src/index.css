@@ -24,8 +24,15 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
     letter-spacing: -0.01em;
+    color: rgb(var(--foreground-rgb));
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        rgb(var(--background-end-rgb))
+      )
+      rgb(var(--background-start-rgb));
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -115,6 +122,9 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 25%;
     --sidebar-ring: 224 71.4% 60%;
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
   }
 
   .dark {
@@ -162,6 +172,9 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 25%;
     --sidebar-ring: 224 71.4% 60%;
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
@@ -249,7 +262,7 @@
   @apply bg-background/50 border border-input rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-200;
 }
 
-@import './styles/fashion.css'; /* Added import statement */
+@import './styles/fashion.css';
 @import 'tailwindcss/base';
 
 /*  Extensive styling additions would go here to implement a vibrant fashion app design.
