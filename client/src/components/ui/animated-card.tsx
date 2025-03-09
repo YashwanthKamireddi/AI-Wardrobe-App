@@ -1,11 +1,12 @@
 
 import React from "react";
-import { Card, CardProps } from "./card";
+import { Card } from "./card";
 import { cn } from "@/lib/utils";
 
-interface AnimatedCardProps extends CardProps {
+interface AnimatedCardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverEffect?: "lift" | "glow" | "border" | "scale" | "none";
   transitionDelay?: string;
+  children?: React.ReactNode;
 }
 
 export const AnimatedCard = React.forwardRef<

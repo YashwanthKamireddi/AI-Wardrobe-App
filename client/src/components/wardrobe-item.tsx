@@ -25,6 +25,7 @@ import {
 import { useUpdateWardrobeItem } from "@/hooks/use-wardrobe";
 import { WardrobeItem as WardrobeItemType } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AnimatedWardrobeItem, wardrobeAnimations } from "@/components/ui/animated-wardrobe";
 
 interface WardrobeItemProps {
   item: WardrobeItemType;
@@ -54,11 +55,9 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
+    <AnimatedWardrobeItem 
+      animationType="popUp"
+      className="w-full h-full"
     >
       <Card 
         className="overflow-hidden h-full transform transition-all duration-300 hover:shadow-lg"
@@ -77,8 +76,11 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
               alt={item.name}
               className="w-full h-full object-cover"
               initial={false}
-              animate={{ scale: isHovered ? 1.1 : 1 }}
-              transition={{ duration: 0.3 }}
+              animate={{ 
+                scale: isHovered ? 1.1 : 1,
+                filter: isHovered ? "brightness(1.1)" : "brightness(1)" 
+              }}
+              transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
               onLoad={() => setImageLoaded(true)}
               style={{ opacity: imageLoaded ? 1 : 0 }}
             />
@@ -212,6 +214,6 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
           </div>
         </CardFooter>
       </Card>
-    </motion.div>
+    </AnimatedWardrobeItem>
   );
 }

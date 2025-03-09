@@ -7,12 +7,22 @@ import WeatherDisplay from "@/components/weather-display";
 import MoodSelector from "@/components/mood-selector";
 import OutfitRecommendation from "@/components/outfit-recommendation";
 import AIOutfitRecommender from "@/components/ai-outfit-recommendation";
+import IntegratedMoodOutfit from "@/components/integrated-mood-outfit";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, RefreshCcw, AlertCircle, CloudSun, Sun, Cloud, Layers, Sparkles } from "lucide-react";
+import { 
+  MapPin, 
+  RefreshCcw, 
+  AlertCircle, 
+  CloudSun, 
+  Sun, 
+  Cloud, 
+  Layers, 
+  Sparkles 
+} from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation, Link } from "wouter"; 
@@ -28,7 +38,7 @@ export default function HomePage() {
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
-  const [activeTab, setActiveTab] = useState("classic");
+  const [activeTab, setActiveTab] = useState("ai");
   const [_, setUrlLocation] = useLocation(); 
 
   const weatherRecommendations = getWeatherBasedRecommendations(weather);
@@ -229,102 +239,44 @@ export default function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <MoodSelector
-                  selectedMood={selectedMood}
-                  setSelectedMood={setSelectedMood}
-                />
+                {wardrobeLoading || weatherLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-[400px] w-full rounded-lg" />
+                  </div>
+                ) : weather && wardrobeItems && wardrobeItems.length > 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <IntegratedMoodOutfit 
+                      weather={weather}
+                      wardrobeItems={wardrobeItems}
+                    />
+                  </motion.div>
+                ) : weatherError ? (
+                  <div className="text-center py-8 bg-muted rounded-lg">
+                    <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                    <p className="text-lg text-muted-foreground mb-4">
+                      Enter a valid location to get weather-based outfit recommendations.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-10">
+                    <p className="text-lg text-muted-foreground mb-6">
+                      You haven't added any items to your wardrobe yet.
+                    </p>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button asChild className="bg-gradient-to-r from-primary to-purple-500 hover:opacity-90">
+                        <Link href="/wardrobe">Manage Wardrobe</Link>
+                      </Button>
+                    </motion.div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Card className="mb-10 border-2 border-primary/20 shadow-lg overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-purple-500/10">
-              <div className="flex items-center">
-                <motion.div
-                  whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-                  transition={{ duration: 1 }}
-                >
-                  <Layers className="mr-2 h-6 w-6 text-primary" />
-                </motion.div>
-                <CardTitle>Outfit Recommendations</CardTitle>
-              </div>
-              <CardDescription>
-                Get classic or AI-powered outfits for your day
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              {wardrobeLoading || weatherLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-[300px] w-full rounded-lg" />
-                </div>
-              ) : weather && wardrobeItems && wardrobeItems.length > 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger 
-                        value="classic" 
-                        className="flex items-center gap-2"
-                      >
-                        <Layers className="h-4 w-4" />
-                        Classic
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="ai" 
-                        className="flex items-center gap-2"
-                      >
-                        <Sparkles className="h-4 w-4" />
-                        AI-Powered
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="classic" className="space-y-4">
-                      <OutfitRecommendation
-                        items={recommendedOutfit}
-                        weather={weather}
-                        mood={selectedMood}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="ai" className="space-y-4">
-                      <AIOutfitRecommender
-                        weather={weather}
-                        wardrobeItems={wardrobeItems}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </motion.div>
-              ) : weatherError ? (
-                <div className="text-center py-8 bg-muted rounded-lg">
-                  <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-                  <p className="text-lg text-muted-foreground mb-4">
-                    Enter a valid location to get weather-based outfit recommendations.
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center py-10">
-                  <p className="text-lg text-muted-foreground mb-6">
-                    You haven't added any items to your wardrobe yet.
-                  </p>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button asChild className="bg-gradient-to-r from-primary to-purple-500 hover:opacity-90">
-                      <Link href="/wardrobe">Manage Wardrobe</Link>
-                    </Button>
-                  </motion.div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,13 @@ import { AnimatedCard } from "@/components/ui/animated-card";
 import { WardrobeItem } from "@shared/schema";
 import { AIOutfitRecommendation, AIOutfitRecommendationRequest } from "@/types/ai-types";
 import {
-  Sparkles,
-  Calendar,
-  Save,
-  Loader2,
-  AlertCircle,
-  CloudSun,
-  ThumbsUp
+  SparklesIcon as Sparkles,
+  CalendarIcon as Calendar,
+  SaveIcon as Save,
+  Loader2Icon as Loader2,
+  AlertCircleIcon as AlertCircle,
+  CloudSunIcon as CloudSun,
+  ThumbsUpIcon as ThumbsUp
 } from "lucide-react";
 
 interface AIOutfitRecommendationProps {
@@ -30,12 +30,20 @@ interface AIOutfitRecommendationProps {
     icon: string; 
   };
   wardrobeItems: WardrobeItem[];
+  selectedMood?: string;
 }
 
-export default function AIOutfitRecommender({ weather, wardrobeItems }: AIOutfitRecommendationProps) {
-  const [selectedMood, setSelectedMood] = useState("happy");
+export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMood: initialMood }: AIOutfitRecommendationProps) {
+  const [selectedMood, setSelectedMood] = useState(initialMood || "happy");
   const [selectedOccasion, setSelectedOccasion] = useState("none");
   const [showResults, setShowResults] = useState(false);
+  
+  // Update selectedMood when initialMood changes
+  useEffect(() => {
+    if (initialMood) {
+      setSelectedMood(initialMood);
+    }
+  }, [initialMood]);
 
   // Helper to convert weather condition to a simple format for the AI
   const getWeatherType = (): string => {
@@ -295,9 +303,20 @@ export default function AIOutfitRecommender({ weather, wardrobeItems }: AIOutfit
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {error?.message || "Please try again or select different preferences."}
+            <p className="text-sm text-muted-foreground mb-3">
+              {error?.message?.includes("quota") 
+                ? "The OpenAI service has reached its usage limit. Please try again later or contact support for assistance."
+                : error?.message || "Please try again or select different preferences."}
             </p>
+            <div className="bg-muted p-3 rounded-md">
+              <h4 className="font-medium text-sm mb-2">Troubleshooting Tips:</h4>
+              <ul className="text-xs space-y-1 list-disc pl-4">
+                <li>Try again in a few minutes</li>
+                <li>Try selecting a different mood</li>
+                <li>Check your internet connection</li>
+                <li>If the problem persists, manual outfit selection is still available</li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -311,7 +330,10 @@ export default function AIOutfitRecommender({ weather, wardrobeItems }: AIOutfit
           </p>
           
           <div className="space-y-6">
-            {recommendationsData.recommendations.map((recommendation, index) => (
+            {recommendationsData.recommendations
+              .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
+              .slice(0, 1)
+              .map((recommendation, index) => (
               <AnimatedCard
                 key={index}
                 hoverEffect="glow"

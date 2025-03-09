@@ -1,13 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { 
-  CloudSun, 
-  CloudRain, 
-  Cloud, 
-  CloudSnow, 
-  Wind, 
-  Sun, 
-  Snowflake,
-  Thermometer
+  CloudSunIcon as CloudSun, 
+  CloudRainIcon as CloudRain, 
+  CloudIcon as Cloud, 
+  CloudSnowIcon as CloudSnow, 
+  WindIcon as Wind, 
+  SunIcon as Sun, 
+  SnowflakeIcon as Snowflake,
+  ThermometerIcon as Thermometer
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
@@ -113,24 +113,46 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       {recommendations && (
         <motion.div 
           variants={containerVariants}
-          className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10"
+          className="mt-4 p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10 shadow-sm"
         >
-          <motion.h4 variants={itemVariants} className="text-sm font-medium mb-2">Outfit Recommendations</motion.h4>
-          <motion.p variants={itemVariants} className="text-sm text-muted-foreground mb-3">{recommendations.recommendation}</motion.p>
-          <div className="flex flex-wrap gap-2">
+          <motion.div 
+            className="flex items-center mb-3"
+            variants={itemVariants}
+          >
+            <span className="p-1.5 rounded-full bg-primary/20 mr-2">
+              <Thermometer className="h-4 w-4 text-primary" />
+            </span>
+            <h4 className="text-sm font-medium">Weather-Based Outfit Recommendations</h4>
+          </motion.div>
+          
+          <motion.p 
+            variants={itemVariants} 
+            className="text-sm text-muted-foreground mb-4 italic border-l-2 border-primary/20 pl-3"
+          >
+            {recommendations.recommendation}
+          </motion.p>
+          
+          <motion.div 
+            className="flex flex-wrap gap-2"
+            variants={containerVariants}
+          >
             {recommendations.clothingTypes.map((type, index) => (
               <motion.div 
                 key={index}
                 variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.1, y: -2 }}
                 whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 500, damping: 10 }}
               >
-                <Badge variant="secondary" className="bg-primary/10 hover:bg-primary/20 text-primary">
+                <Badge 
+                  variant="secondary" 
+                  className="bg-primary/15 hover:bg-primary/25 text-primary border border-primary/20 px-3 py-1"
+                >
                   {type}
                 </Badge>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </motion.div>
