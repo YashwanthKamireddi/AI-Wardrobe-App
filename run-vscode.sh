@@ -1,21 +1,18 @@
 #!/bin/bash
 
-# This script is designed to start the application in VSCode/local environment
-# It uses npm scripts for better compatibility with package.json configurations
+# run-vscode.sh - Specialized startup script for VS Code/local environment
+# Handles environment detection and proper setup for local development
 
-echo "🚀 Starting application in VSCode/local environment..."
+echo -e "\033[0;34m[INFO]\033[0m Starting Cher's Closet in local environment..."
 
-# Verify database connection
-echo "🔍 Testing database connection..."
-npm run db:push
-DB_STATUS=$?
-
-if [ $DB_STATUS -eq 0 ]; then
-  echo "✅ Database and schema setup successful"
+# Check for database connection
+echo -e "\033[0;34m[INFO]\033[0m Verifying database connection..."
+if npx tsx test-db.ts; then
+  echo -e "\033[0;32m[SUCCESS]\033[0m Database connection verified."
 else
-  echo "⚠️ Database setup encountered issues, check connection settings"
+  echo -e "\033[0;31m[WARNING]\033[0m Database connection issues detected. Some features may not work properly."
 fi
 
-# Start the development server with npm
-echo "🌐 Starting development server..."
-exec npm run dev
+# Start the application with VSCode-specific settings
+echo -e "\033[0;34m[INFO]\033[0m Launching application on port 5000..."
+NODE_ENV=development PORT=5000 HOST=0.0.0.0 npm run dev

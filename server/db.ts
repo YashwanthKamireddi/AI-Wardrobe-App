@@ -127,7 +127,8 @@ export async function testDatabaseConnection(retries = 3, delay = 1000) {
       // If we get here, something is wrong with the result format
       console.error(`Unexpected database test result: ${JSON.stringify(result)}`);
     } catch (error) {
-      console.error(`Database connection test failed (attempt ${attempt + 1}/${retries}):`, error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Database connection test failed (attempt ${attempt + 1}/${retries}):`, errorMessage);
       
       // Last attempt failed
       if (attempt === retries - 1) {
@@ -190,10 +191,11 @@ export async function verifyDatabaseHealth() {
       }
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       healthy: false,
       message: 'Database health check failed',
-      details: { error: error.message }
+      details: { error: errorMessage }
     };
   }
 }

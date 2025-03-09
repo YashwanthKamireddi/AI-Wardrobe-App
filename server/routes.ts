@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
@@ -17,6 +17,7 @@ import {
 } from "./services/ai-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Return type is Server, make sure we return it at the end
   // Health check endpoint for basic API testing
   app.get("/api/health", (req: Request, res: Response) => {
     res.json({
@@ -201,6 +202,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/outfits/:id", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const id = parseInt(req.params.id);
+      const outfit = await storage.getOutfit(id);
+
+      if (!outfit) {
+        return res.status(404).json({ message: "Outfit not found" });
+      }
+
+      if (outfit.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      await storage.deleteOutfit(id);
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete outfit" });
+    }
+  });
 
   // Calendar outfit planning routes
   app.get("/api/calendar-outfits", async (req: Request, res: Response) => {
@@ -251,6 +272,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify outfit exists and belongs to user
       const outfit = await storage.getOutfit(outfitId);
       if (!outfit) {
+        return res.status(404).json({ message: "Outfit not found" });
+      }
+
+      if (outfit.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      // In a real implementation, you would store the outfit planning for this date
+      // For now, just return a success message
+      res.status(201).json({ 
+        message: "Outfit scheduled successfully",
+        plannedOutfit: {
+          ...outfit,
+          plannedDate: date
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to schedule outfit" });
+    }
+  });
 
   // Outfit sharing
   app.post("/api/outfits/:id/share", async (req: Request, res: Response) => {
@@ -325,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const publicOutfit = {
         id: outfit.id,
         name: outfit.name,
-        items: validItems.map(item => ({
+        items: validItems.map(item => item ? {
           id: item.id,
           name: item.name,
           category: item.category,
@@ -334,59 +375,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           season: item.season,
           imageUrl: item.imageUrl,
           tags: item.tags
-        })),
-        occasion: outfit.occasion,
-        season: outfit.season,
-        weatherConditions: outfit.weatherConditions,
-        mood: outfit.mood,
+        } : null).filter(Boolean),
+        occasion: outfit.occasion || "casual",
+        season: outfit.season || "all",
+        weatherConditions: outfit.weatherConditions || [],
+        mood: outfit.mood || "neutral",
         shared: true
       };
       
       res.json(publicOutfit);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch shared outfit" });
-    }
-  });
-
-        return res.status(404).json({ message: "Outfit not found" });
-      }
-
-      if (outfit.userId !== req.user!.id) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-
-      // In a real implementation, you would store the outfit planning for this date
-      // For now, just return a success message
-      res.status(201).json({ 
-        message: "Outfit scheduled successfully",
-        plannedOutfit: {
-          ...outfit,
-          plannedDate: date
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to schedule outfit" });
-    }
-  });
-
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
-
-    try {
-      const id = parseInt(req.params.id);
-      const outfit = await storage.getOutfit(id);
-
-      if (!outfit) {
-        return res.status(404).json({ message: "Outfit not found" });
-      }
-
-      if (outfit.userId !== req.user!.id) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-
-      await storage.deleteOutfit(id);
-      res.status(204).end();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete outfit" });
     }
   });
 
