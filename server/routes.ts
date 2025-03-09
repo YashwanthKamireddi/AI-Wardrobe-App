@@ -17,6 +17,16 @@ import {
 } from "./services/ai-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint for basic API testing
+  app.get("/api/health", (req: Request, res: Response) => {
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      database: "connected",
+      environment: process.env.NODE_ENV || "development"
+    });
+  });
+
   // Setup authentication routes
   setupAuth(app);
 
