@@ -32,7 +32,7 @@ interface AIOutfitRecommendationProps {
   wardrobeItems: WardrobeItem[];
 }
 
-export default function AIOutfitRecommendation({ weather, wardrobeItems }: AIOutfitRecommendationProps) {
+export default function AIOutfitRecommender({ weather, wardrobeItems }: AIOutfitRecommendationProps) {
   const [selectedMood, setSelectedMood] = useState("happy");
   const [selectedOccasion, setSelectedOccasion] = useState("");
   const [showResults, setShowResults] = useState(false);
