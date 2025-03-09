@@ -4,6 +4,13 @@ import NavigationBar from "@/components/navigation-bar";
 import WardrobeItem from "@/components/wardrobe-item";
 import FileUpload from "@/components/file-upload";
 import { 
+  AnimatedWardrobeList, 
+  WardrobeLoadingAnimation, 
+  EmptyWardrobeAnimation,
+  HangerIcon,
+  FloatingActionButton
+} from "@/components/ui/animated-wardrobe";
+import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
@@ -126,10 +133,10 @@ export default function WardrobePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button onClick={() => setIsAddingItem(true)}>
+            <FloatingActionButton onClick={() => setIsAddingItem(true)} className="px-4">
               <Plus className="h-4 w-4 mr-2" />
-              Add Item
-            </Button>
+              <span>Add Item</span>
+            </FloatingActionButton>
           </div>
         </div>
 
@@ -146,22 +153,20 @@ export default function WardrobePage() {
 
           <TabsContent value={activeCategory} className="mt-4">
             {isLoading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
+              <WardrobeLoadingAnimation />
             ) : filteredItems.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredItems.map((item) => (
+              <AnimatedWardrobeList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredItems.map((item, index) => (
                   <WardrobeItem
                     key={item.id}
                     item={item}
                     onDelete={() => handleDelete(item.id)}
                   />
                 ))}
-              </div>
+              </AnimatedWardrobeList>
             ) : (
               <div className="text-center py-12 border rounded-lg bg-muted/20">
-                <h3 className="text-lg font-medium mb-2">No items found</h3>
+                <EmptyWardrobeAnimation />
                 <p className="text-muted-foreground mb-4">
                   {searchQuery 
                     ? "Try adjusting your search terms"
@@ -169,10 +174,10 @@ export default function WardrobePage() {
                       ? "No items in this category. Try adding some!" 
                       : "Your wardrobe is empty. Start by adding some items!"}
                 </p>
-                <Button onClick={() => setIsAddingItem(true)}>
+                <FloatingActionButton onClick={() => setIsAddingItem(true)} className="mx-auto mt-4 px-4">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Item
-                </Button>
+                  <span>Add Your First Item</span>
+                </FloatingActionButton>
               </div>
             )}
           </TabsContent>

@@ -38,7 +38,7 @@ export interface StyleProfile {
 export async function classifyClothingItem(imageUrl: string): Promise<ClassificationResult> {
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
+      model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
@@ -81,7 +81,7 @@ export async function generateMoodBasedRecommendation(
     ).join("\n");
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
@@ -116,7 +116,7 @@ export async function analyzeStyle(items: WardrobeItem[]): Promise<string> {
     ).join("\n");
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
@@ -211,24 +211,59 @@ export async function generateAdvancedOutfitRecommendations(
     Only include items that actually exist in the provided wardrobe.
     `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are FashionGPT, an expert clothing stylist and personal shopper with deep knowledge of fashion principles, color theory, and style concepts."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 2000
-    });
-
+    // Try the OpenAI generation with the fallback mechanism
     try {
+      // Add exponential backoff retry logic for rate limiting
+      const maxRetries = 2;
+      let retryCount = 0;
+      let lastError: any = null;
+      let completion = null;
+      
+      // Retry logic for rate limiting
+      while (retryCount <= maxRetries) {
+        try {
+          completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+              {
+                role: "system",
+                content: "You are FashionGPT, an expert clothing stylist and personal shopper with deep knowledge of fashion principles, color theory, and style concepts."
+              },
+              {
+                role: "user",
+                content: prompt
+              }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.7,
+            max_tokens: 2000
+          });
+          break; // If successful, exit the retry loop
+        } catch (error: any) {
+          lastError = error;
+          
+          // Check if it's a rate limit error (429)
+          if (error.status === 429) {
+            // Calculate delay with exponential backoff (1s, 2s, 4s, etc.)
+            const delay = Math.pow(2, retryCount) * 1000;
+            console.log(`Rate limit exceeded. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${maxRetries + 1})`);
+            
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, delay));
+            retryCount++;
+          } else {
+            // For other errors, don't retry
+            throw error;
+          }
+        }
+      }
+      
+      // If we've exhausted all retries without success
+      if (!completion) {
+        console.log(`Exhausted all ${maxRetries + 1} attempts. Falling back to algorithm.`);
+        throw lastError;
+      }
+      
       // Parse the response as JSON
       const responseContent = completion.choices[0].message.content || "{}";
       const parsedResponse = JSON.parse(responseContent);
@@ -242,9 +277,8 @@ export async function generateAdvancedOutfitRecommendations(
         console.error("Unexpected response format:", parsedResponse);
         return [];
       }
-    } catch (parseError) {
-      console.error("Error parsing AI response:", parseError);
-      console.log("Raw response:", completion.choices[0].message.content);
+    } catch (error: any) {
+      console.error("Error generating advanced outfit recommendations:", error.message || error);
       return [];
     }
   } catch (error) {
@@ -298,22 +332,56 @@ export async function createUserStyleProfile(wardrobe: WardrobeItem[]): Promise<
     Return only the JSON object without any additional text.
     `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are a fashion psychology expert who can analyze personal style preferences from wardrobe data."
-        },
-        {
-          role: "user",
-          content: prompt
+    // Try with rate limiting retry logic
+    let completion = null;
+    const maxRetries = 2;
+    let retryCount = 0;
+    let lastError: any = null;
+    
+    // Retry logic for rate limiting
+    while (retryCount <= maxRetries) {
+      try {
+        completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are a fashion psychology expert who can analyze personal style preferences from wardrobe data."
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.7,
+          max_tokens: 1000
+        });
+        break; // If successful, exit the retry loop
+      } catch (error: any) {
+        lastError = error;
+        
+        // Check if it's a rate limit error (429)
+        if (error.status === 429) {
+          // Calculate delay with exponential backoff (1s, 2s, 4s, etc.)
+          const delay = Math.pow(2, retryCount) * 1000;
+          console.log(`Rate limit exceeded for style profile. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${maxRetries + 1})`);
+          
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, delay));
+          retryCount++;
+        } else {
+          // For other errors, don't retry
+          throw error;
         }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 1000
-    });
+      }
+    }
+    
+    // If we've exhausted all retries without success
+    if (!completion) {
+      console.log(`Exhausted all ${maxRetries + 1} attempts for style profile. Failing.`);
+      throw lastError;
+    }
 
     try {
       // Parse the response as JSON
@@ -405,22 +473,56 @@ export async function getOutfitSuggestionForOccasion(
     Only include items that actually exist in the provided wardrobe.
     `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are FashionGPT, an expert clothing stylist and personal shopper with deep knowledge of occasion-appropriate dressing."
-        },
-        {
-          role: "user",
-          content: prompt
+    // Try with rate limiting retry logic
+    let completion = null;
+    const maxRetries = 2;
+    let retryCount = 0;
+    let lastError: any = null;
+    
+    // Retry logic for rate limiting
+    while (retryCount <= maxRetries) {
+      try {
+        completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are FashionGPT, an expert clothing stylist and personal shopper with deep knowledge of occasion-appropriate dressing."
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.7,
+          max_tokens: 1000
+        });
+        break; // If successful, exit the retry loop
+      } catch (error: any) {
+        lastError = error;
+        
+        // Check if it's a rate limit error (429)
+        if (error.status === 429) {
+          // Calculate delay with exponential backoff (1s, 2s, 4s, etc.)
+          const delay = Math.pow(2, retryCount) * 1000;
+          console.log(`Rate limit exceeded for occasion outfit. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${maxRetries + 1})`);
+          
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, delay));
+          retryCount++;
+        } else {
+          // For other errors, don't retry
+          throw error;
         }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 1000
-    });
+      }
+    }
+    
+    // If we've exhausted all retries without success
+    if (!completion) {
+      console.log(`Exhausted all ${maxRetries + 1} attempts for occasion outfit. Failing.`);
+      throw lastError;
+    }
 
     try {
       // Parse the response as JSON

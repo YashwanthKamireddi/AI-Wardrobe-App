@@ -2,7 +2,21 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
+    // Try to get response as text
+    let text;
+    try {
+      text = await res.text();
+      // Check if the response is HTML (which could contain DOCTYPE)
+      if (text.toLowerCase().includes('<!doctype html>') || 
+          text.toLowerCase().includes('<html') || 
+          text.toLowerCase().includes('<body')) {
+        // If it's HTML, return a more user-friendly error message
+        throw new Error(`Server error (${res.status}): The server returned an HTML page instead of data`);
+      }
+    } catch (e) {
+      // If we can't parse the response, use statusText as fallback
+      text = res.statusText;
+    }
     throw new Error(`${res.status}: ${text}`);
   }
 }

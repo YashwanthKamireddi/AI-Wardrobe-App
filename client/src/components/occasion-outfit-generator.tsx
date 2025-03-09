@@ -14,12 +14,12 @@ import { AnimatedCard } from "@/components/ui/animated-card";
 import { WardrobeItem } from "@shared/schema";
 import { AIOutfitRecommendation } from "@/types/ai-types";
 import {
-  CheckCircle,
-  Sparkles,
-  Calendar,
-  Save,
-  Loader2,
-  AlertCircle,
+  CheckCircleIcon as CheckCircle,
+  SparklesIcon as Sparkles,
+  CalendarIcon as Calendar,
+  SaveIcon as Save,
+  Loader2Icon as Loader2,
+  AlertCircleIcon as AlertCircle,
 } from "lucide-react";
 
 interface OccasionOutfitGeneratorProps {

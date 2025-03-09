@@ -497,23 +497,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate advanced outfit recommendations
-      const recommendations = await generateAdvancedOutfitRecommendations(
-        mood,
-        weather,
-        occasion || "everyday",
-        wardrobeItems
-      );
-      
-      res.json({
-        recommendations,
-        count: recommendations.length
-      });
+      try {
+        // First try AI-based recommendations
+        const recommendations = await generateAdvancedOutfitRecommendations(
+          mood,
+          weather,
+          occasion || "everyday",
+          wardrobeItems
+        );
+        
+        if (recommendations && recommendations.length > 0) {
+          return res.json({
+            recommendations,
+            count: recommendations.length,
+            source: "ai"
+          });
+        } else {
+          // If AI returned empty results, fall back to algorithm
+          console.log("AI returned empty recommendations, using fallback algorithm");
+          throw new Error("AI returned empty recommendations");
+        }
+      } catch (aiError: any) {
+        console.log("AI recommendation failed, using fallback algorithm:", aiError.message);
+        
+        // Import the outfit engine
+        const outfitEngine = await import("../client/src/lib/outfit-engine");
+        
+        // Convert weather string to WeatherType 
+        const weatherType = (() => {
+          const w = weather.toLowerCase();
+          if (w.includes("rain")) return "rainy";
+          if (w.includes("snow")) return "snowy";
+          if (w.includes("cloud")) return "cloudy";
+          if (w.includes("wind")) return "windy"; 
+          if (w.includes("sun") || w.includes("clear")) return "sunny";
+          return "cloudy"; // Default
+        })();
+        
+        // Convert mood string to MoodType
+        const moodType = mood.toLowerCase() as any;
+        
+        // Generate algorithm-based recommendations
+        const algorithmRecommendations = outfitEngine.generateOutfitRecommendations(
+          wardrobeItems,
+          weatherType,
+          moodType,
+          3 // Generate 3 outfits
+        );
+        
+        // Convert to AI format for frontend compatibility
+        const convertedRecommendations = algorithmRecommendations.map((rec, index) => {
+          // Create descriptive names based on mood and weather
+          const occasionText = occasion || "everyday";
+          const outfitNames = [
+            `${weather.charAt(0).toUpperCase() + weather.slice(1)} ${mood.charAt(0).toUpperCase() + mood.slice(1)} Outfit`,
+            `Perfect for ${occasionText.charAt(0).toUpperCase() + occasionText.slice(1)}`,
+            `${mood.charAt(0).toUpperCase() + mood.slice(1)} Day Look`
+          ];
+          
+          // Create descriptions
+          const descriptions = [
+            `A coordinated outfit designed for ${weather} conditions when you're feeling ${mood}.`,
+            `This combination works well for ${occasionText} occasions and matches your current mood.`,
+            `A comfortable and stylish outfit that reflects your ${mood} mood while being appropriate for the weather.`
+          ];
+          
+          // Create styling advice
+          const stylingAdvice = [
+            "Try accessorizing with jewelry that complements the main colors in this outfit.",
+            "You can layer these pieces differently depending on temperature changes throughout the day.",
+            "This outfit can be dressed up with the right accessories or dressed down for more casual settings."
+          ];
+          
+          return {
+            outfitName: outfitNames[index % outfitNames.length],
+            description: descriptions[index % descriptions.length],
+            items: rec.outfitItems.map(item => ({
+              id: item.id,
+              name: item.name,
+              reason: `This ${item.category} works well with your ${mood} mood and is appropriate for ${weather} weather.`
+            })),
+            styleAdvice: stylingAdvice[index % stylingAdvice.length],
+            occasion: occasionText,
+            confidence: Math.round(rec.score * 100)
+          };
+        });
+        
+        return res.json({
+          recommendations: convertedRecommendations,
+          count: convertedRecommendations.length,
+          source: "algorithm"
+        });
+      }
     } catch (error) {
-      console.error("Error generating AI outfit recommendations:", error);
-      res.status(500).json({ 
-        message: "Failed to generate AI outfit recommendations",
-        error: error instanceof Error ? error.message : "Unknown error"
+      console.error("Error generating outfit recommendations:", error);
+      
+      // Check if this is an OpenAI API error
+      let statusCode = 500;
+      let errorMessage = "Failed to generate outfit recommendations";
+      
+      if (error instanceof Error) {
+        // Check for OpenAI quota errors
+        if (error.message.includes("quota") || error.message.includes("rate limit")) {
+          statusCode = 429; // Too Many Requests
+          errorMessage = "OpenAI API quota exceeded. Please try again later.";
+        } else if (error.message.includes("authentication")) {
+          statusCode = 401;
+          errorMessage = "OpenAI API authentication failed. Please check your API key.";
+        }
+      }
+      
+      res.status(statusCode).json({ 
+        message: errorMessage,
+        error: error instanceof Error ? error.message : "Unknown error",
+        recommendations: [] // Return empty recommendations array to prevent client-side errors
       });
     }
   });
@@ -539,8 +636,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(styleProfile);
     } catch (error) {
       console.error("Error creating style profile:", error);
-      res.status(500).json({ 
-        message: "Failed to create style profile",
+      
+      let statusCode = 500;
+      let errorMessage = "Failed to create style profile";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("quota") || error.message.includes("rate limit")) {
+          statusCode = 429;
+          errorMessage = "OpenAI API quota exceeded. Please try again later.";
+        }
+      }
+      
+      res.status(statusCode).json({ 
+        message: errorMessage,
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
@@ -570,9 +678,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error analyzing style:", error);
-      res.status(500).json({ 
-        message: "Failed to analyze style",
-        error: error instanceof Error ? error.message : "Unknown error"
+      
+      let statusCode = 500;
+      let errorMessage = "Failed to analyze style";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("quota") || error.message.includes("rate limit")) {
+          statusCode = 429;
+          errorMessage = "OpenAI API quota exceeded. Please try again later.";
+        }
+      }
+      
+      res.status(statusCode).json({ 
+        message: errorMessage,
+        error: error instanceof Error ? error.message : "Unknown error",
+        analysis: "Unable to generate style analysis at this time."
       });
     }
   });
@@ -594,33 +714,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (wardrobeItems.length === 0) {
         return res.status(400).json({ 
           message: "No wardrobe items available",
-          recommendations: null
-        });
-      }
-
-      // Generate occasion-specific outfit recommendation
-      const recommendation = await getOutfitSuggestionForOccasion(
-        occasion,
-        wardrobeItems,
-        weather
-      );
-      
-      if (!recommendation) {
-        return res.status(404).json({ 
-          message: "Could not generate a suitable outfit for this occasion",
           recommendation: null
         });
       }
-      
-      res.json({
-        recommendation,
-        occasion
-      });
+
+      try {
+        // First attempt to generate occasion-specific outfit recommendation using AI
+        const recommendation = await getOutfitSuggestionForOccasion(
+          occasion,
+          wardrobeItems,
+          weather
+        );
+        
+        if (recommendation) {
+          return res.json({
+            recommendation,
+            occasion,
+            source: "ai"
+          });
+        } else {
+          console.log("AI returned null recommendation, using fallback algorithm for occasion outfit");
+          throw new Error("AI returned null recommendation");
+        }
+      } catch (aiError: any) {
+        console.log("AI occasion recommendation failed, using fallback algorithm:", aiError.message);
+        
+        // Import the outfit engine for fallback
+        const outfitEngine = await import("../client/src/lib/outfit-engine");
+        
+        // Convert weather string to WeatherType if provided
+        const weatherType = weather ? (() => {
+          const w = weather.toLowerCase();
+          if (w.includes("rain")) return "rainy";
+          if (w.includes("snow")) return "snowy";
+          if (w.includes("cloud")) return "cloudy";
+          if (w.includes("wind")) return "windy"; 
+          if (w.includes("sun") || w.includes("clear")) return "sunny";
+          return "cloudy"; // Default
+        })() : "cloudy";
+        
+        // Map occasion to a suitable mood
+        const moodType = (() => {
+          const o = occasion.toLowerCase();
+          if (o.includes("work") || o.includes("office") || o.includes("interview")) return "professional";
+          if (o.includes("date") || o.includes("romantic")) return "romantic";
+          if (o.includes("formal") || o.includes("wedding") || o.includes("ceremony")) return "confident";
+          if (o.includes("workout") || o.includes("gym") || o.includes("exercise")) return "energetic";
+          if (o.includes("casual") || o.includes("relax")) return "relaxed";
+          if (o.includes("party") || o.includes("celebration")) return "happy";
+          if (o.includes("creative") || o.includes("art")) return "creative";
+          return "confident"; // Default to confident for any other occasion
+        })() as any;
+        
+        // Generate algorithm-based recommendations and pick the best one
+        const algorithmRecommendations = outfitEngine.generateOutfitRecommendations(
+          wardrobeItems,
+          weatherType,
+          moodType,
+          3 // Generate 3 outfits
+        );
+        
+        if (algorithmRecommendations.length === 0) {
+          return res.status(404).json({ 
+            message: "Could not generate a suitable outfit for this occasion",
+            recommendation: null
+          });
+        }
+        
+        // Take the highest scored outfit recommendation
+        const bestOutfit = algorithmRecommendations[0];
+        
+        // Convert to AI format for frontend compatibility
+        const occasionName = occasion.charAt(0).toUpperCase() + occasion.slice(1);
+        const fallbackRecommendation = {
+          outfitName: `Perfect ${occasionName} Outfit`,
+          description: `A curated outfit specially selected for ${occasion} occasions${weather ? ` in ${weather} weather` : ''}.`,
+          items: bestOutfit.outfitItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            reason: `This ${item.category} is ideal for ${occasion} settings${weather ? ` and appropriate for ${weather} conditions` : ''}.`
+          })),
+          styleAdvice: "Accessorize thoughtfully to enhance this outfit while keeping the occasion in mind.",
+          occasion: occasionName,
+          confidence: Math.round(bestOutfit.score * 100)
+        };
+        
+        return res.json({
+          recommendation: fallbackRecommendation,
+          occasion,
+          source: "algorithm"
+        });
+      }
     } catch (error) {
       console.error("Error generating occasion outfit:", error);
-      res.status(500).json({ 
-        message: "Failed to generate occasion outfit",
-        error: error instanceof Error ? error.message : "Unknown error"
+      
+      let statusCode = 500;
+      let errorMessage = "Failed to generate occasion outfit";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("quota") || error.message.includes("rate limit")) {
+          statusCode = 429;
+          errorMessage = "OpenAI API quota exceeded. Please try again later.";
+        }
+      }
+      
+      res.status(statusCode).json({ 
+        message: errorMessage,
+        error: error instanceof Error ? error.message : "Unknown error",
+        recommendation: null
       });
     }
   });

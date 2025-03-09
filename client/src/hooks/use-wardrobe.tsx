@@ -20,9 +20,12 @@ export function useAddWardrobeItem() {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: async (item: Omit<InsertWardrobeItem, "userId">) => {
-      const res = await apiRequest("POST", "/api/wardrobe", item);
-      return await res.json();
+    mutationFn: (item: Omit<InsertWardrobeItem, "userId">) => {
+      return apiRequest({
+        path: "/api/wardrobe",
+        method: "POST",
+        body: item
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
@@ -45,9 +48,12 @@ export function useUpdateWardrobeItem() {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: number } & Partial<InsertWardrobeItem>) => {
-      const res = await apiRequest("PATCH", `/api/wardrobe/${id}`, data);
-      return await res.json();
+    mutationFn: ({ id, ...data }: { id: number } & Partial<InsertWardrobeItem>) => {
+      return apiRequest({
+        path: `/api/wardrobe/${id}`,
+        method: "PATCH",
+        body: data
+      });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
@@ -71,8 +77,11 @@ export function useDeleteWardrobeItem() {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/wardrobe/${id}`);
+    mutationFn: (id: number) => {
+      return apiRequest({
+        path: `/api/wardrobe/${id}`,
+        method: "DELETE"
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
