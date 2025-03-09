@@ -9,6 +9,7 @@ import {
   Snowflake,
   Thermometer
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WeatherData {
   location: string;

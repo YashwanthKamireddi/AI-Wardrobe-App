@@ -1,0 +1,60 @@
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  /* Improve tap targets */
+  button, 
+  .button,
+  [role="button"],
+  input,
+  select,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve form elements on mobile */
+  input, 
+  select, 
+  textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+  
+  /* Stack elements vertically on small screens */
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  /* Hide scrollbar but allow scrolling */
+  .scrollable {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollable::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Better mobile spacing */
+  .mobile-p-4 {
+    padding: 1rem !important;
+  }
+  
+  .mobile-m-2 {
+    margin: 0.5rem !important;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

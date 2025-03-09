@@ -100,13 +100,13 @@ export default function InspirationPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h1 className="text-3xl font-bold mb-4 sm:mb-0">Fashion Inspiration</h1>
 
-          <div className="flex gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
+          <div className="flex gap-2 w-full">
+            <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
                 type="search" 
                 placeholder="Search inspirations..." 
-                className="pl-8"
+                className="pl-8 min-h-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -115,7 +115,7 @@ export default function InspirationPage() {
               variant="outline" 
               size="icon"
               onClick={handleRefresh}
-              className="shrink-0"
+              className="shrink-0 min-h-10 min-w-10 flex items-center justify-center"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
