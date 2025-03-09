@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
+import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import NavigationBar from "@/components/navigation-bar";
+import StyleProfileAnalysis from "@/components/style-profile-analysis";
 import {
   Card,
   CardContent,
