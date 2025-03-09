@@ -9,6 +9,12 @@ import {
   insertWeatherPreferenceSchema, 
   insertMoodPreferenceSchema 
 } from "@shared/schema";
+import { 
+  generateAdvancedOutfitRecommendations, 
+  getOutfitSuggestionForOccasion, 
+  createUserStyleProfile,
+  analyzeStyle
+} from "./services/ai-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -458,6 +464,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid mood preference data", errors: error.format() });
       }
       res.status(500).json({ message: "Failed to create mood preference" });
+    }
+  });
+
+  // AI-powered outfit recommendation routes
+  app.post("/api/ai-outfit-recommendations", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const { mood, weather, occasion } = req.body;
+      
+      if (!mood || !weather) {
+        return res.status(400).json({ message: "Mood and weather are required" });
+      }
+
+      // Get wardrobe items for the user
+      const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
+      
+      if (wardrobeItems.length === 0) {
+        return res.json({ 
+          message: "No wardrobe items available",
+          recommendations: [] 
+        });
+      }
+
+      // Generate advanced outfit recommendations
+      const recommendations = await generateAdvancedOutfitRecommendations(
+        mood,
+        weather,
+        occasion || "everyday",
+        wardrobeItems
+      );
+      
+      res.json({
+        recommendations,
+        count: recommendations.length
+      });
+    } catch (error) {
+      console.error("Error generating AI outfit recommendations:", error);
+      res.status(500).json({ 
+        message: "Failed to generate AI outfit recommendations",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Style profile creation
+  app.get("/api/style-profile", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Get wardrobe items for the user
+      const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
+      
+      if (wardrobeItems.length === 0) {
+        return res.status(400).json({ 
+          message: "Not enough wardrobe items to create a style profile",
+          minimumRequired: 5
+        });
+      }
+
+      // Generate style profile
+      const styleProfile = await createUserStyleProfile(wardrobeItems);
+      
+      res.json(styleProfile);
+    } catch (error) {
+      console.error("Error creating style profile:", error);
+      res.status(500).json({ 
+        message: "Failed to create style profile",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Style analysis
+  app.get("/api/style-analysis", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Get wardrobe items for the user
+      const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
+      
+      if (wardrobeItems.length < 3) {
+        return res.status(400).json({ 
+          message: "Not enough wardrobe items for style analysis",
+          minimumRequired: 3
+        });
+      }
+
+      // Generate style analysis
+      const analysis = await analyzeStyle(wardrobeItems);
+      
+      res.json({
+        analysis,
+        itemCount: wardrobeItems.length
+      });
+    } catch (error) {
+      console.error("Error analyzing style:", error);
+      res.status(500).json({ 
+        message: "Failed to analyze style",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Occasion-based outfit suggestions
+  app.post("/api/occasion-outfit", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const { occasion, weather } = req.body;
+      
+      if (!occasion) {
+        return res.status(400).json({ message: "Occasion is required" });
+      }
+
+      // Get wardrobe items for the user
+      const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
+      
+      if (wardrobeItems.length === 0) {
+        return res.status(400).json({ 
+          message: "No wardrobe items available",
+          recommendations: null
+        });
+      }
+
+      // Generate occasion-specific outfit recommendation
+      const recommendation = await getOutfitSuggestionForOccasion(
+        occasion,
+        wardrobeItems,
+        weather
+      );
+      
+      if (!recommendation) {
+        return res.status(404).json({ 
+          message: "Could not generate a suitable outfit for this occasion",
+          recommendation: null
+        });
+      }
+      
+      res.json({
+        recommendation,
+        occasion
+      });
+    } catch (error) {
+      console.error("Error generating occasion outfit:", error);
+      res.status(500).json({ 
+        message: "Failed to generate occasion outfit",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
