@@ -55,16 +55,8 @@ export async function classifyClothingItem(imageUrl: string): Promise<Classifica
         },
         {
           role: "user",
-          content: [
-            {
-              type: "image_url",
-              url: imageUrl
-            },
-            {
-              type: "text",
-              text: "Classify this clothing item with category, subcategory, color, season, and style tags."
-            }
-          ]
+          content: `I have a clothing item image at this URL: ${imageUrl}. 
+          Please classify this clothing item with category, subcategory, color, season, and style tags.`
         }
       ],
       max_tokens: 1000,
