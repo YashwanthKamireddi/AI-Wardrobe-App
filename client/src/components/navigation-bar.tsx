@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const NavigationBar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
 
@@ -117,7 +117,7 @@ const NavigationBar: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => logout()}
+              onClick={() => logoutMutation.mutate()}
               aria-label="Logout"
             >
               <LogOut className="h-5 w-5" />
