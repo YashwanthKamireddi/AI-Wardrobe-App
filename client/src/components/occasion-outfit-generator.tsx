@@ -12,7 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AnimatedCard } from "@/components/ui/animated-card";
 import { WardrobeItem } from "@shared/schema";
-import { AIOutfitRecommendation } from "../types/ai-types";
+import { AIOutfitRecommendation } from "@/types/ai-types";
 import {
   CheckCircle,
   Sparkles,
