@@ -32,7 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings, Bell, Moon, Sun, LogOut, Upload } from "lucide-react";
+import { User, Settings, Bell, Moon, Sun, LogOut, Upload, Brush } from "lucide-react";
 
 // Profile form schema
 const profileFormSchema = z.object({
@@ -59,6 +59,15 @@ export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("profile");
+  
+  // Get wardrobe items for style analysis
+  const { data: wardrobeItems = [], isLoading: isLoadingWardrobe } = useQuery({
+    queryKey: ['/api/wardrobe'],
+    queryFn: () => apiRequest({
+      path: '/api/wardrobe',
+      method: 'GET'
+    }, { on401: 'returnNull' }),
+  });
 
   // Profile form
   const profileForm = useForm<ProfileFormValues>({
@@ -166,10 +175,14 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Profile & Settings</h1>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Profile
+              </TabsTrigger>
+              <TabsTrigger value="style" className="flex items-center gap-2">
+                <Brush className="h-4 w-4" />
+                Style
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
@@ -333,6 +346,19 @@ export default function ProfilePage() {
                   </Form>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Style Tab */}
+            <TabsContent value="style">
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-primary">Your Style Profile & Analysis</h2>
+                <p className="text-muted-foreground">
+                  Gain insights into your fashion preferences and get personalized style recommendations
+                  based on your wardrobe.
+                </p>
+                
+                <StyleProfileAnalysis wardrobeItemsCount={Array.isArray(wardrobeItems) ? wardrobeItems.length : 0} />
+              </div>
             </TabsContent>
 
             {/* Settings Tab */}
