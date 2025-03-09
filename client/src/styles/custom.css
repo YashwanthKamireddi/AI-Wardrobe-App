@@ -1,0 +1,94 @@
+
+/* Custom effects and animations */
+.glass-effect {
+  background: rgba(var(--background-rgb), 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--foreground-rgb), 0.05);
+}
+
+.dark .glass-effect {
+  background: rgba(var(--background-rgb), 0.15);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-border {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, hsl(var(--primary)), transparent, hsl(var(--primary)/0.5));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Refined spacing utilities */
+.content-container {
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.section-spacing {
+  @apply py-16 md:py-24;
+}
+
+/* Subtle background patterns */
+.subtle-grid {
+  background-image: 
+    linear-gradient(rgba(var(--foreground-rgb), 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--foreground-rgb), 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.subtle-dots {
+  background-image: radial-gradient(rgba(var(--foreground-rgb), 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Enhanced input styles */
+.input-modern {
+  @apply bg-background/80 border border-border/50 rounded-lg px-4 py-2 shadow-sm;
+  @apply focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none;
+  @apply transition-all duration-200;
+}
+
+/* Custom button styles */
+.btn-gradient {
+  @apply px-6 py-2.5 rounded-lg font-medium text-white;
+  @apply transition-all duration-300 ease-in-out;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.8)) padding-box;
+  box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
+}
+
+.btn-gradient:hover {
+  box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-gradient:active {
+  transform: translateY(0);
+}
+
+/* Image enhancements */
+.img-highlight {
+  @apply rounded-lg overflow-hidden;
+  box-shadow: 
+    0 10px 15px -5px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(var(--primary-rgb), 0.1),
+    0 0 0 4px rgba(var(--background-rgb), 1),
+    0 0 0 5px rgba(var(--primary-rgb), 0.05);
+}

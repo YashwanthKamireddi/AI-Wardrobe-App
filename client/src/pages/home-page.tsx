@@ -269,9 +269,8 @@ export default function HomePage() {
             </a>
           </Link>
 
-          <Link href="/inspirations">
-            <a className="hover:bg-accent transition-colors cursor-pointer">
-              <CardContent className="p-6 flex flex-col items-center text-center">
+          <div className="group cursor-pointer" onClick={() => window.location.href = "/inspirations"}>
+              <CardContent className="p-6 flex flex-col items-center text-center group-hover:bg-accent/50 transition-colors">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -292,8 +291,7 @@ export default function HomePage() {
                   Browse trending styles and fashion ideas
                 </p>
               </CardContent>
-            </a>
-          </Link>
+            </div>
 
           <Link href="/profile">
             <a className="hover:bg-accent transition-colors cursor-pointer">
