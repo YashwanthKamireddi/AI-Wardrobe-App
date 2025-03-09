@@ -28,12 +28,15 @@ function Router() {
   );
 }
 
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider> {/* Add ThemeProvider to enable dark mode */}
         <AuthProvider>
           <Router />
+          <MobileBottomNav />
           <Toaster />
         </AuthProvider>
       </ThemeProvider>
