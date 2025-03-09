@@ -34,7 +34,7 @@ interface AIOutfitRecommendationProps {
 
 export default function AIOutfitRecommender({ weather, wardrobeItems }: AIOutfitRecommendationProps) {
   const [selectedMood, setSelectedMood] = useState("happy");
-  const [selectedOccasion, setSelectedOccasion] = useState("");
+  const [selectedOccasion, setSelectedOccasion] = useState("none");
   const [showResults, setShowResults] = useState(false);
 
   // Helper to convert weather condition to a simple format for the AI
@@ -66,7 +66,7 @@ export default function AIOutfitRecommender({ weather, wardrobeItems }: AIOutfit
       const requestData: AIOutfitRecommendationRequest = {
         mood: selectedMood,
         weather: getWeatherType(),
-        occasion: selectedOccasion || undefined
+        occasion: selectedOccasion !== "none" ? selectedOccasion : undefined
       };
       
       return apiRequest<{ recommendations: AIOutfitRecommendation[] }>({
@@ -221,7 +221,7 @@ export default function AIOutfitRecommender({ weather, wardrobeItems }: AIOutfit
                   <SelectValue placeholder="Select an occasion (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No specific occasion</SelectItem>
+                  <SelectItem value="none">No specific occasion</SelectItem>
                   <SelectItem value="work">Work / Office</SelectItem>
                   <SelectItem value="casual">Casual Outing</SelectItem>
                   <SelectItem value="date">Date Night</SelectItem>
