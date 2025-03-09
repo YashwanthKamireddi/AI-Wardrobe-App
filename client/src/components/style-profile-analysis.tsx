@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnimatedCard } from "@/components/ui/animated-card";
 import { apiRequest } from "@/lib/queryClient";
-import { StyleProfile } from "../types/ai-types";
+import { StyleProfile } from "@/types/ai-types";
 import {
   Brush,
   Book,
