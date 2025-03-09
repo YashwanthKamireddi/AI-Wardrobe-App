@@ -34,7 +34,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function OutfitPage() {
   const { toast } = useToast();
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
-  
+
   const [isCreatingOutfit, setIsCreatingOutfit] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newOutfit, setNewOutfit] = useState<{
@@ -52,7 +52,7 @@ export default function OutfitPage() {
     weatherConditions: "",
     mood: ""
   });
-  
+
   // Get outfits
   const { 
     data: outfits, 
@@ -60,7 +60,7 @@ export default function OutfitPage() {
   } = useQuery<Outfit[], Error>({
     queryKey: ["/api/outfits"],
   });
-  
+
   // Create outfit
   const createOutfitMutation = useMutation({
     mutationFn: async (outfitData: Omit<InsertOutfit, "userId">) => {
@@ -91,7 +91,7 @@ export default function OutfitPage() {
       });
     },
   });
-  
+
   // Delete outfit
   const deleteOutfitMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -112,13 +112,13 @@ export default function OutfitPage() {
       });
     },
   });
-  
+
   const filteredOutfits = outfits?.filter(outfit => 
     outfit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     outfit.occasion?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     outfit.mood?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
-  
+
   const handleCreateOutfit = () => {
     if (newOutfit.name && newOutfit.items.length > 0) {
       createOutfitMutation.mutate(newOutfit);
@@ -130,13 +130,13 @@ export default function OutfitPage() {
       });
     }
   };
-  
+
   const handleDeleteOutfit = (id: number) => {
     if (confirm("Are you sure you want to delete this outfit?")) {
       deleteOutfitMutation.mutate(id);
     }
   };
-  
+
   const toggleItemSelection = (id: number) => {
     setNewOutfit(prev => {
       if (prev.items.includes(id)) {
@@ -146,22 +146,22 @@ export default function OutfitPage() {
       }
     });
   };
-  
+
   const getOutfitItems = (outfitItemIds: number[]) => {
     if (!wardrobeItems) return [];
     return wardrobeItems.filter(item => outfitItemIds.includes(item.id));
   };
-  
+
   const isLoading = outfitsLoading || wardrobeLoading;
-  
+
   return (
     <div className="min-h-screen bg-background">
       <NavigationBar />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h1 className="text-3xl font-bold mb-4 sm:mb-0">My Outfits</h1>
-          
+
           <div className="flex w-full sm:w-auto space-x-2">
             <div className="relative flex-1 sm:flex-none sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -179,7 +179,7 @@ export default function OutfitPage() {
             </Button>
           </div>
         </div>
-        
+
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -212,7 +212,7 @@ export default function OutfitPage() {
           </div>
         )}
       </main>
-      
+
       {/* Create Outfit Dialog */}
       <Dialog open={isCreatingOutfit} onOpenChange={setIsCreatingOutfit}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
@@ -222,7 +222,7 @@ export default function OutfitPage() {
               Combine items from your wardrobe to create a complete outfit.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Outfit Name</Label>
@@ -233,7 +233,7 @@ export default function OutfitPage() {
                 onChange={(e) => setNewOutfit({...newOutfit, name: e.target.value})}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="occasion">Occasion</Label>
@@ -254,7 +254,7 @@ export default function OutfitPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="season">Season</Label>
                 <Select 
@@ -273,7 +273,7 @@ export default function OutfitPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="weather">Weather Conditions</Label>
                 <Select 
@@ -294,7 +294,7 @@ export default function OutfitPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="mood">Mood</Label>
                 <Select 
@@ -316,14 +316,21 @@ export default function OutfitPage() {
                 </Select>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Select Items for This Outfit</Label>
               {!wardrobeItems || wardrobeItems.length === 0 ? (
                 <div className="text-center p-4 border rounded">
                   <p className="text-muted-foreground mb-2">You haven't added any items to your wardrobe yet.</p>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="/wardrobe">Add Items First</a>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      localStorage.setItem('pendingOutfit', JSON.stringify(newOutfit));
+                      window.location.href = '/wardrobe';
+                    }}
+                  >
+                    Add Items First
                   </Button>
                 </div>
               ) : (
@@ -367,7 +374,7 @@ export default function OutfitPage() {
               </p>
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreatingOutfit(false)}>Cancel</Button>
             <Button 
