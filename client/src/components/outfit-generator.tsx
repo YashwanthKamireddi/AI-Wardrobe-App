@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { AnimatedCard } from './ui/animated-card';
 import { Separator } from './ui/separator';
 import { Badge } from './ui/badge';
+import { FashionTag, CategoryHeading, GlassCard, ColoredAccentBox, TrendingLabel } from './ui/fashion-elements';
 
 type OutfitItem = {
   id: string;
