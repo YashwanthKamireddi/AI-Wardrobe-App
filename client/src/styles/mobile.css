@@ -30,13 +30,22 @@
   }
   
   /* Hide scrollbar but allow scrolling */
-  .scrollable {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .scrollable,
+  body,
+  div,
+  main,
+  section {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
   }
   
-  .scrollable::-webkit-scrollbar {
-    display: none;
+  .scrollable::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  div::-webkit-scrollbar,
+  main::-webkit-scrollbar,
+  section::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
   }
   
   /* Better mobile spacing */
