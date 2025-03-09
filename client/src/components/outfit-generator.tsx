@@ -8,8 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Slider } from './ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { AnimatedCard } from './ui/animated-card';
-import { Separator } from './ui/separator';
-import { Badge } from './ui/badge';
 
 type OutfitItem = {
   id: string;

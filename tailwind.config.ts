@@ -5,10 +5,6 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        manrope: ["Manrope", "sans-serif"],
-      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -21,12 +17,10 @@ export default {
         'hover': '0 8px 20px rgba(0, 0, 0, 0.1)',
         'button': '0 2px 5px rgba(0, 0, 0, 0.08)',
         'card': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        'glass': '0 8px 32px rgba(0, 0, 0, 0.08)',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-soft': 'linear-gradient(to bottom right, var(--tw-gradient-stops))',
-        'gradient-shimmer': 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent)',
       },
       colors: {
         background: "hsl(var(--background))",
