@@ -141,9 +141,3 @@
   100% { background-position: 0% 50%; }
 }
 
-@layer base {
-  /* Define the font-heading class here */
-  .font-heading {
-    @apply font-manrope font-bold;
-  }
-}
