@@ -36,15 +36,19 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
+    --background-rgb: 255, 255, 255;
+    --foreground-rgb: 17, 24, 39;
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
+    --card-rgb: 255, 255, 255;
  
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
     --primary: 210 30% 50%;
     --primary-foreground: 210 40% 98%;
+    --primary-rgb: 76, 130, 184;
  
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
