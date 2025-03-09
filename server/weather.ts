@@ -16,7 +16,7 @@ interface WeatherError {
 
 // Expanded list of valid locations for the mock weather API
 // In a real app, this would be replaced with a proper geocoding API
-const validLocations = [
+export const validLocations = [
   // Major US Cities
   "New York", "New York City", "NYC", "Los Angeles", "LA", "Chicago", "Houston", 
   "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose", 
