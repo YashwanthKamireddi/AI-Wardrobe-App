@@ -69,19 +69,20 @@ const NavigationBar: React.FC = () => {
             const isActive = location === item.path;
             return (
               <div key={item.path} className="relative">
-                <Link href={item.path}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "px-3 flex items-center gap-2 relative",
-                      isActive ? "text-primary font-medium" : "text-muted-foreground"
-                    )}
-                  >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "px-3 flex items-center gap-2 relative",
+                    isActive ? "text-primary font-medium" : "text-muted-foreground"
+                  )}
+                  asChild
+                >
+                  <Link href={item.path}>
                     {item.icon}
                     <span>{item.label}</span>
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 {isActive && (
                   <motion.div
                     className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
@@ -124,31 +125,7 @@ const NavigationBar: React.FC = () => {
             </Button>
           )}
 
-          <div className="block md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {/* Toggle mobile menu */}}
-              aria-label="Menu"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-              >
-                <line x1="4" x2="20" y1="12" y2="12" />
-                <line x1="4" x2="20" y1="6" y2="6" />
-                <line x1="4" x2="20" y1="18" y2="18" />
-              </svg>
-            </Button>
-          </div>
+{/* Removed hamburger menu for mobile view */}
         </div>
       </div>
     </header>
