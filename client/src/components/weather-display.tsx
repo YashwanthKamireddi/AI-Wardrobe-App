@@ -1,13 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { 
-  CloudSunIcon as CloudSun, 
-  CloudRainIcon as CloudRain, 
-  CloudIcon as Cloud, 
-  CloudSnowIcon as CloudSnow, 
-  WindIcon as Wind, 
-  SunIcon as Sun, 
-  SnowflakeIcon as Snowflake,
-  ThermometerIcon as Thermometer
+  CloudSunIcon, 
+  CloudRainIcon, 
+  CloudIcon, 
+  CloudSnowIcon, 
+  WindIcon, 
+  SunIcon, 
+  SnowflakeIcon,
+  ThermometerIcon
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
@@ -38,17 +38,17 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
   const getWeatherIcon = (icon: string) => {
     switch (icon) {
       case 'sunny':
-        return <Sun className="h-12 w-12 text-yellow-500" />;
+        return <SunIcon className="h-12 w-12 text-yellow-500" />;
       case 'cloudy':
-        return <Cloud className="h-12 w-12 text-gray-400" />;
+        return <CloudIcon className="h-12 w-12 text-gray-400" />;
       case 'rainy':
-        return <CloudRain className="h-12 w-12 text-blue-400" />;
+        return <CloudRainIcon className="h-12 w-12 text-blue-400" />;
       case 'snowy':
-        return <CloudSnow className="h-12 w-12 text-blue-200" />;
+        return <CloudSnowIcon className="h-12 w-12 text-blue-200" />;
       case 'windy':
-        return <Wind className="h-12 w-12 text-teal-500" />;
+        return <WindIcon className="h-12 w-12 text-teal-500" />;
       default:
-        return <CloudSun className="h-12 w-12 text-yellow-400" />;
+        return <CloudSunIcon className="h-12 w-12 text-yellow-400" />;
     }
   };
 
@@ -100,11 +100,11 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
         </div>
         <motion.div variants={containerVariants} className="mt-4 sm:mt-0 grid grid-cols-2 gap-3">
           <motion.div variants={itemVariants} className="flex items-center">
-            <Thermometer className="h-4 w-4 mr-1 text-orange-500" />
+            <ThermometerIcon className="h-4 w-4 mr-1 text-orange-500" />
             <span className="text-sm">Humidity: {weather.humidity}%</span>
           </motion.div>
           <motion.div variants={itemVariants} className="flex items-center">
-            <Wind className="h-4 w-4 mr-1 text-blue-500" />
+            <WindIcon className="h-4 w-4 mr-1 text-blue-500" />
             <span className="text-sm">Wind: {weather.windSpeed} km/h</span>
           </motion.div>
         </motion.div>
@@ -120,7 +120,7 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             variants={itemVariants}
           >
             <span className="p-1.5 rounded-full bg-primary/20 mr-2">
-              <Thermometer className="h-4 w-4 text-primary" />
+              <ThermometerIcon className="h-4 w-4 text-primary" />
             </span>
             <h4 className="text-sm font-medium">Weather-Based Outfit Recommendations</h4>
           </motion.div>

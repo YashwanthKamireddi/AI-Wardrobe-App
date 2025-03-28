@@ -2,13 +2,13 @@ import { cn } from "@/lib/utils";
 import { moodTypes } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { 
-  SmilePlus, 
-  BadgeCheck, 
-  Sparkles, 
-  Coffee, 
-  Heart, 
-  Briefcase, 
-  Palette 
+  SmilePlusIcon, 
+  BadgeCheckIcon, 
+  SparklesIcon, 
+  CoffeeIcon, 
+  HeartIcon, 
+  BriefcaseIcon, 
+  PaletteIcon 
 } from "lucide-react";
 
 interface MoodSelectorProps {
@@ -20,14 +20,14 @@ export default function MoodSelector({ selectedMood, setSelectedMood }: MoodSele
   // Map mood types to icons
   const getMoodIcon = (mood: string) => {
     switch (mood) {
-      case "happy": return <SmilePlus className="h-6 w-6" />;
-      case "confident": return <BadgeCheck className="h-6 w-6" />;
-      case "relaxed": return <Coffee className="h-6 w-6" />;
-      case "energetic": return <Sparkles className="h-6 w-6" />;
-      case "romantic": return <Heart className="h-6 w-6" />;
-      case "professional": return <Briefcase className="h-6 w-6" />;
-      case "creative": return <Palette className="h-6 w-6" />;
-      default: return <SmilePlus className="h-6 w-6" />;
+      case "happy": return <SmilePlusIcon className="h-6 w-6" />;
+      case "confident": return <BadgeCheckIcon className="h-6 w-6" />;
+      case "relaxed": return <CoffeeIcon className="h-6 w-6" />;
+      case "energetic": return <SparklesIcon className="h-6 w-6" />;
+      case "romantic": return <HeartIcon className="h-6 w-6" />;
+      case "professional": return <BriefcaseIcon className="h-6 w-6" />;
+      case "creative": return <PaletteIcon className="h-6 w-6" />;
+      default: return <SmilePlusIcon className="h-6 w-6" />;
     }
   };
 
