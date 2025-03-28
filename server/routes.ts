@@ -681,17 +681,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let statusCode = 500;
       let errorMessage = "Failed to analyze style";
+      let errorCode = "unknown_error";
       
       if (error instanceof Error) {
-        if (error.message.includes("quota") || error.message.includes("rate limit")) {
+        // Check for rate limit or quota-related errors
+        if (error.message.includes("quota") || 
+            error.message.includes("rate limit") || 
+            error.message.includes("API rate limit") ||
+            error.message.includes("capacity") || 
+            error.message.includes("insufficient_quota") ||
+            (error as any).code === 'insufficient_quota') {
+          
           statusCode = 429;
-          errorMessage = "OpenAI API quota exceeded. Please try again later.";
+          errorMessage = "AI service quota exceeded. Please try again later.";
+          errorCode = "api_limit_exceeded";
         }
       }
       
       res.status(statusCode).json({ 
         message: errorMessage,
         error: error instanceof Error ? error.message : "Unknown error",
+        code: errorCode,
         analysis: "Unable to generate style analysis at this time."
       });
     }

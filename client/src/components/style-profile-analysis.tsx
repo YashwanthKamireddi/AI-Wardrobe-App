@@ -80,11 +80,28 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
 
   // Handle API limit errors
   const isApiLimitError = (error: any) => {
+    if (error?.response?.data?.code === "api_limit_exceeded") {
+      return true;
+    }
+    
     if (error instanceof Error) {
       return error.message.includes("quota") || 
              error.message.includes("rate limit") || 
-             error.message.includes("429");
+             error.message.includes("429") ||
+             error.message.includes("capacity") ||
+             error.message.includes("AI service");
     }
+    
+    // Check response data for any indication of rate limiting
+    if (error?.response?.data) {
+      const errorData = error.response.data;
+      return errorData.status === 429 || 
+             (typeof errorData.message === "string" && 
+              (errorData.message.includes("quota") || 
+               errorData.message.includes("rate limit") ||
+               errorData.message.includes("AI service")));
+    }
+    
     return false;
   };
 
@@ -217,10 +234,10 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                 <h3 className="text-lg font-medium mb-2">Error Loading Style Profile</h3>
                 <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
                   {isApiLimitError(styleProfileError) 
-                    ? "The AI service is currently unavailable due to high demand. Please try again later."
+                    ? "The AI service is temporarily unavailable due to high demand. Your style profile will be available once the AI service capacity is restored. Please try again in a few minutes."
                     : styleProfileError instanceof Error
                       ? styleProfileError.message
-                      : "Please try again later"}
+                      : "Please try again later. If this issue persists, you may need to add more items to your wardrobe."}
                 </p>
                 <Button
                   onClick={() => handleRefresh("profile")}
@@ -485,7 +502,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
               <h3 className="text-lg font-medium mb-2">Error Loading Style Analysis</h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
                 {isApiLimitError(styleAnalysisError) 
-                  ? "The AI service is currently unavailable due to high demand. Please try again later."
+                  ? "The AI service is temporarily unavailable due to high demand. Your style profile will be available once the AI service capacity is restored. Please try again in a few minutes."
                   : styleAnalysisError instanceof Error
                     ? styleAnalysisError.message
                     : "Please try again later"}
