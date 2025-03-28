@@ -8,19 +8,20 @@ import { toast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AnimatedCard } from "@/components/ui/animated-card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { AIOutfitRecommendation, AIOutfitRecommendationRequest } from "@/types/ai-types";
 import {
   SparklesIcon,
-  SaveIcon as Save,
-  Loader2Icon as Loader2,
-  AlertCircleIcon as AlertCircle,
-  SmilePlus, 
-  BadgeCheck, 
-  Coffee, 
-  Heart, 
-  Briefcase, 
-  Palette 
+  SaveIcon,
+  Loader2Icon,
+  AlertCircleIcon,
+  SmilePlusIcon, 
+  BadgeCheckIcon, 
+  CoffeeIcon, 
+  HeartIcon, 
+  BriefcaseIcon, 
+  PaletteIcon 
 } from "lucide-react";
 
 interface IntegratedMoodOutfitProps {
@@ -56,14 +57,14 @@ export default function IntegratedMoodOutfit({ weather, wardrobeItems }: Integra
   // Map mood types to icons
   const getMoodIcon = (mood: string) => {
     switch (mood) {
-      case "happy": return <SmilePlus className="h-6 w-6" />;
-      case "confident": return <BadgeCheck className="h-6 w-6" />;
-      case "relaxed": return <Coffee className="h-6 w-6" />;
+      case "happy": return <SmilePlusIcon className="h-6 w-6" />;
+      case "confident": return <BadgeCheckIcon className="h-6 w-6" />;
+      case "relaxed": return <CoffeeIcon className="h-6 w-6" />;
       case "energetic": return <SparklesIcon className="h-6 w-6" />;
-      case "romantic": return <Heart className="h-6 w-6" />;
-      case "professional": return <Briefcase className="h-6 w-6" />;
-      case "creative": return <Palette className="h-6 w-6" />;
-      default: return <SmilePlus className="h-6 w-6" />;
+      case "romantic": return <HeartIcon className="h-6 w-6" />;
+      case "professional": return <BriefcaseIcon className="h-6 w-6" />;
+      case "creative": return <PaletteIcon className="h-6 w-6" />;
+      default: return <SmilePlusIcon className="h-6 w-6" />;
     }
   };
 
@@ -189,36 +190,34 @@ export default function IntegratedMoodOutfit({ weather, wardrobeItems }: Integra
           <Button
             key={`mood-button-${mood.value}`}
             variant="ghost"
-            className={`
-              flex flex-col items-center justify-center h-20 gap-1 p-0 transition-all
-              ${selectedMood === mood.value && 
-                "bg-gradient-to-br animate-pulse shadow-lg scale-105 border-none"}
-              ${selectedMood === mood.value && getMoodGradient(mood.value)}
-            `}
+            className={cn(
+              "flex flex-col items-center justify-center h-20 gap-1 p-0 transition-all",
+              selectedMood === mood.value && "bg-gradient-to-br animate-pulse shadow-lg scale-105 border-none",
+              selectedMood === mood.value && getMoodGradient(mood.value)
+            )}
             onClick={() => setSelectedMood(mood.value)}
           >
-            <div className={`
-              p-1 rounded-full transition-transform duration-300
-              ${selectedMood === mood.value ? "text-white transform scale-110" : "text-muted-foreground"}
-            `}>
+            <div className={cn(
+              "p-1 rounded-full transition-transform duration-300",
+              selectedMood === mood.value ? "text-white transform scale-110" : "text-muted-foreground"
+            )}>
               {getMoodIcon(mood.value)}
             </div>
-            <span className={`
-              text-xs font-medium font-poppins
-              ${selectedMood === mood.value ? "text-white font-bold" : "text-foreground"}
-            `}>
+            <span className={cn(
+              "text-xs font-medium font-poppins",
+              selectedMood === mood.value ? "text-white font-bold" : "text-foreground"
+            )}>
               {mood.label}
             </span>
           </Button>
         ))}
       </div>
 
-      <div className={`
-        p-3 rounded-lg bg-gradient-to-br shadow-md transform transition-all duration-300
-        ${selectedMood && "translate-y-0 opacity-100"}
-        ${!selectedMood && "translate-y-2 opacity-90"}
-        ${getMoodGradient(selectedMood)}
-      `}>
+      <div className={cn(
+        "p-3 rounded-lg bg-gradient-to-br shadow-md transform transition-all duration-300",
+        selectedMood ? "translate-y-0 opacity-100" : "translate-y-2 opacity-90",
+        getMoodGradient(selectedMood)
+      )}>
         <p className="text-white text-sm font-medium font-poppins">
           {getMoodDescription(selectedMood)}
         </p>
@@ -235,7 +234,7 @@ export default function IntegratedMoodOutfit({ weather, wardrobeItems }: Integra
       {isError && (
         <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300">
           <div className="flex items-center gap-2 mb-2">
-            <AlertCircle className="h-5 w-5" />
+            <AlertCircleIcon className="h-5 w-5" />
             <h3 className="font-medium font-poppins">Error Generating Recommendations</h3>
           </div>
           <p className="text-sm mb-3 font-poppins">
@@ -333,9 +332,9 @@ export default function IntegratedMoodOutfit({ weather, wardrobeItems }: Integra
                         size="default"
                       >
                         {isSavingOutfit ? (
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          <Loader2Icon className="mr-2 h-5 w-5 animate-spin" />
                         ) : (
-                          <Save className="mr-2 h-5 w-5" />
+                          <SaveIcon className="mr-2 h-5 w-5" />
                         )}
                         Save to Wardrobe
                       </Button>
