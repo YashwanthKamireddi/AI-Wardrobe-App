@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem, useBulkAddWardrobeItems } from "@/hooks/use-wardrobe";
+import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem } from "@/hooks/use-wardrobe";
 import NavigationBar from "@/components/navigation-bar";
 import WardrobeItem from "@/components/wardrobe-item";
 import FileUpload from "@/components/file-upload";
-import BulkFileUpload from "@/components/bulk-file-upload";
 import { 
   AnimatedWardrobeList, 
   WardrobeLoadingAnimation, 
@@ -17,22 +16,19 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogDescription,
-  DialogFooter,
-  DialogClose
+  DialogFooter 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { 
   Loader2, 
   Plus, 
   Search,
   Shirt,
   Pencil,
-  Upload,
   Shirt as DressIcon,
   Wind as OuterwearIcon,
   ShoppingBag as AccessoriesIcon,
@@ -43,11 +39,9 @@ import { clothingCategories, WardrobeItem as WardrobeItemType } from "@shared/sc
 export default function WardrobePage() {
   const { data: wardrobeItems, isLoading } = useWardrobeItems();
   const addWardrobeItem = useAddWardrobeItem();
-  const bulkAddWardrobeItems = useBulkAddWardrobeItems();
   const deleteWardrobeItem = useDeleteWardrobeItem();
 
   const [isAddingItem, setIsAddingItem] = useState(false);
-  const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [newItem, setNewItem] = useState({
@@ -60,11 +54,6 @@ export default function WardrobePage() {
     tags: [],
     favorite: false
   });
-  const [bulkUploadImages, setBulkUploadImages] = useState<string[]>([]);
-  const [bulkCategory, setBulkCategory] = useState("");
-  const [bulkSubcategory, setBulkSubcategory] = useState("");
-  const [bulkColor, setBulkColor] = useState("");
-  const [bulkSeason, setBulkSeason] = useState("all");
 
   const filteredItems = wardrobeItems?.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,19 +133,10 @@ export default function WardrobePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex space-x-2">
-              <FloatingActionButton onClick={() => setIsAddingItem(true)} className="px-4">
-                <Plus className="h-4 w-4 mr-2" />
-                <span>Add Item</span>
-              </FloatingActionButton>
-              <FloatingActionButton 
-                onClick={() => setIsBulkUploading(true)} 
-                className="px-4 bg-secondary hover:bg-secondary/90"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                <span>Bulk Upload</span>
-              </FloatingActionButton>
-            </div>
+            <FloatingActionButton onClick={() => setIsAddingItem(true)} className="px-4">
+              <Plus className="h-4 w-4 mr-2" />
+              <span>Add Item</span>
+            </FloatingActionButton>
           </div>
         </div>
 
@@ -320,184 +300,6 @@ export default function WardrobePage() {
                 </>
               ) : (
                 "Add to Wardrobe"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Upload Dialog */}
-      <Dialog open={isBulkUploading} onOpenChange={setIsBulkUploading}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Bulk Upload Items</DialogTitle>
-            <DialogDescription>
-              Upload multiple items at once and assign them to the same category.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            <div className="bg-muted/30 p-4 rounded-md">
-              <h3 className="text-sm font-medium flex items-center mb-2">
-                <Badge variant="outline" className="mr-2 bg-primary/10">Step 1</Badge>
-                Upload Your Images
-              </h3>
-              <BulkFileUpload 
-                onUpload={(urls) => setBulkUploadImages(urls)}
-                maxImages={20}
-              />
-            </div>
-
-            {bulkUploadImages.length > 0 && (
-              <div className="bg-muted/30 p-4 rounded-md">
-                <h3 className="text-sm font-medium flex items-center mb-3">
-                  <Badge variant="outline" className="mr-2 bg-primary/10">Step 2</Badge>
-                  Add Details for All Items
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="bulk-category">Category (required)</Label>
-                    <Select 
-                      value={bulkCategory} 
-                      onValueChange={(value) => {
-                        setBulkCategory(value);
-                        setBulkSubcategory(""); // Reset subcategory when category changes
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {clothingCategories.map((category) => (
-                          <SelectItem key={category.value} value={category.value}>
-                            {category.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {bulkCategory && (
-                    <div>
-                      <Label htmlFor="bulk-subcategory">Subcategory (optional)</Label>
-                      <Select 
-                        value={bulkSubcategory} 
-                        onValueChange={(value) => setBulkSubcategory(value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {clothingCategories
-                            .find(c => c.value === bulkCategory)
-                            ?.subcategories.map((sub) => (
-                              <SelectItem key={sub} value={sub}>
-                                {sub}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div>
-                    <Label htmlFor="bulk-color">Color (optional)</Label>
-                    <Input 
-                      id="bulk-color" 
-                      placeholder="e.g., Various colors" 
-                      value={bulkColor}
-                      onChange={(e) => setBulkColor(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="bulk-season">Season (optional)</Label>
-                    <Select 
-                      value={bulkSeason} 
-                      onValueChange={(value) => setBulkSeason(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select season" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="winter">Winter</SelectItem>
-                        <SelectItem value="spring">Spring</SelectItem>
-                        <SelectItem value="summer">Summer</SelectItem>
-                        <SelectItem value="fall">Fall</SelectItem>
-                        <SelectItem value="all">All Seasons</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {bulkUploadImages.length > 0 && (
-              <div className="bg-primary/5 p-4 rounded-md">
-                <h3 className="text-sm font-medium mb-2">Review</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  You're about to add {bulkUploadImages.length} items to your wardrobe 
-                  {bulkCategory && ` in the "${clothingCategories.find(c => c.value === bulkCategory)?.label}" category`}
-                  {bulkSubcategory && `, ${bulkSubcategory} subcategory`}
-                  {bulkColor && `, with color "${bulkColor}"`}
-                  {bulkSeason !== "all" && `, for ${bulkSeason} season`}.
-                </p>
-                <p className="text-sm text-muted-foreground mb-2">
-                  You'll be able to edit each item individually after upload.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsBulkUploading(false);
-              setBulkUploadImages([]);
-              setBulkCategory("");
-              setBulkSubcategory("");
-              setBulkColor("");
-              setBulkSeason("all");
-            }}>
-              Cancel
-            </Button>
-            
-            <Button 
-              onClick={() => {
-                if (bulkUploadImages.length > 0 && bulkCategory) {
-                  // Create items array
-                  const items = bulkUploadImages.map((imageUrl, index) => ({
-                    name: `${bulkCategory} ${index + 1}`,
-                    category: bulkCategory,
-                    subcategory: bulkSubcategory || null,
-                    color: bulkColor || null,
-                    season: bulkSeason,
-                    imageUrl,
-                    tags: [],
-                    favorite: false
-                  }));
-                  
-                  bulkAddWardrobeItems.mutate(items, {
-                    onSuccess: () => {
-                      setIsBulkUploading(false);
-                      setBulkUploadImages([]);
-                      setBulkCategory("");
-                      setBulkSubcategory("");
-                      setBulkColor("");
-                      setBulkSeason("all");
-                    }
-                  });
-                }
-              }}
-              disabled={bulkUploadImages.length === 0 || !bulkCategory || bulkAddWardrobeItems.isPending}
-              className="min-w-24"
-            >
-              {bulkAddWardrobeItems.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                "Upload All Items"
               )}
             </Button>
           </DialogFooter>

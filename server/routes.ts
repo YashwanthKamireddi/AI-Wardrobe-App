@@ -62,62 +62,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create wardrobe item" });
     }
   });
-  
-  app.post("/api/wardrobe/bulk", async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
-
-    try {
-      const items = req.body.items;
-      
-      if (!Array.isArray(items) || items.length === 0) {
-        return res.status(400).json({ message: "Items array is required" });
-      }
-      
-      const parsedItems = [];
-      const errors = [];
-      
-      // Validate each item
-      for (let i = 0; i < items.length; i++) {
-        try {
-          const itemData = insertWardrobeItemSchema.parse({
-            ...items[i],
-            userId: req.user!.id
-          });
-          parsedItems.push(itemData);
-        } catch (error) {
-          if (error instanceof z.ZodError) {
-            errors.push({ index: i, errors: error.format() });
-          } else {
-            errors.push({ index: i, message: "Unknown validation error" });
-          }
-        }
-      }
-      
-      // If there are validation errors, return them
-      if (errors.length > 0) {
-        return res.status(400).json({ 
-          message: "Some items failed validation", 
-          errors,
-          validItemCount: parsedItems.length
-        });
-      }
-      
-      // Create all the valid items
-      const createdItems = [];
-      for (const item of parsedItems) {
-        const createdItem = await storage.createWardrobeItem(item);
-        createdItems.push(createdItem);
-      }
-      
-      res.status(201).json({ 
-        message: `Successfully added ${createdItems.length} items to your wardrobe`,
-        items: createdItems
-      });
-    } catch (error) {
-      console.error("Bulk upload error:", error);
-      res.status(500).json({ message: "Failed to create wardrobe items" });
-    }
-  });
 
   app.get("/api/wardrobe/:id", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
