@@ -44,6 +44,34 @@ export function useAddWardrobeItem() {
   });
 }
 
+export function useBulkAddWardrobeItems() {
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: (items: Omit<InsertWardrobeItem, "userId">[]) => {
+      return apiRequest({
+        path: "/api/wardrobe/bulk",
+        method: "POST",
+        body: { items }
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
+      toast({
+        title: "Items added",
+        description: `${data.items.length} items have been added to your wardrobe.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to add items",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
 export function useUpdateWardrobeItem() {
   const { toast } = useToast();
   
