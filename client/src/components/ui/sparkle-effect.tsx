@@ -95,24 +95,23 @@ export const SparkleEffect: React.FC<SparkleEffectProps> = ({
       {children}
       
       {sparkles.map(sparkle => (
-        <AnimatePresence key={sparkle.id}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: fadeSpeed }}
-            style={{
-              ...sparkle.style,
-              position: "absolute",
-              pointerEvents: "none",
-            }}
-          >
-            <Sparkle 
-              color={sparkle.color} 
-              size={sparkle.size} 
-            />
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={sparkle.id}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: fadeSpeed }}
+          style={{
+            ...sparkle.style,
+            position: "absolute",
+            pointerEvents: "none",
+          }}
+        >
+          <Sparkle 
+            color={sparkle.color} 
+            size={sparkle.size} 
+          />
+        </motion.div>
       ))}
     </div>
   );

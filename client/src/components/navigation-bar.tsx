@@ -14,8 +14,59 @@ import {
   LogOut,
   Layers
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+// Animation variants
+const navVariants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      staggerChildren: 0.05,
+      when: "beforeChildren"
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 400,
+      damping: 20
+    }
+  }
+};
+
+const iconVariants = {
+  initial: { scale: 1 },
+  hover: { 
+    scale: 1.1,
+    rotate: [0, -5, 0, 5, 0],
+    transition: {
+      duration: 0.5,
+      ease: "easeInOut"
+    }
+  }
+};
+
+const logoVariants = {
+  initial: { scale: 1 },
+  hover: { 
+    scale: 1.05,
+    transition: {
+      repeat: Infinity,
+      repeatType: "reverse" as const,
+      duration: 1.2
+    }
+  }
+};
 
 const NavigationBar: React.FC = () => {
   const { user, logoutMutation } = useAuth();
@@ -25,7 +76,7 @@ const NavigationBar: React.FC = () => {
   const navItems = [
     { path: "/", icon: <Home className="h-5 w-5" />, label: "Home" },
     { path: "/wardrobe", icon: <Shirt className="h-5 w-5" />, label: "Wardrobe" },
-    { path: "/outfits", icon: <Layers className="h-5 w-5" />, label: "Outfits" }, // Added Outfits section
+    { path: "/outfits", icon: <Layers className="h-5 w-5" />, label: "Outfits" },
     { path: "/inspirations", icon: <Sparkles className="h-5 w-5" />, label: "Inspirations" },
     { path: "/profile", icon: <User className="h-5 w-5" />, label: "Profile" },
   ];
@@ -43,8 +94,8 @@ const NavigationBar: React.FC = () => {
           return "from-amber-500 to-pink-500";
         case "/profile":
           return "from-indigo-500 to-pink-500";
-        case "/outfits": // Added case for Outfits
-          return "from-green-500 to-teal-500"; // Added gradient for Outfits
+        case "/outfits":
+          return "from-green-500 to-teal-500";
         default:
           return "from-primary to-secondary";
       }
@@ -52,23 +103,66 @@ const NavigationBar: React.FC = () => {
     return "from-muted to-muted";
   };
 
+  const themeIcon = theme === "dark" ? (
+    <motion.div
+      key="sun-icon"
+      initial={{ scale: 0.5, rotate: -30, opacity: 0 }}
+      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+      exit={{ scale: 0.5, rotate: 30, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Sun className="h-5 w-5" />
+    </motion.div>
+  ) : (
+    <motion.div
+      key="moon-icon"
+      initial={{ scale: 0.5, rotate: 30, opacity: 0 }}
+      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+      exit={{ scale: 0.5, rotate: -30, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Moon className="h-5 w-5" />
+    </motion.div>
+  );
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header 
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      initial="hidden"
+      animate="visible"
+      variants={navVariants}
+    >
       <div className="container flex h-16 items-center justify-between py-4">
-        <div className="flex items-center gap-2">
+        <motion.div 
+          className="flex items-center gap-2"
+          variants={itemVariants}
+          whileHover="hover"
+          initial="initial"
+        >
           <Link href="/">
-            <span className="font-bold text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center">
+            <motion.span 
+              className="font-bold text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center"
+              variants={logoVariants}
+            >
               <span className="hidden sm:inline">Cher's Closet</span>
               <span className="sm:hidden">CC</span>
-            </span>
+            </motion.span>
           </Link>
-        </div>
+        </motion.div>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <motion.nav 
+          className="hidden md:flex items-center gap-1"
+          variants={navVariants}
+        >
           {navItems.map((item) => {
             const isActive = location === item.path;
             return (
-              <div key={item.path} className="relative">
+              <motion.div 
+                key={item.path} 
+                className="relative"
+                variants={itemVariants}
+                whileHover={{ scale: 1.05 }}
+              >
                 <Button
                   variant="ghost"
                   size="sm"
@@ -79,56 +173,70 @@ const NavigationBar: React.FC = () => {
                   asChild
                 >
                   <Link href={item.path}>
-                    {item.icon}
+                    <motion.span 
+                      variants={iconVariants}
+                      whileHover="hover"
+                      initial="initial"
+                    >
+                      {item.icon}
+                    </motion.span>
                     <span>{item.label}</span>
                   </Link>
                 </Button>
-                {isActive && (
-                  <motion.div
-                    className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
-                    layoutId="nav-underline"
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 25,
-                      duration: 0.2
-                    }}
-                  />
-                )}
-              </div>
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.div
+                      className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
+                      layoutId="nav-underline"
+                      initial={{ opacity: 0, width: "0%" }}
+                      animate={{ opacity: 1, width: "100%" }}
+                      exit={{ opacity: 0, width: "0%" }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 25,
+                        duration: 0.2
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+              </motion.div>
             );
           })}
-        </nav>
+        </motion.nav>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
-
-          {user && (
+        <motion.div 
+          className="flex items-center gap-2"
+          variants={itemVariants}
+        >
+          <motion.div whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9 }}>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => logoutMutation.mutate()}
-              aria-label="Logout"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
             >
-              <LogOut className="h-5 w-5" />
+              <AnimatePresence mode="wait">
+                {themeIcon}
+              </AnimatePresence>
             </Button>
-          )}
+          </motion.div>
 
-{/* Removed hamburger menu for mobile view */}
-        </div>
+          {user && (
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => logoutMutation.mutate()}
+                aria-label="Logout"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </motion.div>
+          )}
+        </motion.div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

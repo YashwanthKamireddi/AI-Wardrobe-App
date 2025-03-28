@@ -139,6 +139,18 @@ export type InsertWeatherPreference = z.infer<typeof insertWeatherPreferenceSche
 export type MoodPreference = typeof moodPreferences.$inferSelect;
 export type InsertMoodPreference = z.infer<typeof insertMoodPreferenceSchema>;
 
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+
+export type Challenge = typeof challenges.$inferSelect;
+export type InsertChallenge = z.infer<typeof insertChallengeSchema>;
+
+export type UserChallenge = typeof userChallenges.$inferSelect;
+export type InsertUserChallenge = z.infer<typeof insertUserChallengeSchema>;
+
+export type UserStats = typeof userStats.$inferSelect;
+export type InsertUserStats = z.infer<typeof insertUserStatsSchema>;
+
 // Category and subcategory definitions
 export const clothingCategories = [
   { value: "tops", label: "Tops", subcategories: ["t-shirt", "blouse", "shirt", "sweater", "tank top", "crop top"] },
@@ -180,3 +192,102 @@ export const seasons = [
   { value: "fall", label: "Fall" },
   { value: "all", label: "All Seasons" }
 ];
+
+// Gamification schema
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  type: text("type").notNull(), // organization, styling, sustainability, etc.
+  icon: text("icon"),
+  pointsAwarded: integer("points_awarded").default(0),
+  unlockedAt: json("unlocked_at").default({}),
+  createdAt: json("created_at").default({}),
+});
+
+export const insertAchievementSchema = createInsertSchema(achievements).pick({
+  userId: true,
+  name: true,
+  description: true,
+  type: true,
+  icon: true,
+  pointsAwarded: true,
+});
+
+export const challenges = pgTable("challenges", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  type: text("type").notNull(), // daily, weekly, special
+  category: text("category").notNull(), // organization, styling, sustainability
+  icon: text("icon"),
+  pointsReward: integer("points_reward").default(10),
+  active: boolean("active").default(true),
+  difficulty: text("difficulty").default("medium"), // easy, medium, hard
+  requiredActions: json("required_actions").$type<{type: string, count: number, items?: string[]}[]>(),
+  createdAt: json("created_at").default({}),
+  expiresAt: json("expires_at").default({}),
+});
+
+export const insertChallengeSchema = createInsertSchema(challenges).pick({
+  name: true,
+  description: true,
+  type: true,
+  category: true,
+  icon: true,
+  pointsReward: true,
+  active: true,
+  difficulty: true,
+  requiredActions: true,
+  expiresAt: true,
+});
+
+export const userChallenges = pgTable("user_challenges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  challengeId: integer("challenge_id").notNull(),
+  progress: integer("progress").default(0),
+  maxProgress: integer("max_progress").notNull(),
+  completed: boolean("completed").default(false),
+  startedAt: json("started_at").default({}),
+  completedAt: json("completed_at").default({}),
+});
+
+export const insertUserChallengeSchema = createInsertSchema(userChallenges).pick({
+  userId: true,
+  challengeId: true,
+  progress: true,
+  maxProgress: true,
+  completed: true,
+});
+
+export const userStats = pgTable("user_stats", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  totalPoints: integer("total_points").default(0),
+  level: integer("level").default(1),
+  organizationScore: integer("organization_score").default(0),
+  sustainabilityScore: integer("sustainability_score").default(0),
+  styleScore: integer("style_score").default(0),
+  streakDays: integer("streak_days").default(0),
+  lastActive: json("last_active").default({}),
+  itemsOrganized: integer("items_organized").default(0),
+  outfitsCreated: integer("outfits_created").default(0),
+  challengesCompleted: integer("challenges_completed").default(0),
+  achievementsUnlocked: integer("achievements_unlocked").default(0),
+});
+
+export const insertUserStatsSchema = createInsertSchema(userStats).pick({
+  userId: true,
+  totalPoints: true,
+  level: true,
+  organizationScore: true,
+  sustainabilityScore: true,
+  styleScore: true,
+  streakDays: true,
+  itemsOrganized: true,
+  outfitsCreated: true,
+  challengesCompleted: true,
+  achievementsUnlocked: true,
+});

@@ -15,6 +15,7 @@ import {
   createUserStyleProfile,
   analyzeStyle
 } from "./services/ai-service";
+import gamificationRoutes from "./routes/gamification";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Return type is Server, make sure we return it at the end
@@ -896,6 +897,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch location suggestions" });
     });
   });
+
+  // Register gamification routes
+  app.use('/api/gamification', gamificationRoutes);
 
   const httpServer = createServer(app);
   return httpServer;
