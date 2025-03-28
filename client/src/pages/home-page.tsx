@@ -27,6 +27,35 @@ import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation, Link } from "wouter"; 
 import { motion } from "framer-motion";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { SparkleEffect } from "@/components/ui/sparkle-effect";
+import { AnimatedCard } from "@/components/ui/animated-card";
+
+// Animation variants for staggered children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      when: "beforeChildren",
+      staggerChildren: 0.1,
+      delayChildren: 0.3
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24
+    }
+  }
+};
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -91,18 +120,20 @@ export default function HomePage() {
   }, [weather, selectedMood, wardrobeItems]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <AnimatedBackground pattern="waves" color="primary" intensity="subtle" className="min-h-screen">
       <NavigationBar />
 
       <main className="container mx-auto px-4 py-8">
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent"
-        >
-          Welcome to Cher's Closet, {user?.name || user?.username}!
-        </motion.h1>
+        <SparkleEffect colors={["#a855f7", "#ec4899", "#8b5cf6", "#d946ef"]} minSize={10} maxSize={15} sparklesCount={12}>
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent"
+          >
+            Welcome to Cher's Closet, {user?.name || user?.username}!
+          </motion.h1>
+        </SparkleEffect>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
           <motion.div
@@ -414,6 +445,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </main>
-    </div>
+    </AnimatedBackground>
   );
 }

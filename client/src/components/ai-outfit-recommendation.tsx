@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,12 @@ interface AIOutfitRecommendationProps {
   selectedMood?: string;
 }
 
-export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMood: initialMood }: AIOutfitRecommendationProps) {
+// Memoize the component for better performance
+const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent({ 
+  weather, 
+  wardrobeItems, 
+  selectedMood: initialMood 
+}: AIOutfitRecommendationProps) {
   const [selectedMood, setSelectedMood] = useState(initialMood || "happy");
   const [selectedOccasion, setSelectedOccasion] = useState("none");
   const [showResults, setShowResults] = useState(false);
@@ -46,7 +51,7 @@ export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMo
   }, [initialMood]);
 
   // Helper to convert weather condition to a simple format for the AI
-  const getWeatherType = (): string => {
+  const getWeatherType = useCallback((): string => {
     if (!weather) return "mild";
     
     const { condition, temperature } = weather;
@@ -60,7 +65,7 @@ export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMo
     if (temperature < 5) return "cold";
     if (temperature > 25) return "hot";
     return "mild";
-  };
+  }, [weather]);
 
   // Get AI outfit recommendations mutation
   const { 
@@ -151,7 +156,7 @@ export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMo
     },
   });
 
-  const handleGenerateRecommendations = () => {
+  const handleGenerateRecommendations = useCallback(() => {
     if (!selectedMood) {
       toast({
         title: "Missing information",
@@ -162,11 +167,11 @@ export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMo
     }
     
     generateRecommendations();
-  };
+  }, [selectedMood, generateRecommendations]);
 
-  const handleSaveOutfit = (recommendation: AIOutfitRecommendation) => {
+  const handleSaveOutfit = useCallback((recommendation: AIOutfitRecommendation) => {
     saveOutfit(recommendation);
-  };
+  }, [saveOutfit]);
 
   if (wardrobeItems.length === 0) {
     return (
@@ -420,4 +425,7 @@ export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMo
       )}
     </div>
   );
-}
+});
+
+// Export default for easier imports
+export default AIOutfitRecommenderComponent;
