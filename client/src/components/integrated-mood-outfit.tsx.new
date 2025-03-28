@@ -11,10 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { AIOutfitRecommendation, AIOutfitRecommendationRequest } from "@/types/ai-types";
 import {
-  SparklesIcon,
+  SparklesIcon as Sparkles,
   SaveIcon as Save,
   Loader2Icon as Loader2,
   AlertCircleIcon as AlertCircle,
+  CloudSunIcon as CloudSun,
   SmilePlus, 
   BadgeCheck, 
   Coffee, 
@@ -59,7 +60,7 @@ export default function IntegratedMoodOutfit({ weather, wardrobeItems }: Integra
       case "happy": return <SmilePlus className="h-6 w-6" />;
       case "confident": return <BadgeCheck className="h-6 w-6" />;
       case "relaxed": return <Coffee className="h-6 w-6" />;
-      case "energetic": return <SparklesIcon className="h-6 w-6" />;
+      case "energetic": return <Sparkles className="h-6 w-6" />;
       case "romantic": return <Heart className="h-6 w-6" />;
       case "professional": return <Briefcase className="h-6 w-6" />;
       case "creative": return <Palette className="h-6 w-6" />;

@@ -324,6 +324,12 @@ export default function AIOutfitRecommender({ weather, wardrobeItems, selectedMo
       {showResults && recommendationsData && recommendationsData.recommendations && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Your AI-Generated Outfit Suggestions</h3>
+          <div className="flex items-center mb-2">
+            <Badge variant="outline" className="mr-2 bg-primary/10 font-medium">Best Match</Badge>
+            <div className="flex items-center gap-1 text-xs">
+              <span className="flex items-center"><ThumbsUp className="mr-1 h-3 w-3" /> Top recommendation selected</span>
+            </div>
+          </div>
           <p className="text-sm text-muted-foreground">
             Based on your {selectedMood} mood{selectedOccasion ? ` and ${selectedOccasion} occasion` : ''}.
             {weather ? ` Optimized for ${weather.temperature}°C, ${weather.condition}.` : ''}

@@ -15,7 +15,7 @@ import { WardrobeItem } from "@shared/schema";
 import { AIOutfitRecommendation } from "@/types/ai-types";
 import {
   CheckCircleIcon as CheckCircle,
-  SparklesIcon as Sparkles,
+  SparklesIcon,
   CalendarIcon as Calendar,
   SaveIcon as Save,
   Loader2Icon as Loader2,
@@ -268,12 +268,16 @@ export default function OccasionOutfitGenerator({ weather, wardrobeItems }: Occa
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="outline" className="bg-primary/10 font-medium">Best Match</Badge>
+                  <Badge variant="outline">
+                    {outfitData.recommendation.confidence}% match
+                  </Badge>
+                </div>
                 <CardTitle>{outfitData.recommendation.outfitName}</CardTitle>
                 <CardDescription>Perfect for: {outfitData.occasion}</CardDescription>
               </div>
-              <Badge variant="outline">
-                {outfitData.recommendation.confidence}% match
-              </Badge>
+              <CheckCircle className="h-5 w-5 text-primary" />
             </div>
           </CardHeader>
           <CardContent className="space-y-6">

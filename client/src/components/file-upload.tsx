@@ -60,13 +60,12 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
             alt="Uploaded preview" 
             className="w-full h-full object-cover"
           />
-          <button
-            type="button"
+          <div
             onClick={handleRemoveImage}
-            className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-black/80 transition-colors"
+            className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-black/80 transition-colors cursor-pointer"
           >
             <X className="h-4 w-4 text-white" />
-          </button>
+          </div>
         </div>
       ) : (
         <div className="border-2 border-dashed rounded-md aspect-square flex flex-col items-center justify-center text-muted-foreground p-4">
