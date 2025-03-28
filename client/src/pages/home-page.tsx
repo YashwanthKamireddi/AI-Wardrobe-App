@@ -28,7 +28,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation, Link } from "wouter"; 
 import { motion } from "framer-motion";
 import { AnimatedBackground } from "@/components/ui/animated-background";
-import { SparkleEffect } from "@/components/ui/sparkle-effect";
 import { AnimatedCard } from "@/components/ui/animated-card";
 
 // Animation variants for staggered children
@@ -124,8 +123,7 @@ export default function HomePage() {
       <NavigationBar />
 
       <main className="container mx-auto px-4 py-8">
-        <SparkleEffect colors={["#a855f7", "#ec4899", "#8b5cf6", "#d946ef"]} minSize={10} maxSize={15} sparklesCount={12}>
-          <motion.h1 
+        <motion.h1 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -133,7 +131,6 @@ export default function HomePage() {
           >
             Welcome to Cher's Closet, {user?.name || user?.username}!
           </motion.h1>
-        </SparkleEffect>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
           <motion.div
