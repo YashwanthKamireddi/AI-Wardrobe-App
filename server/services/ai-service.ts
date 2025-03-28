@@ -140,8 +140,19 @@ export async function analyzeStyle(items: WardrobeItem[]): Promise<string> {
     });
 
     return completion.choices[0].message.content || "No style analysis available";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error analyzing style:", error);
+    
+    // Check for rate limit or quota errors and throw a more specific error
+    if (error.status === 429 || 
+        (error.message && (
+          error.message.includes("rate limit") || 
+          error.message.includes("quota") || 
+          error.message.includes("capacity")
+        ))) {
+      throw new Error("API rate limit exceeded. Please try again later.");
+    }
+    
     throw new Error("Failed to analyze style");
   }
 }
