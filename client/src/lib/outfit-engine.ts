@@ -1,12 +1,33 @@
+/**
+ * Outfit Engine
+ * 
+ * A sophisticated algorithm for generating personalized outfit recommendations based on:
+ * - Weather conditions (sunny, rainy, etc.)
+ * - User mood (happy, professional, etc.)
+ * - Color harmony between items
+ * - Item appropriateness for specific conditions
+ * 
+ * The engine uses a weighted scoring system that considers multiple factors to generate
+ * outfit recommendations that are both functionally appropriate and aesthetically pleasing.
+ * 
+ * @module outfit-engine
+ */
+
 import { WardrobeItem } from "@shared/schema";
 
-// Types based on schema.ts values
+/**
+ * Valid mood types used for outfit recommendations
+ * These values must match the options in the schema
+ */
 type MoodType = "happy" | "confident" | "relaxed" | "energetic" | "romantic" | "professional" | "creative";
+
+/**
+ * Valid weather types used for outfit recommendations
+ * These values must match the options in the schema
+ */
 type WeatherType = "sunny" | "cloudy" | "rainy" | "snowy" | "windy";
 
-// Outfit Engine: Recommends outfits based on weather, mood, and available items
-
-// Weight factors for different criteria
+// Weight factors for different scoring criteria - adjust these to change the importance of each factor
 const WEATHER_MATCH_WEIGHT = 0.4;
 const MOOD_MATCH_WEIGHT = 0.4;
 const COLOR_HARMONY_WEIGHT = 0.2;
@@ -22,7 +43,13 @@ const colorFamilies = {
   neutral: ["black", "white", "gray", "beige", "tan", "brown", "cream", "ivory", "silver"],
 };
 
-// Find what color family a specific color belongs to
+/**
+ * Determines the color family for a given color string
+ * Used for color harmony calculations
+ * 
+ * @param {string} color - The color name to analyze
+ * @returns {string} The color family name
+ */
 function getColorFamily(color: string): string {
   const colorLower = color.toLowerCase();
   for (const [family, colors] of Object.entries(colorFamilies)) {
@@ -33,7 +60,14 @@ function getColorFamily(color: string): string {
   return "neutral"; // Default to neutral if no match
 }
 
-// Check if colors complement each other
+/**
+ * Analyzes the color harmony between two wardrobe items
+ * Uses color theory to determine how well colors complement each other
+ * 
+ * @param {WardrobeItem} item1 - First wardrobe item
+ * @param {WardrobeItem} item2 - Second wardrobe item
+ * @returns {number} Harmony score between 0-1, with 1 being perfect harmony
+ */
 function checkColorHarmony(item1: WardrobeItem, item2: WardrobeItem): number {
   if (!item1.color || !item2.color) return 0.5; // Neutral score if color info missing
 
@@ -63,7 +97,14 @@ function checkColorHarmony(item1: WardrobeItem, item2: WardrobeItem): number {
   return 0.6;
 }
 
-// Weather appropriateness scoring
+/**
+ * Evaluates how appropriate a clothing item is for specific weather conditions
+ * Considers both item attributes and seasonal appropriateness
+ * 
+ * @param {WardrobeItem} item - The wardrobe item to evaluate
+ * @param {WeatherType} weather - Current weather condition
+ * @returns {number} Appropriateness score between 0-1
+ */
 function getWeatherScore(item: WardrobeItem, weather: WeatherType): number {
   // Default weather appropriateness
   const weatherAppropriateMap: Record<WeatherType, string[]> = {
@@ -105,7 +146,14 @@ function getWeatherScore(item: WardrobeItem, weather: WeatherType): number {
   return 0.5; // Default score
 }
 
-// Mood appropriateness scoring
+/**
+ * Evaluates how appropriate a clothing item is for a specific mood or occasion
+ * Uses item tags, category, and color to determine mood compatibility
+ * 
+ * @param {WardrobeItem} item - The wardrobe item to evaluate
+ * @param {MoodType} mood - User's current mood preference
+ * @returns {number} Mood appropriateness score between 0-1
+ */
 function getMoodScore(item: WardrobeItem, mood: MoodType): number {
   // Mood-appropriate outfits mapping
   const moodAppropriateMap: Record<MoodType, Record<string, number>> = {
@@ -177,7 +225,15 @@ function getMoodScore(item: WardrobeItem, mood: MoodType): number {
   return highestScore;
 }
 
-// Calculate overall score for an item based on weather and mood
+/**
+ * Calculates the overall score for a single wardrobe item
+ * Combines weather appropriateness and mood compatibility scores
+ * 
+ * @param {WardrobeItem} item - The wardrobe item to score
+ * @param {WeatherType} weather - Current weather condition
+ * @param {MoodType} mood - User's current mood preference
+ * @returns {number} Combined score between 0-1
+ */
 function calculateItemScore(item: WardrobeItem, weather: WeatherType, mood: MoodType): number {
   const weatherScore = getWeatherScore(item, weather);
   const moodScore = getMoodScore(item, mood);
@@ -185,7 +241,15 @@ function calculateItemScore(item: WardrobeItem, weather: WeatherType, mood: Mood
   return (weatherScore * WEATHER_MATCH_WEIGHT) + (moodScore * MOOD_MATCH_WEIGHT);
 }
 
-// Calculate overall outfit score
+/**
+ * Calculates the overall score for an entire outfit
+ * Combines individual item scores with color harmony analysis
+ * 
+ * @param {WardrobeItem[]} outfitItems - Array of items in the outfit
+ * @param {WeatherType} weather - Current weather condition
+ * @param {MoodType} mood - User's current mood preference
+ * @returns {number} Overall outfit score between 0-1
+ */
 function calculateOutfitScore(
   outfitItems: WardrobeItem[],
   weather: WeatherType,
@@ -212,9 +276,18 @@ function calculateOutfitScore(
   return (avgIndividualScore * (1 - COLOR_HARMONY_WEIGHT)) + (avgColorHarmony * COLOR_HARMONY_WEIGHT);
 }
 
+/**
+ * Represents a complete outfit recommendation with items and score
+ * Categorizes items by type for easy UI rendering
+ */
 export interface OutfitRecommendation {
+  /** All wardrobe items that make up this outfit */
   outfitItems: WardrobeItem[];
+  
+  /** Overall score from 0-1, higher is better */
   score: number;
+  
+  /** Items organized by category for display purposes */
   categories: {
     tops?: WardrobeItem;
     bottoms?: WardrobeItem;
@@ -226,7 +299,16 @@ export interface OutfitRecommendation {
   };
 }
 
-// Generate outfit recommendations
+/**
+ * Main outfit generation function
+ * Creates outfit recommendations based on user's wardrobe, weather, and mood
+ * 
+ * @param {WardrobeItem[]} wardrobeItems - All available items in the user's wardrobe
+ * @param {WeatherType} weather - Current weather condition
+ * @param {MoodType} mood - User's current mood preference
+ * @param {number} count - Number of recommendations to generate (default: 3)
+ * @returns {OutfitRecommendation[]} Array of recommended outfits with scores
+ */
 export function generateOutfitRecommendations(
   wardrobeItems: WardrobeItem[],
   weather: WeatherType,

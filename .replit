@@ -1,5 +1,5 @@
 run = "node start.js"
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "postgresql-16"]
 
 [nix]
 channel = "stable-24_05"

@@ -32,8 +32,16 @@ interface WeatherDisplayProps {
   recommendations?: WeatherRecommendation;
 }
 
+/**
+ * WeatherDisplay Component
+ * 
+ * Displays current weather information and provides clothing recommendations based on conditions.
+ * Features animated transitions and responsive design for both mobile and desktop views.
+ * 
+ * @param {WeatherData} weather - Current weather information including location, temperature, condition
+ * @param {WeatherRecommendation} recommendations - Optional clothing recommendations for current weather
+ */
 export default function WeatherDisplay({ weather, recommendations }: WeatherDisplayProps) {
-  console.log("Rendering WeatherDisplay with:", weather);
 
   const getWeatherIcon = (icon: string) => {
     switch (icon) {
@@ -48,7 +56,7 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       case 'windy':
         return <WindIcon className="h-12 w-12 text-teal-500" />;
       default:
-        return <CloudSunIcon className="h-12 w-12 text-yellow-400" />;
+        return <SunIcon className="h-12 w-12 text-yellow-400" />;
     }
   };
 
