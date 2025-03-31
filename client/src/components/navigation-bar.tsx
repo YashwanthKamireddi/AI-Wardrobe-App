@@ -224,19 +224,7 @@ const NavigationBar: React.FC = () => {
                           duration: 0.2
                         }}
                       />
-                      {/* Fashion flourish - small dots on each side of active item */}
-                      <motion.div 
-                        className="absolute bottom-[3px] left-0 w-1 h-1 bg-white rounded-full opacity-70"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 0.7, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0 }}
-                      />
-                      <motion.div 
-                        className="absolute bottom-[3px] right-0 w-1 h-1 bg-white rounded-full opacity-70"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 0.7, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0 }}
-                      />
+                      {/* Removed decorative dots as requested */}
                     </>
                   )}
                 </AnimatePresence>

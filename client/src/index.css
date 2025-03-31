@@ -2,19 +2,36 @@
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import './styles/mobile.css';
+@import './styles/custom.css';
 
 /* Global styles */
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(var(--background-rgb), 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--primary-rgb), 0.3);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--primary-rgb), 0.5);
+}
+
 @media (max-width: 768px) {
-  /* Hide all scrollbars on mobile */
-  * {
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
-  }
-  
-  *::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
+  /* Better scrollbar for mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
 }
 
@@ -22,6 +39,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Override for tabs - remove white dots */
+[role="tab"]::before,
+[role="tab"]::after {
+  display: none !important;
+  content: none !important;
+}
 
 @layer base {
   * {
@@ -32,9 +56,6 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
  
 @layer base {
   :root {

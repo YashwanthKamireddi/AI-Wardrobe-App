@@ -92,3 +92,79 @@
     0 0 0 4px rgba(var(--background-rgb), 1),
     0 0 0 5px rgba(var(--primary-rgb), 0.05);
 }
+
+/* Custom tab styling to remove dots */
+[role="tab"]::before,
+[role="tab"]::after,
+[role="tab"] span::before,
+[role="tab"] span::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Custom tab list styling */
+[role="tablist"] {
+  background-color: rgba(var(--background-rgb), 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--primary-rgb), 0.1);
+  padding: 2px;
+}
+
+[role="tab"] {
+  border: none !important;
+  position: relative;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+[role="tab"][data-state="active"] {
+  background-color: rgba(var(--primary-rgb), 0.15);
+  color: hsl(var(--primary));
+}
+
+/* Mobile-specific enhancements */
+@media (max-width: 768px) {
+  /* Auth page specific */
+  .auth-form-container {
+    @apply w-full max-w-full px-0;
+  }
+  
+  /* Fix for auth page layout on small screens */
+  .auth-card {
+    @apply border-0 shadow-none bg-transparent;
+  }
+  
+  /* Custom tab styling for mobile */
+  [role="tablist"] {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+  }
+  
+  [role="tab"] {
+    flex: 1;
+    text-align: center;
+    min-height: 40px;
+    font-size: 0.9rem;
+  }
+  
+  /* Ensure forms are more compact on mobile */
+  .form-row {
+    @apply mb-3;
+  }
+  
+  /* Improved touch targets */
+  .form-control, button {
+    @apply min-h-[50px];
+  }
+  
+  /* Better spacing for mobile */
+  .mobile-pb-safe {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+  
+  /* Content adjustments for screens with bottom navigation */
+  .has-bottom-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+}
