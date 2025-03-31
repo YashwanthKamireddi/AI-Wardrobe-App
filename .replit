@@ -9,12 +9,6 @@ channel = "stable-23_05"
 run = ["node", "start.js"]
 deploymentTarget = "cloudrun"
 
-[workflows]
-  [workflows.app-server]
-  name = "app-server"
-  command = "node start.js"
-  wait_for_port = 3000
-
 [[ports]]
 localPort = 3000
 externalPort = 3000
