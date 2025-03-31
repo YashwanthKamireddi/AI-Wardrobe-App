@@ -186,38 +186,43 @@ export default function WardrobePage() {
 
       {/* Add Item Dialog */}
       <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Add New Wardrobe Item</DialogTitle>
-            <DialogDescription>
-              Upload and categorize a new item for your wardrobe.
+        <DialogContent className="wardrobe-popup-content premium-dialog md:max-w-[800px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="border-b border-accent/20 pb-4 mb-5">
+            <DialogTitle className="font-fashion-heading text-2xl">Add New Wardrobe Item</DialogTitle>
+            <DialogDescription className="font-fashion-body text-muted-foreground">
+              Upload and categorize a new item for your luxury collection.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+            <div className="space-y-5">
               <div>
-                <Label htmlFor="name">Item Name</Label>
+                <Label htmlFor="name" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-1 block">
+                  Item Name
+                </Label>
                 <Input 
                   id="name" 
-                  placeholder="e.g., Blue T-Shirt" 
+                  placeholder="e.g., Cashmere Cardigan" 
                   value={newItem.name}
                   onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                  className="input-enhanced font-fashion-body"
                 />
               </div>
 
               <div>
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-1 block">
+                  Category
+                </Label>
                 <Select 
                   value={newItem.category} 
                   onValueChange={(value) => setNewItem({...newItem, category: value, subcategory: ""})}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="input-enhanced">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {clothingCategories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
+                      <SelectItem key={category.value} value={category.value} className="font-fashion-body">
                         {category.label}
                       </SelectItem>
                     ))}
@@ -227,19 +232,21 @@ export default function WardrobePage() {
 
               {newItem.category && (
                 <div>
-                  <Label htmlFor="subcategory">Subcategory</Label>
+                  <Label htmlFor="subcategory" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-1 block">
+                    Subcategory
+                  </Label>
                   <Select 
                     value={newItem.subcategory} 
                     onValueChange={(value) => setNewItem({...newItem, subcategory: value})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="input-enhanced">
                       <SelectValue placeholder="Select subcategory" />
                     </SelectTrigger>
                     <SelectContent>
                       {clothingCategories
                         .find(c => c.value === newItem.category)
                         ?.subcategories.map((sub) => (
-                          <SelectItem key={sub} value={sub}>
+                          <SelectItem key={sub} value={sub} className="font-fashion-body">
                             {sub}
                           </SelectItem>
                         ))}
@@ -249,49 +256,63 @@ export default function WardrobePage() {
               )}
 
               <div>
-                <Label htmlFor="color">Color</Label>
+                <Label htmlFor="color" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-1 block">
+                  Color
+                </Label>
                 <Input 
                   id="color" 
-                  placeholder="e.g., Blue" 
+                  placeholder="e.g., Burgundy" 
                   value={newItem.color}
                   onChange={(e) => setNewItem({...newItem, color: e.target.value})}
+                  className="input-enhanced font-fashion-body"
                 />
               </div>
 
               <div>
-                <Label htmlFor="season">Season</Label>
+                <Label htmlFor="season" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-1 block">
+                  Season
+                </Label>
                 <Select 
                   value={newItem.season} 
                   onValueChange={(value) => setNewItem({...newItem, season: value})}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="input-enhanced">
                     <SelectValue placeholder="Select season" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="winter">Winter</SelectItem>
-                    <SelectItem value="spring">Spring</SelectItem>
-                    <SelectItem value="summer">Summer</SelectItem>
-                    <SelectItem value="fall">Fall</SelectItem>
-                    <SelectItem value="all">All Seasons</SelectItem>
+                    <SelectItem value="winter" className="font-fashion-body">Winter</SelectItem>
+                    <SelectItem value="spring" className="font-fashion-body">Spring</SelectItem>
+                    <SelectItem value="summer" className="font-fashion-body">Summer</SelectItem>
+                    <SelectItem value="fall" className="font-fashion-body">Fall</SelectItem>
+                    <SelectItem value="all" className="font-fashion-body">All Seasons</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-4">
-              <Label>Item Image</Label>
-              <FileUpload 
-                onUpload={handleImageUpload} 
-                currentImageUrl={newItem.imageUrl}
-              />
+              <Label className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-1 block">
+                Item Image
+              </Label>
+              <div className="border border-accent/20 p-4 rounded-md bg-background/50">
+                <FileUpload 
+                  onUpload={handleImageUpload} 
+                  currentImageUrl={newItem.imageUrl}
+                />
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddingItem(false)}>Cancel</Button>
+          <div className="luxury-divider mt-6"></div>
+
+          <DialogFooter className="mt-6 flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsAddingItem(false)} className="fashion-button">
+              Cancel
+            </Button>
             <Button 
               onClick={handleSubmit}
               disabled={!newItem.name || !newItem.category || !newItem.imageUrl || addWardrobeItem.isPending}
+              className="btn-modern"
             >
               {addWardrobeItem.isPending ? (
                 <>
@@ -299,7 +320,7 @@ export default function WardrobePage() {
                   Saving...
                 </>
               ) : (
-                "Add to Wardrobe"
+                "Add to Collection"
               )}
             </Button>
           </DialogFooter>

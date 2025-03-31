@@ -46,17 +46,59 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
   const getWeatherIcon = (icon: string) => {
     switch (icon) {
       case 'sunny':
-        return <SunIcon className="h-12 w-12 text-yellow-500" />;
+        return (
+          <div className="relative">
+            <SunIcon className="h-10 w-10 text-accent" />
+            <div className="absolute inset-0 blur-sm opacity-40">
+              <SunIcon className="h-10 w-10 text-accent" />
+            </div>
+          </div>
+        );
       case 'cloudy':
-        return <CloudIcon className="h-12 w-12 text-gray-400" />;
+        return (
+          <div className="relative">
+            <CloudIcon className="h-10 w-10 text-primary/80" />
+            <div className="absolute inset-0 blur-sm opacity-30">
+              <CloudIcon className="h-10 w-10 text-primary/80" />
+            </div>
+          </div>
+        );
       case 'rainy':
-        return <CloudRainIcon className="h-12 w-12 text-blue-400" />;
+        return (
+          <div className="relative">
+            <CloudRainIcon className="h-10 w-10 text-primary/90" />
+            <div className="absolute inset-0 blur-sm opacity-30">
+              <CloudRainIcon className="h-10 w-10 text-primary/90" />
+            </div>
+          </div>
+        );
       case 'snowy':
-        return <CloudSnowIcon className="h-12 w-12 text-blue-200" />;
+        return (
+          <div className="relative">
+            <CloudSnowIcon className="h-10 w-10 text-accent/60" />
+            <div className="absolute inset-0 blur-sm opacity-30">
+              <CloudSnowIcon className="h-10 w-10 text-accent/60" />
+            </div>
+          </div>
+        );
       case 'windy':
-        return <WindIcon className="h-12 w-12 text-teal-500" />;
+        return (
+          <div className="relative">
+            <WindIcon className="h-10 w-10 text-primary/70" />
+            <div className="absolute inset-0 blur-sm opacity-30">
+              <WindIcon className="h-10 w-10 text-primary/70" />
+            </div>
+          </div>
+        );
       default:
-        return <SunIcon className="h-12 w-12 text-yellow-400" />;
+        return (
+          <div className="relative">
+            <SunIcon className="h-10 w-10 text-accent" />
+            <div className="absolute inset-0 blur-sm opacity-40">
+              <SunIcon className="h-10 w-10 text-accent" />
+            </div>
+          </div>
+        );
     }
   };
 
@@ -90,79 +132,121 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
 
   return (
     <motion.div 
-      className="space-y-4 p-4 rounded-xl bg-gradient-to-br from-white to-gray-50/40 dark:from-gray-900 dark:to-gray-800/40 backdrop-blur-sm"
+      className="weather-display-luxury gold-corner animate-fade-scale"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-        <div className="flex items-center">
-          <motion.div variants={iconVariants}>
-            {getWeatherIcon(weather.icon)}
-          </motion.div>
-          <div className="ml-3">
-            <motion.h3 variants={itemVariants} className="text-xl font-bold">{weather.location}</motion.h3>
-            <motion.p variants={itemVariants} className="text-2xl font-semibold">{weather.temperature}°C</motion.p>
-            <motion.p variants={itemVariants} className="text-sm text-muted-foreground">{weather.condition}</motion.p>
+      {/* Weather header with location and main info */}
+      <div className="p-5 bg-gradient-to-r from-primary/5 to-accent/5 border-b border-primary/10">
+        <motion.div 
+          className="flex items-center justify-between"
+          variants={itemVariants}
+        >
+          <h3 className="text-xl font-fashion-heading tracking-tight flex items-center">
+            <span className="mr-2">{weather.location}</span>
+          </h3>
+          <div className="designer-tag animate-shimmer-gold">
+            {weather.condition}
           </div>
-        </div>
-        <motion.div variants={containerVariants} className="mt-4 sm:mt-0 grid grid-cols-2 gap-3">
-          <motion.div variants={itemVariants} className="flex items-center">
-            <ThermometerIcon className="h-4 w-4 mr-1 text-orange-500" />
-            <span className="text-sm">Humidity: {weather.humidity}%</span>
-          </motion.div>
-          <motion.div variants={itemVariants} className="flex items-center">
-            <WindIcon className="h-4 w-4 mr-1 text-blue-500" />
-            <span className="text-sm">Wind: {weather.windSpeed} km/h</span>
-          </motion.div>
         </motion.div>
       </div>
-
-      {recommendations && (
-        <motion.div 
-          variants={containerVariants}
-          className="mt-4 p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10 shadow-sm"
-        >
-          <motion.div 
-            className="flex items-center mb-3"
-            variants={itemVariants}
-          >
-            <span className="p-1.5 rounded-full bg-primary/20 mr-2">
-              <ThermometerIcon className="h-4 w-4 text-primary" />
-            </span>
-            <h4 className="text-sm font-medium">Weather-Based Outfit Recommendations</h4>
-          </motion.div>
-          
-          <motion.p 
-            variants={itemVariants} 
-            className="text-sm text-muted-foreground mb-4 italic border-l-2 border-primary/20 pl-3"
-          >
-            {recommendations.recommendation}
-          </motion.p>
-          
-          <motion.div 
-            className="flex flex-wrap gap-2"
-            variants={containerVariants}
-          >
-            {recommendations.clothingTypes.map((type, index) => (
-              <motion.div 
-                key={index}
-                variants={itemVariants}
-                whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 500, damping: 10 }}
+      
+      {/* Weather content area */}
+      <div className="p-5 space-y-5">
+        {/* Main weather display */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <motion.div 
+              variants={iconVariants}
+              className="weather-icon-luxury"
+            >
+              {getWeatherIcon(weather.icon)}
+            </motion.div>
+            <div className="ml-4">
+              <motion.p 
+                variants={itemVariants} 
+                className="weather-temp-luxury"
               >
-                <Badge 
-                  variant="secondary" 
-                  className="bg-primary/15 hover:bg-primary/25 text-primary border border-primary/20 px-3 py-1"
-                >
-                  {type}
-                </Badge>
-              </motion.div>
-            ))}
+                {weather.temperature}°<span className="text-xl">C</span>
+              </motion.p>
+              <motion.p 
+                variants={itemVariants} 
+                className="weather-condition-luxury"
+              >
+                {weather.condition}
+              </motion.p>
+            </div>
+          </div>
+          
+          <motion.div 
+            variants={containerVariants} 
+            className="flex flex-col space-y-2"
+          >
+            <motion.div 
+              variants={itemVariants} 
+              className="flex items-center border-b border-accent/10 pb-1 pl-2"
+            >
+              <ThermometerIcon className="h-4 w-4 mr-2 text-primary" />
+              <span className="text-sm font-fashion-body">Humidity: {weather.humidity}%</span>
+            </motion.div>
+            <motion.div 
+              variants={itemVariants} 
+              className="flex items-center border-b border-accent/10 pb-1 pl-2"
+            >
+              <WindIcon className="h-4 w-4 mr-2 text-primary" />
+              <span className="text-sm font-fashion-body">Wind: {weather.windSpeed} km/h</span>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        </div>
+        
+        {/* Recommendations section */}
+        {recommendations && (
+          <motion.div 
+            variants={containerVariants}
+            className="mt-6 haute-couture-section rounded-sm"
+          >
+            <motion.div 
+              className="flex items-center mb-4"
+              variants={itemVariants}
+            >
+              <span className="p-1.5 rounded-sm bg-accent/10 mr-3 border border-accent/20">
+                <ThermometerIcon className="h-4 w-4 text-accent" />
+              </span>
+              <h4 className="text-sm font-fashion-heading uppercase tracking-wider gold-accent">Style Guide</h4>
+            </motion.div>
+            
+            <motion.p 
+              variants={itemVariants} 
+              className="text-sm font-fashion-body text-muted-foreground mb-5 italic border-l-2 border-accent/30 pl-3"
+            >
+              {recommendations.recommendation}
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-wrap gap-2"
+              variants={containerVariants}
+            >
+              {recommendations.clothingTypes.map((type, index) => (
+                <motion.div 
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.05, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <Badge 
+                    variant="outline" 
+                    className="border-accent/30 bg-background/60 hover:bg-accent/10 text-foreground px-3 py-1 uppercase tracking-wider text-[10px] font-fashion-body"
+                  >
+                    {type}
+                  </Badge>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 }

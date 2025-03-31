@@ -58,11 +58,11 @@ const iconVariants = {
 
 // Defining navItems outside of component to prevent recreation on each render
 const navItems = [
-  { href: "/", label: "Home", icon: Home, gradient: "from-blue-500/10 to-purple-500/10" },
-  { href: "/wardrobe", label: "Wardrobe", icon: Shirt, gradient: "from-pink-500/10 to-orange-500/10" },
-  { href: "/outfits", label: "Outfits", icon: Layers, gradient: "from-green-500/10 to-teal-500/10" },
-  { href: "/inspirations", label: "Looks", icon: Sparkles, gradient: "from-amber-500/10 to-pink-500/10" },
-  { href: "/profile", label: "Profile", icon: User, gradient: "from-indigo-500/10 to-pink-500/10" },
+  { href: "/", label: "Atelier", icon: Home, gradient: "from-primary/10 to-accent/10" },
+  { href: "/wardrobe", label: "Collection", icon: Shirt, gradient: "from-accent/10 to-primary/10" },
+  { href: "/outfits", label: "Ensembles", icon: Layers, gradient: "from-primary/10 to-accent/10" },
+  { href: "/inspirations", label: "Runway", icon: Sparkles, gradient: "from-accent/10 to-primary/10" },
+  { href: "/profile", label: "Boutique", icon: User, gradient: "from-primary/10 to-accent/10" },
 ];
 
 // Get gradient for a path - moved outside component for better performance
@@ -83,13 +83,16 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-sm border-t border-primary/10 flex items-center justify-around z-50 px-1 shadow-lg pb-safe"
+      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-t border-accent/30 flex items-center justify-around z-50 px-1 shadow-lg pb-safe"
       initial="hidden"
       animate="visible"
       variants={navVariants}
     >
-      {/* Fashion-themed top decoration */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/80 via-pink-500/80 to-primary/80 transform -translate-y-0.5"></div>
+      {/* Luxury fashion-themed top decoration */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent via-primary to-accent transform -translate-y-0.5"></div>
+      {/* Side decorative elements */}
+      <div className="absolute top-0 left-0 w-4 h-4 border-l border-t border-accent/40 transform -translate-x-0.5 -translate-y-0.5"></div>
+      <div className="absolute top-0 right-0 w-4 h-4 border-r border-t border-accent/40 transform translate-x-0.5 -translate-y-0.5"></div>
       {navItems.map((item) => {
         const isActive = location === item.href;
         const Icon = item.icon;
@@ -138,7 +141,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
               {isActive && (
                 <>
                   <motion.div
-                    className="absolute bottom-0 left-[25%] right-[25%] h-0.5 bg-gradient-to-r from-primary via-pink-500 to-primary rounded-t"
+                    className="absolute bottom-0 left-[25%] right-[25%] h-0.5 bg-gradient-to-r from-accent via-primary to-accent rounded-t"
                     layoutId="navIndicator"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -146,12 +149,27 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
                     transition={{ duration: 0.2 }}
                   />
                   <motion.div
-                    className="absolute -top-1 left-[40%] right-[40%] h-0.5 bg-primary/30 rounded-b"
+                    className="absolute -top-1 left-[30%] right-[30%] h-[2px] bg-accent/40 rounded-b"
                     layoutId="navIndicatorTop"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
+                  />
+                  {/* Luxury corner accents for active item */}
+                  <motion.div 
+                    className="absolute bottom-3 left-1 w-1 h-1 border-l border-b border-accent/40"
+                    layoutId="cornerBottomLeft"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  />
+                  <motion.div 
+                    className="absolute bottom-3 right-1 w-1 h-1 border-r border-b border-accent/40"
+                    layoutId="cornerBottomRight"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                   />
                 </>
               )}
