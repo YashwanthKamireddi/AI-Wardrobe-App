@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useWeather, getWeatherBasedRecommendations } from "@/hooks/use-weather";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import NavigationBar from "@/components/navigation-bar";
+import WeatherDisplay from "@/components/weather-display";
 import MoodSelector from "@/components/mood-selector";
 import OutfitRecommendation from "@/components/outfit-recommendation";
 import AIOutfitRecommender from "@/components/ai-outfit-recommendation";
+import IntegratedMoodOutfit from "@/components/integrated-mood-outfit";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { 
+  MapPin, 
+  RefreshCcw, 
+  AlertCircle, 
+  Sun, 
+  Cloud, 
   Layers, 
   Sparkles,
-  MapPin,
-  RefreshCcw,
-  AlertCircle,
   CloudSun
 } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
@@ -53,22 +58,48 @@ const itemVariants = {
 
 export default function HomePage() {
   const { user } = useAuth();
+  const [weatherLocation, setWeatherLocation] = useState(() => 
+    localStorage.getItem("weatherLocation") || "New York City"
+  );
+  const [locationInput, setLocationInput] = useState<string>(weatherLocation);
+  const { data: weather, isLoading: weatherLoading, refetch, error: weatherError } = useWeather(weatherLocation);
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
   const [selectedMood, setSelectedMood] = useState(moodTypes[0].value);
   const [recommendedOutfit, setRecommendedOutfit] = useState<WardrobeItem[]>([]);
   const [activeTab, setActiveTab] = useState("ai");
   const [_, setUrlLocation] = useLocation(); 
 
+  const weatherRecommendations = getWeatherBasedRecommendations(weather);
+
+  const handleLocationUpdate = (newLocation?: string) => {
+    const locationToUse = newLocation || locationInput;
+    localStorage.setItem("weatherLocation", locationToUse);
+    setWeatherLocation(locationToUse);
+
+    if (newLocation) {
+      setLocationInput("");
+      setTimeout(() => setLocationInput(newLocation), 10);
+    }
+
+    setTimeout(() => refetch(), 100);
+  };
+
   const generateOutfitRecommendation = (): WardrobeItem[] => {
-    if (!wardrobeItems || wardrobeItems.length === 0) {
+    if (!wardrobeItems || wardrobeItems.length === 0 || !weatherRecommendations) {
       return [];
     }
+
+    const weatherAppropriateItems = wardrobeItems.filter(item =>
+      weatherRecommendations.clothingTypes.includes(item.category)
+    );
+
+    const itemPool = weatherAppropriateItems.length > 3 ? weatherAppropriateItems : wardrobeItems;
 
     const recommendedItems: WardrobeItem[] = [];
     const categories = ["tops", "bottoms", "outerwear", "shoes", "accessories"];
 
     for (const category of categories) {
-      const categoryItems = wardrobeItems.filter(item => item.category === category);
+      const categoryItems = itemPool.filter(item => item.category === category);
 
       if (categoryItems.length > 0) {
         const randomIndex = Math.floor(Math.random() * categoryItems.length);
@@ -80,11 +111,12 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    if (wardrobeItems && wardrobeItems.length > 0) {
+    if (weather) {
+      console.log("Weather updated:", weather);
       const newOutfit = generateOutfitRecommendation();
       setRecommendedOutfit(newOutfit);
     }
-  }, [selectedMood, wardrobeItems]);
+  }, [weather, selectedMood, wardrobeItems]);
 
   return (
     <AnimatedBackground pattern="waves" color="primary" intensity="subtle" className="min-h-screen">
@@ -100,10 +132,107 @@ export default function HomePage() {
             Welcome to Cher's Closet, {user?.name || user?.username}!
           </motion.h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Card className="overflow-hidden border-2 border-primary/20 shadow-lg transition-all duration-300 hover:shadow-primary/20 h-full">
+              <CardHeader className="bg-gradient-to-r from-primary/10 to-purple-500/10">
+                <div className="flex items-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  >
+                    <CloudSun className="mr-2 h-6 w-6 text-primary" />
+                  </motion.div>
+                  <CardTitle>Today's Weather</CardTitle>
+                </div>
+                <CardDescription>
+                  Dress appropriately for the conditions
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="flex flex-col space-y-3 mb-5">
+                  <div className="relative flex-1">
+                    <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-primary" />
+                    <Input
+                      type="text"
+                      placeholder="Enter city name (e.g., New York, London, Tokyo)"
+                      className="pl-8 border-primary/30 focus:border-primary/60 rounded-md"
+                      value={locationInput}
+                      onChange={(e) => setLocationInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleLocationUpdate()}
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        size="sm"
+                        onClick={() => handleLocationUpdate()}
+                        className="bg-gradient-to-r from-primary to-purple-500 hover:opacity-90 text-primary-foreground"
+                      >
+                        <RefreshCcw className="h-4 w-4 mr-1" />
+                        Update Weather
+                      </Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-primary/30 hover:bg-primary/10 text-primary"
+                        onClick={() => navigator.geolocation && navigator.geolocation.getCurrentPosition(
+                          position => {
+                            const { latitude, longitude } = position.coords;
+                            const cityName = "Current Location"; 
+                            setLocationInput(cityName);
+                            handleLocationUpdate(cityName);
+                          },
+                          error => {
+                            console.error("Error getting location:", error);
+                          }
+                        )}
+                      >
+                        <MapPin className="h-4 w-4 mr-1" />
+                        Use My Location
+                      </Button>
+                    </motion.div>
+                  </div>
+                </div>
+
+                {weatherLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-12 w-full rounded-lg" />
+                    <Skeleton className="h-12 w-3/4 rounded-lg" />
+                  </div>
+                ) : weatherError ? (
+                  <Alert variant="destructive" className="border-red-200 bg-red-50 rounded-lg">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="ml-2">
+                      {weatherError.message || "Could not find weather for this location. Try a major city name."}
+                    </AlertDescription>
+                  </Alert>
+                ) : weather ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <WeatherDisplay weather={weather} recommendations={weatherRecommendations} />
+                  </motion.div>
+                ) : (
+                  <div className="p-4 bg-muted rounded-lg text-center">
+                    <p className="text-sm text-muted-foreground">Unable to load weather data</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Card className="border-2 border-primary/20 shadow-lg transition-all duration-300 hover:shadow-primary/20 h-full">
@@ -138,35 +267,28 @@ export default function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                {wardrobeLoading ? (
+                {wardrobeLoading || weatherLoading ? (
                   <div className="space-y-2">
                     <Skeleton className="h-[400px] w-full rounded-lg" />
                   </div>
-                ) : wardrobeItems && wardrobeItems.length > 0 ? (
+                ) : weather && wardrobeItems && wardrobeItems.length > 0 ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <MoodSelector 
-                      selectedMood={selectedMood}
-                      onSelect={setSelectedMood}
-                      className="mb-8"
+                    <IntegratedMoodOutfit 
+                      weather={weather}
+                      wardrobeItems={wardrobeItems}
                     />
-                    
-                    <div className="mt-8">
-                      <h3 className="text-lg font-medium mb-4 text-center">Recommended Outfit</h3>
-                      {recommendedOutfit.length > 0 ? (
-                        <OutfitRecommendation items={recommendedOutfit} />
-                      ) : (
-                        <div className="text-center p-6 bg-muted rounded-lg">
-                          <p className="text-muted-foreground">
-                            Add more items to your wardrobe for better recommendations
-                          </p>
-                        </div>
-                      )}
-                    </div>
                   </motion.div>
+                ) : weatherError ? (
+                  <div className="text-center py-8 bg-muted rounded-lg">
+                    <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                    <p className="text-lg text-muted-foreground mb-4">
+                      Enter a valid location to get weather-based outfit recommendations.
+                    </p>
+                  </div>
                 ) : (
                   <div className="text-center py-10">
                     <p className="text-lg text-muted-foreground mb-6">
