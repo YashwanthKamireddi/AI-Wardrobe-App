@@ -1,8 +1,25 @@
+/**
+ * Database Schema Definitions
+ * 
+ * This file contains all database table definitions and related types for the application.
+ * It uses Drizzle ORM for schema definition and Zod for validation.
+ * 
+ * Each table has:
+ * 1. A table definition (pgTable)
+ * 2. An insert schema with validation rules (createInsertSchema)
+ * 3. Type definitions for strongly-typed database operations
+ * 
+ * Important: When modifying the schema, run 'npm run db:push' to apply changes to the database.
+ */
+
 import { pgTable, text, serial, integer, boolean, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User schema
+/**
+ * Users Table
+ * Stores user account information and authentication details
+ */
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -20,7 +37,11 @@ export const insertUserSchema = createInsertSchema(users).pick({
   profilePicture: true,
 });
 
-// Wardrobe item schema
+/**
+ * Wardrobe Items Table
+ * Stores all clothing items in a user's wardrobe with detailed attributes
+ * Used as the foundation for outfit recommendations
+ */
 export const wardrobeItems = pgTable("wardrobe_items", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -46,7 +67,11 @@ export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
   favorite: true,
 });
 
-// Outfit schema
+/**
+ * Outfits Table
+ * Stores assembled outfits created by users or the recommendation engine
+ * References individual wardrobe items through the items array
+ */
 export const outfits = pgTable("outfits", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -70,7 +95,11 @@ export const insertOutfitSchema = createInsertSchema(outfits).pick({
   mood: true,
 });
 
-// Inspiration item schema
+/**
+ * Inspirations Table
+ * Stores fashion inspiration images and content
+ * Used to provide styling ideas and trend information
+ */
 export const inspirations = pgTable("inspirations", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -90,7 +119,11 @@ export const insertInspirationSchema = createInsertSchema(inspirations).pick({
   source: true,
 });
 
-// Weather preferences schema
+/**
+ * Weather Preferences Table
+ * Stores user preferences for clothing based on weather conditions
+ * Used to improve the personalization of weather-based outfit recommendations
+ */
 export const weatherPreferences = pgTable("weather_preferences", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -104,7 +137,11 @@ export const insertWeatherPreferenceSchema = createInsertSchema(weatherPreferenc
   preferredCategories: true,
 });
 
-// Mood preferences schema
+/**
+ * Mood Preferences Table
+ * Stores user preferences for clothing based on different moods
+ * Used for personalized mood-based outfit recommendations
+ */
 export const moodPreferences = pgTable("mood_preferences", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -120,7 +157,12 @@ export const insertMoodPreferenceSchema = createInsertSchema(moodPreferences).pi
   preferredColors: true,
 });
 
-// Type exports
+/**
+ * Type Definitions
+ * 
+ * These types provide type safety for database operations throughout the application.
+ * Each type corresponds to a table in the database.
+ */
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
@@ -139,7 +181,12 @@ export type InsertWeatherPreference = z.infer<typeof insertWeatherPreferenceSche
 export type MoodPreference = typeof moodPreferences.$inferSelect;
 export type InsertMoodPreference = z.infer<typeof insertMoodPreferenceSchema>;
 
-// Category and subcategory definitions
+/**
+ * Clothing Categories
+ * 
+ * Defines all available clothing categories and their subcategories
+ * Used for consistent categorization across the application
+ */
 export const clothingCategories = [
   { value: "tops", label: "Tops", subcategories: ["t-shirt", "blouse", "shirt", "sweater", "tank top", "crop top"] },
   { value: "bottoms", label: "Bottoms", subcategories: ["jeans", "skirt", "shorts", "pants", "leggings"] },
@@ -150,7 +197,11 @@ export const clothingCategories = [
   { value: "makeup", label: "Makeup", subcategories: ["lipstick", "eyeshadow", "foundation", "blush", "mascara"] }
 ];
 
-// Weather types
+/**
+ * Weather Types
+ * 
+ * Standard weather condition classifications used for weather-based outfit recommendations
+ */
 export const weatherTypes = [
   { value: "sunny", label: "Sunny" },
   { value: "rainy", label: "Rainy" },
@@ -161,7 +212,12 @@ export const weatherTypes = [
   { value: "cold", label: "Cold" }
 ];
 
-// Mood types
+/**
+ * Mood Types
+ * 
+ * Standard mood classifications used for mood-based outfit recommendations
+ * These influence color choices and style combinations
+ */
 export const moodTypes = [
   { value: "happy", label: "Happy" },
   { value: "confident", label: "Confident" },
@@ -172,7 +228,12 @@ export const moodTypes = [
   { value: "creative", label: "Creative" }
 ];
 
-// Seasons
+/**
+ * Seasons
+ * 
+ * Standard seasonal classifications for clothing items
+ * Used to associate items with appropriate weather conditions
+ */
 export const seasons = [
   { value: "winter", label: "Winter" },
   { value: "spring", label: "Spring" },
