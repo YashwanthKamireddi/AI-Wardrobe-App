@@ -81,48 +81,39 @@ const NavigationBar: React.FC = () => {
     { 
       path: "/", 
       icon: <Home className="h-5 w-5" />, 
-      label: "Home" 
+      label: "Atelier",
+      description: "Your personalized style hub" 
     },
     { 
       path: "/wardrobe", 
       icon: <Shirt className="h-5 w-5" />, 
-      label: "Wardrobe" 
+      label: "Collection",
+      description: "Your curated clothing items" 
     },
     { 
       path: "/outfits", 
       icon: <Layers className="h-5 w-5" />, 
-      label: "Outfits" 
+      label: "Ensembles",
+      description: "Your signature looks" 
     },
     { 
       path: "/inspirations", 
       icon: <Sparkles className="h-5 w-5" />, 
-      label: "Inspiration" 
+      label: "Runway",
+      description: "Fashion inspiration gallery" 
     },
     { 
       path: "/profile", 
       icon: <User className="h-5 w-5" />, 
-      label: "Profile" 
+      label: "Boutique",
+      description: "Your personal style profile" 
     },
   ];
 
   const getGradient = (path: string) => {
     if (location === path) {
-      switch (path) {
-        case "/":
-          return "from-blue-500 to-purple-500";
-        case "/wardrobe":
-          return "from-pink-500 to-orange-500";
-        case "/weather":
-          return "from-sky-500 to-emerald-500";
-        case "/inspirations":
-          return "from-amber-500 to-pink-500";
-        case "/profile":
-          return "from-indigo-500 to-pink-500";
-        case "/outfits":
-          return "from-green-500 to-teal-500";
-        default:
-          return "from-primary to-secondary";
-      }
+      // Use the luxury gold palette for all items for consistency
+      return "from-amber-400/80 via-amber-300/50 to-amber-400/80";
     }
     return "from-muted to-muted";
   };
@@ -151,13 +142,23 @@ const NavigationBar: React.FC = () => {
 
   return (
     <motion.header 
-      className="sticky top-0 z-50 w-full border-b border-primary/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm"
+      className="sticky top-0 z-50 w-full border-b border-amber-200/30 bg-background/98 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md dark:border-amber-700/30 dark:bg-slate-900/98"
       initial="hidden"
       animate="visible"
       variants={navVariants}
     >
-      {/* Fashion-themed bottom decoration */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/80 via-pink-500/80 to-primary/80 transform translate-y-0.5"></div>
+      {/* Luxury fashion bottom decoration */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/80 via-amber-200/50 to-amber-400/80 transform translate-y-0.5"></div>
+      
+      {/* Left luxury corner decoration */}
+      <div className="absolute bottom-0 left-0 w-6 h-6 border-l border-b border-amber-300/30 dark:border-amber-700/30"></div>
+      
+      {/* Right luxury corner decoration */}
+      <div className="absolute bottom-0 right-0 w-6 h-6 border-r border-b border-amber-300/30 dark:border-amber-700/30"></div>
+      
+      {/* Top luxury line decoration */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/30 via-amber-200/10 to-amber-400/30"></div>
+      
       <div className="container flex h-16 items-center justify-between py-4">
         <motion.div 
           className="flex items-center gap-2"
@@ -190,22 +191,59 @@ const NavigationBar: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "px-3 flex items-center gap-2 relative",
+                    "px-3 flex items-center gap-2 relative font-luxury-heading tracking-wide group",
                     isActive 
-                      ? "text-primary font-medium bg-primary/10 shadow-sm border border-primary/20 dark:border-accent/30 dark:bg-accent/10 dark:text-accent-foreground" 
-                      : "text-muted-foreground hover:bg-background hover:border hover:border-primary/10 dark:hover:border-accent/20 dark:hover:bg-accent/5 dark:text-slate-300"
+                      ? "text-amber-800 font-medium bg-gradient-to-r from-amber-50/50 to-amber-100/30 shadow-sm border border-amber-200/40 dark:border-amber-400/20 dark:bg-gradient-to-r dark:from-amber-900/20 dark:to-amber-800/10 dark:text-amber-200" 
+                      : "text-muted-foreground hover:bg-gradient-to-r hover:from-amber-50/20 hover:to-amber-100/10 hover:border hover:border-amber-200/20 dark:hover:border-amber-400/10 dark:hover:bg-gradient-to-r dark:hover:from-amber-900/10 dark:hover:to-amber-800/5 dark:text-slate-300"
                   )}
                   asChild
                 >
-                  <Link href={item.path}>
+                  <Link href={item.path} title={item.description}>
                     <motion.span 
                       variants={iconVariants}
                       whileHover="hover"
                       initial="initial"
+                      className="text-amber-700 dark:text-amber-300 relative"
                     >
                       {item.icon}
+                      {isActive && (
+                        <motion.span 
+                          className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-luxury-shimmer"
+                          layoutId="nav-active-dot"
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
                     </motion.span>
-                    <span>{item.label}</span>
+                    <span className="tracking-wide relative">
+                      {item.label}
+                      {isActive && (
+                        <motion.span 
+                          className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ duration: 0.3, delay: 0.1 }}
+                        />
+                      )}
+                    </span>
+                    
+                    {/* Description tooltip on hover (desktop only) */}
+                    <motion.div 
+                      className="absolute hidden lg:block opacity-0 top-full mt-2 left-1/2 transform -translate-x-1/2 px-3 py-1.5 rounded text-xs text-amber-900 dark:text-amber-200 bg-amber-50/95 dark:bg-slate-800/95 border border-amber-200/50 dark:border-amber-700/40 pointer-events-none group-hover:opacity-100 whitespace-nowrap shadow-sm luxury-corner-decoration"
+                      initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                      whileHover={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Tooltip arrow */}
+                      <div className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-amber-50/95 dark:bg-slate-800/95 border-t border-l border-amber-200/50 dark:border-amber-700/40"></div>
+                      
+                      {/* Tooltip content */}
+                      <span className="relative font-luxury-heading tracking-wide">
+                        {item.description}
+                      </span>
+                    </motion.div>
                   </Link>
                 </Button>
                 <AnimatePresence>
@@ -243,7 +281,7 @@ const NavigationBar: React.FC = () => {
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
-              className="border border-primary/10 bg-primary/5 shadow-sm dark:border-accent/30 dark:bg-accent/10 dark:text-accent-foreground hover:bg-primary/10 dark:hover:bg-accent/20"
+              className="border border-amber-200/40 bg-gradient-to-r from-amber-50/40 to-amber-100/20 shadow-sm dark:border-amber-700/30 dark:bg-gradient-to-r dark:from-amber-900/20 dark:to-amber-800/10 dark:text-amber-200 hover:from-amber-50/60 hover:to-amber-100/30 dark:hover:from-amber-900/30 dark:hover:to-amber-800/20"
             >
               <AnimatePresence mode="wait">
                 {themeIcon}
@@ -258,9 +296,9 @@ const NavigationBar: React.FC = () => {
                 size="icon"
                 onClick={() => logoutMutation.mutate()}
                 aria-label="Logout"
-                className="border border-primary/10 bg-primary/5 shadow-sm dark:border-accent/30 dark:bg-accent/10 dark:text-accent-foreground hover:bg-primary/10 dark:hover:bg-accent/20"
+                className="border border-amber-200/40 bg-gradient-to-r from-amber-50/40 to-amber-100/20 shadow-sm dark:border-amber-700/30 dark:bg-gradient-to-r dark:from-amber-900/20 dark:to-amber-800/10 dark:text-amber-200 hover:from-amber-50/60 hover:to-amber-100/30 dark:hover:from-amber-900/30 dark:hover:to-amber-800/20"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-5 w-5 text-amber-700 dark:text-amber-300" />
               </Button>
             </motion.div>
           )}

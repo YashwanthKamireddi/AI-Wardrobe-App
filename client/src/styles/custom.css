@@ -1,4 +1,263 @@
 
+/* Luxury Theme Styles */
+:root {
+  --luxury-gold: 40, 90%, 50%;
+  --luxury-gold-dark: 36, 70%, 45%;
+  --luxury-gold-light: 43, 96%, 90%;
+  --luxury-beige: 30, 30%, 96%;
+  --luxury-cream: 40, 40%, 98%;
+  --luxury-brown: 28, 34%, 36%;
+  --luxury-charcoal: 220, 20%, 18%;
+  --luxury-navy: 220, 45%, 18%;
+  --luxury-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --luxury-sans: 'Montserrat', 'Inter', system-ui, sans-serif;
+  --luxury-bg: 43, 75%, 97%;
+  
+  /* Navigation-specific variables */
+  --nav-gold-gradient: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(217, 119, 6, 0.2));
+  --nav-accent-light: rgba(251, 191, 36, 0.4);
+  --nav-accent-dark: rgba(217, 119, 6, 0.5);
+}
+
+/* Apply luxury fonts and base styles */
+body {
+  background-color: hsl(var(--luxury-bg));
+  color: hsl(var(--luxury-brown));
+  font-family: var(--luxury-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--luxury-serif);
+  color: hsl(var(--luxury-brown));
+  font-weight: 500;
+}
+
+.font-luxury-heading {
+  font-family: var(--luxury-serif);
+  letter-spacing: 0.03em;
+}
+
+.font-luxury-body {
+  font-family: var(--luxury-sans);
+  letter-spacing: 0.02em;
+}
+
+.text-luxury-gold {
+  color: hsl(var(--luxury-gold));
+}
+
+.text-luxury-brown {
+  color: hsl(var(--luxury-brown));
+}
+
+.bg-luxury {
+  background-color: hsl(var(--luxury-bg));
+}
+
+/* Luxury buttons */
+.btn-luxury {
+  @apply rounded-md bg-gradient-to-r from-amber-400 to-yellow-500;
+  @apply text-amber-950 font-medium shadow-md;
+  @apply border border-amber-300 px-5 py-2.5;
+  @apply hover:from-amber-300 hover:to-yellow-400 hover:shadow-lg;
+  @apply transition-all duration-300 transform hover:translate-y-[-2px];
+  @apply active:translate-y-0 active:shadow-inner;
+}
+
+/* Luxury card styling */
+.luxury-card {
+  @apply rounded-md border border-amber-200/40 overflow-hidden;
+  @apply bg-gradient-to-b from-amber-50/30 to-amber-50/10 dark:from-amber-900/20 dark:to-amber-950/10;
+  @apply shadow-sm hover:shadow-md transition-all duration-300;
+  @apply relative hover:-translate-y-1;
+}
+
+.luxury-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.12) 0%,
+    rgba(251, 191, 36, 0) 50%,
+    rgba(251, 191, 36, 0.08) 100%
+  );
+  pointer-events: none;
+}
+
+/* Luxury card header */
+.luxury-card-header {
+  @apply relative px-4 py-3 border-b border-amber-200/30 dark:border-amber-800/30;
+  @apply bg-gradient-to-r from-amber-100/40 to-amber-50/30 dark:from-amber-900/30 dark:to-amber-950/20;
+}
+
+.luxury-card-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.5), transparent);
+}
+
+/* Luxury card content */
+.luxury-card-content {
+  @apply p-4 relative;
+}
+
+/* Luxury card with hover effect */
+.luxury-card-interactive {
+  @apply cursor-pointer transition-all duration-300;
+  @apply hover:border-amber-300/50 dark:hover:border-amber-700/50;
+}
+
+.luxury-card-interactive:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.7), rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.7));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: luxuryBorderGlow 3s ease-in-out infinite;
+}
+
+/* Gold corner accent */
+.gold-corner::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 30px;
+  height: 30px;
+  border-top: 2px solid hsl(var(--luxury-gold));
+  border-left: 2px solid hsl(var(--luxury-gold));
+  opacity: 0.7;
+}
+
+.gold-corner::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  border-bottom: 2px solid hsl(var(--luxury-gold));
+  border-right: 2px solid hsl(var(--luxury-gold));
+  opacity: 0.7;
+}
+
+/* Gold shimmer effect */
+@keyframes luxuryShimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-luxury-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(251, 191, 36, 0) 0%,
+    rgba(251, 191, 36, 0.3) 50%,
+    rgba(251, 191, 36, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: luxuryShimmer 3s infinite;
+}
+
+/* Subtle gold border glow effect */
+@keyframes luxuryBorderGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+  }
+}
+
+.animate-border-glow {
+  animation: luxuryBorderGlow 3s ease-in-out infinite;
+}
+
+/* Elegant fade-in effect */
+@keyframes luxuryFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-luxury-fade-in {
+  animation: luxuryFadeIn 0.6s ease-out forwards;
+}
+
+/* Staggered children animations */
+.stagger-children > * {
+  opacity: 0;
+  animation: luxuryFadeIn 0.5s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.7s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.8s; }
+
+/* Text reveal animation */
+@keyframes luxuryReveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.animate-luxury-reveal {
+  display: inline-block;
+  animation: luxuryReveal 0.8s ease-out forwards;
+}
+
+/* Enhanced inputs for luxury feel */
+.input-luxury {
+  @apply bg-amber-50 border-amber-200 rounded-md;
+  @apply focus:ring-2 focus:ring-amber-300 focus:border-amber-400;
+  @apply placeholder:text-amber-300/60;
+  @apply transition-all duration-300;
+}
+
+/* Improved scrollbar for luxury feel */
+.luxury-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.luxury-scrollbar::-webkit-scrollbar-track {
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.luxury-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(251, 191, 36, 0.3);
+  border-radius: 20px;
+}
+
 /* Custom effects and animations */
 .glass-effect {
   background: rgba(var(--background-rgb), 0.7);
@@ -167,4 +426,55 @@
   .has-bottom-nav {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }
+}
+
+/* Enhanced Navigation Styling */
+.luxury-nav-item {
+  @apply relative flex items-center px-4 py-2 rounded-md transition-all duration-300;
+  @apply text-amber-800 dark:text-amber-200 font-luxury-heading;
+  @apply hover:bg-amber-50/50 dark:hover:bg-amber-900/20;
+}
+
+.luxury-nav-item.active {
+  @apply bg-gradient-to-r from-amber-400/20 to-amber-600/20;
+  @apply border-l-2 border-amber-400/50;
+}
+
+.luxury-nav-icon {
+  @apply mr-3 text-amber-600 dark:text-amber-300;
+}
+
+.luxury-nav-text {
+  @apply text-sm font-medium tracking-wide;
+}
+
+/* Luxury mobile navigation enhancements */
+.luxury-mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 h-16 z-50;
+  @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-md;
+  @apply border-t border-amber-200/30 dark:border-amber-700/30;
+  @apply flex items-center justify-around px-1 shadow-lg;
+}
+
+/* Corner decoration for luxury elements */
+.luxury-corner-decoration::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid rgba(251, 191, 36, 0.5);
+  border-left: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.luxury-corner-decoration::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.5);
+  border-right: 1px solid rgba(251, 191, 36, 0.5);
 }

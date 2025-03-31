@@ -115,38 +115,55 @@ export default function WardrobePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-amber-50/20">
       <NavigationBar />
 
       <main className="container mx-auto px-4 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-          <h1 className="text-3xl font-bold mb-4 sm:mb-0">My Wardrobe</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-amber-200/50 pb-6">
+          <h1 className="text-3xl font-luxury-heading mb-4 sm:mb-0 text-amber-900 relative">
+            <span className="relative inline-block">
+              My Wardrobe
+              <span className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-amber-400 via-amber-200 to-transparent"></span>
+            </span>
+          </h1>
 
-          <div className="flex w-full sm:w-auto space-x-2">
+          <div className="flex w-full sm:w-auto space-x-3">
             <div className="relative flex-1 sm:flex-none sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-amber-500" />
               <Input 
                 type="search" 
-                placeholder="Search items..." 
-                className="pl-8"
+                placeholder="Search your collection..." 
+                className="pl-8 input-luxury font-luxury-body"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <FloatingActionButton onClick={() => setIsAddingItem(true)} className="px-4">
+            <Button 
+              onClick={() => setIsAddingItem(true)} 
+              className="btn-luxury font-luxury-body"
+            >
               <Plus className="h-4 w-4 mr-2" />
               <span>Add Item</span>
-            </FloatingActionButton>
+            </Button>
           </div>
         </div>
 
         <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory} className="mb-8">
-          <TabsList className="mb-4 flex flex-wrap h-auto">
-            <TabsTrigger value="all">All Items</TabsTrigger>
+          <TabsList className="mb-6 flex flex-wrap h-auto bg-amber-50 border border-amber-200">
+            <TabsTrigger 
+              value="all" 
+              className="font-luxury-body data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900"
+            >
+              All Items
+            </TabsTrigger>
             {clothingCategories.map((category) => (
-              <TabsTrigger key={category.value} value={category.value} className="flex items-center">
-                {getCategoryIcon(category.value)}
-                <span className="ml-1">{category.label}</span>
+              <TabsTrigger 
+                key={category.value} 
+                value={category.value} 
+                className="flex items-center font-luxury-body data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900"
+              >
+                <span className="text-amber-500 mr-1.5">{getCategoryIcon(category.value)}</span>
+                <span>{category.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -165,19 +182,33 @@ export default function WardrobePage() {
                 ))}
               </AnimatedWardrobeList>
             ) : (
-              <div className="text-center py-12 border rounded-lg bg-muted/20">
-                <EmptyWardrobeAnimation />
-                <p className="text-muted-foreground mb-4">
-                  {searchQuery 
-                    ? "Try adjusting your search terms"
-                    : wardrobeItems?.length 
-                      ? "No items in this category. Try adding some!" 
-                      : "Your wardrobe is empty. Start by adding some items!"}
-                </p>
-                <FloatingActionButton onClick={() => setIsAddingItem(true)} className="mx-auto mt-4 px-4">
-                  <Plus className="h-4 w-4 mr-2" />
-                  <span>Add Your First Item</span>
-                </FloatingActionButton>
+              <div className="text-center py-16 border border-amber-200/40 rounded-lg bg-amber-50/30 luxury-card">
+                <div className="max-w-md mx-auto">
+                  <div className="rounded-full bg-amber-100 w-20 h-20 mx-auto flex items-center justify-center mb-6">
+                    <EmptyWardrobeAnimation />
+                  </div>
+                  <h3 className="text-xl font-luxury-heading text-amber-900 mb-3">
+                    {searchQuery 
+                      ? "No matching items found"
+                      : wardrobeItems?.length 
+                        ? "This category is empty" 
+                        : "Your collection awaits"}
+                  </h3>
+                  <p className="text-amber-700 font-luxury-body mb-6 px-6">
+                    {searchQuery 
+                      ? "Try adjusting your search terms or browse by category instead"
+                      : wardrobeItems?.length 
+                        ? "Add some items to this category to build your perfect outfit collection" 
+                        : "Start building your personal style collection by adding your first clothing item"}
+                  </p>
+                  <Button 
+                    onClick={() => setIsAddingItem(true)} 
+                    className="btn-luxury font-luxury-body mx-auto"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    <span>{wardrobeItems?.length ? "Add New Item" : "Add Your First Item"}</span>
+                  </Button>
+                </div>
               </div>
             )}
           </TabsContent>
@@ -186,43 +217,45 @@ export default function WardrobePage() {
 
       {/* Add Item Dialog */}
       <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-        <DialogContent className="premium-dialog md:max-w-[800px] max-h-[92vh] py-8 px-6 overflow-hidden flex flex-col">
-          <DialogHeader className="border-b border-accent/30 pb-4 mb-5 relative gold-corner">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-radial from-accent/10 to-transparent opacity-50 rounded-full blur-md"></div>
-            <DialogTitle className="font-fashion-heading text-2xl flex items-center gap-3 mb-1">
+        <DialogContent className="md:max-w-[800px] max-h-[92vh] py-8 px-6 overflow-hidden flex flex-col border-amber-200 bg-white shadow-lg">
+          <DialogHeader className="border-b border-amber-200/30 pb-4 mb-5 relative gold-corner">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-radial from-amber-100 to-transparent opacity-50 rounded-full blur-md"></div>
+            <DialogTitle className="font-luxury-heading text-2xl flex items-center gap-3 mb-1 text-amber-900">
               <span className="relative">
-                <Plus className="h-5 w-5 text-accent absolute -left-7 top-1/2 transform -translate-y-1/2" />
-                <span className="animate-luxury-reveal">Add New Wardrobe Item</span>
+                <Plus className="h-5 w-5 text-amber-500 absolute -left-7 top-1/2 transform -translate-y-1/2" />
+                <span className="animate-luxury-reveal">Add to Your Collection</span>
               </span>
             </DialogTitle>
-            <DialogDescription className="font-fashion-body text-muted-foreground">
-              Upload and categorize a new item for your luxury collection.
+            <DialogDescription className="font-luxury-body text-amber-800/70">
+              Create a new entry for your luxury wardrobe with detailed attributes
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto pr-2 thin-scrollbar">
-            <Tabs defaultValue="details" className="w-full">
-              <TabsList className="w-full grid grid-cols-2 mb-6 bg-background/30 border border-accent/20 h-auto p-1">
-                <TabsTrigger 
-                  value="details" 
-                  className="py-3 data-[state=active]:bg-accent/10 data-[state=active]:text-accent-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-accent/20"
-                >
-                  Item Details
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="image" 
-                  className="py-3 data-[state=active]:bg-accent/10 data-[state=active]:text-accent-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-accent/20"
-                >
-                  Upload Image
-                </TabsTrigger>
-              </TabsList>
+          <div className="flex-1 overflow-y-auto pr-2 luxury-scrollbar">
+            <div className="flex gap-6 flex-col md:flex-row">
+              {/* Left side - Image upload */}
+              <div className="md:w-2/5 order-2 md:order-1">
+                <div className="luxury-card p-5 bg-amber-50/80">
+                  <Label className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-3 flex items-center">
+                    <AccessoriesIcon className="h-3.5 w-3.5 mr-2 text-amber-500" />
+                    Item Image
+                  </Label>
+                  <div className="border border-amber-200/40 p-5 rounded-md bg-white animate-luxury-shimmer">
+                    <FileUpload 
+                      onUpload={handleImageUpload} 
+                      currentImageUrl={newItem.imageUrl}
+                    />
+                  </div>
+                </div>
+              </div>
 
-              <TabsContent value="details" className="mt-0 animate-fade-in space-y-5">
-                <div className="luxury-card p-5 dark:bg-slate-900/60">
+              {/* Right side - Item details */}
+              <div className="md:w-3/5 order-1 md:order-2">
+                <div className="luxury-card p-5 bg-amber-50/80">
                   <div className="space-y-5">
                     <div>
-                      <Label htmlFor="name" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-2 flex items-center">
-                        <Pencil className="h-3.5 w-3.5 mr-2 text-accent/70" />
+                      <Label htmlFor="name" className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-2 flex items-center">
+                        <Pencil className="h-3.5 w-3.5 mr-2 text-amber-500" />
                         Item Name
                       </Label>
                       <Input 
@@ -230,26 +263,26 @@ export default function WardrobePage() {
                         placeholder="e.g., Cashmere Cardigan" 
                         value={newItem.name}
                         onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                        className="input-enhanced font-fashion-body"
+                        className="input-luxury font-luxury-body"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="category" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-2 flex items-center">
-                          <DressIcon className="h-3.5 w-3.5 mr-2 text-accent/70" />
+                        <Label htmlFor="category" className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-2 flex items-center">
+                          <DressIcon className="h-3.5 w-3.5 mr-2 text-amber-500" />
                           Category
                         </Label>
                         <Select 
                           value={newItem.category} 
                           onValueChange={(value) => setNewItem({...newItem, category: value, subcategory: ""})}
                         >
-                          <SelectTrigger className="input-enhanced">
+                          <SelectTrigger className="input-luxury">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
-                          <SelectContent className="max-h-[200px]">
+                          <SelectContent className="max-h-[200px] border-amber-200 bg-white">
                             {clothingCategories.map((category) => (
-                              <SelectItem key={category.value} value={category.value} className="font-fashion-body">
+                              <SelectItem key={category.value} value={category.value} className="font-luxury-body text-amber-900">
                                 {category.label}
                               </SelectItem>
                             ))}
@@ -259,22 +292,22 @@ export default function WardrobePage() {
 
                       {newItem.category && (
                         <div>
-                          <Label htmlFor="subcategory" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-2 flex items-center">
-                            <ShoesIcon className="h-3.5 w-3.5 mr-2 text-accent/70" />
+                          <Label htmlFor="subcategory" className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-2 flex items-center">
+                            <ShoesIcon className="h-3.5 w-3.5 mr-2 text-amber-500" />
                             Subcategory
                           </Label>
                           <Select 
                             value={newItem.subcategory} 
                             onValueChange={(value) => setNewItem({...newItem, subcategory: value})}
                           >
-                            <SelectTrigger className="input-enhanced">
+                            <SelectTrigger className="input-luxury">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
-                            <SelectContent className="max-h-[200px]">
+                            <SelectContent className="max-h-[200px] border-amber-200 bg-white">
                               {clothingCategories
                                 .find(c => c.value === newItem.category)
                                 ?.subcategories.map((sub) => (
-                                  <SelectItem key={sub} value={sub} className="font-fashion-body">
+                                  <SelectItem key={sub} value={sub} className="font-luxury-body text-amber-900">
                                     {sub}
                                   </SelectItem>
                                 ))}
@@ -286,8 +319,8 @@ export default function WardrobePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="color" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-2 flex items-center">
-                          <span className="w-3.5 h-3.5 mr-2 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"></span>
+                        <Label htmlFor="color" className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-2 flex items-center">
+                          <span className="w-3.5 h-3.5 mr-2 rounded-full bg-gradient-to-r from-amber-300 via-amber-500 to-amber-700"></span>
                           Color
                         </Label>
                         <Input 
@@ -295,63 +328,48 @@ export default function WardrobePage() {
                           placeholder="e.g., Burgundy" 
                           value={newItem.color}
                           onChange={(e) => setNewItem({...newItem, color: e.target.value})}
-                          className="input-enhanced font-fashion-body"
+                          className="input-luxury font-luxury-body"
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="season" className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-2 flex items-center">
-                          <span className="h-3.5 w-3.5 mr-2 text-accent/70">❄</span>
+                        <Label htmlFor="season" className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-2 flex items-center">
+                          <span className="h-3.5 w-3.5 mr-2 text-amber-500">❄</span>
                           Season
                         </Label>
                         <Select 
                           value={newItem.season} 
                           onValueChange={(value) => setNewItem({...newItem, season: value})}
                         >
-                          <SelectTrigger className="input-enhanced">
+                          <SelectTrigger className="input-luxury">
                             <SelectValue placeholder="Select season" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="winter" className="font-fashion-body">Winter</SelectItem>
-                            <SelectItem value="spring" className="font-fashion-body">Spring</SelectItem>
-                            <SelectItem value="summer" className="font-fashion-body">Summer</SelectItem>
-                            <SelectItem value="fall" className="font-fashion-body">Fall</SelectItem>
-                            <SelectItem value="all" className="font-fashion-body">All Seasons</SelectItem>
+                          <SelectContent className="border-amber-200 bg-white">
+                            <SelectItem value="winter" className="font-luxury-body text-amber-900">Winter</SelectItem>
+                            <SelectItem value="spring" className="font-luxury-body text-amber-900">Spring</SelectItem>
+                            <SelectItem value="summer" className="font-luxury-body text-amber-900">Summer</SelectItem>
+                            <SelectItem value="fall" className="font-luxury-body text-amber-900">Fall</SelectItem>
+                            <SelectItem value="all" className="font-luxury-body text-amber-900">All Seasons</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
                   </div>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="image" className="mt-0 animate-fade-in">
-                <div className="luxury-card p-5 dark:bg-slate-900/60">
-                  <Label className="font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mb-3 flex items-center">
-                    <AccessoriesIcon className="h-3.5 w-3.5 mr-2 text-accent/70" />
-                    Item Image
-                  </Label>
-                  <div className="border border-accent/20 p-5 rounded-md bg-background/50 animate-glossy-shine">
-                    <FileUpload 
-                      onUpload={handleImageUpload} 
-                      currentImageUrl={newItem.imageUrl}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
           </div>
 
-          <div className="pt-4 mt-4 border-t border-accent/20 flex items-center justify-between">
-            <div className="text-xs text-muted-foreground">
+          <div className="pt-4 mt-4 border-t border-amber-200/30 flex items-center justify-between">
+            <div className="text-sm text-amber-700 font-luxury-body">
               {!newItem.name || !newItem.category || !newItem.imageUrl ? (
                 <span className="flex items-center">
-                  <span className="w-2 h-2 bg-yellow-500/70 rounded-full mr-2 animate-pulse"></span>
-                  Please fill all required fields
+                  <span className="w-2 h-2 bg-amber-400 rounded-full mr-2 animate-pulse"></span>
+                  Complete all required fields
                 </span>
               ) : (
                 <span className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500/70 rounded-full mr-2"></span>
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                   Ready to add to your collection
                 </span>
               )}
@@ -361,14 +379,14 @@ export default function WardrobePage() {
               <Button 
                 variant="outline" 
                 onClick={() => setIsAddingItem(false)} 
-                className="fashion-button dark:border-accent/30 dark:text-accent-foreground dark:hover:bg-accent/10"
+                className="border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleSubmit}
                 disabled={!newItem.name || !newItem.category || !newItem.imageUrl || addWardrobeItem.isPending}
-                className="btn-modern dark:bg-accent dark:text-accent-foreground dark:hover:bg-accent/90"
+                className="btn-luxury"
               >
                 {addWardrobeItem.isPending ? (
                   <>

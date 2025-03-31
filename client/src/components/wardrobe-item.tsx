@@ -60,15 +60,15 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
       className="w-full h-full"
     >
       <Card 
-        className="overflow-hidden h-full transform transition-all duration-300 hover:shadow-lg"
+        className="overflow-hidden h-full transform transition-all duration-300 hover:shadow-lg border-amber-200/50 luxury-card"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="relative">
-          <div className="aspect-square overflow-hidden bg-muted">
+          <div className="aspect-square overflow-hidden bg-amber-50/30">
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Skeleton className="w-full h-full" />
+                <Skeleton className="w-full h-full bg-amber-100/30" />
               </div>
             )}
             <motion.img 
@@ -77,13 +77,23 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
               className="w-full h-full object-cover"
               initial={false}
               animate={{ 
-                scale: isHovered ? 1.1 : 1,
-                filter: isHovered ? "brightness(1.1)" : "brightness(1)" 
+                scale: isHovered ? 1.08 : 1,
+                filter: isHovered ? "brightness(1.05)" : "brightness(1)" 
               }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
+              transition={{ duration: 0.4, type: "spring", stiffness: 150 }}
               onLoad={() => setImageLoaded(true)}
               style={{ opacity: imageLoaded ? 1 : 0 }}
             />
+          </div>
+
+          {/* Gold corner accents */}
+          <div className="absolute top-0 left-0 w-10 h-10 pointer-events-none">
+            <div className="absolute top-0 left-0 w-5 h-1 bg-amber-400/70"></div>
+            <div className="absolute top-0 left-0 w-1 h-5 bg-amber-400/70"></div>
+          </div>
+          <div className="absolute bottom-0 right-0 w-10 h-10 pointer-events-none">
+            <div className="absolute bottom-0 right-0 w-5 h-1 bg-amber-400/70"></div>
+            <div className="absolute bottom-0 right-0 w-1 h-5 bg-amber-400/70"></div>
           </div>
 
           <AnimatePresence>
@@ -92,10 +102,11 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0 }}
-                className="absolute top-2 right-2"
+                className="absolute top-2 right-2 z-10"
               >
-                <Badge className="bg-red-500">
+                <Badge className="bg-amber-500 text-amber-950 hover:bg-amber-600">
                   <Heart className="h-3 w-3 mr-1 fill-current" />
+                  Favorite
                 </Badge>
               </motion.div>
             )}
@@ -107,29 +118,34 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2"
+                className="absolute inset-0 bg-gradient-to-b from-amber-800/40 to-amber-950/60 flex items-center justify-center gap-3"
               >
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <Button 
                     variant="outline" 
                     size="icon"
-                    className="bg-white text-black hover:bg-white/90"
+                    className="bg-white/90 text-amber-900 hover:bg-white border-amber-300 hover:text-amber-600"
                     onClick={toggleFavorite}
                   >
-                    {item.favorite ? <HeartOff className="h-4 w-4" /> : <Heart className="h-4 w-4" />}
+                    {item.favorite ? (
+                      <HeartOff className="h-4 w-4 text-amber-600" />
+                    ) : (
+                      <Heart className="h-4 w-4 text-amber-600" />
+                    )}
                   </Button>
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <Button 
-                    variant="destructive" 
+                    variant="outline" 
                     size="icon"
+                    className="bg-white/90 text-red-600 hover:bg-white border-amber-300"
                     onClick={onDelete}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -140,17 +156,17 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
           </AnimatePresence>
         </div>
 
-        <CardContent className="p-3">
+        <CardContent className="p-3 bg-white">
           <div className="flex justify-between items-start">
             <div>
               <motion.h3 
-                className="font-medium text-sm truncate"
+                className="font-luxury-body text-sm font-semibold truncate text-amber-900"
                 initial={false}
-                animate={{ color: isHovered ? "hsl(var(--primary))" : "currentColor" }}
+                animate={{ color: isHovered ? "hsl(36, 80%, 45%)" : "" }}
               >
                 {item.name}
               </motion.h3>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-amber-700/80 truncate font-luxury-body">
                 {item.subcategory || item.category}
                 {item.color && ` • ${item.color}`}
               </p>
@@ -158,31 +174,31 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-amber-700 hover:text-amber-900 hover:bg-amber-50">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuItem className="cursor-pointer" onClick={toggleFavorite}>
+              <DropdownMenuContent align="end" className="w-[200px] border-amber-200 bg-white">
+                <DropdownMenuItem className="cursor-pointer font-luxury-body text-amber-900" onClick={toggleFavorite}>
                   {item.favorite ? (
                     <>
-                      <HeartOff className="h-4 w-4 mr-2" />
+                      <HeartOff className="h-4 w-4 mr-2 text-amber-500" />
                       Remove from favorites
                     </>
                   ) : (
                     <>
-                      <Heart className="h-4 w-4 mr-2" />
+                      <Heart className="h-4 w-4 mr-2 text-amber-500" />
                       Add to favorites
                     </>
                   )}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Edit className="h-4 w-4 mr-2" />
+                <DropdownMenuItem className="cursor-pointer font-luxury-body text-amber-900">
+                  <Edit className="h-4 w-4 mr-2 text-amber-500" />
                   Edit details
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-amber-200/50" />
                 <DropdownMenuItem 
-                  className="cursor-pointer text-destructive focus:text-destructive"
+                  className="cursor-pointer text-red-600 focus:text-red-700 font-luxury-body"
                   onClick={onDelete}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -193,19 +209,19 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
           </div>
         </CardContent>
 
-        <CardFooter className="p-3 pt-0">
-          <div className="flex flex-wrap gap-1">
+        <CardFooter className="p-3 pt-0 bg-white">
+          <div className="flex flex-wrap gap-1 mt-1">
             {item.season && (
-              <motion.div whileHover={{ scale: 1.05 }}>
-                <Badge variant="outline" className="text-xs">
+              <motion.div whileHover={{ scale: 1.05, y: -1 }}>
+                <Badge variant="outline" className="text-xs border-amber-200 text-amber-800 font-luxury-body">
                   {seasonIcon()}
                   {item.season === "all" ? "All seasons" : item.season}
                 </Badge>
               </motion.div>
             )}
             {item.tags && item.tags.length > 0 && (
-              <motion.div whileHover={{ scale: 1.05 }}>
-                <Badge variant="secondary" className="text-xs">
+              <motion.div whileHover={{ scale: 1.05, y: -1 }}>
+                <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-900 font-luxury-body">
                   {item.tags[0]}
                   {item.tags.length > 1 ? ` +${item.tags.length - 1}` : ''}
                 </Badge>
