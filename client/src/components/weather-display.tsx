@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { 
-  CloudSunIcon, 
+  Cloud, 
   CloudRainIcon, 
   CloudIcon, 
   CloudSnowIcon, 
