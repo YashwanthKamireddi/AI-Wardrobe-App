@@ -42,6 +42,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .bg-gradient-radial {
+    background-image: radial-gradient(var(--tw-gradient-stops));
+  }
+}
+
 /* Override for tabs - remove white dots */
 [role="tab"]::before,
 [role="tab"]::after {
@@ -118,54 +124,54 @@
   }
  
   .dark {
-    /* Luxury dark theme - deep burgundy with gold accents */
-    --background: 337 40% 8%;
-    --foreground: 35 40% 95%;
+    /* Rich deep navy with vibrant gold accents for luxury feel */
+    --background: 233 40% 8%;
+    --foreground: 35 40% 98%;
  
-    --card: 337 35% 12%;
-    --card-foreground: 35 40% 95%;
+    --card: 233 35% 11%;
+    --card-foreground: 35 40% 98%;
  
-    --popover: 337 35% 12%;
-    --popover-foreground: 35 40% 95%;
+    --popover: 233 35% 12%;
+    --popover-foreground: 35 40% 98%;
  
-    /* Rich burgundy primary - adjusted for dark mode */
-    --primary: 337 60% 35%;
-    --primary-foreground: 35 40% 95%;
+    /* Vibrant indigo-blue primary */
+    --primary: 225 70% 45%;
+    --primary-foreground: 35 40% 98%;
  
-    /* Dark burgundy secondary */
-    --secondary: 337 30% 18%;
-    --secondary-foreground: 35 40% 95%;
+    /* Deep navy secondary */
+    --secondary: 233 35% 20%;
+    --secondary-foreground: 35 40% 98%;
  
-    --muted: 337 30% 15%;
-    --muted-foreground: 35 25% 75%;
+    --muted: 233 30% 18%;
+    --muted-foreground: 35 35% 85%;
  
-    /* Gold accent - preserved in dark mode */
-    --accent: 45 85% 50%;
-    --accent-foreground: 337 40% 10%;
+    /* Upgraded luxury gold accent - more vibrant and premium */
+    --accent: 43 95% 55%;
+    --accent-foreground: 233 40% 10%;
  
-    --destructive: 0 70% 40%;
-    --destructive-foreground: 35 40% 95%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 35 40% 98%;
  
-    --border: 337 30% 20%;
-    --input: 337 30% 20%;
-    --ring: 337 60% 35%;
+    --border: 233 25% 22%;
+    --input: 233 25% 22%;
+    --ring: 225 70% 45%;
 
-    /* Chart colors - adjusted for dark mode */
-    --chart-1: 337 80% 70%;
-    --chart-2: 45 85% 60%;
-    --chart-3: 15 80% 60%;
-    --chart-4: 300 70% 60%;
-    --chart-5: 180 60% 60%;
+    /* Chart colors - more vibrant for dark mode */
+    --chart-1: 225 80% 65%;
+    --chart-2: 43 95% 55%;
+    --chart-3: 15 80% 65%;
+    --chart-4: 290 70% 65%;
+    --chart-5: 190 70% 65%;
     
-    /* Sidebar colors - aligned with dark luxury theme */
-    --sidebar-background: 337 45% 10%;
-    --sidebar-foreground: 35 40% 95%;
-    --sidebar-primary: 337 60% 40%;
+    /* Sidebar colors - aligned with premium luxury theme */
+    --sidebar-background: 233 45% 12%;
+    --sidebar-foreground: 35 40% 98%;
+    --sidebar-primary: 225 70% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 85% 50%;
-    --sidebar-accent-foreground: 337 45% 10%;
-    --sidebar-border: 337 35% 20%;
-    --sidebar-ring: 337 60% 45%;
+    --sidebar-accent: 43 95% 55%;
+    --sidebar-accent-foreground: 233 45% 10%;
+    --sidebar-border: 233 30% 25%;
+    --sidebar-ring: 225 70% 50%;
   }
 }
  
@@ -177,9 +183,28 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Custom Scrollbar */
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary/20 dark:bg-accent/30;
+    border-radius: 3px;
+  }
+  
+  .thin-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/30 dark:bg-accent/40;
+  }
 }
 
-/* Enhanced Luxury Animations */
+/* Premium Luxury Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -222,26 +247,47 @@
   50% { transform: translateY(-10px); }
 }
 
+@keyframes luxuryReveal {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes glossyShine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+@keyframes elevate {
+  0% { transform: translateY(0); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); }
+  100% { transform: translateY(-5px); box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1); }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .animate-slide-up {
-  animation: slideUp 0.5s ease-out;
+  animation: slideUp 0.7s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .animate-slide-in-right {
-  animation: slideInRight 0.5s ease-out;
+  animation: slideInRight 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .animate-fade-scale {
-  animation: fadeScale 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  animation: fadeScale 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .animate-shimmer-gold {
   background: linear-gradient(90deg, 
     transparent, 
-    rgba(212, 175, 55, 0.2), 
+    rgba(212, 175, 55, 0.3), 
     transparent
   );
   background-size: 200% 100%;
@@ -249,7 +295,7 @@
 }
 
 .animate-border-glow {
-  animation: borderGlow 2s infinite ease-in-out;
+  animation: borderGlow 2.5s infinite ease-in-out;
 }
 
 .animate-float {
@@ -258,6 +304,41 @@
 
 .animate-subtle-rotate {
   animation: subtleRotate 6s infinite ease-in-out;
+}
+
+.animate-luxury-reveal {
+  animation: luxuryReveal 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+.animate-gradient-flow {
+  background-size: 200% 200%;
+  animation: gradientFlow 5s ease infinite;
+}
+
+.animate-glossy-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-glossy-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  animation: glossyShine 4s infinite ease-in-out;
+}
+
+.animate-elevate {
+  animation: elevate 2s infinite alternate ease-in-out;
 }
 
 /* Elegant card design */
@@ -637,39 +718,121 @@
 
 /* Redesigned Weather Display */
 .weather-display-luxury {
-  @apply relative p-5 rounded-md gold-corner;
+  @apply relative p-0 rounded-xl;
   background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--background)));
-  border: 1px solid rgba(var(--border), 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid hsl(var(--accent)/0.3);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px hsl(var(--accent)/0.05),
+    inset 0 1px 1px hsl(var(--accent)/0.05);
   overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .weather-display-luxury::before {
   content: '';
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, hsl(var(--accent)/0.2), transparent 70%);
+  pointer-events: none;
+  animation: luxuryGlow 8s infinite alternate ease-in-out;
+}
+
+.weather-display-luxury::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: -30px;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, hsl(var(--accent)/0.1), transparent 70%);
+  background: radial-gradient(circle, hsl(var(--primary)/0.15), transparent 70%);
   pointer-events: none;
+  animation: luxuryGlow 7s infinite alternate-reverse ease-in-out;
+}
+
+@keyframes luxuryGlow {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes slow-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-slow-spin {
+  animation: slow-spin 20s linear infinite;
 }
 
 .weather-icon-luxury {
-  @apply flex items-center justify-center p-2 rounded-full;
+  @apply flex items-center justify-center p-3 rounded-full;
   background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--card)));
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(var(--accent-rgb), 0.1);
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.025);
+  border: 1px solid hsl(var(--accent)/0.2);
+  transition: all 0.3s ease;
+}
+
+.weather-icon-luxury:hover {
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    inset 0 1px 2px rgba(255, 255, 255, 0.05);
+  border: 1px solid hsl(var(--accent)/0.3);
+  transform: translateY(-2px);
 }
 
 .weather-temp-luxury {
-  @apply font-fashion-display text-3xl;
+  @apply font-fashion-display text-3xl relative;
   background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  animation: pulse 3s infinite alternate ease-in-out;
+}
+
+.weather-temp-luxury::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--accent)/0.5), transparent);
+  opacity: 0.7;
+}
+
+@keyframes pulse {
+  0% {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  100% {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .weather-condition-luxury {
-  @apply font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mt-1;
+  @apply font-fashion-body text-sm uppercase tracking-wider mt-2 pl-1 relative;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+  border-left: 2px solid hsl(var(--accent)/0.2);
+  padding-left: 6px;
 }

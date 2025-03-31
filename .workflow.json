@@ -2,12 +2,11 @@
   "runs": [
     {
       "command": [
-        "npm",
-        "run",
-        "dev"
+        "node",
+        "start.js"
       ],
       "watch": true,
-      "name": "startapp"
+      "name": "Cher's Closet App"
     }
   ]
 }

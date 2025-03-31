@@ -192,8 +192,8 @@ const NavigationBar: React.FC = () => {
                   className={cn(
                     "px-3 flex items-center gap-2 relative",
                     isActive 
-                      ? "text-primary font-medium bg-primary/5 shadow-sm border border-primary/10" 
-                      : "text-muted-foreground hover:bg-primary/5 hover:border hover:border-primary/10"
+                      ? "text-primary font-medium bg-primary/10 shadow-sm border border-primary/20 dark:border-accent/30 dark:bg-accent/10 dark:text-accent-foreground" 
+                      : "text-muted-foreground hover:bg-background hover:border hover:border-primary/10 dark:hover:border-accent/20 dark:hover:bg-accent/5 dark:text-slate-300"
                   )}
                   asChild
                 >
@@ -243,7 +243,7 @@ const NavigationBar: React.FC = () => {
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
-              className="border border-primary/10 bg-primary/5 shadow-sm"
+              className="border border-primary/10 bg-primary/5 shadow-sm dark:border-accent/30 dark:bg-accent/10 dark:text-accent-foreground hover:bg-primary/10 dark:hover:bg-accent/20"
             >
               <AnimatePresence mode="wait">
                 {themeIcon}
@@ -258,7 +258,7 @@ const NavigationBar: React.FC = () => {
                 size="icon"
                 onClick={() => logoutMutation.mutate()}
                 aria-label="Logout"
-                className="border border-primary/10 bg-primary/5 shadow-sm"
+                className="border border-primary/10 bg-primary/5 shadow-sm dark:border-accent/30 dark:bg-accent/10 dark:text-accent-foreground hover:bg-primary/10 dark:hover:bg-accent/20"
               >
                 <LogOut className="h-5 w-5" />
               </Button>
