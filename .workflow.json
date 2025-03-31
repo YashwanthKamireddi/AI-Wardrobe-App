@@ -1,8 +1,7 @@
 {
   "workflows": [
     {
-      "id": "app",
-      "name": "Cher's Closet",
+      "name": "Start application",
       "command": "node start.js",
       "restartOn": {
         "files": [

@@ -217,7 +217,7 @@ export default function WardrobePage() {
 
       {/* Add Item Dialog */}
       <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-        <DialogContent className="md:max-w-[800px] max-h-[92vh] py-8 px-6 overflow-hidden flex flex-col border-amber-200 bg-white shadow-lg">
+        <DialogContent className="md:max-w-[800px] border-amber-200 bg-white shadow-lg">
           <DialogHeader className="border-b border-amber-200/30 pb-4 mb-5 relative gold-corner">
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-radial from-amber-100 to-transparent opacity-50 rounded-full blur-md"></div>
             <DialogTitle className="font-luxury-heading text-2xl flex items-center gap-3 mb-1 text-amber-900">
