@@ -212,15 +212,27 @@ export const EmptyWardrobeAnimation = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <HangerIcon />
-      <motion.h3 
-        className="mt-4 mb-2 text-xl font-semibold text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
+      <motion.div
+        className="relative bg-amber-100 rounded-full w-24 h-24 flex items-center justify-center"
+        whileHover={{ 
+          boxShadow: "0 0 20px rgba(251, 191, 36, 0.5)"
+        }}
       >
-        Your wardrobe is empty
-      </motion.h3>
+        <motion.div
+          initial={{ rotate: -10 }}
+          animate={{ rotate: 10 }}
+          transition={{
+            repeat: Infinity,
+            repeatType: "reverse",
+            duration: 2,
+            ease: "easeInOut"
+          }}
+          className="text-amber-500"
+        >
+          <Shirt size={48} />
+        </motion.div>
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-200/50 to-transparent pointer-events-none"></div>
+      </motion.div>
     </motion.div>
   );
 };
@@ -234,25 +246,40 @@ export const WardrobeLoadingAnimation = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <motion.div
-        animate={{ 
-          rotate: 360,
-          transition: { 
-            duration: 1.5, 
-            repeat: Infinity, 
-            ease: "linear" 
-          }
-        }}
-      >
-        <Loader2 size={40} className="text-primary" />
-      </motion.div>
+      <div className="relative">
+        <motion.div
+          className="p-4 bg-amber-100 rounded-full relative z-10"
+          animate={{ 
+            boxShadow: ["0 0 0px rgba(251, 191, 36, 0.3)", "0 0 20px rgba(251, 191, 36, 0.5)", "0 0 0px rgba(251, 191, 36, 0.3)"]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <motion.div
+            animate={{ 
+              rotate: 360,
+              transition: { 
+                duration: 1.5, 
+                repeat: Infinity, 
+                ease: "linear" 
+              }
+            }}
+          >
+            <Loader2 size={40} className="text-amber-500" />
+          </motion.div>
+        </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-amber-200/20 to-transparent rounded-full blur-lg transform scale-150"></div>
+      </div>
       <motion.p 
-        className="mt-4 text-muted-foreground"
+        className="mt-6 text-amber-700 font-luxury-body"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        Loading your wardrobe...
+        Curating your collection...
       </motion.p>
     </motion.div>
   );
@@ -268,11 +295,11 @@ export const FloatingActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButto
 }) => {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.05, y: -2 }}
+      whileTap={{ scale: 0.98 }}
     >
       <Button
-        className={cn("shadow-md bg-primary hover:bg-primary/90", className)}
+        className={cn("btn-luxury font-luxury-body", className)}
         {...props}
       >
         {children}

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X, Image as ImageIcon } from "lucide-react";
 
 interface FileUploadProps {
   onUpload: (url: string) => void;
@@ -54,25 +54,28 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
   return (
     <div className="space-y-5">
       {preview ? (
-        <div className="relative rounded-sm overflow-hidden border border-accent/20 shadow-md boutique-item">
+        <div className="relative rounded-md overflow-hidden border border-amber-200 shadow-md">
+          <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent pointer-events-none"></div>
           <img 
             src={preview} 
             alt="Uploaded preview" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover aspect-square"
           />
           <div
             onClick={handleRemoveImage}
-            className="absolute top-2 right-2 p-1.5 bg-black/60 border border-accent/40 rounded-sm hover:bg-black/80 transition-colors cursor-pointer animate-fade-in"
+            className="absolute top-2 right-2 p-1.5 bg-white/90 border border-amber-300 rounded-full hover:bg-white transition-colors cursor-pointer shadow-sm"
           >
-            <X className="h-4 w-4 text-white" />
+            <X className="h-4 w-4 text-amber-700" />
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/70 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-amber-900/50 to-transparent"></div>
         </div>
       ) : (
-        <div className="border border-accent/20 border-dashed rounded-sm aspect-square flex flex-col items-center justify-center text-muted-foreground p-4 bg-background/50 hover:bg-background/80 transition-colors">
-          <Upload className="h-10 w-10 mb-3 text-accent/70" />
-          <p className="text-sm font-fashion-body uppercase tracking-wide">Drag & drop image</p>
-          <p className="text-xs font-fashion-body mt-1">or select upload option below</p>
+        <div className="border-2 border-amber-200/50 border-dashed rounded-md aspect-square flex flex-col items-center justify-center p-4 bg-amber-50/30 hover:bg-amber-50/50 transition-colors">
+          <div className="rounded-full bg-amber-100 p-4 mb-4">
+            <ImageIcon className="h-10 w-10 text-amber-500" />
+          </div>
+          <p className="text-sm font-luxury-body uppercase tracking-wide text-amber-900">Drag & drop image</p>
+          <p className="text-xs font-luxury-body mt-1 text-amber-700">or select from options below</p>
         </div>
       )}
       
@@ -92,9 +95,9 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
-            className="fashion-button"
+            className="border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
           >
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className="h-4 w-4 mr-2 text-amber-500" />
             Browse Files
           </Button>
           
@@ -109,17 +112,17 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
               }
             }}
             disabled={isLoading}
-            className="fashion-button"
+            className="border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
           >
-            <Camera className="h-4 w-4 mr-2" />
+            <Camera className="h-4 w-4 mr-2 text-amber-500" />
             Take Photo
           </Button>
         </div>
         
-        <div className="flex items-center space-x-3 my-1">
-          <div className="h-px flex-1 bg-accent/10"></div>
-          <span className="text-xs text-muted-foreground font-fashion-body">OR</span>
-          <div className="h-px flex-1 bg-accent/10"></div>
+        <div className="flex items-center space-x-3 my-2">
+          <div className="h-px flex-1 bg-amber-200/50"></div>
+          <span className="text-xs text-amber-700 font-luxury-body">OR</span>
+          <div className="h-px flex-1 bg-amber-200/50"></div>
         </div>
         
         <Input
@@ -127,13 +130,13 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
           placeholder="Enter image URL"
           onChange={handleUrlInput}
           disabled={isLoading}
-          className="input-enhanced font-fashion-body"
+          className="input-luxury font-luxury-body"
         />
         
         {isLoading && (
           <div className="text-center py-3">
-            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-accent border-r-transparent"></div>
-            <p className="text-xs mt-2 font-fashion-body text-muted-foreground">Processing image...</p>
+            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-amber-400 border-r-transparent"></div>
+            <p className="text-xs mt-2 font-luxury-body text-amber-700">Processing image...</p>
           </div>
         )}
       </div>

@@ -1,8 +1,9 @@
 {
   "workflows": [
     {
-      "name": "Start application",
-      "command": "npm run dev",
+      "id": "app",
+      "name": "Cher's Closet",
+      "command": "node start.js",
       "restartOn": {
         "files": [
           "server/**/*.ts",
@@ -15,7 +16,7 @@
       "clearPreviousLogs": true,
       "primary": true,
       "ports": [
-        3000
+        3000, 3001
       ]
     }
   ]
