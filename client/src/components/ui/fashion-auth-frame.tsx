@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import GoldenThread from './golden-thread';
 import SparkleEffect from './sparkle-effect';
+import LuxuryFeatureGuide from './luxury-feature-guide';
 
 interface FashionAuthFrameProps {
   children: React.ReactNode;
@@ -188,105 +189,138 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
       )}
       
       {/* Main content container */}
-      <div className="max-w-lg w-full flex flex-col items-center relative z-10">
-        {/* Logo area */}
-        <motion.div 
-          className="mb-8"
-          variants={logoVariants}
-        >
-          {logoImage ? (
-            <img 
-              src={logoImage} 
-              alt={brandName} 
-              className="h-20 w-auto mx-auto"
-            />
-          ) : (
-            <SparkleEffect size={5} count={8} className="py-2">
-              <div className="h-20 w-20 flex items-center justify-center rounded-full border-2 font-serif text-3xl font-bold text-luxury-gold"
-                style={{ borderColor: accentColor }}
-              >
-                {brandName}
-              </div>
-            </SparkleEffect>
-          )}
-        </motion.div>
-        
-        {/* Title area */}
-        <motion.div 
-          className="mb-6 text-center"
-          variants={titleVariants}
-        >
-          <h1 className="text-3xl font-luxury-heading mb-2 text-luxury-brown tracking-tight">
-            {title}
-          </h1>
-          <p className="text-sm text-luxury-brown/70 font-luxury-body">
-            {subtitle}
-          </p>
-        </motion.div>
-        
-        {/* Content area with card styling */}
-        <motion.div 
-          className="w-full"
-          variants={childrenVariants}
-        >
-          <div className="luxury-card p-8 shadow-md">
-            {/* Login/Register animated indicator */}
-            <div className="relative overflow-hidden mb-6 h-0.5 bg-amber-100/30 dark:bg-amber-900/30">
-              <AnimatePresence>
-                <motion.div 
-                  key={isLoginPage ? 'login' : 'register'}
-                  className="absolute h-0.5 w-1/2"
-                  style={{ backgroundColor: accentColor }}
-                  initial={{ x: isLoginPage ? '-100%' : '100%' }}
-                  animate={{ x: 0 }}
-                  exit={{ x: isLoginPage ? '100%' : '-100%' }}
-                  transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
-                />
-              </AnimatePresence>
-              
-              <div className="flex justify-center gap-1 absolute top-4 left-0 right-0 text-xs font-medium">
-                <div className={`px-4 py-1 rounded-full ${isLoginPage ? 'text-luxury-gold' : 'text-luxury-brown/60'}`}>
-                  Sign In
+      <div className="max-w-6xl w-full flex flex-col md:flex-row items-center justify-center gap-12 relative z-10">
+        {/* Left side: Logo and feature guide (hidden on mobile) */}
+        <div className="hidden md:flex flex-col items-center md:items-start relative">
+          {/* Logo area */}
+          <motion.div 
+            className="mb-8"
+            variants={logoVariants}
+          >
+            {logoImage ? (
+              <img 
+                src={logoImage} 
+                alt={brandName} 
+                className="h-24 w-auto mx-auto"
+              />
+            ) : (
+              <SparkleEffect size={5} count={8} className="py-2">
+                <div className="h-24 w-24 flex items-center justify-center rounded-full border-2 font-serif text-4xl font-bold text-luxury-gold"
+                  style={{ borderColor: accentColor }}
+                >
+                  {brandName}
                 </div>
-                <div className={`px-4 py-1 rounded-full ${isRegisterPage ? 'text-luxury-gold' : 'text-luxury-brown/60'}`}>
-                  Register
-                </div>
-              </div>
-            </div>
-            
-            {/* Auth form content */}
-            <div className="pt-6">
-              {children}
-            </div>
-            
-            {/* Bottom decorative accent */}
-            <div className="mt-10 flex justify-center">
-              <div className="w-16 h-0.5 rounded relative overflow-hidden">
-                <motion.div
-                  className="absolute inset-0"
-                  style={{ backgroundColor: accentColor }}
-                  animate={{ 
-                    x: ['0%', '100%', '0%'],
-                    opacity: [0.3, 1, 0.3]
-                  }}
-                  transition={{
-                    duration: 3,
-                    ease: "easeInOut",
-                    repeat: Infinity,
-                    repeatType: "reverse"
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+              </SparkleEffect>
+            )}
+          </motion.div>
           
-          {/* Footer text */}
-          <div className="text-center mt-6">
-            <p className="text-xs text-luxury-brown/60 font-luxury-body tracking-wide">
-              &copy; {new Date().getFullYear()} Cher's Closet. All couture rights reserved.
-            </p>
+          {/* Feature guide component */}
+          <div className="mt-8 pl-4 border-l-2" style={{ borderColor: `${accentColor}40` }}>
+            <LuxuryFeatureGuide animationDelay={1.2} />
           </div>
-        </motion.div>
+        </div>
+        
+        {/* Right side: Auth form */}
+        <div className="max-w-lg w-full flex flex-col items-center">
+          {/* Logo area (only shown on mobile) */}
+          <motion.div 
+            className="mb-8 md:hidden"
+            variants={logoVariants}
+          >
+            {logoImage ? (
+              <img 
+                src={logoImage} 
+                alt={brandName} 
+                className="h-20 w-auto mx-auto"
+              />
+            ) : (
+              <SparkleEffect size={5} count={8} className="py-2">
+                <div className="h-20 w-20 flex items-center justify-center rounded-full border-2 font-serif text-3xl font-bold text-luxury-gold"
+                  style={{ borderColor: accentColor }}
+                >
+                  {brandName}
+                </div>
+              </SparkleEffect>
+            )}
+          </motion.div>
+          
+          {/* Title area */}
+          <motion.div 
+            className="mb-6 text-center"
+            variants={titleVariants}
+          >
+            <h1 className="text-3xl font-luxury-heading mb-2 text-luxury-brown tracking-tight">
+              {title}
+            </h1>
+            <p className="text-sm text-luxury-brown/70 font-luxury-body">
+              {subtitle}
+            </p>
+          </motion.div>
+          
+          {/* Content area with card styling */}
+          <motion.div 
+            className="w-full"
+            variants={childrenVariants}
+          >
+            <div className="luxury-card p-8 shadow-md">
+              {/* Login/Register animated indicator */}
+              <div className="relative overflow-hidden mb-6 h-0.5 bg-amber-100/30 dark:bg-amber-900/30">
+                <AnimatePresence>
+                  <motion.div 
+                    key={isLoginPage ? 'login' : 'register'}
+                    className="absolute h-0.5 w-1/2"
+                    style={{ backgroundColor: accentColor }}
+                    initial={{ x: isLoginPage ? '-100%' : '100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: isLoginPage ? '100%' : '-100%' }}
+                    transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
+                  />
+                </AnimatePresence>
+                
+                <div className="flex justify-center gap-1 absolute top-4 left-0 right-0 text-xs font-medium">
+                  <div className={`px-4 py-1 rounded-full ${isLoginPage ? 'text-luxury-gold' : 'text-luxury-brown/60'}`}>
+                    Sign In
+                  </div>
+                  <div className={`px-4 py-1 rounded-full ${isRegisterPage ? 'text-luxury-gold' : 'text-luxury-brown/60'}`}>
+                    Register
+                  </div>
+                </div>
+              </div>
+              
+              {/* Auth form content */}
+              <div className="pt-6">
+                {children}
+              </div>
+              
+              {/* Bottom decorative accent */}
+              <div className="mt-10 flex justify-center">
+                <div className="w-16 h-0.5 rounded relative overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0"
+                    style={{ backgroundColor: accentColor }}
+                    animate={{ 
+                      x: ['0%', '100%', '0%'],
+                      opacity: [0.3, 1, 0.3]
+                    }}
+                    transition={{
+                      duration: 3,
+                      ease: "easeInOut",
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer text */}
+            <div className="text-center mt-6">
+              <p className="text-xs text-luxury-brown/60 font-luxury-body tracking-wide">
+                &copy; {new Date().getFullYear()} Cher's Closet. All couture rights reserved.
+              </p>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );
