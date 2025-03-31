@@ -158,7 +158,7 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
 
         <CardContent className="p-3 bg-white">
           <div className="flex justify-between items-start">
-            <div>
+            <div className="w-[80%]">
               <motion.h3 
                 className="font-luxury-body text-sm font-semibold truncate text-amber-900"
                 initial={false}

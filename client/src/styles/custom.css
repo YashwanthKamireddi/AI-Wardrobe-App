@@ -1,6 +1,7 @@
 
 /* Luxury Theme Styles */
 :root {
+  /* Light mode colors */
   --luxury-gold: 40, 90%, 50%;
   --luxury-gold-dark: 36, 70%, 45%;
   --luxury-gold-light: 43, 96%, 90%;
@@ -19,6 +20,27 @@
   --nav-accent-dark: rgba(217, 119, 6, 0.5);
 }
 
+/* Dark Mode Enhancements */
+.dark {
+  --luxury-gold: 38, 92%, 50%;        /* Enriched gold */
+  --luxury-gold-dark: 36, 75%, 45%;   /* Deeper gold */
+  --luxury-gold-light: 40, 90%, 85%;  /* Brighter highlight */
+  --luxury-beige: 30, 15%, 18%;       /* Dark beige background */
+  --luxury-cream: 40, 20%, 16%;       /* Dark cream accent */
+  --luxury-brown: 28, 30%, 85%;       /* Light text on dark */
+  --luxury-charcoal: 220, 15%, 13%;   /* Rich charcoal background */
+  --luxury-navy: 220, 40%, 13%;       /* Deep navy for accents */
+  --luxury-bg: 220, 20%, 12%;         /* Main dark background */
+  
+  /* Dark mode navigation variables */
+  --nav-gold-gradient: linear-gradient(135deg, rgba(251, 191, 36, 0.4), rgba(217, 119, 6, 0.3));
+  --nav-accent-light: rgba(251, 191, 36, 0.5);
+  --nav-accent-dark: rgba(217, 119, 6, 0.6);
+  
+  /* Ensure better contrast for dark mode */
+  color-scheme: dark;
+}
+
 /* Apply luxury fonts and base styles */
 body {
   background-color: hsl(var(--luxury-bg));
@@ -26,10 +48,45 @@ body {
   font-family: var(--luxury-sans);
 }
 
+/* Add subtle background patterns for more luxury feel */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(
+    circle at 100% 100%,
+    rgba(251, 191, 36, 0.02) 10%,
+    transparent 40%
+  );
+  pointer-events: none;
+}
+
+/* Add subtle background patterns for more luxury feel - dark mode */
+.dark body::before {
+  background-image: radial-gradient(
+    circle at 100% 100%,
+    rgba(251, 191, 36, 0.03) 10%,
+    transparent 50%
+  );
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--luxury-serif);
   color: hsl(var(--luxury-brown));
   font-weight: 500;
+}
+
+/* Enhanced dark mode text contrast */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: hsl(var(--luxury-gold-light));
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Improve dark mode paragraph text */
+.dark p {
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 .font-luxury-heading {
@@ -244,9 +301,33 @@ h1, h2, h3, h4, h5, h6 {
   @apply transition-all duration-300;
 }
 
+/* Dark mode input styles */
+.dark .input-luxury {
+  @apply bg-gray-900/80 border-amber-700/50;
+  @apply focus:ring-amber-500/30 focus:border-amber-600/60;
+  @apply text-amber-100 placeholder:text-amber-500/40;
+  @apply shadow-inner shadow-amber-950/20;
+}
+
+/* Auto-complete and selection styles */
+.dark .input-luxury:-webkit-autofill,
+.dark .input-luxury:-webkit-autofill:hover,
+.dark .input-luxury:-webkit-autofill:focus {
+  -webkit-text-fill-color: hsl(var(--luxury-gold-light));
+  -webkit-box-shadow: 0 0 0px 1000px rgba(20, 20, 30, 0.8) inset;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: hsl(var(--luxury-gold-light));
+}
+
+.dark .input-luxury::selection {
+  background-color: rgba(251, 191, 36, 0.3);
+  color: white;
+}
+
 /* Improved scrollbar for luxury feel */
 .luxury-scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 .luxury-scrollbar::-webkit-scrollbar-track {
@@ -258,22 +339,68 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 20px;
 }
 
+.luxury-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(251, 191, 36, 0.5);
+}
+
+/* Dark mode scrollbar enhancement */
+.dark .luxury-scrollbar::-webkit-scrollbar-track {
+  background: rgba(251, 191, 36, 0.03);
+  background-image: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(251, 191, 36, 0.05) 50%,
+    transparent
+  );
+}
+
+.dark .luxury-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(251, 191, 36, 0.35);
+  border: 1px solid rgba(251, 191, 36, 0.1);
+  box-shadow: inset 0 0 3px rgba(251, 191, 36, 0.2);
+}
+
+.dark .luxury-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(251, 191, 36, 0.45);
+}
+
 /* Custom effects and animations */
 .glass-effect {
   background: rgba(var(--background-rgb), 0.7);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(var(--foreground-rgb), 0.05);
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .dark .glass-effect {
   background: rgba(var(--background-rgb), 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.1);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.3),
+              inset 0 0 0 1px rgba(251, 191, 36, 0.05);
 }
 
+/* Enhanced gradient text for luxury effect */
 .gradient-text {
   background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.7));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, 
+    hsl(var(--luxury-gold)), 
+    hsl(var(--luxury-gold-light))
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 10px rgba(251, 191, 36, 0.2);
+}
+
+/* Gold glow effect for dark mode highlights */
+.dark .gold-glow {
+  box-shadow: 0 0 15px 2px rgba(251, 191, 36, 0.25);
 }
 
 .gradient-border {
@@ -296,6 +423,50 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
 }
 
+/* Enhanced gradient border for dark mode */
+.dark .gradient-border::before {
+  background: linear-gradient(
+    135deg, 
+    hsla(var(--luxury-gold), 0.8), 
+    transparent 30%, 
+    hsla(var(--luxury-gold-light), 0.4) 70%, 
+    hsla(var(--luxury-gold), 0.6)
+  );
+  animation: rotateBorderGradient 8s linear infinite;
+}
+
+@keyframes rotateBorderGradient {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+/* Luxury divider for section breaks */
+.luxury-divider {
+  height: 1px;
+  width: 100%;
+  margin: 2rem 0;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.4), transparent);
+  position: relative;
+}
+
+.luxury-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background-color: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.6);
+  transform-origin: center;
+  rotate: 45deg;
+}
+
 /* Refined spacing utilities */
 .content-container {
   @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
@@ -303,6 +474,54 @@ h1, h2, h3, h4, h5, h6 {
 
 .section-spacing {
   @apply py-16 md:py-24;
+}
+
+/* Mobile Responsive Improvements */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+  
+  h3 {
+    @apply text-lg;
+  }
+  
+  .md\:flex-row {
+    @apply flex-col;
+  }
+  
+  .md\:space-x-4 {
+    @apply space-y-4;
+  }
+  
+  .input-luxury {
+    @apply text-sm py-2;
+  }
+  
+  .btn-luxury {
+    @apply text-sm py-2 px-4;
+  }
+  
+  .luxury-card {
+    @apply max-w-full;
+  }
+  
+  /* Adjust padding in mobile dialogs */
+  .dialog-content {
+    @apply p-3;
+  }
+  
+  /* Add more space for touch targets */
+  button, 
+  [role="button"],
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 /* Subtle background patterns */
@@ -342,6 +561,52 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(0);
 }
 
+/* Enhanced luxury button for dark mode */
+.dark .btn-luxury {
+  @apply bg-gradient-to-r from-amber-500 to-yellow-600;
+  @apply text-slate-900 font-medium shadow-md;
+  @apply border border-amber-400/50 px-5 py-2.5;
+  @apply hover:from-amber-400 hover:to-yellow-500 hover:shadow-amber-500/20;
+  @apply transition-all duration-300 transform hover:translate-y-[-2px];
+  @apply active:translate-y-0 active:shadow-inner;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 4px 10px rgba(251, 191, 36, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Gold button with animated border - use for primary CTAs in dark mode */
+.dark .btn-gold-animated {
+  @apply relative bg-gradient-to-r from-amber-800/30 to-amber-900/30;
+  @apply text-amber-100 font-medium px-6 py-3 rounded-md;
+  @apply overflow-hidden shadow-xl;
+  @apply border border-amber-500/20;
+}
+
+.dark .btn-gold-animated::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  background: linear-gradient(90deg, 
+    rgba(251, 191, 36, 0.8), 
+    rgba(251, 191, 36, 0.2),
+    rgba(251, 191, 36, 0.8)
+  );
+  background-size: 200% 100%;
+  animation: shimmerBtn 3s infinite linear;
+  border-radius: inherit;
+}
+
+@keyframes shimmerBtn {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* Image enhancements */
 .img-highlight {
   @apply rounded-lg overflow-hidden;
@@ -369,6 +634,15 @@ h1, h2, h3, h4, h5, h6 {
   padding: 2px;
 }
 
+/* Dark mode tablist enhancements */
+.dark [role="tablist"] {
+  background-color: rgba(20, 20, 30, 0.3);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  box-shadow: 
+    0 3px 10px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(251, 191, 36, 0.05);
+}
+
 [role="tab"] {
   border: none !important;
   position: relative;
@@ -376,9 +650,42 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.2s ease;
 }
 
+/* Enhanced tab styling */
+.dark [role="tab"] {
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
+  font-family: var(--luxury-serif);
+}
+
+.dark [role="tab"]:hover {
+  color: rgba(251, 191, 36, 0.8);
+  background-color: rgba(251, 191, 36, 0.07);
+}
+
 [role="tab"][data-state="active"] {
   background-color: rgba(var(--primary-rgb), 0.15);
   color: hsl(var(--primary));
+}
+
+/* Dark mode active tab */
+.dark [role="tab"][data-state="active"] {
+  background-color: rgba(251, 191, 36, 0.15);
+  color: rgba(251, 191, 36, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 5px rgba(251, 191, 36, 0.05);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* Active tab indicator */
+.dark [role="tab"][data-state="active"]::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 25%;
+  right: 25%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.6), transparent);
 }
 
 /* Mobile-specific enhancements */
@@ -477,4 +784,325 @@ h1, h2, h3, h4, h5, h6 {
   height: 10px;
   border-bottom: 1px solid rgba(251, 191, 36, 0.5);
   border-right: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+/* Luxury animations */
+
+/* Subtle pulsing glow animation */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Base shimmer animation for highlighted elements */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Luxury gold shimmer animation for premium elements */
+@keyframes luxury-shimmer {
+  0% {
+    box-shadow: 0 0 5px rgba(251, 191, 36, 0.3), 
+                0 0 10px rgba(251, 191, 36, 0.2), 
+                0 0 15px rgba(251, 191, 36, 0.1);
+    opacity: 0.3;
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4), 
+                0 0 20px rgba(251, 191, 36, 0.3), 
+                0 0 30px rgba(251, 191, 36, 0.2);
+    opacity: 0.5;
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(251, 191, 36, 0.3), 
+                0 0 10px rgba(251, 191, 36, 0.2), 
+                0 0 15px rgba(251, 191, 36, 0.1);
+    opacity: 0.3;
+  }
+}
+
+/* Ribbon shine animation for awards and special features */
+@keyframes ribbon-shine {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Subtle floating animation for decorative elements */
+@keyframes luxury-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Gold glitter effect animation */
+@keyframes gold-glitter {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Animation utility classes */
+.animate-luxury-shimmer {
+  animation: luxury-shimmer 3s infinite ease-in-out;
+}
+
+.animate-ribbon-shine {
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(251, 191, 36, 0.4), 
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: ribbon-shine 3s infinite ease-in-out;
+}
+
+.animate-luxury-float {
+  animation: luxury-float 4s infinite ease-in-out;
+}
+
+.animate-gold-glitter {
+  animation: gold-glitter 2s infinite ease-in-out;
+}
+
+/* Weather display luxury enhancements */
+.weather-display-luxury {
+  position: relative;
+  @apply rounded-lg border border-amber-200/40 overflow-hidden shadow-md;
+  @apply bg-white/95 dark:bg-slate-900/95 backdrop-blur-md;
+  @apply dark:border-amber-700/30 dark:shadow-lg;
+}
+
+.weather-display-luxury::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.weather-icon-luxury svg {
+  filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.3));
+}
+
+.weather-temp-luxury {
+  @apply text-4xl font-luxury-heading text-amber-900 dark:text-amber-200;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.weather-temp-luxury::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.5) 50%, transparent);
+  transform-origin: center;
+  animation: luxury-line-expand 3s ease-in-out infinite;
+}
+
+@keyframes luxury-line-expand {
+  0%, 100% { 
+    transform: scaleX(0.3);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: scaleX(1);
+    opacity: 0.8;
+  }
+}
+
+.weather-condition-luxury {
+  @apply text-sm italic font-luxury-heading text-amber-700/80 dark:text-amber-300/90;
+}
+
+.dark .weather-icon-luxury svg {
+  filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.4));
+}
+
+.designer-tag {
+  @apply px-3 py-1 text-xs uppercase tracking-wider font-luxury-heading;
+  @apply rounded-sm bg-gradient-to-r from-amber-50 to-amber-100/80;
+  @apply text-amber-900 border border-amber-200/50 shadow-sm;
+  position: relative;
+  overflow: hidden;
+}
+
+.designer-tag::before {
+  content: '';
+  position: absolute;
+  top: -25%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(0.5);
+  animation: luxury-radial-pulse 3s ease-in-out infinite;
+}
+
+@keyframes luxury-radial-pulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+.dark .designer-tag {
+  @apply bg-gradient-to-r from-amber-900/70 to-amber-800/50;
+  @apply text-amber-200 border-amber-700/40 shadow-md;
+}
+
+/* Animated corner decoration for luxury cards and components */
+.luxury-corner-decoration {
+  position: relative;
+}
+
+.luxury-corner-decoration::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid rgba(251, 191, 36, 0.5);
+  border-left: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.luxury-corner-decoration::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid rgba(251, 191, 36, 0.5);
+  border-right: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.luxury-corner-decoration .corner-bottom-left {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.5);
+  border-left: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.luxury-corner-decoration .corner-bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.5);
+  border-right: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+/* Elegant loader animation */
+.loading-luxury {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.loading-luxury::before,
+.loading-luxury::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  animation: luxury-loader-spin 2s linear infinite;
+}
+
+.loading-luxury::before {
+  border-top-color: rgba(251, 191, 36, 0.8);
+  border-right-color: rgba(251, 191, 36, 0.3);
+  border-bottom-color: rgba(251, 191, 36, 0.2);
+}
+
+.loading-luxury::after {
+  border-top-color: rgba(251, 191, 36, 0.6);
+  border-left-color: rgba(251, 191, 36, 0.3);
+  opacity: 0.6;
+  filter: blur(1px);
+  animation-duration: 3s;
+  animation-direction: reverse;
+}
+
+@keyframes luxury-loader-spin {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fade-scale animation for components */
+.animate-fade-scale {
+  animation: fade-scale-in 0.6s ease-out forwards;
+}
+
+@keyframes fade-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Luxurious text animation for headings */
+.luxury-text-reveal {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.luxury-text-reveal span {
+  display: inline-block;
+  transform: translateY(100%);
+  opacity: 0;
+  animation: text-reveal 0.8s forwards;
+}
+
+@keyframes text-reveal {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
