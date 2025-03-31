@@ -7,7 +7,8 @@ echo "🔧 Setting up Replit environment..."
 
 # Verify the database connection
 echo "🔍 Testing database connection..."
-npx tsx test-db.ts
+# Using the built-in database connection check from server/db.ts
+npx tsx -e "import { testDatabaseConnection } from './server/db.ts'; testDatabaseConnection().then(result => { if (result) { console.log('Database connection successful'); process.exit(0); } else { console.error('Database connection failed'); process.exit(1); }}).catch(err => { console.error('Error testing database:', err); process.exit(1); });"
 DB_STATUS=$?
 if [ $DB_STATUS -ne 0 ]; then
   echo "⚠️ Database connection test failed. Some features may not work correctly."
@@ -41,12 +42,12 @@ echo "1. Use the Deploy button in the Replit interface"
 echo "2. The application will be deployed using port 3000"
 echo ""
 echo "For local development (VSCode):"
-echo "1. Run: ./run-vscode.sh"
+echo "1. Run: npm run dev"
 
 # Ask if user wants to start the server now
 read -p "Do you want to start the server now? (y/n): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "Starting server..."
-  ./start-server.sh
+  node start.js
 fi

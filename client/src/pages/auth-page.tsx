@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Sparkles, Cloud, Shirt, Palette, Sun, Umbrella } from "lucide-react";
+import { FashionLogo } from "@/components/ui/fashion-logo";
+import { FashionPatternBackground } from "@/components/ui/fashion-pattern-background";
+import { motion } from "framer-motion";
 
 const loginSchema = z.object({
   username: z.string().min(3, {
@@ -85,233 +89,292 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen grid md:grid-cols-2 bg-background">
-      {/* Hero Section */}
-      <div className="hidden md:flex flex-col justify-center p-12 bg-gradient-to-br from-primary/10 to-primary/5">
-        <div className="max-w-[500px] mx-auto">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Welcome to Cher's Closet
-          </h1>
-          <p className="text-lg text-muted-foreground mb-8">
-            Your personal stylist, helping you look your best every day with outfit recommendations based on your mood and the weather.
-          </p>
+    <FashionPatternBackground pattern="fabric" density="light" color="primary" className="min-h-screen">
+      <div className="min-h-screen relative bg-gradient-to-tr from-white/90 via-white/95 to-white/90 dark:from-black/90 dark:via-black/95 dark:to-black/90">
+        {/* Fashion-themed decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          {/* Top decorative ribbon */}
+          <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-primary/80 via-pink-500/80 to-primary/80" />
+          
+          {/* Decorative elements - floating fashion icons */}
+          <motion.div
+            className="absolute top-[20%] left-[5%] text-primary/30"
+            animate={{ y: [0, 10, 0], rotate: [0, 5, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Shirt size={40} />
+          </motion.div>
+          
+          <motion.div
+            className="absolute top-[35%] right-[8%] text-pink-500/30"
+            animate={{ y: [0, -15, 0], rotate: [0, -8, 0] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Palette size={48} />
+          </motion.div>
+          
+          <motion.div
+            className="absolute bottom-[25%] left-[12%] text-purple-500/30"
+            animate={{ y: [0, 12, 0], rotate: [0, 8, 0] }}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          >
+            <Sun size={36} />
+          </motion.div>
+          
+          <motion.div
+            className="absolute bottom-[15%] right-[15%] text-primary/20"
+            animate={{ y: [0, -10, 0], rotate: [0, -5, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          >
+            <Umbrella size={32} />
+          </motion.div>
+        </div>
 
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                  <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-                  <path d="M3 9V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-medium">Smart Wardrobe Management</h3>
-                <p className="text-muted-foreground">Easily organize your clothing with AI categorization</p>
-              </div>
+        <div className="container mx-auto px-4 py-8 h-full relative z-10">
+          <div className="grid md:grid-cols-5 gap-8 items-center min-h-screen">
+            {/* Fashion Branding Section */}
+            <div className="md:col-span-3 flex flex-col justify-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="mb-6">
+                  <FashionLogo size="xl" />
+                </div>
+
+                <h1 className="text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                  Your AI Fashion Stylist
+                </h1>
+
+                <p className="text-lg text-muted-foreground mb-8 max-w-2xl">
+                  Discover your perfect style with AI-powered outfit recommendations based on your mood, the weather, 
+                  and your personal wardrobe collection.
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-8">
+                  <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10 text-primary px-3 py-1 text-sm border-primary/20">
+                    <Cloud className="w-3.5 h-3.5 mr-1.5" />
+                    Weather-Based Styling
+                  </Badge>
+                  <Badge variant="outline" className="bg-pink-500/5 hover:bg-pink-500/10 text-pink-500 px-3 py-1 text-sm border-pink-500/20">
+                    <Shirt className="w-3.5 h-3.5 mr-1.5" />
+                    Wardrobe Management
+                  </Badge>
+                  <Badge variant="outline" className="bg-purple-500/5 hover:bg-purple-500/10 text-purple-500 px-3 py-1 text-sm border-purple-500/20">
+                    <Palette className="w-3.5 h-3.5 mr-1.5" />
+                    Mood-Based Recommendations
+                  </Badge>
+                  <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10 text-primary px-3 py-1 text-sm border-primary/20">
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    AI-Powered Fashion Advice
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-10">
+                  <motion.div 
+                    className="flex flex-col items-center text-center p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 shadow-sm"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Shirt className="h-10 w-10 mb-3 text-primary" />
+                    <h3 className="font-medium text-lg mb-2">Smart Wardrobe</h3>
+                    <p className="text-muted-foreground text-sm">Organize your clothing with AI categorization</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="flex flex-col items-center text-center p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 shadow-sm"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Cloud className="h-10 w-10 mb-3 text-primary" />
+                    <h3 className="font-medium text-lg mb-2">Weather Aware</h3>
+                    <p className="text-muted-foreground text-sm">Dress appropriately for any weather</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="flex flex-col items-center text-center p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 shadow-sm"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Palette className="h-10 w-10 mb-3 text-primary" />
+                    <h3 className="font-medium text-lg mb-2">Express Yourself</h3>
+                    <p className="text-muted-foreground text-sm">Fashion that matches your mood</p>
+                  </motion.div>
+                </div>
+              </motion.div>
             </div>
 
-            <div className="flex items-start space-x-3">
-              <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                  <path d="M8 16.02A6 6 0 0 1 4.98 13H2" />
-                  <path d="M22 12h-4c0-2.21-1.79-4-4-4" />
-                  <path d="M20 17.5c0 .83-.67 1.5-1.5 1.5S17 18.33 17 17.5s.67-1.5 1.5-1.5" />
-                  <path d="M15.42 13a4 4 0 0 0 0 5.66" />
-                  <path d="M12 22s-2-1.9-2-3.5c0-.84.5-1.5 1.11-1.5.61 0 .89.41.89 1" />
-                  <path d="M14 22s2-1.9 2-3.5c0-.84-.5-1.5-1.11-1.5-.61 0-.89.41-.89 1" />
-                  <path d="M8 15h.01" />
-                  <path d="M2 12h.01" />
-                  <path d="M12 2C6.5 2 2 6.5 2 12c0 1.4.3 2.7.81 3.92" />
-                  <path d="M8 8a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0" />
-                  <path d="M16 12c3.31 0 6-2.69 6-6s-2.69-6-6-6c-2.1 0-4 1.1-5.09 2.77" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-medium">Weather-Aware Suggestions</h3>
-                <p className="text-muted-foreground">Get outfit recommendations based on current weather</p>
-              </div>
-            </div>
+            {/* Auth Forms */}
+            <div className="md:col-span-2 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="w-full max-w-md"
+              >
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 border border-primary/20 shadow-lg">
+                  <Tabs defaultValue="login">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-center">
+                        <FashionLogo size="sm" />
+                        <TabsList>
+                          <TabsTrigger value="login">Login</TabsTrigger>
+                          <TabsTrigger value="register">Register</TabsTrigger>
+                        </TabsList>
+                      </div>
+                      <CardDescription className="mt-2">
+                        Your personal AI stylist for perfect outfits
+                      </CardDescription>
+                    </CardHeader>
 
-            <div className="flex items-start space-x-3">
-              <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                  <path d="M17 17c.3-1 .5-2.6.5-4 0-2.5-.8-4.5-2-5.3m0 0c-.4-.3-.9-.4-1.5-.4-3.1.3-6 4.1-6 9.7 0 .2 0 1.3.5 2.6.5 1.3 2.2 2.8 4.5 2.8 2.3 0 3.9-.7 4.4-1.5.5-.8.7-1.5.7-1.9" />
-                  <path d="M8 15c-.4-.5-1-1.3-1-2.3 0-1.2 1-2.4 2.5-2.7" />
-                  <path d="M2 9V5h4" />
-                  <path d="M22 9V5h-4" />
-                  <path d="M22 19h-4v-4" />
-                  <path d="M2 19h4v-4" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-medium">Mood-Based Styling</h3>
-                <p className="text-muted-foreground">Express yourself with fashion that matches your mood</p>
-              </div>
+                    <TabsContent value="login">
+                      <Form {...loginForm}>
+                        <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
+                          <CardContent className="space-y-4 pt-2">
+                            <FormField
+                              control={loginForm.control}
+                              name="username"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Username</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="username" {...field} className="bg-white/50 dark:bg-slate-800/50" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={loginForm.control}
+                              name="password"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Password</FormLabel>
+                                  <FormControl>
+                                    <Input type="password" placeholder="••••••" {...field} className="bg-white/50 dark:bg-slate-800/50" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                          <CardFooter>
+                            <Button
+                              type="submit"
+                              className="w-full bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
+                              disabled={loginMutation.isPending}
+                            >
+                              {loginMutation.isPending ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Logging in...
+                                </>
+                              ) : (
+                                "Log in"
+                              )}
+                            </Button>
+                          </CardFooter>
+                        </form>
+                      </Form>
+                    </TabsContent>
+
+                    <TabsContent value="register">
+                      <Form {...registerForm}>
+                        <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
+                          <CardContent className="space-y-4 pt-2">
+                            <FormField
+                              control={registerForm.control}
+                              name="username"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Username</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="username" {...field} className="bg-white/50 dark:bg-slate-800/50" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={registerForm.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Full Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="Your name" {...field} value={field.value || ''} className="bg-white/50 dark:bg-slate-800/50" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={registerForm.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email (Optional)</FormLabel>
+                                  <FormControl>
+                                    <Input type="email" placeholder="email@example.com" {...field} className="bg-white/50 dark:bg-slate-800/50" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={registerForm.control}
+                              name="password"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Password</FormLabel>
+                                  <FormControl>
+                                    <Input type="password" placeholder="••••••" {...field} className="bg-white/50 dark:bg-slate-800/50" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={registerForm.control}
+                              name="confirmPassword"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Confirm Password</FormLabel>
+                                  <FormControl>
+                                    <Input type="password" placeholder="••••••" {...field} className="bg-white/50 dark:bg-slate-800/50" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                          <CardFooter>
+                            <Button
+                              type="submit"
+                              className="w-full bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
+                              disabled={registerMutation.isPending}
+                            >
+                              {registerMutation.isPending ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Creating account...
+                                </>
+                              ) : (
+                                "Create Account"
+                              )}
+                            </Button>
+                          </CardFooter>
+                        </form>
+                      </Form>
+                    </TabsContent>
+                  </Tabs>
+                </Card>
+              </motion.div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Auth Forms */}
-      <div className="flex items-center justify-center p-8">
-        <Card className="w-full max-w-md">
-          <Tabs defaultValue="login">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Cher's Closet</CardTitle>
-                <TabsList>
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="register">Register</TabsTrigger>
-                </TabsList>
-              </div>
-              <CardDescription>
-                Your personal stylist app for perfect outfits every day
-              </CardDescription>
-            </CardHeader>
-
-            <TabsContent value="login">
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Username</FormLabel>
-                          <FormControl>
-                            <Input placeholder="username" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={loginMutation.isPending}
-                    >
-                      {loginMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Logging in...
-                        </>
-                      ) : (
-                        "Log in"
-                      )}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
-            </TabsContent>
-
-            <TabsContent value="register">
-              <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={registerForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Username</FormLabel>
-                          <FormControl>
-                            <Input placeholder="username" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your name" {...field} value={field.value || ''} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="email@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={registerMutation.isPending}
-                    >
-                      {registerMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating account...
-                        </>
-                      ) : (
-                        "Create Account"
-                      )}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
-            </TabsContent>
-          </Tabs>
-        </Card>
-      </div>
-    </div>
+    </FashionPatternBackground>
   );
 }

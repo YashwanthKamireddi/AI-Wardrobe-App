@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import {
   Card,
   CardContent,
@@ -45,6 +46,7 @@ interface StyleProfileAnalysisProps {
 export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfileAnalysisProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("profile");
+  const [_, navigate] = useLocation();
   
   // Fetch style profile data
   const {
@@ -165,7 +167,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
             
             <Button 
               className="mt-6"
-              onClick={() => window.location.href = '/wardrobe'}
+              onClick={() => navigate('/wardrobe')}
             >
               <Shirt className="mr-2 h-4 w-4" />
               Add Items to Wardrobe
@@ -269,7 +271,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                 
                 <Button 
                   variant="outline"
-                  onClick={() => window.location.href = '/wardrobe'}
+                  onClick={() => navigate('/wardrobe')}
                 >
                   <Shirt className="mr-2 h-4 w-4" />
                   Add More Items
