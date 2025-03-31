@@ -21,7 +21,7 @@ import {
   Cloud, 
   Layers, 
   Sparkles,
-  CloudSun
+  Sunrise
 } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -145,7 +145,7 @@ export default function HomePage() {
                     animate={{ rotate: 360 }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                   >
-                    <CloudSun className="mr-2 h-6 w-6 text-primary" />
+                    <Sunrise className="mr-2 h-6 w-6 text-primary" />
                   </motion.div>
                   <CardTitle>Today's Weather</CardTitle>
                 </div>
