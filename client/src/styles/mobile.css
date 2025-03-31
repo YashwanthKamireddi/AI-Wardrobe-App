@@ -64,25 +64,100 @@
     color: inherit;
   }
   
-  /* Bottom navigation bar */
-  .mobile-nav-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--color-background);
+  /* Fix for small screens with mobile nav */
+  body {
+    padding-bottom: 4rem !important;
+  }
+  
+  /* Ensure content is visible above the bottom nav */
+  main, section {
+    padding-bottom: calc(1rem + 4rem) !important;
+  }
+  
+  /* Use full viewport height */
+  .min-h-screen, .h-screen {
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+  }
+  
+  /* Mobile form improvements */
+  form {
+    width: 100% !important;
+  }
+  
+  /* Mobile auth form improvements */
+  input {
+    height: 44px !important;
+  }
+  
+  /* Auth page responsive fixes */
+  .auth-tabs-content {
+    min-height: auto !important;
+    padding: 0.75rem !important;
+  }
+  
+  .auth-card-content {
+    padding: 0.75rem !important;
+    gap: 0.75rem !important;
+  }
+  
+  .auth-form-container {
+    padding: 0 !important;
+  }
+  
+  .auth-form {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  /* Fix for auth card tabs */
+  .auth-card {
+    overflow: hidden;
+    width: 100%;
+    padding: 0.75rem !important;
+    max-width: 90vw !important;
+  }
+  
+  /* Completely redesign tabs on mobile */
+  .auth-card [role="tablist"] {
     display: flex;
-    justify-content: space-around;
-    padding: 0.75rem 0;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 50;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
   }
   
-  /* Add padding to bottom to account for fixed nav */
-  .has-bottom-nav {
-    padding-bottom: 4rem;
+  /* Style individual tab triggers */
+  .auth-card [role="tab"] {
+    flex: 1;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    font-size: 0.9rem;
+    background: transparent;
   }
   
+  /* Remove the white dots and any decorative elements */
+  .auth-card [role="tab"]::before,
+  .auth-card [role="tab"]::after,
+  .auth-card [role="tab"] *::before,
+  .auth-card [role="tab"] *::after,
+  [role="tab"] *::before,
+  [role="tab"] *::after {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+  
+  /* Adjust card header on mobile */
+  .auth-card [class*="card-header"] {
+    padding: 0.75rem !important;
+  }
+
   /* Mobile-specific cards */
   .mobile-card {
     border-radius: 12px;
@@ -107,15 +182,41 @@
 
 /* Safe area insets for notched devices */
 @supports (padding: max(0px)) {
-  body {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+  :root {
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
   }
   
-  .mobile-nav-bar {
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  /* Apply safe area insets */
+  .pt-safe {
+    padding-top: var(--sat) !important;
+  }
+  
+  .pr-safe {
+    padding-right: var(--sar) !important;
+  }
+  
+  .pb-safe {
+    padding-bottom: var(--sab) !important;
+  }
+  
+  .pl-safe {
+    padding-left: var(--sal) !important;
+  }
+  
+  /* Fixed positioned elements */
+  .fixed, .sticky {
+    padding-top: max(var(--sat), 0px);
+    padding-right: max(var(--sar), 0px);
+    padding-bottom: max(var(--sab), 0px);
+    padding-left: max(var(--sal), 0px);
+  }
+  
+  /* Bottom nav with safe area */
+  .fixed.bottom-0 {
+    padding-bottom: max(var(--sab), 0px);
   }
 }
 

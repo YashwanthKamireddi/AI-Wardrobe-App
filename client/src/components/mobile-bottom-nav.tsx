@@ -83,7 +83,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-sm border-t border-primary/10 flex items-center justify-around z-50 px-1 shadow-lg"
+      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-sm border-t border-primary/10 flex items-center justify-around z-50 px-1 shadow-lg pb-safe"
       initial="hidden"
       animate="visible"
       variants={navVariants}
