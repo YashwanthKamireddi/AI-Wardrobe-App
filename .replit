@@ -1,5 +1,5 @@
 run = "node start.js"
-modules = ["nodejs-20:v8-20230920-bd784b9"]
+modules = ["nodejs-20"]
 hidden = [".config", "package-lock.json"]
 
 [nix]
