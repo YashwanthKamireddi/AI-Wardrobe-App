@@ -19,6 +19,7 @@ import {
   AlertCircle, 
   Sun, 
   Cloud, 
+  CloudSun,
   Layers, 
   Sparkles,
   Sunrise

@@ -627,7 +627,22 @@ h1, h2, h3, h4, h5, h6 {
 .dark .btn-gold-animated {
   @apply relative bg-gradient-to-r from-amber-800/30 to-amber-900/30;
   @apply text-amber-100 font-medium px-6 py-3 rounded-md;
-  @apply overflow-hidden shadow-xl;
+  @apply overflow-hidden;
+}
+
+/* 3D tilt effect gradient support */
+.bg-gradient-radial {
+  background-image: radial-gradient(var(--tw-gradient-stops));
+}
+
+/* Supporting styles for the 3D card effect */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Gold animated button styling */
+.btn-gold-animated {
+  @apply shadow-xl;
   @apply border border-amber-500/20;
 }
 
