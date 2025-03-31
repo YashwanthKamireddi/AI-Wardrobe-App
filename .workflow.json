@@ -1,8 +1,13 @@
 {
   "runs": [
     {
-      "name": "Start application",
-      "command": "npm run dev"
+      "command": [
+        "npm",
+        "run",
+        "dev"
+      ],
+      "watch": true,
+      "name": "startapp"
     }
   ]
 }

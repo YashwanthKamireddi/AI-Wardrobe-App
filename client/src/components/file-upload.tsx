@@ -52,9 +52,9 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
   };
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {preview ? (
-        <div className="relative aspect-square rounded-md overflow-hidden border">
+        <div className="relative rounded-sm overflow-hidden border border-accent/20 shadow-md boutique-item">
           <img 
             src={preview} 
             alt="Uploaded preview" 
@@ -62,20 +62,21 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
           />
           <div
             onClick={handleRemoveImage}
-            className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-black/80 transition-colors cursor-pointer"
+            className="absolute top-2 right-2 p-1.5 bg-black/60 border border-accent/40 rounded-sm hover:bg-black/80 transition-colors cursor-pointer animate-fade-in"
           >
             <X className="h-4 w-4 text-white" />
           </div>
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/70 to-transparent"></div>
         </div>
       ) : (
-        <div className="border-2 border-dashed rounded-md aspect-square flex flex-col items-center justify-center text-muted-foreground p-4">
-          <Upload className="h-10 w-10 mb-2" />
-          <p className="text-sm font-medium">Drag & drop an image</p>
-          <p className="text-xs">or click to browse</p>
+        <div className="border border-accent/20 border-dashed rounded-sm aspect-square flex flex-col items-center justify-center text-muted-foreground p-4 bg-background/50 hover:bg-background/80 transition-colors">
+          <Upload className="h-10 w-10 mb-3 text-accent/70" />
+          <p className="text-sm font-fashion-body uppercase tracking-wide">Drag & drop image</p>
+          <p className="text-xs font-fashion-body mt-1">or select upload option below</p>
         </div>
       )}
       
-      <div className="grid gap-2">
+      <div className="grid gap-3">
         <Input
           ref={fileInputRef}
           type="file"
@@ -85,12 +86,13 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
           id="image-upload"
         />
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
+            className="fashion-button"
           >
             <Upload className="h-4 w-4 mr-2" />
             Browse Files
@@ -107,16 +109,17 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
               }
             }}
             disabled={isLoading}
+            className="fashion-button"
           >
             <Camera className="h-4 w-4 mr-2" />
             Take Photo
           </Button>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <div className="h-px flex-1 bg-muted"></div>
-          <span className="text-xs text-muted-foreground">OR</span>
-          <div className="h-px flex-1 bg-muted"></div>
+        <div className="flex items-center space-x-3 my-1">
+          <div className="h-px flex-1 bg-accent/10"></div>
+          <span className="text-xs text-muted-foreground font-fashion-body">OR</span>
+          <div className="h-px flex-1 bg-accent/10"></div>
         </div>
         
         <Input
@@ -124,12 +127,13 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
           placeholder="Enter image URL"
           onChange={handleUrlInput}
           disabled={isLoading}
+          className="input-enhanced font-fashion-body"
         />
         
         {isLoading && (
-          <div className="text-center py-2">
-            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent"></div>
-            <p className="text-xs mt-1 text-muted-foreground">Processing image...</p>
+          <div className="text-center py-3">
+            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-accent border-r-transparent"></div>
+            <p className="text-xs mt-2 font-fashion-body text-muted-foreground">Processing image...</p>
           </div>
         )}
       </div>

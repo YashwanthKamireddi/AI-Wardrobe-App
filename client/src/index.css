@@ -1,7 +1,9 @@
 
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+/* Import Google Fonts - Luxury Fashion Typography */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700&display=swap');
 @import './styles/mobile.css';
 @import './styles/custom.css';
 
@@ -59,103 +61,111 @@
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --background-rgb: 255, 255, 255;
-    --foreground-rgb: 17, 24, 39;
+    /* Ultra luxury fashion palette - rich burgundy, gold and cream */
+    --background: 30 30% 98%;
+    --foreground: 337 50% 15%;
+    --background-rgb: 248, 247, 245;
+    --foreground-rgb: 68, 35, 45;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 337 50% 15%;
     --card-rgb: 255, 255, 255;
  
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 337 50% 15%;
  
-    --primary: 210 30% 50%;
-    --primary-foreground: 210 40% 98%;
-    --primary-rgb: 76, 130, 184;
+    /* Rich burgundy primary - deeper and more luxurious */
+    --primary: 337 73% 26%;
+    --primary-foreground: 30 30% 98%;
+    --primary-rgb: 128, 22, 58;
  
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Luxury cream secondary with a hint of warmth */
+    --secondary: 35 30% 93%;
+    --secondary-foreground: 337 50% 15%;
  
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 35 25% 90%;
+    --muted-foreground: 337 30% 35%;
  
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Gold accent - more vibrant */
+    --accent: 45 80% 50%;
+    --accent-foreground: 337 50% 15%;
  
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 30 30% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 35 30% 85%;
+    --input: 35 30% 85%;
+    --ring: 337 73% 26%;
  
     --radius: 0.5rem;
 
-    /* Chart colors */
-    --chart-1: 210 70% 50%;
-    --chart-2: 30 70% 50%;
-    --chart-3: 150 70% 50%;
-    --chart-4: 270 70% 50%;
-    --chart-5: 180 70% 50%;
+    /* Chart colors - harmonious with luxury palette */
+    --chart-1: 337 70% 50%;
+    --chart-2: 45 80% 50%;
+    --chart-3: 15 70% 50%;
+    --chart-4: 300 60% 40%;
+    --chart-5: 180 50% 45%;
     
-    /* Sidebar colors */
-    --sidebar-background: 217 33% 17%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 210 70% 60%;
+    /* Sidebar colors - aligned with luxury palette */
+    --sidebar-background: 337 40% 15%;
+    --sidebar-foreground: 30 30% 98%;
+    --sidebar-primary: 337 60% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 25%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 25%;
-    --sidebar-ring: 224 71.4% 60%;
+    --sidebar-accent: 45 80% 50%;
+    --sidebar-accent-foreground: 337 40% 15%;
+    --sidebar-border: 337 30% 25%;
+    --sidebar-ring: 337 60% 40%;
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Luxury dark theme - deep burgundy with gold accents */
+    --background: 337 40% 8%;
+    --foreground: 35 40% 95%;
  
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 337 35% 12%;
+    --card-foreground: 35 40% 95%;
  
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 337 35% 12%;
+    --popover-foreground: 35 40% 95%;
  
-    --primary: 210 70% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Rich burgundy primary - adjusted for dark mode */
+    --primary: 337 60% 35%;
+    --primary-foreground: 35 40% 95%;
  
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Dark burgundy secondary */
+    --secondary: 337 30% 18%;
+    --secondary-foreground: 35 40% 95%;
  
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 337 30% 15%;
+    --muted-foreground: 35 25% 75%;
  
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Gold accent - preserved in dark mode */
+    --accent: 45 85% 50%;
+    --accent-foreground: 337 40% 10%;
  
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 40%;
+    --destructive-foreground: 35 40% 95%;
  
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 337 30% 20%;
+    --input: 337 30% 20%;
+    --ring: 337 60% 35%;
 
-    /* Chart colors */
-    --chart-1: 210 80% 70%;
-    --chart-2: 30 80% 70%;
-    --chart-3: 150 80% 70%;
-    --chart-4: 270 80% 70%;
-    --chart-5: 180 80% 70%;
+    /* Chart colors - adjusted for dark mode */
+    --chart-1: 337 80% 70%;
+    --chart-2: 45 85% 60%;
+    --chart-3: 15 80% 60%;
+    --chart-4: 300 70% 60%;
+    --chart-5: 180 60% 60%;
     
-    /* Sidebar colors - unchanged in dark mode */
-    --sidebar-background: 217 33% 17%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 210 70% 60%;
+    /* Sidebar colors - aligned with dark luxury theme */
+    --sidebar-background: 337 45% 10%;
+    --sidebar-foreground: 35 40% 95%;
+    --sidebar-primary: 337 60% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 25%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 25%;
-    --sidebar-ring: 224 71.4% 60%;
+    --sidebar-accent: 45 85% 50%;
+    --sidebar-accent-foreground: 337 45% 10%;
+    --sidebar-border: 337 35% 20%;
+    --sidebar-ring: 337 60% 45%;
   }
 }
  
@@ -169,7 +179,7 @@
   }
 }
 
-/* Custom animations */
+/* Enhanced Luxury Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -180,12 +190,74 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes slideInRight {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmerGold {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes borderGlow {
+  0% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
+  100% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+}
+
+@keyframes subtleRotate {
+  0% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+  100% { transform: rotate(-1deg); }
+}
+
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
 
 .animate-slide-up {
   animation: slideUp 0.5s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.animate-fade-scale {
+  animation: fadeScale 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.animate-shimmer-gold {
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(212, 175, 55, 0.2), 
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmerGold 3s infinite linear;
+}
+
+.animate-border-glow {
+  animation: borderGlow 2s infinite ease-in-out;
+}
+
+.animate-float {
+  animation: floatUp 4s infinite ease-in-out;
+}
+
+.animate-subtle-rotate {
+  animation: subtleRotate 6s infinite ease-in-out;
 }
 
 /* Elegant card design */
@@ -241,4 +313,363 @@
 /* Improved input fields */
 .input-enhanced {
   @apply bg-background/50 border border-input rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-200;
+}
+
+/* ===== LUXURY FASHION SPECIFIC STYLES ===== */
+
+/* Custom typography classes */
+.font-fashion-heading {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -0.02em;
+  @apply font-medium;
+}
+
+.font-fashion-display {
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 0.01em;
+  @apply font-light tracking-wide;
+}
+
+.font-fashion-body {
+  font-family: 'Montserrat', sans-serif;
+  @apply font-light;
+}
+
+/* Gold accents */
+.gold-accent {
+  color: hsl(var(--accent));
+  text-shadow: 0 0 1px rgba(212, 175, 55, 0.3);
+}
+
+.gold-border {
+  border-color: hsl(var(--accent));
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
+}
+
+/* Luxury card effects */
+.luxury-card {
+  @apply rounded-sm bg-white shadow-md relative overflow-hidden;
+  border: 1px solid rgba(230, 230, 230, 0.8);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.luxury-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.luxury-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 6px;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, hsl(var(--accent)));
+}
+
+.dark .luxury-card {
+  @apply bg-card;
+  border: 1px solid rgba(50, 50, 70, 0.8);
+}
+
+/* Runway-inspired elements */
+.runway-gradient {
+  background: linear-gradient(45deg, hsl(var(--card)), hsl(var(--background)));
+  position: relative;
+}
+
+.runway-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent 0%, rgba(212, 175, 55, 0.1) 100%);
+  pointer-events: none;
+}
+
+/* Fashion polaroid style */
+.polaroid-frame {
+  @apply p-1 bg-white shadow-md relative;
+  border: 1px solid #f0f0f0;
+  transform: rotate(-1deg);
+}
+
+.polaroid-frame img {
+  @apply w-full h-auto object-cover;
+}
+
+.polaroid-frame::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 30px;
+  height: 1px;
+  background-color: hsl(var(--accent));
+}
+
+.polaroid-caption {
+  @apply py-3 px-2 text-center;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  font-size: 0.9rem;
+}
+
+/* Boutique item display */
+.boutique-item {
+  @apply relative rounded-sm overflow-hidden transition-all duration-300;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transform: perspective(1000px) rotateY(0deg);
+}
+
+.boutique-item:hover {
+  transform: perspective(1000px) rotateY(5deg);
+  box-shadow: -5px 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.boutique-item-tag {
+  @apply absolute top-3 right-3 px-2 py-1 text-xs rounded-sm;
+  background-color: hsl(var(--accent));
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  z-index: 10;
+}
+
+/* Fashion button */
+.fashion-button {
+  @apply relative px-6 py-2 rounded-none overflow-hidden;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid hsl(var(--primary));
+  background: transparent;
+  color: hsl(var(--primary));
+  transition: all 0.3s ease;
+}
+
+.fashion-button:hover {
+  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary));
+}
+
+.fashion-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: hsl(var(--primary));
+  z-index: -1;
+  transition: height 0.3s ease;
+}
+
+.fashion-button:hover::after {
+  height: 100%;
+}
+
+/* Luxury divider */
+.luxury-divider {
+  @apply relative h-px w-full my-8;
+  background: linear-gradient(90deg, transparent, hsl(var(--accent)), transparent);
+}
+
+.luxury-divider::before {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  @apply bg-background px-4 text-accent;
+  font-size: 0.8rem;
+}
+
+/* Fashion pattern background */
+.fashion-pattern {
+  background-color: hsl(var(--background));
+  background-image: 
+    radial-gradient(hsl(var(--primary)/0.03) 1px, transparent 1px), 
+    radial-gradient(hsl(var(--primary)/0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+/* ==== ENHANCED LUXURY ELEMENTS ==== */
+
+/* Gold Corner Accent */
+.gold-corner {
+  position: relative;
+}
+
+.gold-corner::before,
+.gold-corner::after {
+  content: '';
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-color: hsl(var(--accent));
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.gold-corner::before {
+  top: 0;
+  left: 0;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+
+.gold-corner::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
+
+.gold-corner:hover::before,
+.gold-corner:hover::after {
+  width: 25px;
+  height: 25px;
+  opacity: 1;
+}
+
+/* Premium Dialog */
+.premium-dialog {
+  @apply rounded-md;
+  background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--card)/0.95));
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(var(--accent), 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.premium-dialog::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, hsl(var(--accent)/0.08), transparent 70%);
+  pointer-events: none;
+}
+
+/* Luxury Notification */
+.luxury-toast {
+  @apply font-fashion-body py-3 px-4 rounded-sm relative overflow-hidden;
+  background: linear-gradient(to right, hsl(var(--background)), hsl(var(--card)));
+  border-left: 3px solid hsl(var(--accent));
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.luxury-toast::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, hsl(var(--accent)), transparent);
+}
+
+/* Designer Label Tag */
+.designer-tag {
+  @apply inline-flex items-center justify-center px-3 py-1 text-xs uppercase;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
+  background-color: hsl(var(--background));
+  color: hsl(var(--primary));
+  transition: all 0.2s ease;
+}
+
+.designer-tag:hover {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Haute Couture Section */
+.haute-couture-section {
+  @apply relative py-12 px-6 overflow-hidden;
+  background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--card)));
+}
+
+.haute-couture-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--accent)), transparent);
+}
+
+.haute-couture-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--accent)), transparent);
+}
+
+/* Wardrobe Popup Fix */
+.wardrobe-popup {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.wardrobe-popup-content {
+  @apply w-full max-w-lg mx-auto bg-card p-6 rounded-md shadow-lg;
+  border: 1px solid hsl(var(--border));
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+/* Redesigned Weather Display */
+.weather-display-luxury {
+  @apply relative p-5 rounded-md gold-corner;
+  background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--background)));
+  border: 1px solid rgba(var(--border), 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.weather-display-luxury::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, hsl(var(--accent)/0.1), transparent 70%);
+  pointer-events: none;
+}
+
+.weather-icon-luxury {
+  @apply flex items-center justify-center p-2 rounded-full;
+  background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--card)));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(var(--accent-rgb), 0.1);
+}
+
+.weather-temp-luxury {
+  @apply font-fashion-display text-3xl;
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.weather-condition-luxury {
+  @apply font-fashion-body text-sm uppercase tracking-wider text-foreground/80 mt-1;
 }
