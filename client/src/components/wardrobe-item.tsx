@@ -10,7 +10,8 @@ import {
   HeartOff, 
   MoreVertical, 
   Snowflake, 
-  CloudSun, 
+  CloudIcon, 
+  SunIcon, 
   Cloud, 
   Sun,
   Loader2
@@ -47,7 +48,12 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
   const seasonIcon = () => {
     switch (item.season) {
       case "winter": return <Snowflake className="h-3 w-3 mr-1" />;
-      case "spring": return <CloudSun className="h-3 w-3 mr-1" />;
+      case "spring": return (
+        <span className="relative h-3 w-3 mr-1 inline-block">
+          <CloudIcon className="h-3 w-3 absolute" />
+          <SunIcon className="h-2 w-2 absolute right-0 bottom-0" />
+        </span>
+      );
       case "summer": return <Sun className="h-3 w-3 mr-1" />;
       case "fall": return <Cloud className="h-3 w-3 mr-1" />;
       default: return null;

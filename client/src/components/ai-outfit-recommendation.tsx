@@ -19,7 +19,8 @@ import {
   SaveIcon as Save,
   Loader2Icon as Loader2,
   AlertCircleIcon as AlertCircle,
-  CloudSunIcon as CloudSun,
+  CloudIcon,
+  SunIcon,
   ThumbsUpIcon as ThumbsUp
 } from "lucide-react";
 
@@ -248,7 +249,10 @@ const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent(
 
             {weather && (
               <div className="px-3 py-2 bg-muted/50 rounded-md flex items-center">
-                <CloudSun className="h-5 w-5 mr-2 text-primary" />
+                <div className="relative h-5 w-5 mr-2 text-primary">
+                  <CloudIcon className="h-5 w-5 absolute" />
+                  <SunIcon className="h-3 w-3 absolute right-0 bottom-0" />
+                </div>
                 <div>
                   <span className="font-medium">Current weather:</span> {weather.temperature}°C, {weather.condition}
                   <span className="block text-xs text-muted-foreground mt-1">

@@ -18,6 +18,7 @@ import FashionAuthFrame from "@/components/ui/fashion-auth-frame";
 import SilkUnwrapping from "@/components/ui/silk-unwrapping";
 import SparkleEffect from "@/components/ui/sparkle-effect";
 import GoldenThread from "@/components/ui/golden-thread";
+import LuxuryFeatureGuide from "@/components/ui/luxury-feature-guide";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Form validation schemas
