@@ -276,13 +276,18 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
 
   return (
     <motion.div 
-      className="weather-display-luxury animate-fade-scale"
+      className="weather-display-luxury animate-fade-scale relative before:absolute before:inset-0 before:border before:border-amber-600/20 dark:before:border-amber-400/20 before:rounded-sm"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
       whileHover={{ scale: 1.01 }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
+      {/* Luxury corner accents */}
+      <div className="absolute top-0 left-0 w-3 h-3 border-l border-t border-amber-600/30 dark:border-amber-400/30"></div>
+      <div className="absolute top-0 right-0 w-3 h-3 border-r border-t border-amber-600/30 dark:border-amber-400/30"></div>
+      <div className="absolute bottom-0 left-0 w-3 h-3 border-l border-b border-amber-600/30 dark:border-amber-400/30"></div>
+      <div className="absolute bottom-0 right-0 w-3 h-3 border-r border-b border-amber-600/30 dark:border-amber-400/30"></div>
       {/* Weather header with location and main info */}
       <div className="p-5 bg-gradient-to-r from-amber-600/10 dark:from-amber-400/10 via-background to-amber-600/5 dark:to-amber-400/5 border-b border-amber-600/20 dark:border-amber-400/20 relative overflow-hidden">
         {/* Decorative elements */}
@@ -294,13 +299,10 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
           variants={itemVariants}
         >
           <h3 className="text-xl font-fashion-heading tracking-tight flex items-center">
-            <span className="mr-2 bg-gradient-to-r from-amber-600 dark:from-amber-400 to-amber-800 dark:to-amber-500 bg-clip-text text-transparent">{weather.location}</span>
-            <motion.div 
-              variants={iconVariants}
-              className="weather-icon-luxury ml-1 scale-75"
-            >
-              {getWeatherIcon(weather.icon)}
-            </motion.div>
+            <span className="bg-gradient-to-r from-amber-600 dark:from-amber-400 to-amber-800 dark:to-amber-500 bg-clip-text text-transparent relative">
+              {weather.location}
+              <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 dark:via-amber-400/40 to-transparent"></div>
+            </span>
           </h3>
           <div className="designer-tag animate-shimmer-gold">
             {weather.condition}
