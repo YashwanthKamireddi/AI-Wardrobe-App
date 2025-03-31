@@ -29,6 +29,9 @@ import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { AnimatedCard } from "@/components/ui/animated-card";
+import { DesignerMonogramBackground } from "@/components/ui/cc-monogram-background";
+import { CatwalkScroller } from "@/components/ui/runway-display";
+import { CoutureHeading, PullQuote, EditorialCallout } from "@/components/ui/haute-couture-typography";
 
 // Animation variants for staggered children
 const containerVariants = {
@@ -122,15 +125,29 @@ export default function HomePage() {
     <AnimatedBackground pattern="waves" color="primary" intensity="subtle" className="min-h-screen">
       <NavigationBar />
 
-      <main className="container mx-auto px-4 py-8">
-        <motion.h1 
+      <DesignerMonogramBackground opacity={0.03} darkOpacity={0.06}>
+        <main className="container mx-auto px-4 py-8">
+          <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent"
+            className="mb-8"
           >
-            Welcome to Cher's Closet, {user?.name || user?.username}!
-          </motion.h1>
+            <CoutureHeading 
+              as="h1" 
+              size="4xl" 
+              tracking="wider" 
+              caps 
+              color="gold" 
+              gradient 
+              className="text-center mb-2"
+            >
+              Cher's Closet
+            </CoutureHeading>
+            <p className="text-center text-amber-700/70 dark:text-amber-300/70 font-luxury-body italic text-lg">
+              Welcome back, {user?.name || user?.username}
+            </p>
+          </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
           <motion.div
@@ -306,6 +323,44 @@ export default function HomePage() {
           </motion.div>
         </div>
 
+        {/* Fashion magazine style editorial callout */}
+        {!wardrobeLoading && wardrobeItems && wardrobeItems.length > 3 && (
+          <div className="mb-10">
+            <EditorialCallout 
+              title="Today's Style Spotlight" 
+              variant="luxury"
+              bordered
+              className="mb-6"
+              icon={<Sparkles className="h-5 w-5" />}
+            >
+              <PullQuote source="Cher's Virtual Stylist" position="center" luxury>
+                Dress for the weather, dress for your mood, but most importantly, dress to express your authentic self.
+              </PullQuote>
+              
+              <div className="mt-6">
+                <CoutureHeading as="h4" size="md" decorative className="mb-3">
+                  Your Wardrobe Highlight Reel
+                </CoutureHeading>
+                <CatwalkScroller className="my-4">
+                  {wardrobeItems.slice(0, 6).map(item => (
+                    <AnimatedCard key={item.id} className="w-48 h-64 min-w-[12rem]">
+                      <div 
+                        className="w-full h-full bg-cover bg-center rounded-md shadow-md border border-amber-200/30"
+                        style={{ backgroundImage: `url(${item.imageUrl})` }}
+                      >
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent text-white">
+                          <div className="text-sm font-medium truncate">{item.name}</div>
+                          <div className="text-xs capitalize opacity-80">{item.category}</div>
+                        </div>
+                      </div>
+                    </AnimatedCard>
+                  ))}
+                </CatwalkScroller>
+              </div>
+            </EditorialCallout>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div 
             whileHover={{ scale: 1.05 }}
@@ -442,6 +497,7 @@ export default function HomePage() {
           </motion.div>
         </div>
       </main>
+    </DesignerMonogramBackground>
     </AnimatedBackground>
   );
 }
