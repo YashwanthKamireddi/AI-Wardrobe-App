@@ -1,12 +1,22 @@
 {
-  "runs": [
+  "workflows": [
     {
-      "command": [
-        "node",
-        "start.js"
-      ],
-      "watch": true,
-      "name": "Cher's Closet App"
+      "name": "Start application",
+      "command": "npm run dev",
+      "restartOn": {
+        "files": [
+          "server/**/*.ts",
+          "client/src/**/*.tsx",
+          "client/src/**/*.ts",
+          "shared/**/*.ts"
+        ]
+      },
+      "runAtStart": true,
+      "clearPreviousLogs": true,
+      "primary": true,
+      "ports": [
+        3000
+      ]
     }
   ]
 }
