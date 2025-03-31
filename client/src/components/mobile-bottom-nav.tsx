@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { 
   Home, 
@@ -6,159 +6,247 @@ import {
   Layers,
   Sparkles,
   User,
-  Palette,
-  Scissors
+  ChevronsUp,
+  ChevronsDown,
+  Search,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
 import { FashionLogo } from "@/components/ui/fashion-logo";
 
-// Animation variants - memoized to avoid recreation on re-renders
-const navVariants = {
-  hidden: { y: 100, opacity: 0 },
-  visible: { 
-    y: 0, 
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 30,
-      staggerChildren: 0.1,
-      delayChildren: 0.1
-    }
+// Animation variants
+const drawerVariants = {
+  closed: { 
+    height: "64px", 
+    boxShadow: "0 -2px 10px rgba(0, 0, 0, 0.05)"
+  },
+  open: { 
+    height: "240px", 
+    boxShadow: "0 -5px 25px rgba(0, 0, 0, 0.15)"
   }
 };
 
 const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { 
-    y: 0, 
+  hidden: { opacity: 0, y: 15 },
+  visible: (i: number) => ({ 
     opacity: 1, 
-    transition: {
-      type: "spring",
-      stiffness: 400,
-      damping: 25
-    }
-  }
-};
-
-const iconVariants = {
-  inactive: { scale: 1, y: 0 },
-  active: { 
-    scale: 1.2, 
-    y: -2,
+    y: 0, 
     transition: { 
-      type: "spring", 
-      stiffness: 400, 
-      damping: 10 
+      delay: i * 0.05,
+      type: "spring",
+      stiffness: 300,
+      damping: 24
     }
-  }
+  })
 };
 
-// Defining navItems outside of component to prevent recreation on each render
+// Redesigned navigation items with fashion-focused icons and labels
 const navItems = [
-  { href: "/", label: "Home", icon: Home, gradient: "from-blue-500/10 to-purple-500/10" },
-  { href: "/wardrobe", label: "Wardrobe", icon: Shirt, gradient: "from-pink-500/10 to-orange-500/10" },
-  { href: "/outfits", label: "Outfits", icon: Layers, gradient: "from-green-500/10 to-teal-500/10" },
-  { href: "/inspirations", label: "Looks", icon: Sparkles, gradient: "from-amber-500/10 to-pink-500/10" },
-  { href: "/profile", label: "Profile", icon: User, gradient: "from-indigo-500/10 to-pink-500/10" },
+  { href: "/", label: "Home", icon: Home, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-200" },
+  { href: "/wardrobe", label: "Wardrobe", icon: Shirt, color: "text-emerald-600", bgColor: "bg-emerald-50 border-emerald-200" },
+  { href: "/outfits", label: "Looks", icon: Layers, color: "text-purple-600", bgColor: "bg-purple-50 border-purple-200" },
+  { href: "/inspirations", label: "Discover", icon: Sparkles, color: "text-amber-600", bgColor: "bg-amber-50 border-amber-200" },
+  { href: "/profile", label: "Profile", icon: User, color: "text-indigo-600", bgColor: "bg-indigo-50 border-indigo-200" },
 ];
 
-// Get gradient for a path - moved outside component for better performance
-const getGradient = (path: string, currentLocation: string): string => {
-  if (currentLocation === path) {
-    const item = navItems.find(item => item.href === path);
-    return item?.gradient || "from-primary/10 to-secondary/10";
-  }
-  return "";
-};
+// Actions for the expanded drawer
+const drawerActions = [
+  { label: "Search", icon: Search, color: "text-slate-600", bgColor: "bg-slate-50 border-slate-200" },
+  { label: "Add New", icon: Plus, color: "text-rose-600", bgColor: "bg-rose-50 border-rose-200" },
+];
 
 // Using React.memo to prevent unnecessary re-renders
 export const MobileBottomNav = memo(function MobileBottomNav() {
   const { isMobile } = useIsMobile();
   const [location] = useLocation();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  
+  // Close drawer when scrolling down
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.pageYOffset;
+      if (currentScrollPos > scrollPosition + 10) {
+        setIsDrawerOpen(false);
+      }
+      setScrollPosition(currentScrollPos);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [scrollPosition]);
+  
+  // Also close drawer when location changes
+  useEffect(() => {
+    setIsDrawerOpen(false);
+  }, [location]);
   
   if (!isMobile) return null;
 
   return (
-    <motion.div 
-      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-sm border-t border-primary/10 flex items-center justify-around z-50 px-1 shadow-lg pb-safe"
-      initial="hidden"
-      animate="visible"
-      variants={navVariants}
-    >
-      {/* Fashion-themed top decoration */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/80 via-pink-500/80 to-primary/80 transform -translate-y-0.5"></div>
-      {navItems.map((item) => {
-        const isActive = location === item.href;
-        const Icon = item.icon;
-        
-        return (
+    <>
+      {/* Drawer overlay - shows when drawer is open */}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <motion.div 
+            className="fixed inset-0 bg-black/10 backdrop-blur-sm z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsDrawerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+    
+      {/* Main drawer container */}
+      <motion.div 
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 flex flex-col overflow-hidden z-50"
+        variants={drawerVariants}
+        initial="closed"
+        animate={isDrawerOpen ? "open" : "closed"}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      >
+        {/* Drawer handle with shadow gradient to mimic a handle */}
+        <div 
+          className="w-full h-7 flex items-center justify-center cursor-pointer touch-manipulation"
+          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+        >
+          <div className="w-12 h-1 bg-neutral-200 rounded-full mb-1"></div>
           <motion.div
-            key={item.href}
-            variants={itemVariants}
-            className="w-full"
+            initial={{ rotate: 0 }}
+            animate={{ rotate: isDrawerOpen ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute"
           >
-            <Link 
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center h-full w-full rounded-md transition-all px-1",
-                isActive 
-                  ? "text-primary bg-gradient-to-r " + getGradient(item.href, location)
-                  : "text-muted-foreground"
-              )}
-            >
-              <motion.div
-                animate={isActive ? "active" : "inactive"}
-                variants={iconVariants}
+            {isDrawerOpen ? <ChevronsDown className="h-4 w-4 text-neutral-400" /> : <ChevronsUp className="h-4 w-4 text-neutral-400" />}
+          </motion.div>
+        </div>
+        
+        {/* Main navigation row */}
+        <div className="flex items-center justify-around px-2 h-14">
+          {navItems.map((item) => {
+            const isActive = location === item.href;
+            const Icon = item.icon;
+            
+            return (
+              <Link 
+                key={item.href}
+                href={item.href}
                 className={cn(
-                  "flex items-center justify-center p-1 rounded-full mb-1",
-                  isActive ? "bg-primary/10 shadow-sm" : ""
+                  "flex items-center justify-center flex-col h-full"
                 )}
               >
-                <Icon className={cn(
-                  "h-5 w-5",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )} />
-              </motion.div>
-              <AnimatePresence>
-                <motion.span
-                  className="text-xs font-medium"
-                  initial={{ opacity: 0.7 }}
-                  animate={{ 
-                    opacity: isActive ? 1 : 0.7,
-                    fontWeight: isActive ? 600 : 400
-                  }}
-                  transition={{ duration: 0.2 }}
+                <motion.div
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    "border shadow-sm",
+                    isActive ? item.bgColor : "bg-white border-neutral-200"
+                  )}
                 >
+                  <Icon className={cn(
+                    "h-5 w-5",
+                    isActive ? item.color : "text-neutral-500"
+                  )} />
+                </motion.div>
+                <span className={cn(
+                  "text-[10px] mt-1 font-medium",
+                  isActive ? "text-neutral-800" : "text-neutral-500"
+                )}>
                   {item.label}
-                </motion.span>
-              </AnimatePresence>
-              {isActive && (
-                <>
+                </span>
+                
+                {isActive && (
                   <motion.div
-                    className="absolute bottom-0 left-[25%] right-[25%] h-0.5 bg-gradient-to-r from-primary via-pink-500 to-primary rounded-t"
+                    className={cn(
+                      "absolute bottom-1 h-1 w-5 rounded-full",
+                      item.color.replace("text", "bg")
+                    )}
                     layoutId="navIndicator"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
-                  <motion.div
-                    className="absolute -top-1 left-[40%] right-[40%] h-0.5 bg-primary/30 rounded-b"
-                    layoutId="navIndicatorTop"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  />
-                </>
-              )}
-            </Link>
-          </motion.div>
-        );
-      })}
-    </motion.div>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+        
+        {/* Expanded drawer content */}
+        <AnimatePresence>
+          {isDrawerOpen && (
+            <motion.div
+              className="px-4 pt-4 pb-8 border-t border-neutral-100"
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              {/* Recent outfits section */}
+              <div className="mb-6">
+                <h3 className="text-xs uppercase font-semibold text-neutral-500 mb-3">Quick Access</h3>
+                <div className="grid grid-cols-5 gap-3">
+                  {navItems.map((item, i) => (
+                    <motion.div
+                      key={`quick-${i}`}
+                      custom={i}
+                      variants={itemVariants}
+                      className="flex flex-col items-center"
+                    >
+                      <Link href={item.href}>
+                        <motion.div
+                          whileHover={{ 
+                            y: -2, 
+                            scale: 1.1,
+                            transition: { duration: 0.2 }
+                          }}
+                          whileTap={{ scale: 0.95 }}
+                          className={cn(
+                            "h-12 w-12 rounded-xl flex items-center justify-center",
+                            "shadow-sm border-2",
+                            location === item.href ? item.bgColor : "bg-white border-neutral-100"
+                          )}
+                        >
+                          <item.icon 
+                            className={cn(
+                              "h-6 w-6",
+                              item.color
+                            )} 
+                          />
+                        </motion.div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Actions section */}
+              <div>
+                <h3 className="text-xs uppercase font-semibold text-neutral-500 mb-3">Actions</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {drawerActions.map((action, i) => (
+                    <motion.div
+                      key={`action-${i}`}
+                      custom={i + 5} // Continue staggering from the quick access items
+                      variants={itemVariants}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={cn(
+                        "flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer",
+                        "border shadow-sm",
+                        action.bgColor
+                      )}
+                    >
+                      <action.icon className={cn("h-5 w-5", action.color)} />
+                      <span className="text-sm font-medium">{action.label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </>
   );
 });
