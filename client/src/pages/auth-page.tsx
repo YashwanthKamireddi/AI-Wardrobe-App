@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { insertUserSchema } from "@shared/schema";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,6 @@ import SilkUnwrapping from "@/components/ui/silk-unwrapping";
 import SparkleEffect from "@/components/ui/sparkle-effect";
 import GoldenThread from "@/components/ui/golden-thread";
 import LuxuryFeatureGuide from "@/components/ui/luxury-feature-guide";
-import { motion, AnimatePresence } from "framer-motion";
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -54,6 +54,74 @@ const registerSchema = insertUserSchema
 
 type LoginValues = z.infer<typeof loginSchema>;
 type RegisterValues = z.infer<typeof registerSchema>;
+
+// 3D Card Tilt Component
+function CardTilt({ children }: { children: React.ReactNode }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-100, 100], [10, -10]);
+  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
+  
+  // Smoother animations with spring
+  const springConfig = { damping: 20, stiffness: 150 };
+  const springRotateX = useSpring(rotateX, springConfig);
+  const springRotateY = useSpring(rotateY, springConfig);
+  
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const mouseX = e.clientX - centerX;
+    const mouseY = e.clientY - centerY;
+    
+    x.set(mouseX);
+    y.set(mouseY);
+  }
+  
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
+  
+  return (
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX: springRotateX,
+        rotateY: springRotateY,
+        transformPerspective: 1200,
+        transformStyle: "preserve-3d",
+      }}
+      whileHover={{ scale: 1.02 }}
+      className="relative w-full"
+    >
+      {/* Card shadow base */}
+      <div 
+        className="absolute -inset-1 bg-amber-300/20 dark:bg-amber-700/20 rounded-xl blur-md opacity-60"
+        style={{ transformStyle: "preserve-3d", transform: "translateZ(-10px)" }}
+      />
+      
+      {/* Card content */}
+      <div className="relative w-full">
+        {children}
+      </div>
+      
+      {/* Reflective highlight */}
+      <motion.div 
+        className="absolute inset-0 rounded-xl bg-gradient-to-tr from-amber-100/10 to-amber-50/30 dark:from-amber-700/10 dark:to-amber-800/10 pointer-events-none"
+        style={{ 
+          transformStyle: "preserve-3d", 
+          transform: "translateZ(2px)",
+          backgroundBlendMode: "overlay"
+        }}
+      />
+    </motion.div>
+  );
+}
 
 function AuthPage() {
   const [location, navigate] = useLocation();
@@ -188,10 +256,11 @@ function AuthPage() {
             />
           </div>
 
-          {/* Form container */}
+          {/* Form container with 3D tilt effect */}
           <div className="w-full relative">
-            <AnimatePresence mode="wait">
-              {activeView === "login" ? (
+            <CardTilt>
+              <AnimatePresence mode="wait">
+                {activeView === "login" ? (
                 <motion.div
                   key="login-form"
                   variants={formVariants}
@@ -481,6 +550,7 @@ function AuthPage() {
                 </motion.div>
               )}
             </AnimatePresence>
+            </CardTilt>
           </div>
 
           {/* Bottom decoration */}
