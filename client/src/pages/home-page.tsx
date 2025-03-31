@@ -1,27 +1,18 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useWeather, getWeatherBasedRecommendations } from "@/hooks/use-weather";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import NavigationBar from "@/components/navigation-bar";
-import WeatherDisplay from "@/components/weather-display";
 import MoodSelector from "@/components/mood-selector";
 import OutfitRecommendation from "@/components/outfit-recommendation";
 import AIOutfitRecommender from "@/components/ai-outfit-recommendation";
 import IntegratedMoodOutfit from "@/components/integrated-mood-outfit";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  MapPin, 
-  RefreshCcw, 
-  AlertCircle, 
-  Sun, 
-  Cloud, 
   Layers, 
-  Sparkles,
-  CloudSun
+  Sparkles
 } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
