@@ -121,9 +121,6 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             >
               <SunIcon />
             </motion.div>
-            <div className="absolute inset-0 blur-lg opacity-20 scale-110">
-              <div className="w-full h-full rounded-full bg-amber-300 dark:bg-amber-300/50"></div>
-            </div>
           </div>
         );
       case 'cloudy':
@@ -136,9 +133,6 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             >
               <CloudIcon />
             </motion.div>
-            <div className="absolute inset-0 blur-lg opacity-20 scale-110">
-              <div className="w-full h-full rounded-full bg-amber-200 dark:bg-amber-200/30"></div>
-            </div>
           </div>
         );
       case 'rainy':
@@ -151,9 +145,6 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             >
               <CloudRainIcon />
             </motion.div>
-            <div className="absolute inset-0 blur-lg opacity-20 scale-110">
-              <div className="w-full h-full rounded-full bg-amber-100 dark:bg-amber-200/20"></div>
-            </div>
           </div>
         );
       case 'snowy':
@@ -166,9 +157,6 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             >
               <CloudSnowIcon />
             </motion.div>
-            <div className="absolute inset-0 blur-lg opacity-20 scale-110">
-              <div className="w-full h-full rounded-full bg-amber-100 dark:bg-amber-200/20"></div>
-            </div>
           </div>
         );
       case 'windy':
@@ -223,9 +211,6 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
                 />
               </svg>
             </div>
-            <div className="absolute inset-0 blur-lg opacity-20 scale-110">
-              <div className="w-full h-full rounded-full bg-amber-100 dark:bg-amber-200/20"></div>
-            </div>
           </div>
         );
       default:
@@ -238,9 +223,6 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             >
               <SunIcon />
             </motion.div>
-            <div className="absolute inset-0 blur-lg opacity-20 scale-110">
-              <div className="w-full h-full rounded-full bg-amber-200 dark:bg-amber-200/30"></div>
-            </div>
           </div>
         );
     }
@@ -276,77 +258,64 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
 
   return (
     <motion.div 
-      className="weather-display-luxury animate-fade-scale"
+      className="weather-display-luxury animate-fade-scale border border-amber-200/50 dark:border-amber-700/40 rounded-md overflow-hidden shadow-md dark:shadow-lg"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      whileHover={{ scale: 1.01 }}
+      whileHover={{ scale: 1.005, boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)" }}
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
       {/* Weather header with location and main info */}
-      <div className="p-5 bg-gradient-to-r from-amber-600/10 dark:from-amber-400/10 via-background to-amber-600/5 dark:to-amber-400/5 border-b border-amber-600/20 dark:border-amber-400/20 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-radial from-amber-300/20 to-transparent dark:from-amber-400/10 opacity-80 rounded-full blur-xl transform -translate-x-5 -translate-y-10"></div>
-        <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-radial from-amber-200/30 to-transparent dark:from-amber-300/10 opacity-60 rounded-full blur-lg transform translate-x-2 translate-y-6"></div>
-        
+      <div className="p-5 bg-gradient-to-r from-amber-50/80 dark:from-amber-900/20 to-transparent border-b border-amber-200/30 dark:border-amber-700/30 relative">
         <motion.div 
           className="flex items-center justify-between relative"
           variants={itemVariants}
         >
-          <h3 className="text-xl font-fashion-heading tracking-tight flex items-center">
-            <span className="mr-2 bg-gradient-to-r from-amber-600 dark:from-amber-400 to-amber-800 dark:to-amber-500 bg-clip-text text-transparent">{weather.location}</span>
+          <h3 className="text-xl font-luxury-heading tracking-tight flex items-center">
+            <span className="bg-gradient-to-r from-amber-700 dark:from-amber-400 to-amber-500 dark:to-amber-300 bg-clip-text text-transparent">{weather.location}</span>
             <motion.div 
               variants={iconVariants}
-              className="weather-icon-luxury ml-1 scale-75"
+              className="weather-icon-luxury ml-2 scale-75"
             >
               {getWeatherIcon(weather.icon)}
             </motion.div>
           </h3>
-          <div className="designer-tag animate-shimmer-gold">
+          <div className="designer-tag">
             {weather.condition}
           </div>
         </motion.div>
         
         {/* Subtle divider */}
-        <div className="absolute bottom-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-amber-500/30 dark:via-amber-400/30 to-transparent"></div>
+        <div className="absolute bottom-0 left-5 right-5 h-[1px] bg-gradient-to-r from-transparent via-amber-500/20 dark:via-amber-400/20 to-transparent"></div>
       </div>
       
       {/* Weather content area */}
-      <div className="p-5 space-y-5 relative">
-        {/* Luxury background element */}
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-gradient-radial from-amber-200/5 to-transparent dark:from-amber-400/5 rounded-full blur-xl"></div>
-        
+      <div className="p-5 space-y-5 relative bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
         {/* Main weather display */}
         <div className="flex items-center justify-between relative">
-          <div className="flex items-center relative">
-            <div className="relative">
-              <motion.p 
-                variants={itemVariants} 
-                className="weather-temp-luxury relative z-10"
-              >
-                {weather.temperature}°<span className="text-xl font-luxury-heading">C</span>
-              </motion.p>
-              
-              {/* Temperature visual flourish */}
-              <div className="absolute -left-3 -top-3 w-16 h-16 bg-gradient-radial from-amber-200/20 dark:from-amber-400/10 to-transparent rounded-full blur-lg"></div>
-              <div className="absolute bottom-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 dark:via-amber-400/40 to-transparent"></div>
-            </div>
+          <div className="flex items-center">
+            <motion.p 
+              variants={itemVariants} 
+              className="weather-temp-luxury relative text-4xl font-luxury-heading text-amber-800 dark:text-amber-300"
+            >
+              {weather.temperature}°<span className="text-2xl">C</span>
+            </motion.p>
           </div>
           
           <motion.div 
             variants={containerVariants} 
-            className="flex flex-col space-y-2 bg-gradient-to-r from-amber-50/20 to-transparent dark:from-amber-900/20 dark:to-transparent p-2 rounded-sm border-l border-amber-200/30 dark:border-amber-700/30"
+            className="flex flex-col space-y-2 bg-amber-50/30 dark:bg-amber-900/20 p-3 rounded-sm border-l border-amber-200/50 dark:border-amber-700/40"
           >
             <motion.div 
               variants={itemVariants} 
-              className="flex items-center border-b border-amber-600/10 dark:border-amber-400/10 pb-1 pl-2"
+              className="flex items-center pb-1"
             >
               <ThermometerIcon className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
               <span className="text-sm font-luxury-body tracking-wide">Humidity: {weather.humidity}%</span>
             </motion.div>
             <motion.div 
               variants={itemVariants} 
-              className="flex items-center border-b border-amber-600/10 dark:border-amber-400/10 pb-1 pl-2"
+              className="flex items-center"
             >
               <WindIcon className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
               <span className="text-sm font-luxury-body tracking-wide">Wind: {weather.windSpeed} km/h</span>
@@ -358,39 +327,31 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
         {recommendations && (
           <motion.div 
             variants={containerVariants}
-            className="mt-8 haute-couture-section rounded-sm py-6"
-            whileHover={{ boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)" }}
+            className="mt-6 rounded-sm pt-4 border-t border-amber-200/30 dark:border-amber-700/30"
           >
             <motion.div 
-              className="flex items-center mb-5"
+              className="flex items-center mb-4"
               variants={itemVariants}
             >
-              <span className="p-2 rounded-sm bg-amber-600/10 dark:bg-amber-400/10 mr-4 border border-amber-600/30 dark:border-amber-400/30 shadow-inner relative overflow-hidden">
-                <ThermometerIcon className="h-4 w-4 text-amber-600 dark:text-amber-400 relative z-10" />
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-600/5 dark:from-amber-400/5 to-transparent"></div>
-              </span>
+              <span className="text-sm font-luxury-heading uppercase tracking-wider text-amber-800 dark:text-amber-300 mr-2">●</span>
               <motion.h4 
-                className="text-sm font-fashion-heading uppercase tracking-wider gold-accent"
-                whileHover={{
-                  textShadow: "0 0 8px rgba(var(--accent-rgb), 0.3)"
-                }}
+                className="text-sm font-luxury-heading uppercase tracking-wider text-amber-800 dark:text-amber-300"
               >
-                Curated Style Guide
+                Style Recommendations
               </motion.h4>
             </motion.div>
             
             <motion.div
-              className="mb-6 relative"
+              className="mb-5 relative"
               variants={itemVariants}
             >
               <motion.p 
-                className="text-sm font-fashion-body text-muted-foreground italic border-l-2 border-amber-600/30 dark:border-amber-400/30 pl-4 pr-2 py-1 bg-amber-600/5 dark:bg-amber-400/5"
-                whileHover={{ x: 3 }}
+                className="text-sm font-luxury-body italic text-amber-700 dark:text-amber-300/80 pl-4 pr-2 py-1"
+                whileHover={{ x: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 10 }}
               >
                 {recommendations.recommendation}
               </motion.p>
-              <div className="absolute -bottom-1 -right-1 w-20 h-1 bg-gradient-to-r from-transparent to-amber-600/20 dark:to-amber-400/20"></div>
             </motion.div>
             
             <motion.div 
@@ -414,13 +375,13 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
                     whileHover={{ 
                       scale: 1.05, 
                       y: -2,
-                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
                     }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <Badge 
                       variant="outline" 
-                      className="border-amber-600/30 dark:border-amber-400/30 bg-background/80 hover:bg-amber-600/10 dark:hover:bg-amber-400/10 text-foreground px-3 py-1.5 uppercase tracking-wider text-[10px] font-fashion-body backdrop-blur-sm"
+                      className="border-amber-400/40 dark:border-amber-600/50 bg-amber-50/80 dark:bg-amber-900/30 hover:bg-amber-100/90 dark:hover:bg-amber-800/40 text-amber-800 dark:text-amber-200 px-3 py-1 uppercase tracking-wider text-[10px] font-luxury-body"
                     >
                       {type}
                     </Badge>
