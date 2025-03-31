@@ -12,10 +12,14 @@ import {
   Sparkles, 
   User, 
   LogOut,
-  Layers
+  Layers,
+  Palette,
+  Scissors,
+  Heart
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { FashionLogo } from "@/components/ui/fashion-logo";
 
 // Animation variants
 const navVariants = {
@@ -74,11 +78,31 @@ const NavigationBar: React.FC = () => {
   const [location] = useLocation();
 
   const navItems = [
-    { path: "/", icon: <Home className="h-5 w-5" />, label: "Home" },
-    { path: "/wardrobe", icon: <Shirt className="h-5 w-5" />, label: "Wardrobe" },
-    { path: "/outfits", icon: <Layers className="h-5 w-5" />, label: "Outfits" },
-    { path: "/inspirations", icon: <Sparkles className="h-5 w-5" />, label: "Inspirations" },
-    { path: "/profile", icon: <User className="h-5 w-5" />, label: "Profile" },
+    { 
+      path: "/", 
+      icon: <Home className="h-5 w-5" />, 
+      label: "Home" 
+    },
+    { 
+      path: "/wardrobe", 
+      icon: <Shirt className="h-5 w-5" />, 
+      label: "Wardrobe" 
+    },
+    { 
+      path: "/outfits", 
+      icon: <Layers className="h-5 w-5" />, 
+      label: "Outfits" 
+    },
+    { 
+      path: "/inspirations", 
+      icon: <Sparkles className="h-5 w-5" />, 
+      label: "Inspiration" 
+    },
+    { 
+      path: "/profile", 
+      icon: <User className="h-5 w-5" />, 
+      label: "Profile" 
+    },
   ];
 
   const getGradient = (path: string) => {
@@ -127,11 +151,13 @@ const NavigationBar: React.FC = () => {
 
   return (
     <motion.header 
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-50 w-full border-b border-primary/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm"
       initial="hidden"
       animate="visible"
       variants={navVariants}
     >
+      {/* Fashion-themed bottom decoration */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/80 via-pink-500/80 to-primary/80 transform translate-y-0.5"></div>
       <div className="container flex h-16 items-center justify-between py-4">
         <motion.div 
           className="flex items-center gap-2"
@@ -140,13 +166,10 @@ const NavigationBar: React.FC = () => {
           initial="initial"
         >
           <Link href="/">
-            <motion.span 
-              className="font-bold text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center"
-              variants={logoVariants}
-            >
-              <span className="hidden sm:inline">Cher's Closet</span>
-              <span className="sm:hidden">CC</span>
-            </motion.span>
+            <motion.div variants={logoVariants}>
+              <FashionLogo size="md" className="hidden sm:flex" />
+              <FashionLogo size="sm" className="sm:hidden" />
+            </motion.div>
           </Link>
         </motion.div>
 
@@ -168,7 +191,9 @@ const NavigationBar: React.FC = () => {
                   size="sm"
                   className={cn(
                     "px-3 flex items-center gap-2 relative",
-                    isActive ? "text-primary font-medium" : "text-muted-foreground"
+                    isActive 
+                      ? "text-primary font-medium bg-primary/5 shadow-sm border border-primary/10" 
+                      : "text-muted-foreground hover:bg-primary/5 hover:border hover:border-primary/10"
                   )}
                   asChild
                 >
@@ -185,19 +210,34 @@ const NavigationBar: React.FC = () => {
                 </Button>
                 <AnimatePresence>
                   {isActive && (
-                    <motion.div
-                      className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
-                      layoutId="nav-underline"
-                      initial={{ opacity: 0, width: "0%" }}
-                      animate={{ opacity: 1, width: "100%" }}
-                      exit={{ opacity: 0, width: "0%" }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 25,
-                        duration: 0.2
-                      }}
-                    />
+                    <>
+                      <motion.div
+                        className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradient(item.path)} rounded-t-lg`}
+                        layoutId="nav-underline"
+                        initial={{ opacity: 0, width: "0%" }}
+                        animate={{ opacity: 1, width: "100%" }}
+                        exit={{ opacity: 0, width: "0%" }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 25,
+                          duration: 0.2
+                        }}
+                      />
+                      {/* Fashion flourish - small dots on each side of active item */}
+                      <motion.div 
+                        className="absolute bottom-[3px] left-0 w-1 h-1 bg-white rounded-full opacity-70"
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 0.7, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                      />
+                      <motion.div 
+                        className="absolute bottom-[3px] right-0 w-1 h-1 bg-white rounded-full opacity-70"
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 0.7, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                      />
+                    </>
                   )}
                 </AnimatePresence>
               </motion.div>
@@ -215,6 +255,7 @@ const NavigationBar: React.FC = () => {
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
+              className="border border-primary/10 bg-primary/5 shadow-sm"
             >
               <AnimatePresence mode="wait">
                 {themeIcon}
@@ -229,6 +270,7 @@ const NavigationBar: React.FC = () => {
                 size="icon"
                 onClick={() => logoutMutation.mutate()}
                 aria-label="Logout"
+                className="border border-primary/10 bg-primary/5 shadow-sm"
               >
                 <LogOut className="h-5 w-5" />
               </Button>

@@ -2,14 +2,17 @@ import React, { memo } from "react";
 import { Link, useLocation } from "wouter";
 import { 
   Home, 
-  ShoppingBag, 
-  ShoppingCart, 
-  Image, 
-  User 
+  Shirt,
+  Layers,
+  Sparkles,
+  User,
+  Palette,
+  Scissors
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
+import { FashionLogo } from "@/components/ui/fashion-logo";
 
 // Animation variants - memoized to avoid recreation on re-renders
 const navVariants = {
@@ -56,9 +59,9 @@ const iconVariants = {
 // Defining navItems outside of component to prevent recreation on each render
 const navItems = [
   { href: "/", label: "Home", icon: Home, gradient: "from-blue-500/10 to-purple-500/10" },
-  { href: "/wardrobe", label: "Wardrobe", icon: ShoppingBag, gradient: "from-pink-500/10 to-orange-500/10" },
-  { href: "/outfits", label: "Outfits", icon: ShoppingCart, gradient: "from-green-500/10 to-teal-500/10" },
-  { href: "/inspirations", label: "Inspiration", icon: Image, gradient: "from-amber-500/10 to-pink-500/10" },
+  { href: "/wardrobe", label: "Wardrobe", icon: Shirt, gradient: "from-pink-500/10 to-orange-500/10" },
+  { href: "/outfits", label: "Outfits", icon: Layers, gradient: "from-green-500/10 to-teal-500/10" },
+  { href: "/inspirations", label: "Looks", icon: Sparkles, gradient: "from-amber-500/10 to-pink-500/10" },
   { href: "/profile", label: "Profile", icon: User, gradient: "from-indigo-500/10 to-pink-500/10" },
 ];
 
@@ -80,11 +83,13 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-sm border-t flex items-center justify-around z-50 px-1"
+      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-sm border-t border-primary/10 flex items-center justify-around z-50 px-1 shadow-lg"
       initial="hidden"
       animate="visible"
       variants={navVariants}
     >
+      {/* Fashion-themed top decoration */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/80 via-pink-500/80 to-primary/80 transform -translate-y-0.5"></div>
       {navItems.map((item) => {
         const isActive = location === item.href;
         const Icon = item.icon;
@@ -107,8 +112,15 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
               <motion.div
                 animate={isActive ? "active" : "inactive"}
                 variants={iconVariants}
+                className={cn(
+                  "flex items-center justify-center p-1 rounded-full mb-1",
+                  isActive ? "bg-primary/10 shadow-sm" : ""
+                )}
               >
-                <Icon className="h-5 w-5 mb-1" />
+                <Icon className={cn(
+                  "h-5 w-5",
+                  isActive ? "text-primary" : "text-muted-foreground"
+                )} />
               </motion.div>
               <AnimatePresence>
                 <motion.span
@@ -124,14 +136,24 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
                 </motion.span>
               </AnimatePresence>
               {isActive && (
-                <motion.div
-                  className="absolute bottom-0 left-[25%] right-[25%] h-0.5 bg-primary rounded-t"
-                  layoutId="navIndicator"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                />
+                <>
+                  <motion.div
+                    className="absolute bottom-0 left-[25%] right-[25%] h-0.5 bg-gradient-to-r from-primary via-pink-500 to-primary rounded-t"
+                    layoutId="navIndicator"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.div
+                    className="absolute -top-1 left-[40%] right-[40%] h-0.5 bg-primary/30 rounded-b"
+                    layoutId="navIndicatorTop"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </>
               )}
             </Link>
           </motion.div>
