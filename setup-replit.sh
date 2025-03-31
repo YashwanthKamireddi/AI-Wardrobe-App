@@ -1,53 +1,25 @@
 #!/bin/bash
 
-# This script sets up the application for Replit environment
-# It prepares the database and creates a Replit Deployments compatible setup
+echo "Setting up the application for Replit..."
 
-echo "🔧 Setting up Replit environment..."
-
-# Verify the database connection
-echo "🔍 Testing database connection..."
-# Using the built-in database connection check from server/db.ts
-npx tsx -e "import { testDatabaseConnection } from './server/db.ts'; testDatabaseConnection().then(result => { if (result) { console.log('Database connection successful'); process.exit(0); } else { console.error('Database connection failed'); process.exit(1); }}).catch(err => { console.error('Error testing database:', err); process.exit(1); });"
-DB_STATUS=$?
-if [ $DB_STATUS -ne 0 ]; then
-  echo "⚠️ Database connection test failed. Some features may not work correctly."
-else
-  echo "✅ Database connection verified"
+# Check and create .env file if needed
+if [ ! -f ".env" ]; then
+  echo "Creating .env file..."
+  echo "# Database Configuration" > .env
+  echo "DATABASE_URL=${DATABASE_URL}" >> .env
+  echo "PGHOST=${PGHOST}" >> .env
+  echo "PGUSER=${PGUSER}" >> .env
+  echo "PGPASSWORD=${PGPASSWORD}" >> .env
+  echo "PGDATABASE=${PGDATABASE}" >> .env
+  echo "PGPORT=${PGPORT}" >> .env
+  echo "SESSION_SECRET=replit_session_secret_$(date +%s)" >> .env
+  echo "PORT=3000" >> .env
+  echo "NODE_ENV=development" >> .env
+  echo ".env file created successfully"
 fi
 
-# Create the public folder for static assets if it doesn't exist
-mkdir -p server/public
+# Update database schema
+echo "Pushing database schema..."
+npm run db:push
 
-# Create a .env file for local environment variables if it doesn't exist
-if [ ! -f .env ]; then
-  echo "📝 Creating .env file for local development..."
-  cat > .env << EOL
-# Environment Configuration
-NODE_ENV=development
-PORT=3000
-HOST=0.0.0.0
-EOL
-fi
-
-# Print setup instructions
-echo "✅ Setup complete!"
-echo ""
-echo "To run the application in Replit:"
-echo "1. Click on the Run button, or"
-echo "2. Type 'node start' in the Shell"
-echo ""
-echo "For deployment:"
-echo "1. Use the Deploy button in the Replit interface"
-echo "2. The application will be deployed using port 3000"
-echo ""
-echo "For local development (VSCode):"
-echo "1. Run: npm run dev"
-
-# Ask if user wants to start the server now
-read -p "Do you want to start the server now? (y/n): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo "Starting server..."
-  node start.js
-fi
+echo "Setup completed! Run ./start-app.sh to start the application."
