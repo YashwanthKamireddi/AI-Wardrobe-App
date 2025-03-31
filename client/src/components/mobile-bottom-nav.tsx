@@ -83,7 +83,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-t border-accent/30 flex items-center justify-around z-50 px-1 shadow-lg pb-safe"
+      className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-t border-accent/30 flex items-center justify-around z-50 px-1 shadow-lg pb-safe dark:bg-slate-900/95 dark:border-accent/40"
       initial="hidden"
       animate="visible"
       variants={navVariants}
@@ -122,7 +122,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
               >
                 <Icon className={cn(
                   "h-5 w-5",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  isActive ? "text-primary dark:text-accent" : "text-muted-foreground dark:text-slate-400"
                 )} />
               </motion.div>
               <AnimatePresence>

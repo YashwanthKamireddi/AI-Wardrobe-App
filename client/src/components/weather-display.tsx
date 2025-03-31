@@ -48,8 +48,13 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       case 'sunny':
         return (
           <div className="relative">
-            <SunIcon className="h-10 w-10 text-accent" />
+            <div className="animate-slow-spin">
+              <SunIcon className="h-10 w-10 text-accent" />
+            </div>
             <div className="absolute inset-0 blur-sm opacity-40">
+              <SunIcon className="h-10 w-10 text-accent" />
+            </div>
+            <div className="absolute inset-0 blur-lg opacity-20 scale-125">
               <SunIcon className="h-10 w-10 text-accent" />
             </div>
           </div>
@@ -57,8 +62,16 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       case 'cloudy':
         return (
           <div className="relative">
-            <CloudIcon className="h-10 w-10 text-primary/80" />
+            <motion.div 
+              animate={{ x: [0, 3, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <CloudIcon className="h-10 w-10 text-primary/80" />
+            </motion.div>
             <div className="absolute inset-0 blur-sm opacity-30">
+              <CloudIcon className="h-10 w-10 text-primary/80" />
+            </div>
+            <div className="absolute inset-0 blur-lg opacity-20 scale-125">
               <CloudIcon className="h-10 w-10 text-primary/80" />
             </div>
           </div>
@@ -66,8 +79,16 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       case 'rainy':
         return (
           <div className="relative">
-            <CloudRainIcon className="h-10 w-10 text-primary/90" />
+            <motion.div
+              animate={{ y: [0, 1, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <CloudRainIcon className="h-10 w-10 text-primary/90" />
+            </motion.div>
             <div className="absolute inset-0 blur-sm opacity-30">
+              <CloudRainIcon className="h-10 w-10 text-primary/90" />
+            </div>
+            <div className="absolute inset-0 blur-lg opacity-20 scale-125">
               <CloudRainIcon className="h-10 w-10 text-primary/90" />
             </div>
           </div>
@@ -75,8 +96,16 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       case 'snowy':
         return (
           <div className="relative">
-            <CloudSnowIcon className="h-10 w-10 text-accent/60" />
+            <motion.div
+              animate={{ rotate: [0, 5, 0, -5, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <CloudSnowIcon className="h-10 w-10 text-accent/60" />
+            </motion.div>
             <div className="absolute inset-0 blur-sm opacity-30">
+              <CloudSnowIcon className="h-10 w-10 text-accent/60" />
+            </div>
+            <div className="absolute inset-0 blur-lg opacity-20 scale-125">
               <CloudSnowIcon className="h-10 w-10 text-accent/60" />
             </div>
           </div>
@@ -84,8 +113,16 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       case 'windy':
         return (
           <div className="relative">
-            <WindIcon className="h-10 w-10 text-primary/70" />
+            <motion.div
+              animate={{ rotate: [0, 5, 0, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <WindIcon className="h-10 w-10 text-primary/70" />
+            </motion.div>
             <div className="absolute inset-0 blur-sm opacity-30">
+              <WindIcon className="h-10 w-10 text-primary/70" />
+            </div>
+            <div className="absolute inset-0 blur-lg opacity-20 scale-125">
               <WindIcon className="h-10 w-10 text-primary/70" />
             </div>
           </div>
@@ -93,8 +130,16 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
       default:
         return (
           <div className="relative">
-            <SunIcon className="h-10 w-10 text-accent" />
+            <motion.div
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <SunIcon className="h-10 w-10 text-accent" />
+            </motion.div>
             <div className="absolute inset-0 blur-sm opacity-40">
+              <SunIcon className="h-10 w-10 text-accent" />
+            </div>
+            <div className="absolute inset-0 blur-lg opacity-20 scale-125">
               <SunIcon className="h-10 w-10 text-accent" />
             </div>
           </div>
@@ -132,19 +177,21 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
 
   return (
     <motion.div 
-      className="weather-display-luxury gold-corner animate-fade-scale"
+      className="weather-display-luxury animate-fade-scale"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      whileHover={{ scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
       {/* Weather header with location and main info */}
-      <div className="p-5 bg-gradient-to-r from-primary/5 to-accent/5 border-b border-primary/10">
+      <div className="p-5 bg-gradient-to-r from-primary/10 via-background to-accent/5 border-b border-accent/20">
         <motion.div 
           className="flex items-center justify-between"
           variants={itemVariants}
         >
           <h3 className="text-xl font-fashion-heading tracking-tight flex items-center">
-            <span className="mr-2">{weather.location}</span>
+            <span className="mr-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{weather.location}</span>
           </h3>
           <div className="designer-tag animate-shimmer-gold">
             {weather.condition}
@@ -200,28 +247,44 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
           </motion.div>
         </div>
         
-        {/* Recommendations section */}
+        {/* Enhanced Recommendations section */}
         {recommendations && (
           <motion.div 
             variants={containerVariants}
-            className="mt-6 haute-couture-section rounded-sm"
+            className="mt-8 haute-couture-section rounded-sm py-6"
+            whileHover={{ boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)" }}
           >
             <motion.div 
-              className="flex items-center mb-4"
+              className="flex items-center mb-5"
               variants={itemVariants}
             >
-              <span className="p-1.5 rounded-sm bg-accent/10 mr-3 border border-accent/20">
-                <ThermometerIcon className="h-4 w-4 text-accent" />
+              <span className="p-2 rounded-sm bg-accent/10 mr-4 border border-accent/30 shadow-inner relative overflow-hidden">
+                <ThermometerIcon className="h-4 w-4 text-accent relative z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent"></div>
               </span>
-              <h4 className="text-sm font-fashion-heading uppercase tracking-wider gold-accent">Style Guide</h4>
+              <motion.h4 
+                className="text-sm font-fashion-heading uppercase tracking-wider gold-accent"
+                whileHover={{
+                  textShadow: "0 0 8px rgba(var(--accent-rgb), 0.3)"
+                }}
+              >
+                Curated Style Guide
+              </motion.h4>
             </motion.div>
             
-            <motion.p 
-              variants={itemVariants} 
-              className="text-sm font-fashion-body text-muted-foreground mb-5 italic border-l-2 border-accent/30 pl-3"
+            <motion.div
+              className="mb-6 relative"
+              variants={itemVariants}
             >
-              {recommendations.recommendation}
-            </motion.p>
+              <motion.p 
+                className="text-sm font-fashion-body text-muted-foreground italic border-l-2 border-accent/30 pl-4 pr-2 py-1 bg-accent/5"
+                whileHover={{ x: 3 }}
+                transition={{ type: "spring", stiffness: 300, damping: 10 }}
+              >
+                {recommendations.recommendation}
+              </motion.p>
+              <div className="absolute -bottom-1 -right-1 w-20 h-1 bg-gradient-to-r from-transparent to-accent/20"></div>
+            </motion.div>
             
             <motion.div 
               className="flex flex-wrap gap-2"
@@ -231,16 +294,30 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
                 <motion.div 
                   key={index}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 15
+                  }}
                 >
-                  <Badge 
-                    variant="outline" 
-                    className="border-accent/30 bg-background/60 hover:bg-accent/10 text-foreground px-3 py-1 uppercase tracking-wider text-[10px] font-fashion-body"
+                  <motion.div
+                    whileHover={{ 
+                      scale: 1.05, 
+                      y: -2,
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {type}
-                  </Badge>
+                    <Badge 
+                      variant="outline" 
+                      className="border-accent/30 bg-background/80 hover:bg-accent/10 text-foreground px-3 py-1.5 uppercase tracking-wider text-[10px] font-fashion-body backdrop-blur-sm"
+                    >
+                      {type}
+                    </Badge>
+                  </motion.div>
                 </motion.div>
               ))}
             </motion.div>
