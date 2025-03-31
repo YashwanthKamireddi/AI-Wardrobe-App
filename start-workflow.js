@@ -1,4 +1,4 @@
-const { exec } = require('child_process');
+import { exec } from 'child_process';
 
 exec('node start.js', (error, stdout, stderr) => {
   if (error) {

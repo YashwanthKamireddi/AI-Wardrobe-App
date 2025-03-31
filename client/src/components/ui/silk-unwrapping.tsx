@@ -78,9 +78,9 @@ export const SilkUnwrapping: React.FC<SilkUnwrappingProps> = ({
       x: "100%",
       opacity: 0,
       transition: {
-        duration: 1.2,
-        ease: [0.22, 1, 0.36, 1],
-        delay: i * 0.2,
+        duration: 0.9,
+        ease: [0.19, 1, 0.22, 1], // Improved luxury easing
+        delay: i * 0.15, // Faster sequential reveal
       }
     })
   };
@@ -89,15 +89,15 @@ export const SilkUnwrapping: React.FC<SilkUnwrappingProps> = ({
   const shimmerVariants = {
     initial: {
       x: "-100%",
-      opacity: 0.7,
+      opacity: 0.5, // More subtle shimmer
     },
     animate: {
       x: "200%",
       opacity: 0,
       transition: {
-        duration: 1.5,
+        duration: 1.2, // Faster movement
         repeat: Infinity,
-        repeatDelay: 1.5,
+        repeatDelay: 1.0, // Reduced delay for more frequent shimmer
         ease: "easeInOut",
       }
     }
@@ -106,25 +106,28 @@ export const SilkUnwrapping: React.FC<SilkUnwrappingProps> = ({
   // Variants for the box container
   const containerVariants = {
     initial: { 
-      scale: 0.95,
+      scale: 0.97,
       opacity: 0,
-      rotate: -3
+      rotate: -1.5, // Reduced rotation for subtlety
+      y: 10, // Slight vertical offset
     },
     animate: {
       scale: 1,
       opacity: 1,
       rotate: 0,
+      y: 0,
       transition: {
-        duration: 0.8,
-        ease: [0.16, 1, 0.3, 1],
-        delay: 0.1
+        duration: 0.7, // Slightly faster animation
+        ease: [0.2, 0.9, 0.1, 1.0], // Enhanced luxury bezier curve
+        delay: 0.05 // Faster reveal
       }
     },
     exit: {
-      scale: 0.97,
+      scale: 0.98,
       opacity: 0,
+      y: -5, // Subtle upward exit
       transition: {
-        duration: 0.5,
+        duration: 0.4, // Slightly faster exit
         ease: [0.32, 0, 0.67, 0]
       }
     }
@@ -134,15 +137,18 @@ export const SilkUnwrapping: React.FC<SilkUnwrappingProps> = ({
   const contentVariants = {
     hidden: { 
       opacity: 0,
-      y: 15
+      y: 8, // Reduced offset for subtlety
+      scale: 0.99, // Slight scale for dimensional feel
     },
     visible: { 
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.6,
-        ease: [0.16, 1, 0.3, 1],
-        delay: 0.2
+        duration: 0.5, // Slightly faster
+        ease: [0.1, 0.9, 0.2, 1], // Enhanced luxury bezier curve
+        delay: 0.15, // Reduced delay for faster appearance
+        staggerChildren: 0.05, // Add staggering effect for child elements
       }
     }
   };
@@ -170,8 +176,8 @@ export const SilkUnwrapping: React.FC<SilkUnwrappingProps> = ({
               className="absolute inset-0"
               style={{
                 backgroundColor: silkColor,
-                backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent)",
-                backgroundSize: "350px 350px",
+                backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)",
+                backgroundSize: "250px 250px", // Finer texture pattern
                 transformOrigin: "right center",
                 zIndex: 10 + layer.zIndex,
                 opacity: layer.opacity
@@ -186,7 +192,7 @@ export const SilkUnwrapping: React.FC<SilkUnwrappingProps> = ({
                 <motion.div
                   className="absolute inset-0"
                   style={{
-                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)", // More subtle shimmer
                     zIndex: 1
                   }}
                   variants={shimmerVariants}

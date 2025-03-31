@@ -11,7 +11,7 @@ interface FashionAuthFrameProps {
   subtitle?: string;
   brandName?: string;
   logoImage?: string;
-  backgroundType?: 'monogram' | 'pattern' | 'gradient';
+  backgroundType?: 'monogram' | 'pattern' | 'gradient' | 'minimal';
   accentColor?: string;
   className?: string;
 }
@@ -35,8 +35,8 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
   subtitle = "Where fashion meets technology",
   brandName = "CC",
   logoImage,
-  backgroundType = 'monogram',
-  accentColor = 'rgba(251, 191, 36, 0.9)',
+  backgroundType = 'minimal',
+  accentColor = 'rgba(251, 191, 36, 0.8)',
   className = ''
 }) => {
   const [location] = useLocation();
@@ -119,26 +119,81 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
   };
   
   // Spring animation for smooth movement
-  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+  const springX = useSpring(mouseX, { stiffness: 30, damping: 30 }); // More refined movement
+  const springY = useSpring(mouseY, { stiffness: 30, damping: 30 });
   
   // Transform values for parallax effect
-  const bgX = useTransform(springX, [0, 1], ['-5%', '5%']);
-  const bgY = useTransform(springY, [0, 1], ['-5%', '5%']);
-  const glowX = useTransform(springX, [0, 1], ['-10%', '10%']);
-  const glowY = useTransform(springY, [0, 1], ['-10%', '10%']);
+  const bgX = useTransform(springX, [0, 1], ['-3%', '3%']); // Subtler movement
+  const bgY = useTransform(springY, [0, 1], ['-3%', '3%']);
+  const glowX = useTransform(springX, [0, 1], ['-5%', '5%']);
+  const glowY = useTransform(springY, [0, 1], ['-5%', '5%']);
   
   // Background pattern based on selectedType
   const renderBackground = () => {
     switch (backgroundType) {
+      case 'minimal':
+        return (
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            {/* Subtle gradient background */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-tr from-amber-50/5 via-transparent to-amber-100/5 dark:from-amber-900/10 dark:via-transparent dark:to-amber-800/5"
+              style={{ x: bgX, y: bgY }}
+            />
+            
+            {/* Minimalist dot pattern */}
+            <motion.div 
+              className="absolute inset-0" 
+              style={{ 
+                backgroundImage: `radial-gradient(${accentColor}10 1px, transparent 1px)`,
+                backgroundSize: '60px 60px',
+                x: bgX, 
+                y: bgY,
+                opacity: 0.3
+              }}
+            />
+            
+            {/* Subtle light accents */}
+            <motion.div 
+              className="absolute right-0 top-0 w-1/3 h-1/2 bg-gradient-to-b from-amber-200/5 to-transparent rounded-full blur-3xl -translate-y-1/4 translate-x-1/4"
+              animate={{
+                opacity: [0.4, 0.6, 0.4],
+                scale: [1, 1.03, 1]
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                repeatType: "reverse",
+                ease: "easeInOut"
+              }}
+              style={{ x: glowX, y: glowY }}
+            />
+            
+            <motion.div 
+              className="absolute left-0 bottom-0 w-1/3 h-1/2 bg-gradient-to-t from-amber-200/5 to-transparent rounded-full blur-3xl translate-y-1/4 -translate-x-1/4"
+              animate={{
+                opacity: [0.3, 0.5, 0.3],
+                scale: [1, 1.02, 1]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                repeatType: "reverse",
+                ease: "easeInOut",
+                delay: 2
+              }}
+              style={{ x: glowX, y: glowY }}
+            />
+          </div>
+        );
+        
       case 'monogram':
         return (
-          <div className="absolute inset-0 z-0 overflow-hidden opacity-10">
+          <div className="absolute inset-0 z-0 overflow-hidden opacity-[0.05]"> {/* Even more subtle */}
             <motion.div 
               className="absolute inset-0 flex flex-wrap items-center justify-center"
               style={{ x: bgX, y: bgY }}
               animate={{ 
-                scale: [1, 1.02, 1],
+                scale: [1, 1.01, 1], // Subtler animation
               }}
               transition={{ 
                 duration: 20, 
@@ -147,18 +202,18 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
                 ease: "easeInOut" 
               }}
             >
-              {Array.from({ length: 20 }).map((_, i) => (
+              {Array.from({ length: 12 }).map((_, i) => ( // Fewer elements
                 <motion.div 
                   key={i} 
-                  className="text-[120px] font-serif rotate-[15deg] m-12"
+                  className="text-[100px] font-serif rotate-[10deg] m-16" // Larger spacing, smaller text
                   style={{ 
                     color: accentColor,
-                    opacity: 0.7
+                    opacity: 0.6
                   }}
                   animate={{ 
-                    opacity: [0.5, 0.7, 0.5],
-                    rotate: [15, 16, 15],
-                    scale: [1, 1.01, 1]
+                    opacity: [0.4, 0.6, 0.4],
+                    rotate: [10, 10.5, 10], // Subtler rotation
+                    scale: [1, 1.005, 1]
                   }}
                   transition={{ 
                     duration: 8 + Math.random() * 4, 
@@ -175,7 +230,7 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
             
             {/* Floating gradient overlay */}
             <motion.div 
-              className="absolute inset-0 bg-gradient-to-br from-amber-50/5 to-amber-100/5 dark:from-amber-900/5 dark:to-amber-950/5" 
+              className="absolute inset-0 bg-gradient-to-br from-amber-50/3 to-amber-100/3 dark:from-amber-900/3 dark:to-amber-950/3" 
               style={{ x: glowX, y: glowY }}
             />
           </div>
@@ -183,20 +238,20 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
         
       case 'pattern':
         return (
-          <div className="absolute inset-0 z-0 overflow-hidden opacity-5">
+          <div className="absolute inset-0 z-0 overflow-hidden opacity-[0.03]"> {/* More subtle */}
             <motion.div 
               className="w-full h-full" 
               style={{ 
-                backgroundImage: `repeating-linear-gradient(45deg, ${accentColor} 0px, ${accentColor} 1px, transparent 1px, transparent 15px)`,
-                backgroundSize: '30px 30px',
+                backgroundImage: `repeating-linear-gradient(45deg, ${accentColor} 0px, ${accentColor} 0.5px, transparent 0.5px, transparent 20px)`, // Thinner lines, larger spacing
+                backgroundSize: '40px 40px',
                 x: bgX,
                 y: bgY
               }}
               animate={{
-                backgroundPosition: ['0px 0px', '30px 30px', '0px 0px']
+                backgroundPosition: ['0px 0px', '40px 40px', '0px 0px']
               }}
               transition={{
-                duration: 20,
+                duration: 30, // Slower animation
                 repeat: Infinity,
                 ease: "linear"
               }}
@@ -209,17 +264,17 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
         return (
           <div className="absolute inset-0 z-0 overflow-hidden">
             <motion.div 
-              className="w-full h-full bg-gradient-to-br from-amber-50/30 to-amber-100/40 dark:from-amber-900/20 dark:to-amber-950/10"
+              className="w-full h-full bg-gradient-to-br from-amber-50/20 to-amber-100/20 dark:from-amber-900/10 dark:to-amber-950/5" // More subtle gradients
               style={{ x: bgX, y: bgY }}
             />
             <motion.div 
-              className="absolute right-0 top-0 w-1/2 h-3/4 bg-gradient-to-b from-amber-200/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"
+              className="absolute right-0 top-0 w-1/3 h-1/2 bg-gradient-to-b from-amber-200/5 to-transparent rounded-full blur-3xl -translate-y-1/4 translate-x-1/4"
               animate={{
-                opacity: [0.7, 1, 0.7],
-                scale: [1, 1.05, 1]
+                opacity: [0.4, 0.6, 0.4],
+                scale: [1, 1.03, 1]
               }}
               transition={{
-                duration: 8,
+                duration: 10,
                 repeat: Infinity,
                 repeatType: "reverse",
                 ease: "easeInOut"
@@ -235,7 +290,7 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
     <motion.div 
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className={`min-h-screen w-full flex flex-col md:flex-row items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-luxury relative overflow-hidden ${className}`}
+      className={`h-screen w-full flex flex-col md:flex-row items-center justify-center py-4 px-4 sm:px-6 lg:px-8 bg-luxury relative overflow-hidden ${className}`}
       variants={containerVariants}
       initial="hidden"
       animate={mounted ? "visible" : "hidden"}
@@ -243,58 +298,60 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
       {/* Background design elements */}
       {renderBackground()}
       
-      {/* Decorative line elements with golden thread */}
+      {/* Minimal decorative elements with golden thread */}
       {showAnimations && (
         <>
-          <div className="absolute top-10 left-0 w-full h-10">
+          {/* Subtle horizontal thread */}
+          <div className="absolute top-12 left-0 w-full h-6 opacity-40">
             <GoldenThread 
               pathType="wave" 
-              thickness={1.5} 
+              thickness={0.5} // Thinner line
               color={accentColor}
               duration={3}
             />
           </div>
           
-          <div className="absolute bottom-10 left-0 w-full h-10">
+          {/* Subtle bottom thread */}
+          <div className="absolute bottom-12 left-0 w-full h-6 opacity-40">
             <GoldenThread 
               pathType="stitch" 
-              thickness={1.5} 
+              thickness={0.5} // Thinner line
               color={accentColor}
               duration={3}
               delay={0.5}
             />
           </div>
           
-          {/* Corner accents */}
-          <div className="absolute top-0 left-0 w-20 h-20">
-            <div className="absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 rounded-tl-lg opacity-50" style={{ borderColor: accentColor }} />
+          {/* Minimalist corner accents */}
+          <div className="absolute top-0 left-0 w-16 h-16">
+            <div className="absolute top-6 left-6 w-14 h-14 border-t border-l rounded-tl-lg opacity-30" style={{ borderColor: accentColor }} />
           </div>
           
-          <div className="absolute bottom-0 right-0 w-20 h-20">
-            <div className="absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 rounded-br-lg opacity-50" style={{ borderColor: accentColor }} />
+          <div className="absolute bottom-0 right-0 w-16 h-16">
+            <div className="absolute bottom-6 right-6 w-14 h-14 border-b border-r rounded-br-lg opacity-30" style={{ borderColor: accentColor }} />
           </div>
         </>
       )}
       
       {/* Main content container */}
-      <div className="max-w-6xl w-full flex flex-col md:flex-row items-center justify-center gap-12 relative z-10">
+      <div className="max-w-6xl w-full flex flex-col md:flex-row items-center justify-center gap-16 relative z-10"> {/* Increased gap */}
         {/* Left side: Logo and feature guide (hidden on mobile) */}
         <div className="hidden md:flex flex-col items-center md:items-start relative">
           {/* Logo area */}
           <motion.div 
-            className="mb-8"
+            className="mb-10" // Increased spacing
             variants={logoVariants}
           >
             {logoImage ? (
               <img 
                 src={logoImage} 
                 alt={brandName} 
-                className="h-24 w-auto mx-auto"
+                className="h-20 w-auto mx-auto" // Slightly smaller
               />
             ) : (
-              <SparkleEffect size={5} count={8} className="py-2">
-                <div className="h-24 w-24 flex items-center justify-center rounded-full border-2 font-serif text-4xl font-bold text-luxury-gold"
-                  style={{ borderColor: accentColor }}
+              <SparkleEffect size={4} count={6} className="py-3"> {/* Fewer, smaller sparkles */}
+                <div className="h-20 w-20 flex items-center justify-center rounded-full border font-serif text-3xl font-light text-luxury-gold tracking-wider"
+                  style={{ borderColor: `${accentColor}60` }} // More transparent border
                 >
                   {brandName}
                 </div>
@@ -302,29 +359,29 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
             )}
           </motion.div>
           
-          {/* Feature guide component */}
-          <div className="mt-8 pl-4 border-l-2" style={{ borderColor: `${accentColor}40` }}>
+          {/* Feature guide component - more minimal */}
+          <div className="mt-10 pl-4 border-l" style={{ borderColor: `${accentColor}20` }}> {/* Thinner border, more transparent */}
             <LuxuryFeatureGuide animationDelay={1.2} />
           </div>
         </div>
         
         {/* Right side: Auth form */}
-        <div className="max-w-lg w-full flex flex-col items-center">
+        <div className="max-w-md w-full flex flex-col items-center"> {/* Narrower width */}
           {/* Logo area (only shown on mobile) */}
           <motion.div 
-            className="mb-8 md:hidden"
+            className="mb-10 md:hidden" // Increased spacing
             variants={logoVariants}
           >
             {logoImage ? (
               <img 
                 src={logoImage} 
                 alt={brandName} 
-                className="h-20 w-auto mx-auto"
+                className="h-16 w-auto mx-auto" // Smaller
               />
             ) : (
-              <SparkleEffect size={5} count={8} className="py-2">
-                <div className="h-20 w-20 flex items-center justify-center rounded-full border-2 font-serif text-3xl font-bold text-luxury-gold"
-                  style={{ borderColor: accentColor }}
+              <SparkleEffect size={3} count={6} className="py-2"> {/* Fewer, smaller sparkles */}
+                <div className="h-16 w-16 flex items-center justify-center rounded-full border font-serif text-2xl font-light text-luxury-gold tracking-wider"
+                  style={{ borderColor: `${accentColor}60` }} // More transparent border
                 >
                   {brandName}
                 </div>
@@ -332,148 +389,86 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
             )}
           </motion.div>
           
-          {/* Title area */}
+          {/* Title area - more minimal */}
           <motion.div 
-            className="mb-6 text-center"
+            className="mb-8 text-center" // Increased spacing
             variants={titleVariants}
           >
-            <h1 className="text-3xl font-luxury-heading mb-2 text-luxury-brown tracking-tight">
+            <h1 className="text-2xl font-luxury-heading mb-2 text-luxury-brown tracking-wider font-light"> {/* Thinner font, wider tracking */}
               {title}
             </h1>
-            <p className="text-sm text-luxury-brown/70 font-luxury-body">
+            <p className="text-xs text-luxury-brown/60 font-luxury-body tracking-widest uppercase"> {/* Smaller, uppercase, wider tracking */}
               {subtitle}
             </p>
           </motion.div>
           
-          {/* Content area with card styling */}
+          {/* Content area with minimalist card styling */}
           <motion.div 
             className="w-full"
             variants={childrenVariants}
           >
             <div className="relative">
-              {/* Ambient glow effect */}
+              {/* Subtle ambient glow */}
               <motion.div 
-                className="absolute -inset-4 bg-gradient-radial from-amber-300/10 to-transparent rounded-2xl opacity-0"
+                className="absolute -inset-6 bg-gradient-radial from-amber-300/5 to-transparent rounded-3xl opacity-0"
                 animate={{
-                  opacity: [0, 0.4, 0],
-                  scale: [0.95, 1.05, 0.95]
+                  opacity: [0, 0.2, 0], // Subtler glow
+                  scale: [0.98, 1.02, 0.98]
                 }}
                 transition={{
-                  duration: 6,
+                  duration: 8, // Slower animation
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
               />
               
-              <div className="luxury-card p-8 shadow-xl backdrop-blur-sm relative">
-                {/* Shimmering edge effect */}
-                <div className="absolute inset-0 overflow-hidden rounded-xl">
-                  <motion.div
-                    className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/60 to-transparent"
-                    animate={{
-                      left: ["-100%", "100%"],
-                    }}
-                    transition={{
-                      duration: 3,
-                      ease: "easeInOut",
-                      repeat: Infinity,
-                      repeatDelay: 1.5
-                    }}
-                  />
-                  <motion.div
-                    className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/60 to-transparent"
-                    animate={{
-                      left: ["100%", "-100%"],
-                    }}
-                    transition={{
-                      duration: 3,
-                      ease: "easeInOut",
-                      repeat: Infinity,
-                      repeatDelay: 1.5
-                    }}
-                  />
-                  <motion.div
-                    className="absolute top-0 bottom-0 left-0 w-[1px] bg-gradient-to-b from-transparent via-amber-300/60 to-transparent"
-                    animate={{
-                      top: ["-100%", "100%"],
-                    }}
-                    transition={{
-                      duration: 3,
-                      ease: "easeInOut",
-                      repeat: Infinity,
-                      repeatDelay: 1.5
-                    }}
-                  />
-                  <motion.div
-                    className="absolute top-0 bottom-0 right-0 w-[1px] bg-gradient-to-b from-transparent via-amber-300/60 to-transparent"
-                    animate={{
-                      top: ["100%", "-100%"],
-                    }}
-                    transition={{
-                      duration: 3,
-                      ease: "easeInOut",
-                      repeat: Infinity,
-                      repeatDelay: 1.5
-                    }}
-                  />
-                </div>
+              {/* Modernized minimal card design */}
+              <div className="backdrop-blur-sm relative overflow-hidden rounded-xl border border-amber-200/10 dark:border-amber-700/10"> {/* Thinner border */}
+                {/* Almost invisible edge highlight */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent dark:from-white/3 dark:to-transparent" />
                 
-                {/* Login/Register animated indicator */}
-                <div className="relative overflow-hidden mb-6 h-0.5 bg-amber-100/30 dark:bg-amber-900/30">
-                  <AnimatePresence>
-                    <motion.div 
-                      key={isLoginPage ? 'login' : 'register'}
-                      className="absolute h-0.5 w-1/2"
-                      style={{ backgroundColor: accentColor }}
-                      initial={{ x: isLoginPage ? '-100%' : '100%' }}
-                      animate={{ x: 0 }}
-                      exit={{ x: isLoginPage ? '100%' : '-100%' }}
-                      transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
-                    />
-                  </AnimatePresence>
-                  
-                  <div className="flex justify-center gap-1 absolute top-4 left-0 right-0 text-xs font-medium">
-                    <div className={`px-4 py-1 rounded-full ${isLoginPage ? 'text-luxury-gold' : 'text-luxury-brown/60'}`}>
-                      Sign In
-                    </div>
-                    <div className={`px-4 py-1 rounded-full ${isRegisterPage ? 'text-luxury-gold' : 'text-luxury-brown/60'}`}>
-                      Register
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Auth form content */}
-                <div className="pt-6 relative">
-                  {children}
-                </div>
-                
-                {/* Bottom decorative accent */}
-                <div className="mt-10 flex justify-center">
-                  <div className="w-16 h-0.5 rounded relative overflow-hidden">
+                {/* Minimal content container */}
+                <div className="p-8 relative bg-white/5 dark:bg-black/5"> {/* Subtle background */}
+                  {/* Subtle shimmer effect - single line */}
+                  <div className="absolute top-0 right-0 left-0 overflow-hidden">
                     <motion.div
-                      className="absolute inset-0"
-                      style={{ backgroundColor: accentColor }}
-                      animate={{ 
-                        x: ['0%', '100%', '0%'],
-                        opacity: [0.3, 1, 0.3]
+                      className="h-[0.5px] w-1/3 bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" // Thinner line
+                      animate={{
+                        x: ['-100%', '400%'],
                       }}
                       transition={{
-                        duration: 3,
+                        duration: 4,
                         ease: "easeInOut",
                         repeat: Infinity,
-                        repeatType: "reverse"
+                        repeatDelay: 5 // Longer delay between animations
                       }}
                     />
+                  </div>
+                  
+                  {/* Auth form content */}
+                  <div className="relative">
+                    {children}
+                  </div>
+                  
+                  {/* Minimalist bottom accent */}
+                  <div className="mt-10 flex justify-center">
+                    <div className="w-8 h-[0.5px] bg-amber-300/20 rounded relative overflow-hidden"> {/* Thinner, shorter, more transparent */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/40 to-transparent"
+                        animate={{
+                          x: ['-200%', '200%'],
+                        }}
+                        transition={{
+                          duration: 3,
+                          ease: "easeInOut",
+                          repeat: Infinity,
+                          repeatDelay: 4 // Longer delay
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Footer text */}
-            <div className="text-center mt-6">
-              <p className="text-xs text-luxury-brown/60 font-luxury-body tracking-wide">
-                &copy; {new Date().getFullYear()} Cher's Closet. All couture rights reserved.
-              </p>
             </div>
           </motion.div>
         </div>
