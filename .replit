@@ -1,17 +1,8 @@
-run = "node start.js"
+start = "node start.js"
 modules = ["nodejs-20"]
-hidden = [".config", "package-lock.json"]
 
 [nix]
-channel = "stable-23_05"
-
-[deployment]
-run = ["node", "start.js"]
-deploymentTarget = "cloudrun"
-
-[[ports]]
-localPort = 3000
-externalPort = 3000
+channel = "stable-24_05"
 
 [[ports]]
 localPort = 3001

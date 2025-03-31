@@ -17,11 +17,11 @@ import {
   MapPin, 
   RefreshCcw, 
   AlertCircle, 
-  CloudSun, 
   Sun, 
   Cloud, 
   Layers, 
-  Sparkles 
+  Sparkles,
+  CloudSun as CloudSunIcon
 } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -145,7 +145,7 @@ export default function HomePage() {
                     animate={{ rotate: 360 }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                   >
-                    <CloudSun className="mr-2 h-6 w-6 text-primary" />
+                    <CloudSunIcon className="mr-2 h-6 w-6 text-primary" />
                   </motion.div>
                   <CardTitle>Today's Weather</CardTitle>
                 </div>

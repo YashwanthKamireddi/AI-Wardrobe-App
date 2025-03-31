@@ -4,11 +4,7 @@ import {
   outfits, type Outfit, type InsertOutfit,
   inspirations, type Inspiration, type InsertInspiration,
   weatherPreferences, type WeatherPreference, type InsertWeatherPreference,
-  moodPreferences, type MoodPreference, type InsertMoodPreference,
-  achievements, type Achievement, type InsertAchievement,
-  challenges, type Challenge, type InsertChallenge,
-  userChallenges, type UserChallenge, type InsertUserChallenge,
-  userStats, type UserStats, type InsertUserStats
+  moodPreferences, type MoodPreference, type InsertMoodPreference
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -55,33 +51,7 @@ export interface IStorage {
   // Mood preference operations
   getMoodPreferences(userId: number): Promise<MoodPreference[]>;
   createMoodPreference(preference: InsertMoodPreference): Promise<MoodPreference>;
-
-  // Achievement operations
-  getAchievements(userId: number): Promise<Achievement[]>;
-  getAchievement(id: number): Promise<Achievement | undefined>;
-  createAchievement(achievement: InsertAchievement): Promise<Achievement>;
-  updateAchievement(id: number, achievement: Partial<InsertAchievement>): Promise<Achievement | undefined>;
-
-  // Challenge operations
-  getChallenges(active?: boolean): Promise<Challenge[]>; 
-  getChallenge(id: number): Promise<Challenge | undefined>;
-  createChallenge(challenge: InsertChallenge): Promise<Challenge>;
-  updateChallenge(id: number, challenge: Partial<InsertChallenge>): Promise<Challenge | undefined>;
-  deleteChallenge(id: number): Promise<boolean>;
-
-  // User Challenge operations
-  getUserChallenges(userId: number): Promise<UserChallenge[]>;
-  getUserChallenge(id: number): Promise<UserChallenge | undefined>;
-  createUserChallenge(userChallenge: InsertUserChallenge): Promise<UserChallenge>;
-  updateUserChallenge(id: number, userChallenge: Partial<InsertUserChallenge>): Promise<UserChallenge | undefined>;
-  completeUserChallenge(id: number): Promise<UserChallenge | undefined>;
-
-  // User Stats operations
-  getUserStats(userId: number): Promise<UserStats | undefined>;
-  createUserStats(userStats: InsertUserStats): Promise<UserStats>;
-  updateUserStats(userId: number, userStats: Partial<InsertUserStats>): Promise<UserStats | undefined>;
-  addUserPoints(userId: number, points: number): Promise<UserStats | undefined>;
-
+  
   // Session store
   sessionStore: session.Store;
 }
@@ -234,180 +204,7 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  // Achievement methods
-  async getAchievements(userId: number): Promise<Achievement[]> {
-    return db.select().from(achievements).where(eq(achievements.userId, userId));
-  }
 
-  async getAchievement(id: number): Promise<Achievement | undefined> {
-    const result = await db.select().from(achievements).where(eq(achievements.id, id));
-    return result[0];
-  }
-
-  async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
-    const result = await db.insert(achievements).values({
-      ...achievement,
-      unlockedAt: new Date(),
-      createdAt: new Date()
-    }).returning();
-    return result[0];
-  }
-
-  async updateAchievement(id: number, achievementData: Partial<InsertAchievement>): Promise<Achievement | undefined> {
-    const result = await db.update(achievements)
-      .set(achievementData)
-      .where(eq(achievements.id, id))
-      .returning();
-    return result[0];
-  }
-
-  // Challenge methods
-  async getChallenges(active: boolean = true): Promise<Challenge[]> {
-    if (active) {
-      return db.select().from(challenges).where(eq(challenges.active, true));
-    }
-    return db.select().from(challenges);
-  }
-
-  async getChallenge(id: number): Promise<Challenge | undefined> {
-    const result = await db.select().from(challenges).where(eq(challenges.id, id));
-    return result[0];
-  }
-
-  async createChallenge(challenge: InsertChallenge): Promise<Challenge> {
-    const result = await db.insert(challenges).values({
-      ...challenge,
-      createdAt: new Date()
-    }).returning();
-    return result[0];
-  }
-
-  async updateChallenge(id: number, challengeData: Partial<InsertChallenge>): Promise<Challenge | undefined> {
-    const result = await db.update(challenges)
-      .set(challengeData)
-      .where(eq(challenges.id, id))
-      .returning();
-    return result[0];
-  }
-
-  async deleteChallenge(id: number): Promise<boolean> {
-    const result = await db.delete(challenges).where(eq(challenges.id, id)).returning();
-    return result.length > 0;
-  }
-
-  // User Challenge methods
-  async getUserChallenges(userId: number): Promise<UserChallenge[]> {
-    return db.select().from(userChallenges).where(eq(userChallenges.userId, userId));
-  }
-
-  async getUserChallenge(id: number): Promise<UserChallenge | undefined> {
-    const result = await db.select().from(userChallenges).where(eq(userChallenges.id, id));
-    return result[0];
-  }
-
-  async createUserChallenge(userChallenge: InsertUserChallenge): Promise<UserChallenge> {
-    const result = await db.insert(userChallenges).values({
-      ...userChallenge,
-      startedAt: new Date()
-    }).returning();
-    return result[0];
-  }
-
-  async updateUserChallenge(id: number, userChallengeData: Partial<InsertUserChallenge>): Promise<UserChallenge | undefined> {
-    const result = await db.update(userChallenges)
-      .set(userChallengeData)
-      .where(eq(userChallenges.id, id))
-      .returning();
-    return result[0];
-  }
-
-  async completeUserChallenge(id: number): Promise<UserChallenge | undefined> {
-    const result = await db.update(userChallenges)
-      .set({ 
-        completed: true, 
-        completedAt: new Date() 
-      })
-      .where(eq(userChallenges.id, id))
-      .returning();
-    
-    if (result[0]) {
-      // Get the related challenge to find the points reward
-      const challenge = await this.getChallenge(result[0].challengeId);
-      if (challenge) {
-        // Update user stats with the points earned
-        const userStats = await this.getUserStats(result[0].userId);
-        if (userStats) {
-          await this.addUserPoints(result[0].userId, challenge.pointsReward);
-          await this.updateUserStats(result[0].userId, {
-            challengesCompleted: userStats.challengesCompleted + 1
-          });
-        }
-      }
-    }
-    
-    return result[0];
-  }
-
-  // User Stats methods
-  async getUserStats(userId: number): Promise<UserStats | undefined> {
-    const result = await db.select().from(userStats).where(eq(userStats.userId, userId));
-    return result[0];
-  }
-
-  async createUserStats(stats: InsertUserStats): Promise<UserStats> {
-    const result = await db.insert(userStats).values({
-      ...stats,
-      lastActive: new Date()
-    }).returning();
-    return result[0];
-  }
-
-  async updateUserStats(userId: number, statsData: Partial<InsertUserStats>): Promise<UserStats | undefined> {
-    // First, try to get the existing stats
-    let existingStats = await this.getUserStats(userId);
-    
-    // If user stats don't exist, create them
-    if (!existingStats) {
-      existingStats = await this.createUserStats({ userId });
-    }
-    
-    // Now update the stats
-    const result = await db.update(userStats)
-      .set({
-        ...statsData,
-        lastActive: new Date()
-      })
-      .where(eq(userStats.userId, userId))
-      .returning();
-      
-    return result[0];
-  }
-
-  async addUserPoints(userId: number, points: number): Promise<UserStats | undefined> {
-    // Get current stats
-    let userStat = await this.getUserStats(userId);
-    
-    if (!userStat) {
-      // Create user stats if they don't exist
-      userStat = await this.createUserStats({ userId });
-    }
-    
-    // Calculate new values
-    const newTotalPoints = userStat.totalPoints + points;
-    const newLevel = Math.floor(newTotalPoints / 100) + 1; // Simple level calculation: 100 points per level
-    
-    // Update the stats
-    const result = await db.update(userStats)
-      .set({
-        totalPoints: newTotalPoints,
-        level: newLevel,
-        lastActive: new Date()
-      })
-      .where(eq(userStats.userId, userId))
-      .returning();
-    
-    return result[0];
-  }
 
   private async addSampleInspirations() {
     const existingInspirations = await db.select({ count: { value: inspirations.id } })
