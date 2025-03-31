@@ -6,6 +6,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700&display=swap');
 @import './styles/mobile.css';
 @import './styles/custom.css';
+@import './styles/luxurious-input.css';
 
 /* Global styles */
 /* Custom scrollbar styles */

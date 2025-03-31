@@ -55,16 +55,16 @@ const registerSchema = insertUserSchema
 type LoginValues = z.infer<typeof loginSchema>;
 type RegisterValues = z.infer<typeof registerSchema>;
 
-// 3D Card Tilt Component
+// Modernized 3D Card Tilt Component with subtler effect
 function CardTilt({ children }: { children: React.ReactNode }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-100, 100], [10, -10]);
-  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
+  const rotateX = useTransform(y, [-100, 100], [5, -5]); // Reduced rotation range for subtler effect
+  const rotateY = useTransform(x, [-100, 100], [-5, 5]); // Reduced rotation range for subtler effect
   
-  // Smoother animations with spring
-  const springConfig = { damping: 20, stiffness: 150 };
+  // More refined animations with gentler spring
+  const springConfig = { damping: 30, stiffness: 100 }; // Slower, smoother movement
   const springRotateX = useSpring(rotateX, springConfig);
   const springRotateY = useSpring(rotateY, springConfig);
   
@@ -76,11 +76,13 @@ function CardTilt({ children }: { children: React.ReactNode }) {
     const mouseX = e.clientX - centerX;
     const mouseY = e.clientY - centerY;
     
-    x.set(mouseX);
-    y.set(mouseY);
+    // Dampen the effect by reducing the input values
+    x.set(mouseX * 0.7); // Reduced sensitivity
+    y.set(mouseY * 0.7); // Reduced sensitivity
   }
   
   function handleMouseLeave() {
+    // Smoother return to neutral position
     x.set(0);
     y.set(0);
   }
@@ -93,16 +95,16 @@ function CardTilt({ children }: { children: React.ReactNode }) {
       style={{
         rotateX: springRotateX,
         rotateY: springRotateY,
-        transformPerspective: 1200,
+        transformPerspective: 1500, // Increased for subtler effect
         transformStyle: "preserve-3d",
       }}
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ scale: 1.01 }} // Subtler hover scaling
       className="relative w-full"
     >
-      {/* Card shadow base */}
+      {/* Minimalist card shadow */}
       <div 
-        className="absolute -inset-1 bg-amber-300/20 dark:bg-amber-700/20 rounded-xl blur-md opacity-60"
-        style={{ transformStyle: "preserve-3d", transform: "translateZ(-10px)" }}
+        className="absolute -inset-1 bg-amber-300/10 dark:bg-amber-700/10 rounded-xl blur-lg opacity-40" // More subtle shadow
+        style={{ transformStyle: "preserve-3d", transform: "translateZ(-8px)" }}
       />
       
       {/* Card content */}
@@ -110,12 +112,12 @@ function CardTilt({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       
-      {/* Reflective highlight */}
+      {/* Subtle reflective highlight */}
       <motion.div 
-        className="absolute inset-0 rounded-xl bg-gradient-to-tr from-amber-100/10 to-amber-50/30 dark:from-amber-700/10 dark:to-amber-800/10 pointer-events-none"
+        className="absolute inset-0 rounded-xl bg-gradient-to-tr from-amber-100/5 to-amber-50/10 dark:from-amber-700/5 dark:to-amber-800/5 pointer-events-none" // More subtle gradient
         style={{ 
           transformStyle: "preserve-3d", 
-          transform: "translateZ(2px)",
+          transform: "translateZ(1px)", // Reduced height
           backgroundBlendMode: "overlay"
         }}
       />
@@ -219,44 +221,44 @@ function AuthPage() {
         subtitle={activeView === "login" 
           ? "Sign in to access your curated wardrobe" 
           : "Create your account for AI-powered styling"}
-        backgroundType="monogram"
+        backgroundType="minimal"
       >
         <div className="w-full flex flex-col items-center relative">
-          {/* Toggle between login and register */}
-          <div className="flex w-full mb-8 relative">
+          {/* Toggle between login and register - more minimal */}
+          <div className="flex w-full mb-5 relative">
             <div 
-              className="w-1/2 text-center py-2 cursor-pointer relative z-10"
+              className="w-1/2 text-center py-1 cursor-pointer relative z-10"
               onClick={() => setActiveView("login")}
             >
-              <span className={`font-medium transition-colors ${activeView === "login" ? "text-amber-500" : "text-amber-500/50"}`}>
+              <span className={`font-light tracking-widest uppercase text-xs transition-colors ${activeView === "login" ? "text-amber-500/90" : "text-amber-500/30"}`}>
                 Sign In
               </span>
             </div>
             <div 
-              className="w-1/2 text-center py-2 cursor-pointer relative z-10"
+              className="w-1/2 text-center py-1 cursor-pointer relative z-10"
               onClick={() => setActiveView("register")}
             >
-              <span className={`font-medium transition-colors ${activeView === "register" ? "text-amber-500" : "text-amber-500/50"}`}>
+              <span className={`font-light tracking-widest uppercase text-xs transition-colors ${activeView === "register" ? "text-amber-500/90" : "text-amber-500/30"}`}>
                 Register
               </span>
             </div>
             
-            {/* Animated indicator */}
+            {/* Refined animated indicator */}
             <motion.div 
-              className="absolute bottom-0 h-0.5 bg-amber-500"
+              className="absolute bottom-0 h-[0.5px] bg-amber-500/40"
               initial={false}
               animate={{
                 x: activeView === "login" ? "0%" : "100%",
                 width: "50%"
               }}
               transition={{
-                duration: 0.5,
+                duration: 0.6,
                 ease: [0.22, 1, 0.36, 1]
               }}
             />
           </div>
 
-          {/* Form container with 3D tilt effect */}
+          {/* Form container with subtle 3D tilt effect */}
           <div className="w-full relative">
             <CardTilt>
               <AnimatePresence mode="wait">
@@ -277,25 +279,21 @@ function AuthPage() {
                           name="username"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-amber-500/80 flex items-center gap-2">
-                                <User size={16} className="text-amber-500/60" />
+                              <FormLabel className="form-label-minimal">
+                                <User className="input-icon" />
                                 Username
                               </FormLabel>
                               <FormControl>
-                                <div className="relative">
+                                <div className="input-container-minimal">
                                   <Input
                                     placeholder="Enter username"
                                     {...field}
-                                    className="input-luxury bg-transparent"
+                                    className="input-minimal"
                                   />
-                                  <div className="absolute inset-0 pointer-events-none rounded-md" 
-                                    style={{
-                                      background: "linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.05) 100%)"
-                                    }}
-                                  />
+                                  <div className="input-focus-line" />
                                 </div>
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-xs opacity-70 mt-1 ml-1" />
                             </FormItem>
                           )}
                         />
@@ -307,42 +305,38 @@ function AuthPage() {
                           name="password"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-amber-500/80 flex items-center gap-2">
-                                <KeyRound size={16} className="text-amber-500/60" />
+                              <FormLabel className="form-label-minimal">
+                                <KeyRound className="input-icon" />
                                 Password
                               </FormLabel>
                               <FormControl>
-                                <div className="relative">
+                                <div className="input-container-minimal">
                                   <Input
                                     type="password"
                                     placeholder="••••••••"
                                     {...field}
-                                    className="input-luxury bg-transparent"
+                                    className="input-minimal"
                                   />
-                                  <div className="absolute inset-0 pointer-events-none rounded-md"
-                                    style={{
-                                      background: "linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.05) 100%)"
-                                    }}
-                                  />
+                                  <div className="input-focus-line" />
                                 </div>
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-xs opacity-70 mt-1 ml-1" />
                             </FormItem>
                           )}
                         />
                       </motion.div>
 
                       <motion.div variants={inputVariants} custom={3} initial="hidden" animate="visible">
-                        <SparkleEffect count={8} size={6} triggerOnScroll={false} className="mt-8">
+                        <SparkleEffect count={5} size={4} triggerOnScroll={false} className="mt-10">
                           <Button
                             type="submit"
-                            className="w-full btn-gold-animated hover:shadow-lg"
+                            className="btn-submit-minimal w-full"
                             disabled={loginMutation.isPending}
                           >
                             {loginMutation.isPending ? (
                               <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Signing In...
+                                <Loader2 className="h-3 w-3 animate-spin opacity-70" />
+                                Signing In
                               </>
                             ) : (
                               "Sign In"
@@ -363,32 +357,28 @@ function AuthPage() {
                   className="w-full"
                 >
                   <Form {...registerForm}>
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-5">
+                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-3">
                       <motion.div variants={inputVariants} custom={1} initial="hidden" animate="visible">
                         <FormField
                           control={registerForm.control}
                           name="username"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-amber-500/80 flex items-center gap-2">
-                                <User size={16} className="text-amber-500/60" />
+                              <FormLabel className="form-label-minimal">
+                                <User className="input-icon" />
                                 Username
                               </FormLabel>
                               <FormControl>
-                                <div className="relative">
+                                <div className="input-container-minimal">
                                   <Input
                                     placeholder="Enter username"
                                     {...field}
-                                    className="input-luxury bg-transparent"
+                                    className="input-minimal"
                                   />
-                                  <div className="absolute inset-0 pointer-events-none rounded-md"
-                                    style={{
-                                      background: "linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.05) 100%)"
-                                    }}
-                                  />
+                                  <div className="input-focus-line" />
                                 </div>
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-xs opacity-70 mt-1 ml-1" />
                             </FormItem>
                           )}
                         />
@@ -400,26 +390,22 @@ function AuthPage() {
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-amber-500/80 flex items-center gap-2">
-                                <User size={16} className="text-amber-500/60" />
+                              <FormLabel className="form-label-minimal">
+                                <User className="input-icon" />
                                 Full Name
                               </FormLabel>
                               <FormControl>
-                                <div className="relative">
+                                <div className="input-container-minimal">
                                   <Input
                                     placeholder="Your full name"
                                     {...field}
                                     value={field.value || ''}
-                                    className="input-luxury bg-transparent"
+                                    className="input-minimal"
                                   />
-                                  <div className="absolute inset-0 pointer-events-none rounded-md"
-                                    style={{
-                                      background: "linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.05) 100%)"
-                                    }}
-                                  />
+                                  <div className="input-focus-line" />
                                 </div>
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-xs opacity-70 mt-1 ml-1" />
                             </FormItem>
                           )}
                         />
@@ -431,39 +417,28 @@ function AuthPage() {
                           name="email"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-amber-500/80 flex items-center gap-2">
-                                <Mail size={16} className="text-amber-500/60" />
+                              <FormLabel className="form-label-minimal">
+                                <Mail className="input-icon" />
                                 Email (Optional)
                               </FormLabel>
                               <FormControl>
-                                <div className="relative">
+                                <div className="input-container-minimal">
                                   <Input
                                     type="email"
                                     placeholder="your@email.com"
                                     {...field}
-                                    className="input-luxury bg-transparent"
+                                    className="input-minimal"
                                   />
-                                  <div className="absolute inset-0 pointer-events-none rounded-md"
-                                    style={{
-                                      background: "linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.05) 100%)"
-                                    }}
-                                  />
+                                  <div className="input-focus-line" />
                                 </div>
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-xs opacity-70 mt-1 ml-1" />
                             </FormItem>
                           )}
                         />
                       </motion.div>
 
-                      <div className="pt-2">
-                        <div className="relative">
-                          <Separator className="my-4" />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="bg-amber-950/5 px-2 text-xs text-amber-500/70">SECURE PASSWORD</span>
-                          </div>
-                        </div>
-                      </div>
+                      <Separator className="separator-minimal my-2" />
 
                       <motion.div variants={inputVariants} custom={4} initial="hidden" animate="visible">
                         <FormField
@@ -471,26 +446,22 @@ function AuthPage() {
                           name="password"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-amber-500/80 flex items-center gap-2">
-                                <Lock size={16} className="text-amber-500/60" />
+                              <FormLabel className="form-label-minimal">
+                                <Lock className="input-icon" />
                                 Password
                               </FormLabel>
                               <FormControl>
-                                <div className="relative">
+                                <div className="input-container-minimal">
                                   <Input
                                     type="password"
                                     placeholder="••••••••"
                                     {...field}
-                                    className="input-luxury bg-transparent"
+                                    className="input-minimal"
                                   />
-                                  <div className="absolute inset-0 pointer-events-none rounded-md"
-                                    style={{
-                                      background: "linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.05) 100%)"
-                                    }}
-                                  />
+                                  <div className="input-focus-line" />
                                 </div>
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-xs opacity-70 mt-1 ml-1" />
                             </FormItem>
                           )}
                         />
@@ -502,42 +473,38 @@ function AuthPage() {
                           name="confirmPassword"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-amber-500/80 flex items-center gap-2">
-                                <Lock size={16} className="text-amber-500/60" />
+                              <FormLabel className="form-label-minimal">
+                                <Lock className="input-icon" />
                                 Confirm Password
                               </FormLabel>
                               <FormControl>
-                                <div className="relative">
+                                <div className="input-container-minimal">
                                   <Input
                                     type="password"
                                     placeholder="••••••••"
                                     {...field}
-                                    className="input-luxury bg-transparent"
+                                    className="input-minimal"
                                   />
-                                  <div className="absolute inset-0 pointer-events-none rounded-md"
-                                    style={{
-                                      background: "linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.05) 100%)"
-                                    }}
-                                  />
+                                  <div className="input-focus-line" />
                                 </div>
                               </FormControl>
-                              <FormMessage />
+                              <FormMessage className="text-xs opacity-70 mt-1 ml-1" />
                             </FormItem>
                           )}
                         />
                       </motion.div>
 
                       <motion.div variants={inputVariants} custom={6} initial="hidden" animate="visible">
-                        <SparkleEffect count={8} size={6} triggerOnScroll={false} className="mt-8">
+                        <SparkleEffect count={5} size={4} triggerOnScroll={false} className="mt-4">
                           <Button
                             type="submit"
-                            className="w-full btn-gold-animated hover:shadow-lg"
+                            className="btn-submit-minimal w-full"
                             disabled={registerMutation.isPending}
                           >
                             {registerMutation.isPending ? (
                               <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Creating Account...
+                                <Loader2 className="h-3 w-3 animate-spin opacity-70 mr-2" />
+                                Creating Account
                               </>
                             ) : (
                               "Create Account"
@@ -553,11 +520,11 @@ function AuthPage() {
             </CardTilt>
           </div>
 
-          {/* Bottom decoration */}
-          <div className="mt-12 w-full overflow-hidden h-10">
+          {/* Minimalist bottom decoration */}
+          <div className="mt-6 w-full overflow-hidden h-6 opacity-30">
             <GoldenThread 
               pathType="wave" 
-              thickness={1}
+              thickness={0.5}
               color="rgba(251, 191, 36, 0.6)"
               duration={3}
               repeat={true}

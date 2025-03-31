@@ -90,32 +90,33 @@ const SparkleEffect: React.FC<SparkleProps> = ({
       scale: 0,
     },
     animate: (delay: number) => ({
-      opacity: [0, 1, 0.8, 0],
-      scale: [0, 1, 0.8, 0],
+      opacity: [0, 0.7, 0.9, 0.6, 0], // More nuanced opacity stages
+      scale: [0, 0.7, 1, 0.8, 0], // More nuanced scaling for dimensional feel
       transition: {
-        duration: 2,
+        duration: 1.8, // Slightly faster for more frequent sparkles
         delay: delay,
-        ease: "easeInOut",
+        ease: [0.22, 0.9, 0.36, 1], // Luxury easing curve
         repeat: Infinity,
-        repeatDelay: Math.random() * 4 + 1
+        repeatDelay: Math.random() * 3 + 0.8 // Reduced delay for more frequency
       }
     }),
     exit: {
       opacity: 0,
       scale: 0,
-      transition: { duration: 0.5 }
+      transition: { duration: 0.4, ease: [0.42, 0, 0.58, 1] } // Improved exit
     }
   };
   
-  // Constant rotation animation
+  // Elegant rotation animation
   const rotationVariants = {
     animate: (delay: number) => ({
-      rotate: [0, 360],
+      rotate: [0, 180, 360], // Add midpoint for non-linear rotation feel
+      scale: [1, 1.05, 1], // Subtle pulsing during rotation
       transition: {
-        duration: rotateSpeed + (Math.random() * 2),
-        ease: "linear",
+        duration: rotateSpeed + (Math.random() * 1.5), // Slightly reduced variability
+        ease: "easeInOut", // Smoother, more elegant rotation
         repeat: Infinity,
-        delay: delay * 0.5
+        delay: delay * 0.4 // Quicker start
       }
     })
   };
@@ -167,15 +168,24 @@ const SparkleEffect: React.FC<SparkleProps> = ({
       <div className="relative">
         {children}
         
-        {/* Subtle glow overlay when sparkling */}
+        {/* Enhanced luxurious glow effect */}
         {showSparkles && (
           <motion.div
             className="absolute inset-0 pointer-events-none"
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.08, 0], transition: { duration: 2.5, repeat: Infinity } }}
+            animate={{ 
+              opacity: [0, 0.05, 0.07, 0.03, 0], // More subtle, nuanced glow
+              scale: [0.97, 1, 1.02, 1, 0.97], // Subtle breathing effect
+              transition: { 
+                duration: 3.2, 
+                repeat: Infinity,
+                ease: "easeInOut" 
+              } 
+            }}
             style={{ 
-              background: `radial-gradient(circle at center, ${color} 0%, transparent 70%)`,
-              mixBlendMode: 'screen' 
+              background: `radial-gradient(circle at center, ${color} 0%, rgba(251, 191, 36, 0.1) 35%, transparent 75%)`,
+              mixBlendMode: 'screen',
+              filter: 'blur(4px)' // Softer edge for more refined look
             }}
           />
         )}
