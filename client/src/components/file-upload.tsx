@@ -89,33 +89,20 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
           id="image-upload"
         />
         
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-            className="border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
-          >
-            <Upload className="h-4 w-4 mr-2 text-amber-500" />
-            Browse Files
-          </Button>
-          
+        <div className="flex justify-center">
           <Button
             type="button"
             variant="outline"
             onClick={() => {
-              // For demo purposes, we'll just open the device camera
               if (fileInputRef.current) {
-                fileInputRef.current.capture = "environment";
                 fileInputRef.current.click();
               }
             }}
             disabled={isLoading}
-            className="border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
+            className="w-full md:w-2/3 border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
           >
-            <Camera className="h-4 w-4 mr-2 text-amber-500" />
-            Take Photo
+            <Upload className="h-4 w-4 mr-2 text-amber-500" />
+            <span>Choose Image</span>
           </Button>
         </div>
         

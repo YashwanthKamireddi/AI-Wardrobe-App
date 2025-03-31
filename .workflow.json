@@ -1,22 +1,12 @@
 {
-  "workflows": [
-    {
-      "name": "Start application",
-      "command": "node start.js",
-      "restartOn": {
-        "files": [
-          "server/**/*.ts",
-          "client/src/**/*.tsx",
-          "client/src/**/*.ts",
-          "shared/**/*.ts"
-        ]
-      },
-      "runAtStart": true,
-      "clearPreviousLogs": true,
-      "primary": true,
-      "ports": [
-        3000, 3001
-      ]
+  "$schema": "https://replit.com/schemas/workflow.json",
+  "revision": 1,
+  "runs": {
+    "dev": {
+      "run": "node start.js",
+      "persistent": true,
+      "description": "Start the Cher's Closet fashion application",
+      "defaultUrl": "/"
     }
-  ]
+  }
 }

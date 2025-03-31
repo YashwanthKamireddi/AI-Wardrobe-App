@@ -217,7 +217,7 @@ export default function WardrobePage() {
 
       {/* Add Item Dialog */}
       <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-        <DialogContent className="md:max-w-[800px] border-amber-200 bg-white shadow-lg">
+        <DialogContent className="max-w-[95%] md:max-w-[800px] border-amber-200 bg-white shadow-lg">
           <DialogHeader className="border-b border-amber-200/30 pb-4 mb-5 relative gold-corner">
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-radial from-amber-100 to-transparent opacity-50 rounded-full blur-md"></div>
             <DialogTitle className="font-luxury-heading text-2xl flex items-center gap-3 mb-1 text-amber-900">
@@ -231,16 +231,16 @@ export default function WardrobePage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto pr-2 luxury-scrollbar">
+          <div className="flex-1 overflow-y-auto pr-2">
             <div className="flex gap-6 flex-col md:flex-row">
               {/* Left side - Image upload */}
               <div className="md:w-2/5 order-2 md:order-1">
-                <div className="luxury-card p-5 bg-amber-50/80">
+                <div className="luxury-card p-3 sm:p-5 bg-amber-50/80">
                   <Label className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-3 flex items-center">
-                    <AccessoriesIcon className="h-3.5 w-3.5 mr-2 text-amber-500" />
-                    Item Image
+                    <AccessoriesIcon className="h-3.5 w-3.5 mr-2 text-amber-500 flex-shrink-0" />
+                    <span className="truncate">Item Image</span>
                   </Label>
-                  <div className="border border-amber-200/40 p-5 rounded-md bg-white animate-luxury-shimmer">
+                  <div className="border border-amber-200/40 p-3 sm:p-5 rounded-md bg-white animate-luxury-shimmer">
                     <FileUpload 
                       onUpload={handleImageUpload} 
                       currentImageUrl={newItem.imageUrl}
@@ -251,7 +251,7 @@ export default function WardrobePage() {
 
               {/* Right side - Item details */}
               <div className="md:w-3/5 order-1 md:order-2">
-                <div className="luxury-card p-5 bg-amber-50/80">
+                <div className="luxury-card p-3 sm:p-5 bg-amber-50/80">
                   <div className="space-y-5">
                     <div>
                       <Label htmlFor="name" className="font-luxury-body text-sm uppercase tracking-wider text-amber-800 mb-2 flex items-center">
@@ -360,7 +360,7 @@ export default function WardrobePage() {
             </div>
           </div>
 
-          <div className="pt-4 mt-4 border-t border-amber-200/30 flex items-center justify-between">
+          <div className="pt-4 mt-4 border-t border-amber-200/30 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
             <div className="text-sm text-amber-700 font-luxury-body">
               {!newItem.name || !newItem.category || !newItem.imageUrl ? (
                 <span className="flex items-center">
@@ -375,28 +375,28 @@ export default function WardrobePage() {
               )}
             </div>
             
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 onClick={() => setIsAddingItem(false)} 
-                className="border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
+                className="flex-1 sm:flex-none border-amber-300 text-amber-900 hover:bg-amber-50 hover:text-amber-950 font-luxury-body"
               >
-                Cancel
+                <span className="whitespace-nowrap">Cancel</span>
               </Button>
               <Button 
                 onClick={handleSubmit}
                 disabled={!newItem.name || !newItem.category || !newItem.imageUrl || addWardrobeItem.isPending}
-                className="btn-luxury"
+                className="flex-1 sm:flex-none btn-luxury"
               >
                 {addWardrobeItem.isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin flex-shrink-0" />
+                    <span className="whitespace-nowrap">Saving...</span>
                   </>
                 ) : (
                   <>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add to Collection
+                    <Plus className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="whitespace-nowrap">Add to Collection</span>
                   </>
                 )}
               </Button>
