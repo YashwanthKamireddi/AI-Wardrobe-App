@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "runs": {
+    "Start application": {
+      "run": "node start.js",
+      "persistent": true,
+      "description": "Start the Cher's Closet fashion application",
+      "defaultUrl": "/"
+    }
+  }
+}
