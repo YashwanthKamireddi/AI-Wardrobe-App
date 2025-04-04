@@ -183,8 +183,9 @@ const NavigationBar: React.FC = () => {
         >
           <Link href="/">
             <motion.div variants={logoVariants}>
-              <FashionLogo size="md" className="hidden sm:flex" />
-              <FashionLogo size="sm" className="sm:hidden" />
+              <FashionLogo size="md" className="hidden lg:flex" />
+              <FashionLogo size="md" compact={true} className="hidden sm:flex lg:hidden" />
+              <FashionLogo size="sm" compact={true} className="sm:hidden" />
             </motion.div>
           </Link>
         </motion.div>

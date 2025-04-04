@@ -21,7 +21,6 @@ import {
   Cloud, 
   // CloudSun, // Temporarily commented out to avoid conflicts with our custom CloudSunIcon
   Layers, 
-  Sparkles,
   Sunrise
 } from "lucide-react";
 import { WardrobeItem, moodTypes } from "@shared/schema";
@@ -29,10 +28,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation, Link } from "wouter"; 
 import { motion } from "framer-motion";
 import { AnimatedBackground } from "@/components/ui/animated-background";
-import { AnimatedCard } from "@/components/ui/animated-card";
 import CCMonogramBackground from "@/components/ui/cc-monogram-background";
-import { CatwalkScroller } from "@/components/ui/runway-display";
-import { CoutureHeading, PullQuote, EditorialCallout } from "@/components/ui/haute-couture-typography";
+import { CoutureHeading } from "@/components/ui/haute-couture-typography";
 
 // Animation variants for staggered children
 const containerVariants = {
@@ -323,44 +320,6 @@ export default function HomePage() {
             </Card>
           </motion.div>
         </div>
-
-        {/* Fashion magazine style editorial callout */}
-        {!wardrobeLoading && wardrobeItems && wardrobeItems.length > 3 && (
-          <div className="mb-10">
-            <EditorialCallout 
-              title="Today's Style Spotlight" 
-              variant="luxury"
-              bordered
-              className="mb-6"
-              icon={<Sparkles className="h-5 w-5" />}
-            >
-              <PullQuote source="Cher's Virtual Stylist" position="center" luxury>
-                Dress for the weather, dress for your mood, but most importantly, dress to express your authentic self.
-              </PullQuote>
-              
-              <div className="mt-6">
-                <CoutureHeading as="h4" size="md" decorative className="mb-3">
-                  Your Wardrobe Highlight Reel
-                </CoutureHeading>
-                <CatwalkScroller className="my-4">
-                  {wardrobeItems.slice(0, 6).map(item => (
-                    <AnimatedCard key={item.id} className="w-48 h-64 min-w-[12rem]">
-                      <div 
-                        className="w-full h-full bg-cover bg-center rounded-md shadow-md border border-amber-200/30"
-                        style={{ backgroundImage: `url(${item.imageUrl})` }}
-                      >
-                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent text-white">
-                          <div className="text-sm font-medium truncate">{item.name}</div>
-                          <div className="text-xs capitalize opacity-80">{item.category}</div>
-                        </div>
-                      </div>
-                    </AnimatedCard>
-                  ))}
-                </CatwalkScroller>
-              </div>
-            </EditorialCallout>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div 

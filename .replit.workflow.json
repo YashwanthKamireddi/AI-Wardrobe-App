@@ -1,11 +1,11 @@
 {
-  "version": 1,
-  "runs": {
-    "chersCloset": {
-      "run": "node start.js",
-      "persistent": true,
-      "description": "Start Cher's Closet fashion application",
-      "defaultUrl": "/"
+  "workflows": [
+    {
+      "name": "start-app",
+      "options": {
+        "command": "node start.js",
+        "restart_on_code_change": true
+      }
     }
-  }
+  ]
 }
