@@ -5,16 +5,18 @@ interface FashionLogoProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
   animated?: boolean;
+  compact?: boolean;
 }
 
 export function FashionLogo({ 
   className, 
   size = "md", 
-  animated = false 
+  animated = false,
+  compact = false 
 }: FashionLogoProps) {
   const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
+    sm: "w-7 h-7",
+    md: "w-10 h-10",
     lg: "w-16 h-16",
     xl: "w-24 h-24",
   };
@@ -56,16 +58,18 @@ export function FashionLogo({
           />
         </svg>
       </div>
-      <div className={cn("ml-2 font-bold", {
-        "text-lg": size === "sm",
-        "text-xl": size === "md",
-        "text-2xl": size === "lg",
-        "text-3xl": size === "xl",
-      })}>
-        <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
-          Cher's Closet
-        </span>
-      </div>
+      {!compact && (
+        <div className={cn("ml-2 font-bold", {
+          "text-sm": size === "sm",
+          "text-lg": size === "md",
+          "text-2xl": size === "lg",
+          "text-3xl": size === "xl",
+        })}>
+          <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+            Cher's Closet
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -162,60 +162,60 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
 
       {/* View Outfit Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] runway-gradient overflow-hidden p-6">
+        <DialogContent className="sm:max-w-[800px] w-[95%] runway-gradient p-3 sm:p-6 rounded-lg max-h-[90vh] overflow-y-auto">
           {/* Luxury corner accents */}
-          <div className="absolute top-3 left-3 w-5 h-5 border-l-2 border-t-2 border-accent/40"></div>
-          <div className="absolute top-3 right-3 w-5 h-5 border-r-2 border-t-2 border-accent/40"></div>
-          <div className="absolute bottom-3 left-3 w-5 h-5 border-l-2 border-b-2 border-accent/40"></div>
-          <div className="absolute bottom-3 right-3 w-5 h-5 border-r-2 border-b-2 border-accent/40"></div>
+          <div className="absolute top-3 left-3 w-4 h-4 sm:w-5 sm:h-5 border-l-2 border-t-2 border-accent/40"></div>
+          <div className="absolute top-3 right-3 w-4 h-4 sm:w-5 sm:h-5 border-r-2 border-t-2 border-accent/40"></div>
+          <div className="absolute bottom-3 left-3 w-4 h-4 sm:w-5 sm:h-5 border-l-2 border-b-2 border-accent/40"></div>
+          <div className="absolute bottom-3 right-3 w-4 h-4 sm:w-5 sm:h-5 border-r-2 border-b-2 border-accent/40"></div>
           
-          <DialogHeader className="text-center">
-            <DialogTitle className="font-fashion-heading text-3xl tracking-tight mb-2">{outfit.name}</DialogTitle>
+          <DialogHeader className="text-center mb-2">
+            <DialogTitle className="font-fashion-heading text-xl sm:text-3xl tracking-tight">{outfit.name}</DialogTitle>
             {outfit.description && (
-              <p className="text-sm text-muted-foreground italic mb-3 max-w-md mx-auto">{outfit.description}</p>
+              <div className="text-xs sm:text-sm text-muted-foreground italic mt-1 max-w-md mx-auto">{outfit.description}</div>
             )}
-            <DialogDescription>
-              <div className="flex flex-wrap gap-2 mt-2 justify-center">
+            <div className="mt-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
                 {outfit.occasion && (
-                  <Badge variant="outline" className="border-accent/50 text-foreground">
+                  <Badge variant="outline" className="border-accent/50 text-foreground text-xs py-0">
                     <Users2 className="h-3 w-3 mr-1" />
                     {outfit.occasion}
                   </Badge>
                 )}
                 {outfit.season && (
-                  <Badge variant="outline" className="border-accent/50 text-foreground">
+                  <Badge variant="outline" className="border-accent/50 text-foreground text-xs py-0">
                     <Calendar className="h-3 w-3 mr-1" />
                     {outfit.season}
                   </Badge>
                 )}
                 {outfit.weatherConditions && (
-                  <Badge variant="outline" className="border-accent/50 text-foreground">
+                  <Badge variant="outline" className="border-accent/50 text-foreground text-xs py-0">
                     <Cloud className="h-3 w-3 mr-1" />
                     {outfit.weatherConditions}
                   </Badge>
                 )}
                 {outfit.mood && (
-                  <Badge variant="outline" className="border-accent/50 text-foreground">
+                  <Badge variant="outline" className="border-accent/50 text-foreground text-xs py-0">
                     <ThumbsUp className="h-3 w-3 mr-1" />
                     {outfit.mood}
                   </Badge>
                 )}
               </div>
-            </DialogDescription>
+            </div>
           </DialogHeader>
 
-          <div className="luxury-divider"></div>
+          <div className="luxury-divider my-2 sm:my-4"></div>
 
-          <div className="py-4 px-2">
-            <h3 className="font-fashion-heading text-lg mb-5 uppercase tracking-wide text-center">The Collection</h3>
+          <div className="py-1 sm:py-2">
+            <h3 className="font-fashion-heading text-sm sm:text-lg mb-2 sm:mb-4 uppercase tracking-wide text-center">The Collection</h3>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto p-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-h-[35vh] sm:max-h-[40vh] custom-scrollbar overflow-y-auto pr-1">
               {items.map((item) => (
-                <div key={item.id} className="boutique-item group h-full flex flex-col">
+                <div key={item.id} className="boutique-item group h-full flex flex-col border border-accent/20 rounded-sm overflow-hidden bg-card">
                   {item.imageUrl && (
-                    <div className="relative overflow-hidden aspect-[4/3]">
+                    <div className="relative overflow-hidden aspect-square">
                       {item.color && (
-                        <span className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded-sm border border-accent/20">{item.color}</span>
+                        <span className="absolute top-1 right-1 z-10 bg-background/80 backdrop-blur-sm text-[10px] sm:text-xs px-1 py-0.5 sm:px-2 sm:py-1 rounded-sm border border-accent/20">{item.color}</span>
                       )}
                       <img 
                         src={item.imageUrl} 
@@ -224,9 +224,9 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
                       />
                     </div>
                   )}
-                  <div className="p-3 bg-background/90 backdrop-blur-sm flex-grow">
-                    <h4 className="font-fashion-heading font-medium text-sm mb-1">{item.name}</h4>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                  <div className="p-1 sm:p-2 bg-background/90 backdrop-blur-sm flex-grow">
+                    <h4 className="font-fashion-heading font-medium text-xs sm:text-sm mb-0.5 truncate">{item.name}</h4>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider truncate">
                       {item.category}
                       {item.subcategory ? ` · ${item.subcategory}` : ""}
                     </p>
@@ -236,13 +236,13 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
             </div>
           </div>
 
-          <DialogFooter className="flex justify-between sm:justify-between mt-4 pt-4 border-t border-accent/10">
+          <DialogFooter className="flex justify-between mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-accent/10">
             <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} 
-              className="fashion-button border-accent hover:bg-accent hover:text-black">
+              className="fashion-button border-accent hover:bg-accent hover:text-black px-2 sm:px-4 h-8 sm:h-10 text-xs sm:text-sm">
               CLOSE
             </Button>
-            <Button onClick={handleShare} className="fashion-button">
-              <Share2 className="h-4 w-4 mr-2" />
+            <Button onClick={handleShare} className="fashion-button px-2 sm:px-4 h-8 sm:h-10 text-xs sm:text-sm">
+              <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               SHARE
             </Button>
           </DialogFooter>

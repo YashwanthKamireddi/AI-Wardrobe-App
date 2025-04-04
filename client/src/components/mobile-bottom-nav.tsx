@@ -146,21 +146,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
       {/* Bottom luxury line decoration */}
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/30 via-amber-200/10 to-amber-400/30"></div>
       
-      {/* Center logo decoration in gold/amber */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-3 w-6 h-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="w-6 h-6 flex items-center justify-center"
-        >
-          <div className="w-full h-full rounded-full border border-amber-400/50 dark:border-amber-500/50 flex items-center justify-center bg-background/80 dark:bg-slate-900/80">
-            <div className="w-3 h-3 text-amber-500">
-              <FashionLogo className="w-full h-full" />
-            </div>
-          </div>
-        </motion.div>
-      </div>
+      {/* Removed center logo decoration to save space */}
       
       <TooltipProvider>
         {navItems.map((item) => {
