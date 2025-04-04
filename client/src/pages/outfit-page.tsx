@@ -1,3 +1,21 @@
+/**
+ * Outfit Page Component
+ * 
+ * A comprehensive page for managing outfits in the wardrobe management application.
+ * This page allows users to view, create, and delete outfits, with a sophisticated
+ * outfit creation interface that includes selection of items, occasion, season,
+ * weather conditions, and mood.
+ * 
+ * The page features:
+ * - Responsive grid layout for displaying outfit cards
+ * - Search functionality to filter outfits by name, occasion, or mood
+ * - Interactive creation dialog with multi-step form and item selection
+ * - Elegant empty state handling with contextual messages
+ * - Optimistic UI updates using React Query
+ * 
+ * @module Pages
+ */
+
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
@@ -31,8 +49,20 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
+/**
+ * OutfitPage Component
+ * 
+ * Renders the outfit management page of the application. This component handles the
+ * display of all user outfits, provides outfit creation and deletion functionality,
+ * and implements search/filter capabilities for outfit discovery.
+ * 
+ * @returns {JSX.Element} The rendered outfit page
+ */
 export default function OutfitPage() {
+  /** Toast notification hook for user feedback */
   const { toast } = useToast();
+  
+  /** Query hook for wardrobe items data with loading state */
   const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
 
   const [isCreatingOutfit, setIsCreatingOutfit] = useState(false);
@@ -222,7 +252,7 @@ export default function OutfitPage() {
 
       {/* Create Outfit Dialog */}
       <Dialog open={isCreatingOutfit} onOpenChange={setIsCreatingOutfit}>
-        <DialogContent className="max-w-[95%] md:max-w-[800px] border-amber-200 bg-white shadow-lg overflow-y-auto max-h-[90vh]">
+        <DialogContent className="max-w-[95%] md:max-w-[800px] border-amber-200 bg-white shadow-lg overflow-y-auto max-h-[90vh] fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]">
           <DialogHeader className="border-b border-amber-200/30 pb-4 mb-5 relative gold-corner">
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-radial from-amber-100 to-transparent opacity-50 rounded-full blur-md"></div>
             <DialogTitle className="font-luxury-heading text-2xl flex items-center gap-3 mb-1 text-amber-900">

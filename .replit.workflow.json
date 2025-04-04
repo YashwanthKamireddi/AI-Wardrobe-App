@@ -1,11 +1,17 @@
 {
-  "workflows": [
-    {
-      "name": "start-app",
-      "options": {
-        "command": "node start.js",
-        "restart_on_code_change": true
-      }
+  "run_commands": {
+    "start_application": {
+      "run": "npm run dev",
+      "working_directory": ".",
+      "shell": "bash"
     }
-  ]
+  },
+  "start_on_reboot": ["start_application"],
+  "start_when_file_changed": [],
+  "startup_info": {
+    "restart_on_exit": false,
+    "restart_if_crashed": true,
+    "restart_if_resource_constrained": true,
+    "restart_if_take_too_much_resources": true
+  }
 }

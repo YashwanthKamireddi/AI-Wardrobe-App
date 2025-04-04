@@ -1,3 +1,39 @@
+/**
+ * NavigationBar Component
+ * 
+ * A luxury-styled navigation bar for Cher's Closet fashion application that provides site-wide
+ * navigation, theme toggling, and user authentication controls.
+ * 
+ * @module NavigationBar
+ * @component
+ * 
+ * Features:
+ * - Responsive design that adapts to mobile, tablet, and desktop viewports
+ * - Framer Motion animations for seamless transitions and interactive elements
+ * - Dynamic active state indication with animated underlines and dot indicators
+ * - Luxury fashion-inspired styling with amber/gold accents and decorative elements
+ * - Dark/light theme toggle with animated icon transitions
+ * - Tooltip-enhanced navigation with descriptive labels
+ * 
+ * UI Elements:
+ * - Gradient borders and corner decorations for luxury aesthetic
+ * - Amber/gold color palette with appropriate dark mode variations
+ * - Animated hover states and interactive feedback
+ * - Proper accessibility attributes and keyboard navigation
+ * 
+ * Dependencies:
+ * - React and standard hooks (useState, useEffect)
+ * - Wouter for routing (Link, useLocation)
+ * - Framer Motion for animations
+ * - Lucide React for iconography
+ * - Custom hooks: useAuth, useTheme
+ * - Shadcn UI components: Button, Tooltip system
+ * 
+ * @example
+ * // Used in App.tsx or a layout component
+ * <NavigationBar />
+ */
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -77,6 +113,35 @@ const logoVariants = {
   }
 };
 
+/**
+ * NavigationBar Component Function
+ * 
+ * Primary navigation component that provides the main navigation interface for the application.
+ * Features a luxury fashion aesthetic with amber/gold styling, animated transitions,
+ * and responsive design for all device sizes.
+ * 
+ * @function NavigationBar
+ * @returns {JSX.Element} The rendered NavigationBar component with animated navigation links,
+ *                        theme toggle, and user authentication controls
+ * 
+ * State Management:
+ * - Uses location from wouter for active route highlighting
+ * - Manages tooltip visibility with delay to prevent flash during navigation
+ * - Handles theme toggling between light and dark modes
+ * - Controls user authentication status display
+ * 
+ * Animation Features:
+ * - Entry animations with staggered children
+ * - Hover animations for interactive elements
+ * - Active state transitions with underlines and indicator dots
+ * - Theme toggle icon animations
+ * 
+ * Styling Features:
+ * - Luxury fashion aesthetic with amber/gold gradient accents
+ * - Decorative corner elements and border treatments
+ * - Consistent styling across light and dark themes
+ * - Tooltip enhancements with descriptive labels
+ */
 const NavigationBar: React.FC = () => {
   const { user, logoutMutation } = useAuth();
   const { theme, setTheme } = useTheme();

@@ -23,17 +23,78 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * OutfitCard Component
+ * 
+ * A luxurious, interactive card component that displays outfit information with sophisticated
+ * styling and animations. The component shows a preview of the outfit with a main image,
+ * outfit details, and associated wardrobe items. It features a detailed popup dialog when
+ * the user clicks to view more details.
+ * 
+ * @component
+ * @example
+ * // Basic usage in an outfits grid
+ * <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+ *   {outfits.map((outfit) => (
+ *     <OutfitCard 
+ *       key={outfit.id}
+ *       outfit={outfit}
+ *       items={wardrobeItems.filter(item => outfit.itemIds.includes(item.id))}
+ *       onDelete={() => handleDeleteOutfit(outfit.id)}
+ *     />
+ *   ))}
+ * </div>
+ * 
+ * @styling
+ * - Luxury-inspired card design with gold corner accents
+ * - Responsive polaroid-style image frame
+ * - Hover animations with subtle scaling effects
+ * - Custom badge styling to indicate outfit attributes (weather, season, mood)
+ * - Interactive item thumbnails and sharing options
+ * - Fixed, centered dialog position with proper overflow handling
+ * 
+ * @features
+ * - Dynamic organization of items by category for more logical display
+ * - Main image selection based on priority (dresses, then tops, then any item)
+ * - Elegant item preview with image thumbnails
+ * - Detailed dialog view with scrollable item grid
+ * - Share and delete functionality
+ * 
+ * @props
+ * - outfit: The outfit object containing all outfit metadata
+ * - items: Array of wardrobe items associated with this outfit
+ * - onDelete: Callback function to execute when delete button is clicked
+ */
 interface OutfitCardProps {
+  /** The complete outfit object with all metadata */
   outfit: Outfit;
+  /** Array of wardrobe items that are part of this outfit */
   items: WardrobeItem[];
+  /** Callback function to handle outfit deletion */
   onDelete: () => void;
 }
 
+/**
+ * Outfit Card Component
+ *
+ * Renders a luxurious card displaying outfit details with sophisticated animations and
+ * interaction patterns. The card shows a summary view with the ability to expand into
+ * a detailed dialog. All styling follows a premium fashion aesthetic.
+ *
+ * @param {OutfitCardProps} props - The component props
+ * @returns {JSX.Element} The rendered outfit card with optional dialog
+ */
 export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps) {
+  /** Toast hook for displaying notifications */
   const { toast } = useToast();
+  
+  /** State to control the visibility of the detailed view dialog */
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   
-  // Organize items by category for more logical display
+  /**
+   * Organizes wardrobe items by category for more logical display
+   * This helps with selecting the main display image and organizing items in the detail view
+   */
   const organizedItems = {
     tops: items.filter(item => item.category === "tops"),
     bottoms: items.filter(item => item.category === "bottoms"),
@@ -44,9 +105,17 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
     makeup: items.filter(item => item.category === "makeup")
   };
   
-  // Get the main item for card display (prioritize dresses, then tops)
+  /**
+   * Selects the main item to display as the card image
+   * Prioritizes dresses, then tops, then falls back to the first item
+   * This ensures the most visually appealing item represents the outfit
+   */
   const mainItem = organizedItems.dresses[0] || organizedItems.tops[0] || items[0];
 
+  /**
+   * Handles the share button click
+   * Currently shows a toast notification for the upcoming feature
+   */
   const handleShare = () => {
     toast({
       title: "Sharing coming soon",
@@ -168,6 +237,7 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
           <div className="absolute top-3 right-3 w-4 h-4 sm:w-5 sm:h-5 border-r-2 border-t-2 border-accent/40"></div>
           <div className="absolute bottom-3 left-3 w-4 h-4 sm:w-5 sm:h-5 border-l-2 border-b-2 border-accent/40"></div>
           <div className="absolute bottom-3 right-3 w-4 h-4 sm:w-5 sm:h-5 border-r-2 border-b-2 border-accent/40"></div>
+          <DialogDescription className="sr-only">Outfit details and contents</DialogDescription>
           
           <DialogHeader className="text-center mb-2">
             <DialogTitle className="font-fashion-heading text-xl sm:text-3xl tracking-tight">{outfit.name}</DialogTitle>
