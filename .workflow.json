@@ -1,8 +1,11 @@
 {
   "workflows": [
     {
-      "name": "Start Application",
-      "command": "node start.js"
+      "name": "Start application",
+      "options": {
+        "command": "node start.js",
+        "restart_on_code_change": true
+      }
     }
   ]
 }

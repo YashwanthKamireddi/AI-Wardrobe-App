@@ -76,6 +76,7 @@ export const outfits = pgTable("outfits", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   name: text("name").notNull(),
+  description: text("description"), // detailed description of the outfit
   items: integer("items").array().notNull(), // IDs of wardrobe items in this outfit
   occasion: text("occasion"), // casual, work, party, etc.
   season: text("season"), // winter, summer, spring, fall, all
@@ -87,6 +88,7 @@ export const outfits = pgTable("outfits", {
 export const insertOutfitSchema = createInsertSchema(outfits).pick({
   userId: true,
   name: true,
+  description: true,
   items: true,
   occasion: true,
   season: true,

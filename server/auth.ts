@@ -2,8 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express, Request, Response } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 
@@ -13,19 +12,12 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
 async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+  return bcrypt.hash(password, 10);
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  return bcrypt.compare(supplied, stored);
 }
 
 export function setupAuth(app: Express) {
@@ -208,77 +200,55 @@ export function setupAuth(app: Express) {
   // Password reset request (generates a token)
   app.post("/api/reset-password-request", async (req: Request, res: Response) => {
     try {
-      const { username, email } = req.body;
+      const { username } = req.body;
       
-      if (!username && !email) {
-        return res.status(400).json({ message: "Username or email is required" });
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
       }
 
-      // Find user by username or email
-      const user = username 
-        ? await storage.getUserByUsername(username)
-        : await storage.getUserByEmail(email);
+      // Find user by username
+      const user = await storage.getUserByUsername(username);
 
       if (!user) {
         // For security reasons, don't reveal if the user exists or not
         return res.status(200).json({ message: "If an account exists, a password reset link will be sent" });
       }
 
-      // Generate reset token
-      const resetToken = randomBytes(32).toString('hex');
-      const tokenExpiry = new Date(Date.now() + 3600000); // Token valid for 1 hour
-
       // In a real app, you would:
-      // 1. Store this token in the database
+      // 1. Generate and store a reset token
       // 2. Send an email with the reset link
-      // For demo purposes, just return the token
       
-      // For a real implementation:
-      // await storage.setPasswordResetToken(user.id, resetToken, tokenExpiry);
-      // await sendResetEmail(user.email, resetToken);
-
       res.status(200).json({ 
-        message: "If an account exists, a password reset link will be sent",
-        // Remove this in production:
-        debug: { resetToken, userId: user.id }
+        message: "If an account exists, a password reset link will be sent"
       });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  // Password reset with token
+  // Password reset (simplified for demo)
   app.post("/api/reset-password", async (req: Request, res: Response) => {
     try {
-      const { token, newPassword } = req.body;
+      const { username, newPassword } = req.body;
       
-      if (!token || !newPassword) {
-        return res.status(400).json({ message: "Token and new password are required" });
+      if (!username || !newPassword) {
+        return res.status(400).json({ message: "Username and new password are required" });
       }
 
-      // In a real app, verify the token and get the associated user
-      // const passwordResetInfo = await storage.getPasswordResetByToken(token);
+      // Find the user by username
+      const user = await storage.getUserByUsername(username);
       
-      // For demo purposes:
-      const passwordResetInfo = { 
-        userId: parseInt(req.query.userId as string), 
-        expiry: new Date(Date.now() + 3600000) // Mock expiry
-      };
-
-      if (!passwordResetInfo || passwordResetInfo.expiry < new Date()) {
-        return res.status(400).json({ message: "Invalid or expired token" });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       // Hash new password and update
       const hashedPassword = await hashPassword(newPassword);
-      const updatedUser = await storage.updateUser(passwordResetInfo.userId, { password: hashedPassword });
+      const updatedUser = await storage.updateUser(user.id, { password: hashedPassword });
 
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
-
-      // In a real app, invalidate the used token
-      // await storage.deletePasswordResetToken(token);
 
       res.status(200).json({ message: "Password has been reset successfully" });
     } catch (error) {
