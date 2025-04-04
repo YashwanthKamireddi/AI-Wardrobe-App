@@ -1,8 +1,17 @@
 {
   "workflows": [
     {
+      "id": "start-app",
       "name": "Start application",
-      "command": "npm run dev"
+      "command": "npm run dev",
+      "restartOn": {
+        "files": [
+          "package.json",
+          "server/**/*.ts",
+          "client/src/**/*.tsx",
+          "client/src/**/*.ts"
+        ]
+      }
     }
   ]
 }

@@ -18,7 +18,7 @@ import {
   ThermometerIcon,
   WindIcon
 } from "lucide-react";
-import CloudSunIcon from "@/components/ui/cloud-sun-icon";
+import { CloudSunIcon } from "@/components/ui/cloud-sun-icon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
 
