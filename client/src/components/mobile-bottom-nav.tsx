@@ -1,3 +1,39 @@
+/**
+ * MobileBottomNav Component
+ * 
+ * A luxurious mobile navigation bar that appears at the bottom of the screen on small devices.
+ * Provides elegant styling, animations, and navigation controls for a premium fashion application experience.
+ * The component is only rendered on mobile devices and provides touch-friendly navigation controls.
+ * 
+ * @module MobileBottomNav
+ * @component
+ * 
+ * Features:
+ * - Luxury fashion styling with amber/gold color palette
+ * - Animated navigation indicators with spring physics
+ * - Active state transitions with sophisticated visual feedback
+ * - Responsive design optimized for mobile interaction
+ * - Tooltip guide system with descriptive labels
+ * - Memory-optimized with React.memo and externalized constants
+ * 
+ * UI Elements:
+ * - Translucent backdrop with subtle blur effect
+ * - Gradient borders and decorative corner embellishments
+ * - Animated indicator bars for the active route
+ * - Icon-based navigation with subtle labels
+ * - Touch-optimized hit targets for mobile finger operation
+ * 
+ * Performance Optimizations:
+ * - Component is memoized to prevent unnecessary re-renders
+ * - Animation variants defined outside the component
+ * - Navigation items are pre-defined to avoid recreation
+ * - Conditional rendering based on viewport size
+ * 
+ * @example
+ * // Used in App.tsx or a layout component
+ * <MobileBottomNav />
+ */
+
 import React, { memo, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { 
@@ -110,10 +146,40 @@ const getGradient = (path: string, currentLocation: string): string => {
   return "";
 };
 
-// Using React.memo to prevent unnecessary re-renders
+/**
+ * MobileBottomNav Component Function
+ * 
+ * Mobile navigation component rendering a luxurious, touch-friendly navigation bar
+ * at the bottom of the screen with animated indicators and visual feedback.
+ * 
+ * @function MobileBottomNav
+ * @returns {JSX.Element|null} The rendered MobileBottomNav or null if not on mobile
+ * 
+ * State Management:
+ * - Tracks current location to highlight active navigation item
+ * - Controls tooltip visibility with delay to prevent unwanted popups
+ * - Conditional rendering based on viewport detection
+ * 
+ * Visual Features:
+ * - Luxury-themed with amber/gold gradients and decorative elements
+ * - Active state transitions with spring animations
+ * - Backdrop blur for depth and layering
+ * - Mobile-optimized proportions and touch targets
+ * 
+ * Behavior Notes:
+ * - Returns null when not on mobile device
+ * - Uses setTimeout to delay tooltip availability until navigation is complete
+ * - Dynamic gradient application based on active route
+ * - Memory-optimized with React.memo to prevent unnecessary re-renders
+ */
 export const MobileBottomNav = memo(function MobileBottomNav() {
+  // Check if current viewport is mobile
   const { isMobile } = useIsMobile();
+  
+  // Get current route location for active highlighting
   const [location] = useLocation();
+  
+  // Control tooltip visibility with delay
   const [showTooltips, setShowTooltips] = useState(false);
   
   // Only show tooltips after a delay to avoid them appearing during navigation
@@ -122,6 +188,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
       setShowTooltips(true);
     }, 1000);
     
+    // Cleanup timeout on unmount
     return () => clearTimeout(timer);
   }, []);
   
