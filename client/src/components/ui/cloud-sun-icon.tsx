@@ -11,10 +11,16 @@ import { motion } from "framer-motion";
  * // Basic usage
  * <CloudSunIcon />
  * 
+ * // With custom size
+ * <CloudSunIcon size={32} />
+ * 
  * // Inside a weather display component
  * <div className="weather-icon">
  *   <CloudSunIcon />
  * </div>
+ * 
+ * @param {object} props - Component props
+ * @param {number} [props.size=48] - Icon size in pixels
  * 
  * @returns {JSX.Element} An animated cloud with sun icon
  * 
@@ -27,7 +33,7 @@ import { motion } from "framer-motion";
  * @styling
  * - Uses amber-600/400 color palette with dark mode support
  * - Includes subtle glow effect with blur and gradient
- * - Default size: 12×12 (3rem × 3rem)
+ * - Default size: 48×48 pixels (12rem × 12rem)
  * 
  * @relatedComponents
  * - WeatherDisplay - Parent component that uses this icon
@@ -36,10 +42,15 @@ import { motion } from "framer-motion";
  * - CloudRainIcon - Icon for rainy conditions
  * - CloudSnowIcon - Icon for snowy conditions
  */
-export const CloudSunIcon = () => (
+interface CloudSunIconProps {
+  size?: number;
+}
+
+export const CloudSunIcon = ({ size = 48 }: CloudSunIconProps) => (
   <div className="relative">
     <motion.div
-      className="h-12 w-12 text-amber-600 dark:text-amber-400"
+      className="text-amber-600 dark:text-amber-400"
+      style={{ width: `${size}px`, height: `${size}px` }}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}

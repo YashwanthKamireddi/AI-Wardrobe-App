@@ -1,167 +1,265 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-interface RunwayCurtainProps {
-  children: React.ReactNode;
-  isOpen?: boolean;
-  direction?: 'horizontal' | 'vertical';
-  bgColor?: string;
-  duration?: number;
-}
-
 /**
  * RunwayCurtain Component
  * 
- * Provides a fashionable curtain transition effect for page transitions and reveals,
- * inspired by fashion runway shows.
+ * A luxury fashion-inspired visual transition element that mimics the elegant 
+ * opening/closing of curtains at a high-fashion runway show.
+ * 
+ * @module RunwayCurtain
+ * @component
+ * 
+ * Features:
+ * - Elegant animation sequences for opening and closing transitions
+ * - Custom timing options for entrance and exit animations
+ * - Customizable styling with gold/amber gradient accents
+ * - Optimized performance with auto-cleanup
+ * 
+ * Usage scenarios:
+ * - Page transitions between major app sections
+ * - Revealing premium content or special features
+ * - Entrance animations for modals and dialogs
+ * - Highlighting luxury items in the wardrobe
  * 
  * @example
- * ```tsx
- * <RunwayCurtain isOpen={pageLoaded} direction="horizontal">
- *   <YourPageContent />
+ * // Basic usage
+ * const [isOpen, setIsOpen] = useState(false);
+ * 
+ * <RunwayCurtain isOpen={isOpen}>
+ *   <YourContent />
  * </RunwayCurtain>
- * ```
+ * 
+ * // Advanced usage with custom timing and direction
+ * <RunwayCurtain 
+ *   isOpen={isRevealed}
+ *   direction="vertical"
+ *   openDuration={0.8}
+ *   closeDuration={0.6}
+ *   className="my-12 rounded-lg"
+ * >
+ *   <ExclusiveContent />
+ * </RunwayCurtain>
  */
-export const RunwayCurtain: React.FC<RunwayCurtainProps> = ({
+
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+
+export interface RunwayCurtainProps {
+  /** Content to show when curtain is open */
+  children: React.ReactNode;
+  /** Whether the curtain is open */
+  isOpen: boolean;
+  /** Animation direction */
+  direction?: 'horizontal' | 'vertical';
+  /** Duration in seconds for the opening animation */
+  openDuration?: number;
+  /** Duration in seconds for the closing animation */
+  closeDuration?: number;
+  /** Additional CSS classes */
+  className?: string;
+}
+
+/**
+ * RunwayCurtain Component Implementation
+ * 
+ * Provides an elegant curtain-style animation for revealing content with
+ * a luxury fashion aesthetic using amber/gold accents.
+ */
+export const RunwayCurtain = ({
   children,
-  isOpen = true,
+  isOpen,
   direction = 'horizontal',
-  bgColor = 'rgba(0, 0, 0, 0.9)',
-  duration = 1.2,
-}) => {
-  // Define variant animations based on direction
-  const curtainVariants = {
-    closed: {
-      x: direction === 'horizontal' ? '0%' : undefined,
-      y: direction === 'vertical' ? '0%' : undefined,
-      scaleX: direction === 'horizontal' ? 1 : undefined,
-      scaleY: direction === 'vertical' ? 1 : undefined,
-    },
-    open: {
-      x: direction === 'horizontal' ? ['0%', '0%', '100%'] : undefined,
-      y: direction === 'vertical' ? ['0%', '0%', '100%'] : undefined, 
-      scaleX: direction === 'horizontal' ? [1, 1.05, 0] : undefined,
-      scaleY: direction === 'vertical' ? [1, 1.05, 0] : undefined,
-      transition: {
-        duration: duration,
-        times: [0, 0.3, 1],
-        ease: [0.645, 0.045, 0.355, 1.0],
-      }
-    }
-  };
-
-  // Opposite curtain (starts from other side)
-  const oppositeCurtainVariants = {
-    closed: {
-      x: direction === 'horizontal' ? '0%' : undefined,
-      y: direction === 'vertical' ? '0%' : undefined,
-      scaleX: direction === 'horizontal' ? 1 : undefined,
-      scaleY: direction === 'vertical' ? 1 : undefined,
-    },
-    open: {
-      x: direction === 'horizontal' ? ['0%', '0%', '-100%'] : undefined,
-      y: direction === 'vertical' ? ['0%', '0%', '-100%'] : undefined,
-      scaleX: direction === 'horizontal' ? [1, 1.05, 0] : undefined,
-      scaleY: direction === 'vertical' ? [1, 1.05, 0] : undefined,
-      transition: {
-        duration: duration,
-        times: [0, 0.3, 1],
-        ease: [0.645, 0.045, 0.355, 1.0],
-      }
-    }
-  };
-
-  // Content variants
-  const contentVariants = {
-    hidden: {
-      opacity: 0,
-      scale: 0.98,
-    },
-    visible: {
+  openDuration = 0.7,
+  closeDuration = 0.5,
+  className,
+}: RunwayCurtainProps) => {
+  const isHorizontal = direction === 'horizontal';
+  
+  // Setup animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
       opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        delay: duration * 0.8,
-        ease: [0.175, 0.885, 0.32, 1.275],
+      transition: { 
+        when: "beforeChildren",
+        duration: 0.2,
       }
-    }
-  };
-
-  // Spotlight variants
-  const spotlightVariants = {
-    initial: {
-      opacity: 0,
-      scale: 0
     },
-    animate: {
-      opacity: [0, 1, 0.8, 0],
-      scale: [0, 0.5, 1.5, 3],
+    exit: {
+      opacity: 0,
       transition: {
-        duration: duration * 1.2,
-        times: [0, 0.1, 0.3, 1],
-        ease: "easeOut"
+        when: "afterChildren",
+        duration: 0.2,
       }
     }
   };
-
+  
+  const curtainVariants = {
+    left: {
+      open: { 
+        x: '-100%', 
+        transition: { 
+          duration: openDuration,
+          ease: [0.16, 1, 0.3, 1], // Elegant cubic bezier easing
+        }
+      },
+      closed: { 
+        x: '0%', 
+        transition: { 
+          duration: closeDuration,
+          ease: [0.5, 0, 0.75, 0],
+        }
+      },
+    },
+    right: {
+      open: { 
+        x: '100%', 
+        transition: { 
+          duration: openDuration,
+          ease: [0.16, 1, 0.3, 1],
+        }
+      },
+      closed: { 
+        x: '0%', 
+        transition: { 
+          duration: closeDuration, 
+          ease: [0.5, 0, 0.75, 0],
+        }
+      },
+    },
+    top: {
+      open: { 
+        y: '-100%', 
+        transition: { 
+          duration: openDuration,
+          ease: [0.16, 1, 0.3, 1],
+        }
+      },
+      closed: { 
+        y: '0%', 
+        transition: { 
+          duration: closeDuration,
+          ease: [0.5, 0, 0.75, 0],
+        }
+      },
+    },
+    bottom: {
+      open: { 
+        y: '100%', 
+        transition: { 
+          duration: openDuration,
+          ease: [0.16, 1, 0.3, 1],
+        }
+      },
+      closed: { 
+        y: '0%', 
+        transition: { 
+          duration: closeDuration,
+          ease: [0.5, 0, 0.75, 0],
+        }
+      },
+    },
+  };
+  
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      <AnimatePresence mode="wait">
+    <div className={cn("relative overflow-hidden", className)}>
+      <AnimatePresence initial={false}>
         {!isOpen && (
-          <>
+          <motion.div
+            className="absolute inset-0 z-50 flex items-stretch"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
             {/* Left/Top Curtain */}
-            <motion.div 
-              className={`absolute z-50 ${direction === 'horizontal' ? 'left-0 top-0 bottom-0 w-1/2 origin-right' : 'top-0 left-0 right-0 h-1/2 origin-bottom'}`}
-              style={{ 
-                backgroundColor: bgColor,
-                backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 75%, transparent 75%, transparent)",
-                backgroundSize: "50px 50px",
-              }}
-              initial="closed"
-              animate={isOpen ? "open" : "closed"}
+            <motion.div
+              className={cn(
+                "bg-gradient-to-br from-amber-100 via-amber-50 to-white dark:from-slate-900 dark:via-amber-950/30 dark:to-slate-900/90",
+                isHorizontal ? "w-1/2 h-full" : "w-full h-1/2"
+              )}
+              variants={isHorizontal ? curtainVariants.left : curtainVariants.top}
+              initial="open"
+              animate="closed"
               exit="open"
-              variants={curtainVariants}
-            />
+            >
+              {/* Gold trim */}
+              <div 
+                className={cn(
+                  "absolute bg-gradient-to-b from-amber-300 to-amber-500/80 dark:from-amber-500/80 dark:to-amber-700/60",
+                  isHorizontal ? "w-1 h-full right-0" : "h-1 w-full bottom-0"
+                )} 
+              />
+              
+              {/* Decorative lines */}
+              <div className="absolute inset-0 overflow-hidden opacity-50">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div 
+                    key={`line-left-${i}`}
+                    className={cn(
+                      "absolute bg-amber-200/30 dark:bg-amber-700/20",
+                      isHorizontal
+                        ? "h-px w-full top-[10%]"
+                        : "w-px h-full left-[10%]"
+                    )}
+                    style={{
+                      [isHorizontal ? 'top' : 'left']: `${15 + i * 15}%`,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
             
             {/* Right/Bottom Curtain */}
-            <motion.div 
-              className={`absolute z-50 ${direction === 'horizontal' ? 'right-0 top-0 bottom-0 w-1/2 origin-left' : 'bottom-0 left-0 right-0 h-1/2 origin-top'}`}
-              style={{ 
-                backgroundColor: bgColor,
-                backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 75%, transparent 75%, transparent)",
-                backgroundSize: "50px 50px" 
-              }}
-              initial="closed"
-              animate={isOpen ? "open" : "closed"}
+            <motion.div
+              className={cn(
+                "bg-gradient-to-bl from-amber-100 via-amber-50 to-white dark:from-slate-900 dark:via-amber-950/30 dark:to-slate-900/90",
+                isHorizontal ? "w-1/2 h-full" : "w-full h-1/2"
+              )}
+              variants={isHorizontal ? curtainVariants.right : curtainVariants.bottom}
+              initial="open"
+              animate="closed"
               exit="open"
-              variants={oppositeCurtainVariants}
-            />
-            
-            {/* Center spotlight effect */}
-            <motion.div 
-              className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none"
-              initial="initial"
-              animate="animate"
-              variants={spotlightVariants}
             >
-              <div className="w-32 h-32 rounded-full bg-white bg-opacity-20 blur-lg" />
+              {/* Gold trim */}
+              <div 
+                className={cn(
+                  "absolute bg-gradient-to-b from-amber-300 to-amber-500/80 dark:from-amber-500/80 dark:to-amber-700/60",
+                  isHorizontal ? "w-1 h-full left-0" : "h-1 w-full top-0"
+                )} 
+              />
+              
+              {/* Decorative lines */}
+              <div className="absolute inset-0 overflow-hidden opacity-50">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div 
+                    key={`line-right-${i}`}
+                    className={cn(
+                      "absolute bg-amber-200/30 dark:bg-amber-700/20",
+                      isHorizontal
+                        ? "h-px w-full top-[10%]"
+                        : "w-px h-full left-[10%]"
+                    )}
+                    style={{
+                      [isHorizontal ? 'top' : 'left']: `${15 + i * 15}%`,
+                    }}
+                  />
+                ))}
+              </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Page content with fade-in effect */}
-      <motion.div
-        className="w-full h-full z-10"
-        variants={contentVariants}
-        initial="hidden"
-        animate={isOpen ? "visible" : "hidden"}
+      
+      <div 
+        className={cn(
+          "transition-opacity duration-300",
+          !isOpen && "opacity-0"
+        )}
       >
         {children}
-      </motion.div>
+      </div>
     </div>
   );
-};
+}
 
 export default RunwayCurtain;

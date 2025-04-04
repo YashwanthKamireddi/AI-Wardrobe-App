@@ -55,6 +55,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { FashionLogo } from "@/components/ui/fashion-logo";
+import { UserSettings } from "@/components/user-settings";
 import { 
   Tooltip,
   TooltipContent,
@@ -398,6 +399,12 @@ const NavigationBar: React.FC = () => {
                 </TooltipContent>
               )}
             </Tooltip>
+            
+            {/* User Settings Component */}
+            <UserSettings onReplayTutorial={() => {
+              // This will be connected to the tutorial system later
+              console.log("Replaying tutorial...");
+            }} />
 
             {user && (
               <Tooltip delayDuration={300}>
