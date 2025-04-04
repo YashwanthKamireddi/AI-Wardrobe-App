@@ -9,7 +9,8 @@ import {
   Cloud, 
   ThumbsUp,
   Eye,
-  Share2 
+  Share2,
+  Users2
 } from "lucide-react";
 import { Outfit, WardrobeItem } from "@shared/schema";
 import {
@@ -73,7 +74,7 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
           )}
           {outfit.favorite && (
             <Badge className="absolute top-4 right-4 bg-accent text-black">
-              <Heart className="h-3 w-3 mr-1 fill-current" /> Favori
+              <Heart className="h-3 w-3 mr-1 fill-current" /> Favorite
             </Badge>
           )}
           
@@ -109,7 +110,7 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
           </div>
           
           <div className="text-sm text-muted-foreground flex-grow">
-            <p className="uppercase tracking-wider text-[10px] font-fashion-body mb-1">PIÈCES DE L'ENSEMBLE</p>
+            <p className="uppercase tracking-wider text-[10px] font-fashion-body mb-1">OUTFIT PIECES</p>
             <div className="mt-1 grid grid-cols-2 gap-1">
               {items.length > 0 ? (
                 items.slice(0, 4).map((item, index) => (
@@ -118,7 +119,7 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
                   </Badge>
                 ))
               ) : (
-                <p className="col-span-2 text-xs italic font-fashion-body">Collection vide</p>
+                <p className="col-span-2 text-xs italic font-fashion-body">Empty collection</p>
               )}
               {items.length > 4 && (
                 <Badge variant="secondary" className="text-xs justify-center bg-accent/10 border border-accent/20">
@@ -153,7 +154,7 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
             </div>
             
             <Button variant="ghost" size="sm" className="fashion-button text-[10px] py-1 h-auto px-3" onClick={() => setIsViewDialogOpen(true)}>
-              VOIR
+              VIEW
             </Button>
           </div>
         </div>
@@ -161,19 +162,23 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
 
       {/* View Outfit Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] runway-gradient">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] runway-gradient overflow-hidden p-6">
           {/* Luxury corner accents */}
           <div className="absolute top-3 left-3 w-5 h-5 border-l-2 border-t-2 border-accent/40"></div>
           <div className="absolute top-3 right-3 w-5 h-5 border-r-2 border-t-2 border-accent/40"></div>
           <div className="absolute bottom-3 left-3 w-5 h-5 border-l-2 border-b-2 border-accent/40"></div>
           <div className="absolute bottom-3 right-3 w-5 h-5 border-r-2 border-b-2 border-accent/40"></div>
           
-          <DialogHeader>
-            <DialogTitle className="font-fashion-heading text-2xl tracking-tight mb-1">{outfit.name}</DialogTitle>
+          <DialogHeader className="text-center">
+            <DialogTitle className="font-fashion-heading text-3xl tracking-tight mb-2">{outfit.name}</DialogTitle>
+            {outfit.description && (
+              <p className="text-sm text-muted-foreground italic mb-3 max-w-md mx-auto">{outfit.description}</p>
+            )}
             <DialogDescription>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2 justify-center">
                 {outfit.occasion && (
                   <Badge variant="outline" className="border-accent/50 text-foreground">
+                    <Users2 className="h-3 w-3 mr-1" />
                     {outfit.occasion}
                   </Badge>
                 )}
@@ -201,17 +206,17 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
 
           <div className="luxury-divider"></div>
 
-          <div className="py-2">
-            <h3 className="font-fashion-heading text-lg mb-4 uppercase tracking-wide text-center">La Collection</h3>
+          <div className="py-4 px-2">
+            <h3 className="font-fashion-heading text-lg mb-5 uppercase tracking-wide text-center">The Collection</h3>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto p-2">
               {items.map((item) => (
-                <div key={item.id} className="boutique-item group">
-                  {item.color && (
-                    <span className="boutique-item-tag">{item.color}</span>
-                  )}
+                <div key={item.id} className="boutique-item group h-full flex flex-col">
                   {item.imageUrl && (
-                    <div className="h-40 sm:h-48 overflow-hidden">
+                    <div className="relative overflow-hidden aspect-[4/3]">
+                      {item.color && (
+                        <span className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded-sm border border-accent/20">{item.color}</span>
+                      )}
                       <img 
                         src={item.imageUrl} 
                         alt={item.name} 
@@ -219,8 +224,8 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
                       />
                     </div>
                   )}
-                  <div className="p-3 bg-background/80 backdrop-blur-sm">
-                    <h4 className="font-fashion-body font-medium text-sm mb-1">{item.name}</h4>
+                  <div className="p-3 bg-background/90 backdrop-blur-sm flex-grow">
+                    <h4 className="font-fashion-heading font-medium text-sm mb-1">{item.name}</h4>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">
                       {item.category}
                       {item.subcategory ? ` · ${item.subcategory}` : ""}
@@ -234,11 +239,11 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
           <DialogFooter className="flex justify-between sm:justify-between mt-4 pt-4 border-t border-accent/10">
             <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} 
               className="fashion-button border-accent hover:bg-accent hover:text-black">
-              FERMER
+              CLOSE
             </Button>
             <Button onClick={handleShare} className="fashion-button">
               <Share2 className="h-4 w-4 mr-2" />
-              PARTAGER
+              SHARE
             </Button>
           </DialogFooter>
         </DialogContent>

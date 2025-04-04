@@ -1,9 +1,0 @@
-Add these scripts to your package.json:
-
-"scripts": {
-  "setup:vscode": "node scripts/setup-vscode.js",
-  "setup:db": "node scripts/setup-local-db.js", 
-  "db:manual": "node scripts/manual-db-setup.js"
-}
-
-To add these scripts, you will need to modify your package.json file. Since direct edits to package.json are not allowed through the tools, please add these scripts manually to your package.json file.
