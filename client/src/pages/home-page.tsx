@@ -19,7 +19,6 @@ import {
   AlertCircle, 
   Sun, 
   Cloud, 
-  // CloudSun, // Temporarily commented out to avoid conflicts with our custom CloudSunIcon
   Layers, 
   Sunrise
 } from "lucide-react";

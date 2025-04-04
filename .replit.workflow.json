@@ -1,17 +1,10 @@
 {
-  "workflows": [
-    {
-      "id": "start-app",
-      "name": "Start application",
-      "command": "npm run dev",
-      "restartOn": {
-        "files": [
-          "package.json",
-          "server/**/*.ts",
-          "client/src/**/*.tsx",
-          "client/src/**/*.ts"
-        ]
-      }
-    }
-  ]
+  "workflowSerialID": "app",
+  "run": "node start.js",
+  "installCommand": "npm ci",
+  "runOnWeb": true,
+  "onBoot": false,
+  "rootDir": ".",
+  "packageManagerCommand": "npm",
+  "customStdin": false
 }

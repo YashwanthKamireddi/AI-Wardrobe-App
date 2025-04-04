@@ -43,6 +43,8 @@ export interface GoldenParticleEffectProps {
   particleSize?: number;
   /** Animation speed multiplier */
   speed?: number;
+  /** Intensity multiplier for particle effect (affects count and opacity) */
+  intensity?: number;
   /** Additional CSS classes for the container */
   className?: string;
   /** Whether the effect should fill its container */
@@ -69,6 +71,7 @@ export function GoldenParticleEffect({
   particleCount = 40,
   particleSize = 3,
   speed = 1,
+  intensity = 1,
   className,
   fillContainer = true,
 }: GoldenParticleEffectProps) {
@@ -95,8 +98,11 @@ export function GoldenParticleEffect({
       'rgba(207, 181, 59, 0.7)',  // Old gold
     ];
     
+    // Apply intensity to particle count
+    const adjustedParticleCount = Math.max(5, Math.round(particleCount * intensity));
+    
     // Create initial particles
-    particlesRef.current = Array.from({ length: particleCount }, () => {
+    particlesRef.current = Array.from({ length: adjustedParticleCount }, () => {
       const randomSize = (Math.random() * 0.8 + 0.6) * particleSize; // 60-140% of base size
       return {
         x: Math.random() * width,
@@ -104,7 +110,8 @@ export function GoldenParticleEffect({
         size: randomSize,
         // Gaussian-like distribution for more natural speed variation
         speedY: (0.3 + Math.random() * 0.7) * speed,
-        opacity: 0.1 + Math.random() * 0.5,
+        // Apply intensity to opacity
+        opacity: Math.min(0.9, (0.1 + Math.random() * 0.5) * intensity),
         color: goldColors[Math.floor(Math.random() * goldColors.length)],
         blur: Math.random() > 0.7 ? 1 : 0, // 30% have blur for depth effect
       };
@@ -130,7 +137,7 @@ export function GoldenParticleEffect({
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(requestIdRef.current);
     };
-  }, [particleCount, particleSize, speed, fillContainer]);
+  }, [particleCount, particleSize, speed, intensity, fillContainer]);
   
   // Animation loop
   useEffect(() => {
