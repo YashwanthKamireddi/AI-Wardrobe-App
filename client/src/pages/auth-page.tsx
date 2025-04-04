@@ -19,7 +19,6 @@ import FashionAuthFrame from "@/components/ui/fashion-auth-frame";
 import SilkUnwrapping from "@/components/ui/silk-unwrapping";
 import SparkleEffect from "@/components/ui/sparkle-effect";
 import GoldenThread from "@/components/ui/golden-thread";
-import LuxuryFeatureGuide from "@/components/ui/luxury-feature-guide";
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -181,7 +180,10 @@ function AuthPage() {
 
   // Form container animation variants
   const formVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { 
+      opacity: 0, 
+      y: 20
+    },
     visible: {
       opacity: 1,
       y: 0,
@@ -194,7 +196,7 @@ function AuthPage() {
       opacity: 0,
       y: -20,
       transition: {
-        duration: 0.3,
+        duration: 0.25,
         ease: [0.22, 1, 0.36, 1]
       }
     }
@@ -216,13 +218,13 @@ function AuthPage() {
 
   return (
     <SilkUnwrapping isRevealing={showSilkUnwrap} luxuryLevel="haute-couture">
-      <FashionAuthFrame
-        title={activeView === "login" ? "Welcome Back" : "Join Cher's Closet"} 
-        subtitle={activeView === "login" 
-          ? "Sign in to access your curated wardrobe" 
-          : "Create your account for AI-powered styling"}
-        backgroundType="minimal"
-      >
+        <FashionAuthFrame
+          title={activeView === "login" ? "Welcome Back" : "Join Cher's Closet"} 
+          subtitle={activeView === "login" 
+            ? "Sign in to access your curated wardrobe" 
+            : "Create your account for AI-powered styling"}
+          backgroundType="minimal"
+        >
         <div className="w-full flex flex-col items-center relative">
           {/* Toggle between login and register - more minimal */}
           <div className="flex w-full mb-5 relative">
@@ -259,9 +261,9 @@ function AuthPage() {
           </div>
 
           {/* Form container with subtle 3D tilt effect */}
-          <div className="w-full relative">
+          <div className="w-full relative h-[440px]">
             <CardTilt>
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 {activeView === "login" ? (
                 <motion.div
                   key="login-form"
@@ -269,7 +271,7 @@ function AuthPage() {
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  className="w-full"
+                  className="w-full absolute inset-0"
                 >
                   <Form {...loginForm}>
                     <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
@@ -354,7 +356,7 @@ function AuthPage() {
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  className="w-full"
+                  className="w-full absolute inset-0"
                 >
                   <Form {...registerForm}>
                     <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-3">
@@ -530,6 +532,7 @@ function AuthPage() {
               repeat={true}
             />
           </div>
+          
         </div>
       </FashionAuthFrame>
     </SilkUnwrapping>

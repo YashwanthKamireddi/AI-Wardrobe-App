@@ -1,12 +1,57 @@
+/**
+ * @fileOverview Weather Display Component
+ * 
+ * This file contains:
+ * 1. Custom SVG weather icons (SunIcon, CloudIcon, CloudRainIcon, CloudSnowIcon)
+ * 2. WeatherDisplay component that shows current weather data
+ * 3. Animations and visual effects for weather elements
+ * 4. Optional clothing recommendations based on weather
+ * 
+ * @requires framer-motion - For animations
+ * @requires @/components/ui/badge - For clothing type tags
+ * @requires @/components/ui/cloud-sun-icon - For partly cloudy icon
+ * @requires @/hooks/use-mobile - For responsive design
+ */
+
 import { Badge } from "@/components/ui/badge";
 import { 
   ThermometerIcon,
   WindIcon
 } from "lucide-react";
+import CloudSunIcon from "@/components/ui/cloud-sun-icon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
 
-// Custom weather icons
+/**
+ * Custom Weather Icon Components
+ * 
+ * Each icon is designed with a consistent amber luxurious aesthetic
+ * featuring subtle animations and glow effects.
+ */
+
+/**
+ * SunIcon Component - Used for sunny weather conditions
+ * 
+ * @component
+ * @element div - Container with relative positioning
+ * @element motion.div - Animated container for rotation effect
+ * @element svg - Scalable vector graphic with viewBox="0 0 24 24"
+ * @element circle - Central sun body, amber-colored
+ * @element g - Group of radiating sun rays
+ * @element line - Individual sun rays with dynamic spacing and lengths
+ * 
+ * @animation
+ * - Continuous 360° rotation (20s duration)
+ * - Background glow with amber gradient
+ * 
+ * @styling
+ * - Size: Default 12×12 (3rem)
+ * - Colors: amber-600 (light mode), amber-400 (dark mode)
+ * - Glow: blur-lg effect with radial gradient
+ * 
+ * @usedIn
+ * - WeatherDisplay component (case: 'sunny')
+ */
 const SunIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
     <circle cx="12" cy="12" r="5" fill="currentColor" />
@@ -29,6 +74,27 @@ const SunIcon = () => (
   </svg>
 );
 
+/**
+ * CloudIcon Component - Used for cloudy weather conditions
+ * 
+ * @component
+ * @element svg - Scalable vector graphic with viewBox="0 0 24 24"
+ * @element path - Main cloud outline with stroke styling
+ * @element path - Secondary detailed line inside cloud for depth
+ * 
+ * @animation
+ * - Subtle floating motion (x: [0, 3, 0], y: [0, -1, 0]) with 4s duration
+ * - Background glow effect with amber gradient
+ * 
+ * @styling
+ * - Size: Default 12×12 (3rem)
+ * - Colors: amber-600 (light mode), amber-400 (dark mode)
+ * - Stroke styling: 1.5 width for main cloud, 0.7 for details
+ * - Glow: blur-lg effect with amber-200 gradient
+ * 
+ * @usedIn
+ * - WeatherDisplay component (case: 'cloudy')
+ */
 const CloudIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
     <path 
@@ -48,6 +114,27 @@ const CloudIcon = () => (
   </svg>
 );
 
+/**
+ * CloudRainIcon Component - Used for rainy weather conditions
+ * 
+ * @component
+ * @element svg - Scalable vector graphic with viewBox="0 0 24 24"
+ * @element path - Main cloud outline with stroke styling
+ * @element line - Animated rain drops falling from cloud
+ * 
+ * @animation
+ * - Gentle vertical bobbing effect (y: [0, 1, 0]) with 2s duration
+ * - Background glow effect with amber gradient
+ * 
+ * @styling
+ * - Size: Default 12×12 (3rem)
+ * - Colors: amber-600 (light mode), amber-400 (dark mode)
+ * - Rain drops: Simple vertical lines with rounded caps
+ * - Glow: blur-lg effect with amber-100/200 gradient
+ * 
+ * @usedIn
+ * - WeatherDisplay component (case: 'rainy')
+ */
 const CloudRainIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
     <path 
@@ -63,6 +150,27 @@ const CloudRainIcon = () => (
   </svg>
 );
 
+/**
+ * CloudSnowIcon Component - Used for snowy weather conditions
+ * 
+ * @component
+ * @element svg - Scalable vector graphic with viewBox="0 0 24 24"
+ * @element path - Main cloud outline with stroke styling
+ * @element circle - Snowflakes represented as small filled circles
+ * 
+ * @animation
+ * - Gentle rotation effect (rotate: [0, 5, 0, -5, 0]) with 6s duration
+ * - Background glow effect with amber gradient
+ * 
+ * @styling
+ * - Size: Default 12×12 (3rem)
+ * - Colors: amber-600 (light mode), amber-400 (dark mode)
+ * - Snowflakes: Simple filled circles with strategic placement
+ * - Glow: blur-lg effect with amber-100/200 gradient
+ * 
+ * @usedIn
+ * - WeatherDisplay component (case: 'snowy')
+ */
 const CloudSnowIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
     <path 
@@ -139,6 +247,12 @@ export default function WeatherDisplay({ weather, recommendations }: WeatherDisp
             <div className="absolute inset-0 blur-lg opacity-20 scale-110">
               <div className="w-full h-full rounded-full bg-amber-200 dark:bg-amber-200/30"></div>
             </div>
+          </div>
+        );
+      case 'partly_cloudy':
+        return (
+          <div className="relative">
+            <CloudSunIcon />
           </div>
         );
       case 'rainy':

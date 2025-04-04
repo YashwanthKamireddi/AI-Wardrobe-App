@@ -4,6 +4,7 @@ import { useLocation } from 'wouter';
 import GoldenThread from './golden-thread';
 import SparkleEffect from './sparkle-effect';
 import LuxuryFeatureGuide from './luxury-feature-guide';
+import LuxuryFeatureCarousel from './luxury-feature-carousel';
 
 interface FashionAuthFrameProps {
   children: React.ReactNode;
@@ -359,9 +360,11 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
             )}
           </motion.div>
           
-          {/* Feature guide component - more minimal */}
+          {/* Feature carousel component - elegant and animated */}
           <div className="mt-10 pl-4 border-l" style={{ borderColor: `${accentColor}20` }}> {/* Thinner border, more transparent */}
-            <LuxuryFeatureGuide animationDelay={1.2} />
+            <div className="w-80 h-[180px]"> {/* Fixed dimensions for consistent layout */}
+              <LuxuryFeatureCarousel autoPlaySpeed={5000} className="h-full" />
+            </div>
           </div>
         </div>
         
@@ -391,7 +394,7 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
           
           {/* Title area - more minimal */}
           <motion.div 
-            className="mb-8 text-center" // Increased spacing
+            className="mb-6 text-center" // Reduced spacing for mobile
             variants={titleVariants}
           >
             <h1 className="text-2xl font-luxury-heading mb-2 text-luxury-brown tracking-wider font-light"> {/* Thinner font, wider tracking */}
@@ -400,6 +403,14 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
             <p className="text-xs text-luxury-brown/60 font-luxury-body tracking-widest uppercase"> {/* Smaller, uppercase, wider tracking */}
               {subtitle}
             </p>
+          </motion.div>
+          
+          {/* Mobile feature carousel */}
+          <motion.div 
+            className="mb-6 md:hidden w-full h-[120px]" // Only shown on mobile with smaller height
+            variants={childrenVariants}
+          >
+            <LuxuryFeatureCarousel autoPlaySpeed={4000} className="h-full" />
           </motion.div>
           
           {/* Content area with minimalist card styling */}
