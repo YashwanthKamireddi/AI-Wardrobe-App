@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { useEffect, useState } from "react";
 import { LuxuryOnboarding } from "@/components/onboarding/luxury-onboarding";
-import { LuxuryTutorial } from "@/components/tutorial/luxury-tutorial";
+import LuxuryTutorial from "@/components/tutorial/luxury-tutorial";
 
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";

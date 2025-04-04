@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CameraFlashProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   trigger?: boolean;
   intensity?: 'soft' | 'medium' | 'high';
   color?: string;

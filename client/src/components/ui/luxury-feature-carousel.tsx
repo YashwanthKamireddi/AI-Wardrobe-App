@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CloudSun, Paintbrush, Shirt, CalendarDays, BadgePercent } from "lucide-react";
+import { Paintbrush, Shirt, CalendarDays, BadgePercent } from "lucide-react";
+import { CloudSunIcon } from "@/components/ui/cloud-sun-icon";
 
 interface FeatureItem {
   id: number;
@@ -45,7 +46,7 @@ const LuxuryFeatureCarousel: React.FC<LuxuryFeatureCarouselProps> = ({
       id: 3,
       title: "Weather Integration",
       description: "Climate-appropriate suggestions that adapt to your local forecast",
-      icon: <CloudSun size={28} />,
+      icon: <CloudSunIcon size={28} />,
       color: "bg-gradient-to-br from-amber-500/10 to-amber-700/5"
     },
     {
