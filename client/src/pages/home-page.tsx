@@ -19,7 +19,7 @@ import {
   AlertCircle, 
   Sun, 
   Cloud, 
-  CloudSun,
+  // CloudSun, // Temporarily commented out to avoid conflicts with our custom CloudSunIcon
   Layers, 
   Sparkles,
   Sunrise
@@ -30,7 +30,7 @@ import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { AnimatedCard } from "@/components/ui/animated-card";
-import { DesignerMonogramBackground } from "@/components/ui/cc-monogram-background";
+import CCMonogramBackground from "@/components/ui/cc-monogram-background";
 import { CatwalkScroller } from "@/components/ui/runway-display";
 import { CoutureHeading, PullQuote, EditorialCallout } from "@/components/ui/haute-couture-typography";
 
@@ -126,7 +126,7 @@ export default function HomePage() {
     <AnimatedBackground pattern="waves" color="primary" intensity="subtle" className="min-h-screen">
       <NavigationBar />
 
-      <DesignerMonogramBackground opacity={0.03} darkOpacity={0.06}>
+      <CCMonogramBackground opacity={0.03} className="dark:opacity-[0.06]">
         <main className="container mx-auto px-4 py-8">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
@@ -498,7 +498,7 @@ export default function HomePage() {
           </motion.div>
         </div>
       </main>
-    </DesignerMonogramBackground>
+    </CCMonogramBackground>
     </AnimatedBackground>
   );
 }
