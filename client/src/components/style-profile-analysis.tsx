@@ -181,20 +181,20 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
   return (
     <div className="space-y-8">
       {/* Style Profile Section */}
-      <AnimatedCard className="overflow-hidden">
-        <CardHeader className="pb-3 border-b bg-muted/30">
+      <AnimatedCard className="overflow-hidden bg-gradient-to-br from-background to-muted/20">
+        <CardHeader className="pb-3 border-b bg-primary/5">
           <CardTitle className="flex items-center gap-2">
             <UserCircle className="h-5 w-5 text-primary" />
-            Your Style Profile
+            Your Personal Style Profile
           </CardTitle>
           <CardDescription>
-            AI-generated insights about your personal style preferences
+            Discover your unique fashion identity and preferences
           </CardDescription>
         </CardHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6 pt-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-4 p-1 bg-muted/50 shadow-inner">
               <TabsTrigger value="profile" className="text-xs sm:text-sm">
                 <Brush className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Style</span> Profile
@@ -217,6 +217,9 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
           <CardContent className="pt-4">
             {isStyleProfileLoading && (
               <div className="space-y-4 py-8">
+                <div className="flex items-center justify-center mb-4">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                </div>
                 <Skeleton className="h-6 w-3/4 mx-auto" />
                 <div className="flex justify-center gap-3 flex-wrap">
                   {[1, 2, 3, 4].map((i) => (
@@ -225,24 +228,29 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                 </div>
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-full" />
+                <div className="text-center text-sm text-muted-foreground mt-2">
+                  Creating your personalized style profile...
+                </div>
               </div>
             )}
 
             {isStyleProfileError && (
-              <div className="text-center py-8">
+              <div className="text-center py-8 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm">
                 <div className="size-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="h-8 w-8 text-red-500" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">Error Loading Style Profile</h3>
+                <h3 className="text-lg font-medium mb-2">Unable to Create Style Profile</h3>
                 <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
                   {isApiLimitError(styleProfileError) 
-                    ? "The AI service is temporarily unavailable due to high demand. Your style profile will be available once the AI service capacity is restored. Please try again in a few minutes."
+                    ? "Our AI styling assistant is temporarily unavailable due to high demand. Please try again in a few minutes."
                     : styleProfileError instanceof Error
                       ? styleProfileError.message
-                      : "Please try again later. If this issue persists, you may need to add more items to your wardrobe."}
+                      : "We encountered an issue analyzing your style preferences. Please try again."}
                 </p>
                 <Button
                   onClick={() => handleRefresh("profile")}
+                  variant="outline"
+                  className="shadow-sm"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Try Again
@@ -251,30 +259,44 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
             )}
 
             {!styleProfile && !isStyleProfileLoading && !isStyleProfileError && wardrobeItemsCount < 5 && (
-              <div className="text-center py-8">
-                <div className="size-16 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
-                  <Flame className="h-8 w-8 text-amber-500" />
+              <div className="text-center py-8 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm">
+                <div className="size-20 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
+                  <Flame className="h-10 w-10 text-amber-500" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">Almost There!</h3>
+                <h3 className="text-xl font-medium mb-2">Complete Your Collection</h3>
                 <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
-                  You need at least 5 items in your wardrobe to generate a complete style profile.
-                  You currently have {wardrobeItemsCount} items.
+                  You're almost ready for a style profile! Add {5 - wardrobeItemsCount} more items to your wardrobe to unlock this feature.
                 </p>
                 
-                <div className="w-full max-w-xs mx-auto mb-6">
-                  <Progress value={(wardrobeItemsCount / 5) * 100} className="h-2" />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>{wardrobeItemsCount}/5 items</span>
-                    <span>Add {5 - wardrobeItemsCount} more</span>
+                <div className="w-full max-w-sm mx-auto mb-6 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium">Progress:</span>
+                    <span className="font-medium">{wardrobeItemsCount}/5 items</span>
+                  </div>
+                  <Progress value={(wardrobeItemsCount / 5) * 100} className="h-3" />
+                  <div className="flex justify-between items-center text-xs text-muted-foreground mt-2">
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+                      Starting
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      {wardrobeItemsCount >= 3 ? "Analysis Ready" : "Analysis"}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                      Full Profile
+                    </span>
                   </div>
                 </div>
                 
                 <Button 
-                  variant="outline"
                   onClick={() => navigate('/wardrobe')}
+                  size="lg"
+                  className="shadow-md hover:shadow-lg transition-all"
                 >
                   <Shirt className="mr-2 h-4 w-4" />
-                  Add More Items
+                  Add More Clothing Items
                 </Button>
               </div>
             )}
@@ -282,49 +304,59 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
             {styleProfile && !isStyleProfileLoading && (
               <>
                 <TabsContent value="profile" className="pt-2 m-0">
-                  <div className="text-center mb-6 py-3 bg-primary/5 rounded-lg">
-                    <h3 className="text-2xl font-semibold flex items-center justify-center gap-2 mb-1">
-                      <Sparkles className="h-5 w-5 text-primary" />
+                  <div className="text-center mb-6 py-4 bg-primary/5 rounded-lg shadow-sm">
+                    <div className="inline-block bg-white dark:bg-slate-800 p-3 rounded-full mb-2 shadow-sm">
+                      <Sparkles className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-semibold mb-1">
                       {styleProfile.dominantStyle || "Modern"} Style
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Your dominant style based on your wardrobe items
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                      This is your signature style based on your personal wardrobe collection
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium flex items-center gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div className="space-y-4 bg-white/80 dark:bg-slate-900/50 p-4 rounded-lg shadow-sm">
+                      <h4 className="text-sm font-medium flex items-center gap-2 border-b pb-2">
                         <TagIcon className="h-4 w-4 text-primary" />
-                        Key Items
+                        Your Key Signature Pieces
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {styleProfile.keyItems && styleProfile.keyItems.length > 0 ? (
                           styleProfile.keyItems.map((item, index) => (
-                            <Badge key={index} variant="outline">
+                            <Badge key={index} variant="outline" className="bg-primary/5 text-sm py-1.5 px-3">
                               {item}
                             </Badge>
                           ))
                         ) : (
-                          <span className="text-sm text-muted-foreground">No key items identified yet</span>
+                          <div className="text-sm text-muted-foreground py-2 px-3 bg-muted/50 rounded-md w-full text-center">
+                            Add more items to identify key pieces
+                          </div>
                         )}
                       </div>
                     </div>
                     
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium flex items-center gap-2">
+                    <div className="space-y-4 bg-white/80 dark:bg-slate-900/50 p-4 rounded-lg shadow-sm">
+                      <h4 className="text-sm font-medium flex items-center gap-2 border-b pb-2">
                         <Flower2 className="h-4 w-4 text-primary" />
-                        Wardrobe Highlights
+                        Style Highlights
                       </h4>
-                      <ul className="text-sm space-y-2">
-                        <li className="flex items-start gap-2">
+                      <ul className="text-sm space-y-3">
+                        <li className="flex items-start gap-2 bg-primary/5 p-2 rounded-md">
                           <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                          <span>{styleProfile.dominantStyle || "Modern"} pieces make up your core wardrobe</span>
+                          <span>Your wardrobe reflects a <strong>{styleProfile.dominantStyle || "Modern"}</strong> aesthetic</span>
                         </li>
-                        <li className="flex items-start gap-2">
+                        <li className="flex items-start gap-2 bg-primary/5 p-2 rounded-md">
                           <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                          <span>Your style shows {styleProfile.preferences?.seasonality || "versatile"} sensibilities</span>
+                          <span>Preferred seasonality: <strong>{styleProfile.preferences?.seasonality || "Versatile"}</strong></span>
                         </li>
+                        {styleProfile.colorPalette && styleProfile.colorPalette.length > 0 && (
+                          <li className="flex items-start gap-2 bg-primary/5 p-2 rounded-md">
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+                            <span>Color preference: <strong>{styleProfile.colorPalette[0]}</strong> tones</span>
+                          </li>
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -474,25 +506,31 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
       </AnimatedCard>
 
       {/* Style Analysis Section */}
-      <AnimatedCard hoverEffect="lift" className="bg-gradient-to-br from-background to-muted/40">
-        <CardHeader className="pb-3 border-b">
+      <AnimatedCard hoverEffect="lift" className="bg-gradient-to-br from-background to-muted/40 overflow-hidden">
+        <CardHeader className="pb-3 border-b bg-primary/5">
           <CardTitle className="flex items-center gap-2">
             <Book className="h-5 w-5 text-primary" />
-            Style Analysis
+            Style Analysis & Recommendations
           </CardTitle>
           <CardDescription>
-            Detailed analysis of your wardrobe and style recommendations
+            AI-powered insights and personalized styling advice for your wardrobe
           </CardDescription>
         </CardHeader>
         <CardContent className="py-4">
           {isStyleAnalysisLoading && (
-            <div className="space-y-3 py-6">
+            <div className="space-y-4 py-6">
+              <div className="flex items-center justify-center mb-4">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              </div>
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-1/2" />
+              <div className="text-center text-sm text-muted-foreground mt-2">
+                Analyzing your wardrobe and creating your personalized style guide...
+              </div>
             </div>
           )}
 
@@ -501,16 +539,18 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
               <div className="size-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="h-8 w-8 text-red-500" />
               </div>
-              <h3 className="text-lg font-medium mb-2">Error Loading Style Analysis</h3>
+              <h3 className="text-lg font-medium mb-2">Unable to Create Analysis</h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
                 {isApiLimitError(styleAnalysisError) 
-                  ? "The AI service is temporarily unavailable due to high demand. Your style profile will be available once the AI service capacity is restored. Please try again in a few minutes."
+                  ? "Our AI styling assistant is temporarily unavailable due to high demand. Please try again in a few minutes."
                   : styleAnalysisError instanceof Error
                     ? styleAnalysisError.message
-                    : "Please try again later"}
+                    : "We encountered an issue while analyzing your wardrobe. Please try again."}
               </p>
               <Button
                 onClick={() => handleRefresh("analysis")}
+                variant="outline"
+                className="shadow-sm"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
@@ -519,38 +559,88 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
           )}
 
           {styleAnalysis && !isStyleAnalysisLoading && (
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              {styleAnalysis.analysis.split('\n').map((paragraph, i) => (
-                paragraph.trim() ? (
-                  <p key={i} className="my-2">{paragraph}</p>
-                ) : null
-              ))}
+            <div className="space-y-4">
+              <div className="bg-primary/5 rounded-lg p-4 mb-4">
+                <h3 className="text-lg font-medium flex items-center mb-2">
+                  <Sparkles className="h-5 w-5 text-primary mr-2" />
+                  Your Style Summary
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Based on {styleAnalysis.itemCount || wardrobeItemsCount} items in your wardrobe
+                </p>
+              </div>
+              
+              <div className="prose prose-sm dark:prose-invert max-w-none bg-white/50 dark:bg-slate-900/50 rounded-lg p-4 shadow-sm">
+                {styleAnalysis.analysis.split('\n').map((paragraph, i) => {
+                  // Format the paragraphs for better readability
+                  if (!paragraph.trim()) return null;
+                  
+                  // Highlight sections/headings
+                  if (paragraph.includes(':') && paragraph.length < 50) {
+                    const [title, content] = paragraph.split(':');
+                    return (
+                      <div key={i} className="mb-3">
+                        <h4 className="text-primary font-medium mb-1">{title}:</h4>
+                        {content && <p className="ml-1">{content.trim()}</p>}
+                      </div>
+                    );
+                  }
+                  
+                  return <p key={i} className="my-2">{paragraph}</p>;
+                })}
+              </div>
+              
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Badge variant="outline" className="bg-primary/5">
+                  <ThumbsUp className="h-3 w-3 mr-1" />
+                  AI Analyzed
+                </Badge>
+                <Badge variant="outline" className="bg-primary/5">
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  Personalized
+                </Badge>
+                <Badge variant="outline" className="bg-primary/5">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Up to Date
+                </Badge>
+              </div>
             </div>
           )}
 
           {!styleAnalysis && !isStyleAnalysisLoading && !isStyleAnalysisError && (
-            <div className="text-center py-10">
-              <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="h-8 w-8 text-primary" />
+            <div className="text-center py-8 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm">
+              <div className="size-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-lg font-medium mb-3">Generate Style Analysis</h3>
+              <h3 className="text-xl font-medium mb-3">Get Your Style Analysis</h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                Get personalized insights about your style preferences and recommendations
-                based on your current wardrobe items.
+                Receive personalized styling advice, outfit suggestions, and wardrobe insights
+                tailored specifically to your collection.
               </p>
-              <Button onClick={() => handleRefresh("analysis")}>
+              <Button 
+                onClick={() => handleRefresh("analysis")} 
+                size="lg"
+                className="shadow-md hover:shadow-lg transition-all"
+              >
                 <Sparkles className="mr-2 h-4 w-4" />
-                Generate Analysis
+                Create My Style Analysis
               </Button>
             </div>
           )}
         </CardContent>
-        <CardFooter className="justify-between border-t py-3">
-          <div className="text-xs text-muted-foreground">
+        <CardFooter className="justify-between border-t py-3 bg-muted/30">
+          <div className="text-xs text-muted-foreground flex items-center">
             {styleAnalysis ? (
-              <span>Last updated: Today</span>
+              <span className="flex items-center">
+                <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
+                Last updated: Today
+              </span>
             ) : (
-              <span>Analysis available with {Math.max(3 - wardrobeItemsCount, 0)} more items</span>
+              <span>
+                {wardrobeItemsCount >= 3 
+                  ? "Ready to generate" 
+                  : `Need ${Math.max(3 - wardrobeItemsCount, 0)} more items to analyze`}
+              </span>
             )}
           </div>
           
@@ -560,6 +650,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
               variant="outline"
               onClick={() => handleRefresh("analysis")}
               disabled={isStyleAnalysisLoading}
+              className="shadow-sm"
             >
               {isStyleAnalysisLoading ? (
                 <>
