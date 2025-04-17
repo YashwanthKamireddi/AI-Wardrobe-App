@@ -112,7 +112,6 @@ export default function HomePage() {
 
   useEffect(() => {
     if (weather) {
-      console.log("Weather updated:", weather);
       const newOutfit = generateOutfitRecommendation();
       setRecommendedOutfit(newOutfit);
     }
