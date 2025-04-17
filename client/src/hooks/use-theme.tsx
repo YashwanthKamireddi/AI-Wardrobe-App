@@ -9,11 +9,17 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({ 
+  children, 
+  defaultTheme = "light" 
+}: { 
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+}) {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Try to load from localStorage
+    // Try to load from localStorage, or use the provided default
     const savedTheme = localStorage.getItem("theme") as Theme;
-    return savedTheme || "system";
+    return savedTheme || defaultTheme;
   });
 
   useEffect(() => {
@@ -35,6 +41,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Save to localStorage
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // Force light mode initially
+  useEffect(() => {
+    setTheme("light");
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
