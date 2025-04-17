@@ -231,15 +231,17 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
 
       {/* View Outfit Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[800px] w-[95%] runway-gradient p-3 sm:p-6 rounded-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent 
+          className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] sm:max-w-[800px] w-[95%] max-h-[90vh] overflow-y-auto p-6 rounded-lg runway-gradient grid grid-cols-1 gap-4">
           {/* Luxury corner accents */}
           <div className="absolute top-3 left-3 w-4 h-4 sm:w-5 sm:h-5 border-l-2 border-t-2 border-accent/40"></div>
           <div className="absolute top-3 right-3 w-4 h-4 sm:w-5 sm:h-5 border-r-2 border-t-2 border-accent/40"></div>
           <div className="absolute bottom-3 left-3 w-4 h-4 sm:w-5 sm:h-5 border-l-2 border-b-2 border-accent/40"></div>
           <div className="absolute bottom-3 right-3 w-4 h-4 sm:w-5 sm:h-5 border-r-2 border-b-2 border-accent/40"></div>
+          
           <DialogDescription className="sr-only">Outfit details and contents</DialogDescription>
           
-          <DialogHeader className="text-center mb-2">
+          <DialogHeader className="text-center mb-0">
             <DialogTitle className="font-fashion-heading text-xl sm:text-3xl tracking-tight">{outfit.name}</DialogTitle>
             {outfit.description && (
               <div className="text-xs sm:text-sm text-muted-foreground italic mt-1 max-w-md mx-auto">{outfit.description}</div>
@@ -274,14 +276,14 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
             </div>
           </DialogHeader>
 
-          <div className="luxury-divider my-2 sm:my-4"></div>
+          <div className="luxury-divider my-0"></div>
 
-          <div className="py-1 sm:py-2">
-            <h3 className="font-fashion-heading text-sm sm:text-lg mb-2 sm:mb-4 uppercase tracking-wide text-center">The Collection</h3>
+          <div className="w-full">
+            <h3 className="font-fashion-heading text-lg sm:text-xl mb-3 uppercase tracking-wide text-center">The Collection</h3>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-h-[35vh] sm:max-h-[40vh] custom-scrollbar overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 max-h-[40vh] sm:max-h-[45vh] overflow-y-auto custom-scrollbar p-1">
               {items.map((item) => (
-                <div key={item.id} className="boutique-item group h-full flex flex-col border border-accent/20 rounded-sm overflow-hidden bg-card">
+                <div key={item.id} className="boutique-item group h-full flex flex-col border border-accent/20 rounded-sm overflow-hidden bg-card shadow-sm">
                   {item.imageUrl && (
                     <div className="relative overflow-hidden aspect-square">
                       {item.color && (
@@ -294,7 +296,7 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
                       />
                     </div>
                   )}
-                  <div className="p-1 sm:p-2 bg-background/90 backdrop-blur-sm flex-grow">
+                  <div className="p-2 bg-background/90 backdrop-blur-sm flex-grow">
                     <h4 className="font-fashion-heading font-medium text-xs sm:text-sm mb-0.5 truncate">{item.name}</h4>
                     <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider truncate">
                       {item.category}
@@ -306,13 +308,13 @@ export default function OutfitCard({ outfit, items, onDelete }: OutfitCardProps)
             </div>
           </div>
 
-          <DialogFooter className="flex justify-between mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-accent/10">
+          <DialogFooter className="flex justify-between mt-0 pt-2 border-t border-accent/10">
             <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} 
-              className="fashion-button border-accent hover:bg-accent hover:text-black px-2 sm:px-4 h-8 sm:h-10 text-xs sm:text-sm">
+              className="fashion-button border-accent hover:bg-accent hover:text-black px-4 h-10 text-sm">
               CLOSE
             </Button>
-            <Button onClick={handleShare} className="fashion-button px-2 sm:px-4 h-8 sm:h-10 text-xs sm:text-sm">
-              <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <Button onClick={handleShare} className="fashion-button px-4 h-10 text-sm">
+              <Share2 className="h-4 w-4 mr-2" />
               SHARE
             </Button>
           </DialogFooter>

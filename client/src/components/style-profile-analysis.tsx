@@ -304,57 +304,65 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
             {styleProfile && !isStyleProfileLoading && (
               <>
                 <TabsContent value="profile" className="pt-2 m-0">
-                  <div className="text-center mb-6 py-4 bg-primary/5 rounded-lg shadow-sm">
-                    <div className="inline-block bg-white dark:bg-slate-800 p-3 rounded-full mb-2 shadow-sm">
-                      <Sparkles className="h-6 w-6 text-primary" />
+                  <div className="text-center mb-6 py-6 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-lg shadow-lg border border-primary/20">
+                    <div className="inline-block bg-white dark:bg-slate-800 p-4 rounded-full mb-3 shadow-md border border-primary/30 transform hover:scale-105 transition-transform duration-300">
+                      <Sparkles className="h-7 w-7 text-primary animate-pulse" />
                     </div>
-                    <h3 className="text-2xl font-semibold mb-1">
+                    <h3 className="text-3xl font-bold mb-2 font-fashion-heading tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent">
                       {styleProfile.dominantStyle || "Modern"} Style
                     </h3>
-                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                      This is your signature style based on your personal wardrobe collection
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto px-4">
+                      Your signature aesthetic based on your personal wardrobe collection
                     </p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    <div className="space-y-4 bg-white/80 dark:bg-slate-900/50 p-4 rounded-lg shadow-sm">
-                      <h4 className="text-sm font-medium flex items-center gap-2 border-b pb-2">
-                        <TagIcon className="h-4 w-4 text-primary" />
-                        Your Key Signature Pieces
+                    <div className="space-y-4 bg-white/90 dark:bg-slate-900/70 p-5 rounded-lg shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300">
+                      <h4 className="text-sm font-medium flex items-center gap-2 border-b border-primary/20 pb-2">
+                        <div className="bg-primary/10 p-1.5 rounded-full">
+                          <TagIcon className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="font-fashion-heading tracking-wide">Signature Pieces</span>
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {styleProfile.keyItems && styleProfile.keyItems.length > 0 ? (
                           styleProfile.keyItems.map((item, index) => (
-                            <Badge key={index} variant="outline" className="bg-primary/5 text-sm py-1.5 px-3">
+                            <Badge 
+                              key={index} 
+                              variant="outline" 
+                              className="bg-gradient-to-r from-primary/5 to-primary/10 text-sm py-1.5 px-3 border-primary/20 hover:bg-primary/20 transition-colors duration-300 cursor-default"
+                            >
                               {item}
                             </Badge>
                           ))
                         ) : (
-                          <div className="text-sm text-muted-foreground py-2 px-3 bg-muted/50 rounded-md w-full text-center">
+                          <div className="text-sm text-muted-foreground py-3 px-4 bg-muted/50 rounded-md w-full text-center border border-dashed border-primary/20">
                             Add more items to identify key pieces
                           </div>
                         )}
                       </div>
                     </div>
                     
-                    <div className="space-y-4 bg-white/80 dark:bg-slate-900/50 p-4 rounded-lg shadow-sm">
-                      <h4 className="text-sm font-medium flex items-center gap-2 border-b pb-2">
-                        <Flower2 className="h-4 w-4 text-primary" />
-                        Style Highlights
+                    <div className="space-y-4 bg-white/90 dark:bg-slate-900/70 p-5 rounded-lg shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300">
+                      <h4 className="text-sm font-medium flex items-center gap-2 border-b border-primary/20 pb-2">
+                        <div className="bg-primary/10 p-1.5 rounded-full">
+                          <Flower2 className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="font-fashion-heading tracking-wide">Style Highlights</span>
                       </h4>
                       <ul className="text-sm space-y-3">
-                        <li className="flex items-start gap-2 bg-primary/5 p-2 rounded-md">
+                        <li className="flex items-start gap-2 bg-gradient-to-r from-primary/5 to-primary/10 p-3 rounded-md border border-primary/10">
                           <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                          <span>Your wardrobe reflects a <strong>{styleProfile.dominantStyle || "Modern"}</strong> aesthetic</span>
+                          <span>Your wardrobe reflects a <strong className="text-primary/90">{styleProfile.dominantStyle || "Modern"}</strong> aesthetic</span>
                         </li>
-                        <li className="flex items-start gap-2 bg-primary/5 p-2 rounded-md">
+                        <li className="flex items-start gap-2 bg-gradient-to-r from-primary/5 to-primary/10 p-3 rounded-md border border-primary/10">
                           <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                          <span>Preferred seasonality: <strong>{styleProfile.preferences?.seasonality || "Versatile"}</strong></span>
+                          <span>Preferred seasonality: <strong className="text-primary/90">{styleProfile.preferences?.seasonality || "Versatile"}</strong></span>
                         </li>
                         {styleProfile.colorPalette && styleProfile.colorPalette.length > 0 && (
-                          <li className="flex items-start gap-2 bg-primary/5 p-2 rounded-md">
+                          <li className="flex items-start gap-2 bg-gradient-to-r from-primary/5 to-primary/10 p-3 rounded-md border border-primary/10">
                             <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                            <span>Color preference: <strong>{styleProfile.colorPalette[0]}</strong> tones</span>
+                            <span>Color preference: <strong className="text-primary/90">{styleProfile.colorPalette[0]}</strong> tones</span>
                           </li>
                         )}
                       </ul>
@@ -364,30 +372,45 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                 
                 <TabsContent value="colors" className="pt-2 m-0">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-center">Your Color Palette</h3>
+                    <h3 className="text-2xl font-medium text-center font-fashion-heading tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent mb-6">Your Color Palette</h3>
                     
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {styleProfile.colorPalette && styleProfile.colorPalette.length > 0 ? (
                         styleProfile.colorPalette.map((color, index) => (
-                          <div key={index} className="bg-muted rounded-lg p-3 text-center">
-                            <div className="w-full aspect-square rounded-md mb-2 border" 
-                                 style={{ backgroundColor: getColorCode(color) }}></div>
-                            <span className="text-sm font-medium">{color}</span>
+                          <div 
+                            key={index} 
+                            className="bg-white dark:bg-slate-900/80 rounded-lg p-3 text-center shadow-md border border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+                          >
+                            <div 
+                              className="w-full aspect-square rounded-md mb-3 border border-primary/20 shadow-inner overflow-hidden" 
+                              style={{ backgroundColor: getColorCode(color) }}
+                            >
+                              <div className="w-full h-full bg-gradient-to-br from-white/10 to-black/10"></div>
+                            </div>
+                            <span className="text-sm font-medium font-fashion-heading">{color}</span>
                           </div>
                         ))
                       ) : (
-                        <div className="col-span-full text-center py-6">
-                          <p className="text-muted-foreground">No color palette available yet</p>
+                        <div className="col-span-full text-center py-8 bg-white/80 dark:bg-slate-900/50 rounded-lg shadow-md border border-dashed border-primary/20">
+                          <div className="inline-block bg-primary/10 p-2 rounded-full mb-2">
+                            <Palette className="h-5 w-5 text-primary/70" />
+                          </div>
+                          <p className="text-muted-foreground">Add more items to generate your color palette</p>
                         </div>
                       )}
                     </div>
                     
-                    <div className="bg-primary/5 rounded-lg p-4 mt-4">
-                      <h4 className="font-medium mb-2">Color Harmony Tips</h4>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-lg p-5 mt-6 shadow-md border border-primary/20">
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        <div className="bg-primary/20 p-1.5 rounded-full">
+                          <Palette className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="font-fashion-heading tracking-wide">Color Harmony Tips</span>
+                      </h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         Your wardrobe shows a preference for {styleProfile.colorPalette && styleProfile.colorPalette.length > 0 
-                          ? `${styleProfile.colorPalette[0]} and ${styleProfile.colorPalette.length > 1 ? styleProfile.colorPalette[1] : 'neutral'} tones` 
-                          : 'balanced colors'}. Consider adding complementary colors for more outfit flexibility.
+                          ? <><span className="font-semibold text-primary/90">{styleProfile.colorPalette[0]}</span> and <span className="font-semibold text-primary/90">{styleProfile.colorPalette.length > 1 ? styleProfile.colorPalette[1] : 'neutral'}</span> tones</> 
+                          : 'balanced colors'}. Consider adding complementary colors for more outfit flexibility and visual interest in your ensembles.
                       </p>
                     </div>
                   </div>
@@ -396,9 +419,13 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                 <TabsContent value="preferences" className="pt-2 m-0">
                   <div className="space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium mb-2">Style Metrics</h3>
+                      <h3 className="text-2xl font-medium text-center font-fashion-heading tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent mb-6">Style Metrics</h3>
                       
-                      <div className="space-y-4">
+                      <div className="space-y-6 bg-white/90 dark:bg-slate-900/70 p-5 rounded-lg shadow-md border border-primary/10">
+                        <div className="text-sm text-center text-muted-foreground mb-2">
+                          Your personal style profile, based on your wardrobe composition
+                        </div>
+                        
                         <StylePreferenceBar 
                           label="Formality"
                           value={styleProfile.preferences?.formality || 5}
@@ -683,20 +710,29 @@ function StylePreferenceBar({ label, value, leftLabel, rightLabel }: {
   const safeValue = Math.max(0, Math.min(10, value));
   
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2 bg-gradient-to-r from-primary/5 to-transparent p-3 rounded-lg border border-primary/10">
       <div className="flex justify-between items-center">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm font-medium">{safeValue}/10</span>
+        <span className="text-sm font-medium font-fashion-heading tracking-wide flex items-center gap-1.5">
+          <div className="bg-primary/10 p-1 rounded-full">
+            {label === "Formality" && <Crown className="h-3.5 w-3.5 text-primary" />}
+            {label === "Boldness" && <Flame className="h-3.5 w-3.5 text-primary" />}
+            {label === "Trendiness" && <Sparkles className="h-3.5 w-3.5 text-primary" />}
+          </div>
+          {label}
+        </span>
+        <span className="text-sm font-medium px-2 py-0.5 bg-primary/10 rounded-md text-primary">
+          {safeValue}/10
+        </span>
       </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden">
+      <div className="h-3 bg-white dark:bg-slate-800 rounded-full overflow-hidden shadow-inner border border-primary/20">
         <div
-          className="h-full bg-primary rounded-full"
+          className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full transition-all duration-500"
           style={{ width: `${(safeValue / 10) * 100}%` }}
         ></div>
       </div>
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>{leftLabel}</span>
-        <span>{rightLabel}</span>
+      <div className="flex justify-between text-xs">
+        <span className="text-muted-foreground bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded-md shadow-sm border border-primary/10">{leftLabel}</span>
+        <span className="text-muted-foreground bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded-md shadow-sm border border-primary/10">{rightLabel}</span>
       </div>
     </div>
   );
@@ -708,14 +744,21 @@ function StylePreferenceCard({ label, value, icon }: {
   icon: React.ReactNode;
 }) {
   return (
-    <div className="border rounded-lg p-3 flex flex-col items-center text-center">
-      <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-sm font-medium">{label}</span>
-        {icon}
+    <div className="bg-white/90 dark:bg-slate-900/70 rounded-lg p-4 flex flex-col items-center text-center shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+      <div className="bg-primary/10 p-2 rounded-full mb-3">
+        <div className="text-primary">
+          {icon}
+        </div>
       </div>
-      <Badge variant="secondary" className="px-3 py-1">
-        {value}
-      </Badge>
+      <div className="flex flex-col space-y-2">
+        <span className="text-sm font-medium font-fashion-heading tracking-wide">{label}</span>
+        <Badge 
+          variant="secondary" 
+          className="px-3 py-1 bg-gradient-to-r from-primary/20 to-primary/10 text-primary/90 border border-primary/20"
+        >
+          {value}
+        </Badge>
+      </div>
     </div>
   );
 }
