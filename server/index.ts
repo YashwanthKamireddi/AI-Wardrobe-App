@@ -2,11 +2,15 @@
  * Main Server Entry Point
  * 
  * This file is responsible for:
- * 1. Starting the Express application
- * 2. Connecting to the database
- * 3. Setting up Vite in development mode
- * 4. Handling graceful shutdown
+ * 1. Loading environment variables
+ * 2. Starting the Express application
+ * 3. Connecting to the database
+ * 4. Setting up Vite in development mode
+ * 5. Handling graceful shutdown
  */
+
+// Load environment variables first before any other imports
+import './config/env';
 
 import { createServer } from 'http';
 import { setupVite, serveStatic } from './vite';
