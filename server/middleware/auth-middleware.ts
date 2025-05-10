@@ -8,6 +8,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from './error-handler';
 import { createLogger } from '../utils/logger';
+import { User } from '@shared/schema';
 
 const logger = createLogger('auth-middleware');
 
@@ -21,12 +22,7 @@ export enum UserRole {
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: number;
-        username: string;
-        role?: string;
-        email?: string;
-      };
+      user?: User;
     }
   }
 }

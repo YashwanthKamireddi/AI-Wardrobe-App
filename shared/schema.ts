@@ -61,6 +61,7 @@ export const users = pgTable("users", {
   name: text("name"),
   email: text("email"),
   profilePicture: text("profile_picture"),
+  role: text("role").default("user"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -69,6 +70,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
   email: true,
   profilePicture: true,
+  role: true,
 });
 
 /**
