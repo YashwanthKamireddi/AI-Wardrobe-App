@@ -3,6 +3,29 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 import { sql } from 'drizzle-orm';
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+
+// Load .env file directly
+try {
+  // First try from the current directory
+  let envPath = path.resolve('.env');
+  
+  // If not found, try from the parent directory (project root when running from '/server')
+  if (!fs.existsSync(envPath)) {
+    envPath = path.resolve('../.env');
+  }
+
+  if (fs.existsSync(envPath)) {
+    console.log(`Loading environment from: ${envPath}`);
+    dotenv.config({ path: envPath });
+  } else {
+    console.warn(`No .env file found at ${envPath}`);
+  }
+} catch (error) {
+  console.error('Error loading .env file:', error);
+}
 
 // Configure Neon database to use WebSocket for connection
 neonConfig.webSocketConstructor = ws;

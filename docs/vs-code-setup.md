@@ -101,8 +101,14 @@ The application should now be running at [http://localhost:3000](http://localhos
 
 If you get errors about missing environment variables:
 
-1. Check that your `.env` file exists in the root directory
-2. Make sure it contains all required variables:
+1. Run the environment debugging script:
+   ```bash
+   node scripts/debug-env.js
+   ```
+   This will check your .env file and environment variables, providing detailed recommendations.
+
+2. Check that your `.env` file exists in the root directory
+3. Make sure it contains all required variables:
    - `DATABASE_URL`
    - `PGPORT`
    - `PGUSER`
@@ -111,6 +117,14 @@ If you get errors about missing environment variables:
    - `PGHOST`
    - `SESSION_SECRET`
    - `OPENAI_API_KEY`
+
+4. If the .env file approach isn't working, you can set variables directly in PowerShell:
+   ```powershell
+   # Run from the project root
+   ./scripts/set-env.ps1
+   npm run dev
+   ```
+   This will set all needed environment variables for the current session only.
 
 ### OpenAI API Issues
 
