@@ -1,18 +1,17 @@
 #!/bin/bash
-# Kill any existing process
-pkill -f "node start.js" || true
-pkill -f "tsx server/index.ts" || true
 
-# Start with more verbose logging
-echo "[$(date)] Starting application..." > server.log
-NODE_DEBUG=module node start.js >> server.log 2>&1 &
-echo $! > server.pid
-echo "Started application with PID: $(cat server.pid)"
-
-# Wait a moment to check if the process is still alive
-sleep 2
-if ps -p $(cat server.pid) > /dev/null; then
-  echo "Process is running"
-else
-  echo "Process failed to start, check server.log for details"
+# Export DATABASE_URL if needed (Replit should provide this automatically)
+if [ -z "$DATABASE_URL" ]; then
+  echo "DATABASE_URL is not set. Please ensure the database is properly provisioned."
+  exit 1
 fi
+
+# Check for OpenAI API key
+if [ -z "$OPENAI_API_KEY" ]; then
+  echo "OPENAI_API_KEY is not set. AI features will not work."
+  exit 1
+fi
+
+# Start the application
+echo "Starting the application..."
+npm run dev
