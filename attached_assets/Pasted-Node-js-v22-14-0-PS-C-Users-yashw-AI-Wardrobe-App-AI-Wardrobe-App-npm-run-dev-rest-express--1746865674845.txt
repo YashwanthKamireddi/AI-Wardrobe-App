@@ -1,0 +1,60 @@
+Node.js v22.14.0
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> npm run dev
+
+> rest-express\@1.0.0 dev
+> tsx server/index.ts
+
+Loading environment from: C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App.env
+\=== Environment Debug Info ===
+Current directory: C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App
+Root directory: C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App
+Env path: C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App.env
+Env file exists: true
+DATABASE\_URL defined: true
+PGHOST defined: true
+PGUSER defined: true
+PGDATABASE defined: true
+NODE\_ENV: undefined
+====================
+
+Loading environment from: C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App.env
+Environment variables loaded successfully from .env file
+Connecting to PostgreSQL with: {
+host: 'localhost',
+port: 5432,
+user: 'postgres',
+database: 'chers\_closet\_db'
+}
+\[2025-05-10T08:25:15.984Z] \[INFO] \[app] Verifying database health...
+\[2025-05-10T08:25:16.070Z] \[ERROR] \[database] Database connection test failed (attempt 1/3): \[object Object]
+New database connection established
+C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node\_modules\pg-pool\index.js:45
+Error.captureStackTrace(err)
+^
+
+error: relation "inspirations" does not exist
+at C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node\_modules\pg-pool\index.js:45:11
+at process.processTicksAndRejections (node\:internal/process/task\_queues:105:5)
+at async <anonymous> (C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node\_modules\src\node-postgres\session.ts:104:19)
+at async DatabaseStorage.addSampleInspirations (C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\server\storage.ts:381:34) {
+length: 111,
+severity: 'ERROR',
+code: '42P01',
+detail: undefined,
+hint: undefined,
+position: '18',
+internalPosition: undefined,
+internalQuery: undefined,
+where: undefined,
+schema: undefined,
+table: undefined,
+column: undefined,
+dataType: undefined,
+constraint: undefined,
+file: 'parse\_relation.c',
+line: '1452',
+routine: 'parserOpenTable'
+}
+
+Node.js v22.14.0
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App>
