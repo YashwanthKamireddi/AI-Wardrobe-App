@@ -1,13 +1,19 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// ES Modules workaround for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Find the root directory (where .env should be located)
 function findRootDir() {
+  // Start with the directory of this file
   let currentDir = __dirname;
   
   // Keep going up until we find the .env file or reach the root
-  while (currentDir !== '/') {
+  while (currentDir !== path.parse(currentDir).root) {
     if (fs.existsSync(path.join(currentDir, '.env'))) {
       return currentDir;
     }
