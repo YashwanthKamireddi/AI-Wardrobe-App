@@ -192,6 +192,7 @@ export const inspirations = pgTable("inspirations", {
   tags: text("tags").array(), // tags for filtering
   category: text("category"), // casual, formal, trends, etc.
   source: text("source"), // source of the inspiration
+  content: text("content"), // detailed content/text of the inspiration
 });
 
 export const insertInspirationSchema = createInsertSchema(inspirations).pick({
@@ -201,6 +202,7 @@ export const insertInspirationSchema = createInsertSchema(inspirations).pick({
   tags: true,
   category: true,
   source: true,
+  content: true,
 });
 
 /**
