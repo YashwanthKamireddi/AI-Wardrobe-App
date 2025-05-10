@@ -6,26 +6,14 @@
       "request": "launch",
       "name": "Debug Server",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.js",
-      "args": ["server/index.ts"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "env": {
+        "NODE_ENV": "development"
+      },
       "console": "integratedTerminal",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
-      "sourceMaps": true,
-      "envFile": "${workspaceFolder}/.env"
-    },
-    {
-      "type": "chrome",
-      "request": "launch",
-      "name": "Debug Frontend",
-      "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/client",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "sourceMaps": true
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Full Stack: Server + Frontend",
-      "configurations": ["Debug Server", "Debug Frontend"]
     }
   ]
 }

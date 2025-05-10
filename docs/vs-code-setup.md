@@ -1,208 +1,81 @@
-# VS Code Setup Guide
+# VS Code Setup for Cher's Closet
 
-This document provides a detailed guide for setting up and working with this Replit project in Visual Studio Code.
+This guide will help you set up and run the Cher's Closet application in Visual Studio Code.
 
 ## Prerequisites
 
-Before starting, ensure you have the following installed:
+1. **Node.js**: Version 20 or later
+2. **PostgreSQL**: A local PostgreSQL server
+3. **VS Code**: Latest version
+4. **Git**: For version control
 
-1. **Visual Studio Code**: [Download VS Code](https://code.visualstudio.com/download)
-2. **Node.js**: Version 20.x or later [Download Node.js](https://nodejs.org/en/download/)
-3. **Git**: [Download Git](https://git-scm.com/downloads)
-4. **PostgreSQL**: Either:
-   - Local installation [Download PostgreSQL](https://www.postgresql.org/download/)
-   - Cloud database (Neon, Supabase, etc.)
-   - Access to your Replit PostgreSQL database
+## Setting Up the Project
 
-## Step 1: Clone the Repository
-
-First, clone your Replit repository to your local machine:
-
-1. **Get Your Replit Repository URL**:
-   - In Replit, go to the "Version Control" tab
-   - Copy the Git URL provided
-
-2. **Clone the Repository**:
-   ```bash
-   git clone <your-replit-git-url>
-   cd <repository-directory>
-   ```
-
-## Step 2: Install VS Code Extensions
-
-Install these recommended VS Code extensions for the best development experience:
-
-1. **ESLint**: JavaScript/TypeScript linting
-   - Extension ID: `dbaeumer.vscode-eslint`
-
-2. **Prettier**: Code formatting
-   - Extension ID: `esbenp.prettier-vscode`
-
-3. **Tailwind CSS IntelliSense**: For Tailwind CSS support
-   - Extension ID: `bradlc.vscode-tailwindcss`
-
-4. **PostCSS Language Support**: For PostCSS syntax
-   - Extension ID: `csstools.postcss`
-
-5. **SQLTools**: For database management
-   - Extension ID: `mtxr.sqltools`
-
-6. **SQLTools PostgreSQL/Redshift Driver**:
-   - Extension ID: `mtxr.sqltools-driver-pg`
-
-7. **DotENV**: For .env file syntax highlighting
-   - Extension ID: `mikestead.dotenv`
-
-8. **Import Cost**: See the size of imported packages
-   - Extension ID: `wix.vscode-import-cost`
-
-9. **Path Intellisense**: Autocompletes filenames
-   - Extension ID: `christian-kohler.path-intellisense`
-
-## Step 3: Configure Environment Variables
-
-Create a `.env` file in the root directory of your project:
+### 1. Clone the Repository
 
 ```bash
-touch .env
+git clone <repository-url>
+cd AI-Wardrobe-App
 ```
 
-Add the following environment variables to your `.env` file:
-
-```
-DATABASE_URL=postgres://<username>:<password>@<hostname>:<port>/<database>
-PGPORT=<port>
-PGUSER=<username>
-PGPASSWORD=<password>
-PGDATABASE=<database>
-PGHOST=<hostname>
-SESSION_SECRET=<random-string-for-session-encryption>
-```
-
-### Option A: Using Local PostgreSQL
-
-If you're using a local PostgreSQL installation:
-
-```
-DATABASE_URL=postgres://postgres:yourpassword@localhost:5432/chers_closet
-PGPORT=5432
-PGUSER=postgres
-PGPASSWORD=yourpassword
-PGDATABASE=chers_closet
-PGHOST=localhost
-SESSION_SECRET=your_secret_key_here
-```
-
-### Option B: Using Replit PostgreSQL
-
-If you want to continue using your Replit database:
-
-1. In Replit, go to the "Secrets" tab
-2. Copy all database-related environment variables
-3. Add them to your local `.env` file
-
-Note: You might need to set up an SSH tunnel to access Replit's PostgreSQL database externally.
-
-### Option C: Using a Cloud PostgreSQL Service
-
-If using a service like Neon:
-
-1. Create a new PostgreSQL database in your chosen service
-2. Copy the connection details provided by the service
-3. Update your `.env` file with these details
-
-## Step 4: Install Dependencies
-
-Install all required dependencies:
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-## Step 5: Set Up Database Schema
+### 3. Set Up PostgreSQL
 
-Push the schema to your database:
+#### Windows
+
+1. Run the PowerShell setup script:
+
+```powershell
+# Make sure you're in the project root
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+./scripts/setup-postgres.ps1
+```
+
+2. This script will:
+   - Check if PostgreSQL is installed
+   - Verify if the PostgreSQL service is running
+   - Create the 'chers_closet' database
+
+#### macOS/Linux
+
+1. Make sure PostgreSQL is installed and running:
+
+```bash
+# macOS (using Homebrew)
+brew services start postgresql
+
+# Linux (Ubuntu/Debian)
+sudo service postgresql start
+```
+
+2. Create the database:
+
+```bash
+psql -U postgres -c "CREATE DATABASE chers_closet;"
+```
+
+### 4. Environment Setup
+
+1. Update the `.env` file with your database configuration
+2. Make sure the `DATABASE_URL` and other connection details match your PostgreSQL setup
+3. Add your OpenAI API key for AI features
+
+### 5. Database Migration
+
+Run the migration to set up your database schema:
 
 ```bash
 npm run db:push
 ```
 
-## Step 6: VS Code Settings
+This will create all the necessary tables in your database.
 
-Create a `.vscode` folder with settings and launch configurations.
-
-### settings.json
-
-Create `.vscode/settings.json` with these recommended settings:
-
-```json
-{
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "tailwindCSS.includeLanguages": {
-    "typescript": "javascript",
-    "typescriptreact": "javascript"
-  },
-  "tailwindCSS.experimental.classRegex": [
-    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-  ],
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "files.associations": {
-    "*.css": "postcss"
-  }
-}
-```
-
-### launch.json
-
-Create `.vscode/launch.json` for debugging:
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Server",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.js",
-      "args": ["server/index.ts"],
-      "console": "integratedTerminal",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
-      "sourceMaps": true,
-      "envFile": "${workspaceFolder}/.env"
-    },
-    {
-      "type": "chrome",
-      "request": "launch",
-      "name": "Debug Frontend",
-      "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/client",
-      "sourceMaps": true
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Full Stack: Server + Frontend",
-      "configurations": ["Debug Server", "Debug Frontend"]
-    }
-  ]
-}
-```
-
-## Step 7: Start Development Server
+## Running the Application
 
 Start the development server:
 
@@ -210,109 +83,52 @@ Start the development server:
 npm run dev
 ```
 
-This will start both the backend server and the frontend development server.
-
-## Step 8: Access the Application
-
-Open your browser and navigate to:
-
-```
-http://localhost:3000
-```
-
-## Working with VS Code
-
-### Using the Terminal
-
-VS Code has an integrated terminal that you can use to run commands:
-
-1. Open the terminal with `` Ctrl+` `` (backtick)
-2. Run any npm script from here
-
-### Debugging
-
-Use the debugging configurations set up in `launch.json`:
-
-1. Click the "Run and Debug" icon in the sidebar (or press `F5`)
-2. Select "Full Stack: Server + Frontend" to debug both
-3. Set breakpoints in your code by clicking next to line numbers
-
-### Database Management
-
-Use the SQLTools extension to connect to your database:
-
-1. Click the SQLTools icon in the sidebar
-2. Add a new connection with your PostgreSQL details
-3. Navigate tables, run queries, and manage your database
-
-### Git Integration
-
-VS Code has excellent Git integration:
-
-1. Click the Source Control icon in the sidebar
-2. Stage changed files, commit, and push directly from VS Code
-3. Use the Git Graph extension for a visual representation of your Git history
-
-## Key Differences Between Replit and VS Code
-
-### Environment Variables
-
-- In Replit: Set in the "Secrets" tab
-- In VS Code: Set in the `.env` file
-
-### Port Access
-
-- In Replit: Automatically handled through the webview
-- In VS Code: Accessed directly via localhost
-
-### File Watching and Reload
-
-- In Replit: Handled by the Replit environment
-- In VS Code: Handled by the dev script, but might need manual refresh sometimes
-
-### Database Access
-
-- In Replit: Direct access to the provided PostgreSQL database
-- In VS Code: Need to set up PostgreSQL locally or connect to a remote database
-
-## Making Changes
-
-Always follow these best practices when making changes:
-
-1. **Sync Regularly**: Pull changes from Replit if you're working on both platforms
-2. **Test in Both Environments**: Features might work differently between Replit and VS Code
-3. **Keep Dependencies in Sync**: If you add a dependency in VS Code, add it in Replit too
-4. **Database Migrations**: Apply schema changes in both environments
+The application should now be running at [http://localhost:3000](http://localhost:3000)
 
 ## Troubleshooting
 
-### Common VS Code Issues
+### Database Connection Issues
 
-1. **"Module not found" errors**:
-   - Check if all dependencies are installed
-   - Make sure tsconfig.json paths are correctly set up
+- Verify PostgreSQL is running
+- Check your `.env` file for correct credentials
+- Make sure you've created the database
+- Try connecting to PostgreSQL manually:
+  ```bash
+  psql -U postgres -d chers_closet
+  ```
 
-2. **Debugging not working**:
-   - Make sure launch.json is correctly configured
-   - Check that sourceMap options are enabled
+### Missing Environment Variables
 
-3. **Environment variables not being loaded**:
-   - Verify your .env file has the correct format
-   - Restart VS Code to ensure it picks up the new variables
+If you get errors about missing environment variables:
 
-4. **Database connection issues**:
-   - Check your database connection details in .env
-   - Make sure your database is running
-   - For remote databases, check firewall/network settings
+1. Check that your `.env` file exists in the root directory
+2. Make sure it contains all required variables:
+   - `DATABASE_URL`
+   - `PGPORT`
+   - `PGUSER`
+   - `PGPASSWORD`
+   - `PGDATABASE`
+   - `PGHOST`
+   - `SESSION_SECRET`
+   - `OPENAI_API_KEY`
 
-5. **TypeScript errors in VS Code but not in Replit**:
-   - Make sure you're using the workspace version of TypeScript
-   - Check TypeScript versions match between environments
+### OpenAI API Issues
 
-## Additional Resources
+If AI recommendations don't work:
 
-- [VS Code Documentation](https://code.visualstudio.com/docs)
-- [Node.js Documentation](https://nodejs.org/en/docs/)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
-- [Drizzle ORM Documentation](https://orm.drizzle.team/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+1. Make sure you've added a valid `OPENAI_API_KEY` to your `.env` file
+2. Check OpenAI API status: [https://status.openai.com/](https://status.openai.com/)
+
+## VS Code Extensions
+
+For the best development experience, install these VS Code extensions:
+
+- ESLint
+- Prettier
+- Tailwind CSS IntelliSense
+- PostgreSQL
+- REST Client
+
+## Debugging
+
+A launch configuration is provided in `.vscode/launch.json` for debugging the application. You can start debugging by pressing F5 or clicking the Debug button in VS Code.
