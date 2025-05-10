@@ -1,13 +1,9 @@
 {
-  "workflows": [
+  "runs": [
     {
-      "name": "WebServer",
-      "command": "bash -c './start_app.sh'",
-      "restartOn": {
-        "files": ["server/**/*", "shared/**/*", "package.json", "package-lock.json"],
-        "branch": true
-      },
-      "runOnStart": true
+      "id": "start-app",
+      "name": "Start application",
+      "path": "./run.sh"
     }
   ]
 }

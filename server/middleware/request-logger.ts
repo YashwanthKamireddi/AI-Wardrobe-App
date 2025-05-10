@@ -1,104 +1,137 @@
 /**
- * Request Logger Middleware
+ * Request Logging Middleware
  * 
- * This middleware logs information about incoming HTTP requests.
- * It provides visibility into API usage and can help with debugging
- * and monitoring application traffic.
+ * This middleware logs incoming HTTP requests with timestamps and response times.
+ * It provides visibility into API usage and performance.
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { features } from '../config/app-config';
+import { createLogger } from '../utils/logger';
+import { environment } from '../config/app-config';
+
+const logger = createLogger('http');
 
 /**
- * Creates a logger middleware with the given options
- * @param {Object} options - Configuration options
- * @param {boolean} options.logBody - Whether to log request bodies
- * @param {boolean} options.logResponse - Whether to log response bodies
- * @param {number} options.maxBodyLength - Maximum length for logged bodies
- * @param {string[]} options.excludePaths - Paths to exclude from logging
+ * Creates a request ID for correlation
+ */
+function generateRequestId(): string {
+  return Math.random().toString(36).substring(2, 15);
+}
+
+/**
+ * Gets the client IP address from the request
+ */
+function getClientIp(req: Request): string {
+  // Get IP from various headers that might contain the real client IP
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = forwarded 
+    ? (typeof forwarded === 'string' ? forwarded.split(',')[0] : forwarded[0])
+    : req.socket.remoteAddress;
+  
+  return ip || 'unknown';
+}
+
+/**
+ * Request logging middleware factory
+ * Creates middleware that logs requests with customizable options
  */
 export function createRequestLogger(options: {
   logBody?: boolean;
-  logResponse?: boolean;
-  maxBodyLength?: number;
+  logQuery?: boolean;
   excludePaths?: string[];
 } = {}) {
   const {
     logBody = false,
-    logResponse = false,
-    maxBodyLength = 1000,
-    excludePaths = ['/api/health', '/api/ping']
+    logQuery = true,
+    excludePaths = ['/api/health']
   } = options;
-
-  return (req: Request, res: Response, next: NextFunction) => {
+  
+  return function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction) {
     // Skip logging for excluded paths
-    if (excludePaths.some(path => req.path.startsWith(path))) {
+    if (excludePaths.includes(req.path)) {
       return next();
     }
-
-    const start = Date.now();
-    const { method, path, ip } = req;
     
-    // Log request start
-    console.log(`[${new Date().toISOString()}] ${method} ${path} - Started ${ip}`);
+    // Record request start time
+    const startTime = Date.now();
+    const requestId = generateRequestId();
     
-    // Log request body if enabled
+    // Store request ID on the request object for correlation
+    (req as any).requestId = requestId;
+    
+    // Basic request information
+    const requestInfo = {
+      id: requestId,
+      method: req.method,
+      path: req.path,
+      ip: getClientIp(req),
+      userAgent: req.get('user-agent') || 'unknown'
+    };
+    
+    // Add query parameters if enabled
+    if (logQuery && Object.keys(req.query).length > 0) {
+      requestInfo['query'] = req.query;
+    }
+    
+    // Add request body if enabled and present (excluding sensitive data)
     if (logBody && req.body && Object.keys(req.body).length > 0) {
-      const bodyString = JSON.stringify(req.body);
-      const truncatedBody = bodyString.length > maxBodyLength 
-        ? `${bodyString.substring(0, maxBodyLength)}...` 
-        : bodyString;
-      console.log(`[REQUEST] Body: ${truncatedBody}`);
-    }
-    
-    // Capture response data if enabled
-    if (logResponse) {
-      const originalJson = res.json;
-      res.json = function(body) {
-        res.locals.responseBody = body;
-        return originalJson.call(this, body);
-      };
-    }
-    
-    // Log when request is complete
-    res.on('finish', () => {
-      const duration = Date.now() - start;
-      const statusCode = res.statusCode;
+      // Create safe copy of body without sensitive fields
+      const safeBody = { ...req.body };
       
-      const logLevel = statusCode >= 500 
-        ? 'error' 
-        : statusCode >= 400 
-          ? 'warn' 
-          : 'log';
-      
-      // Format the log message
-      let message = `[${new Date().toISOString()}] ${method} ${path} ${statusCode} - ${duration}ms`;
-      
-      // Add response body summary if enabled
-      if (logResponse && res.locals.responseBody) {
-        const responseBody = JSON.stringify(res.locals.responseBody);
-        if (responseBody && responseBody.length > 0) {
-          const truncatedResponse = responseBody.length > maxBodyLength 
-            ? `${responseBody.substring(0, maxBodyLength)}...` 
-            : responseBody;
-          message += ` - Response: ${truncatedResponse}`;
+      // Remove sensitive fields
+      const sensitiveFields = ['password', 'token', 'apiKey', 'secret', 'authorization'];
+      sensitiveFields.forEach(field => {
+        if (field in safeBody) {
+          safeBody[field] = '[REDACTED]';
         }
+      });
+      
+      requestInfo['body'] = safeBody;
+    }
+    
+    // Log the incoming request
+    logger.info(`${req.method} ${req.path}`, requestInfo);
+    
+    // Capture the response
+    const originalEnd = res.end;
+    res.end = function(this: Response, ...args: any[]) {
+      // Calculate request duration
+      const duration = Date.now() - startTime;
+      
+      // Response information
+      const responseInfo = {
+        id: requestId,
+        statusCode: res.statusCode,
+        duration: `${duration}ms`
+      };
+      
+      // Log at appropriate level based on status code
+      if (res.statusCode >= 500) {
+        logger.error(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`, responseInfo);
+      } else if (res.statusCode >= 400) {
+        logger.warn(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`, responseInfo);
+      } else {
+        logger.info(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`, responseInfo);
       }
       
-      // Log with appropriate level
-      console[logLevel](message);
-    });
+      // Call the original end method
+      return originalEnd.apply(this, args);
+    };
     
     next();
   };
 }
 
-// Create a default logger instance
+/**
+ * Default request logger middleware with standard options
+ */
 export const requestLogger = createRequestLogger({
-  logBody: features.debugMode,
-  logResponse: features.debugMode,
-  maxBodyLength: 500,
-  excludePaths: ['/api/health', '/api/ping', '/static']
+  logBody: !environment.isProduction,
+  logQuery: true,
+  excludePaths: ['/api/health', '/favicon.ico']
 });
 
-export default requestLogger;
+export default {
+  createRequestLogger,
+  requestLogger
+};

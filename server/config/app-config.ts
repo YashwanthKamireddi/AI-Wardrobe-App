@@ -1,72 +1,88 @@
 /**
  * Application Configuration
  * 
- * This file centralizes all application configuration parameters,
- * making it easier to manage environment-specific settings and
- * preventing magic values from being scattered throughout the codebase.
+ * This module centralizes all application configuration settings.
+ * It loads values from environment variables with sensible defaults.
  */
 
-// Environment detection
+// Determine the runtime environment
+const nodeEnv = process.env.NODE_ENV || 'development';
+const isProduction = nodeEnv === 'production';
+const isDevelopment = nodeEnv === 'development';
+const isTest = nodeEnv === 'test';
+const isReplit = process.env.REPL_ID != null && process.env.REPL_OWNER != null;
+
+// Environment configuration
 export const environment = {
-  isProduction: process.env.NODE_ENV === 'production',
-  isDevelopment: process.env.NODE_ENV !== 'production',
-  isReplit: process.env.REPL_ID !== undefined,
-  nodeEnv: process.env.NODE_ENV || 'development'
+  nodeEnv,
+  isProduction,
+  isDevelopment,
+  isTest,
+  isReplit
 };
 
 // Server configuration
 export const server = {
   port: parseInt(process.env.PORT || '3000', 10),
   host: process.env.HOST || '0.0.0.0',
-  baseUrl: process.env.BASE_URL || `http://localhost:${parseInt(process.env.PORT || '3000', 10)}`,
-  corsOrigins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['*']
+  corsOrigins: process.env.CORS_ORIGINS 
+    ? process.env.CORS_ORIGINS.split(',') 
+    : '*'
 };
 
 // Database configuration
 export const database = {
-  url: process.env.DATABASE_URL,
+  url: process.env.DATABASE_URL || '',
+  host: process.env.PGHOST || 'localhost',
+  port: parseInt(process.env.PGPORT || '5432', 10),
+  user: process.env.PGUSER || 'postgres',
+  password: process.env.PGPASSWORD || '',
+  database: process.env.PGDATABASE || 'postgres',
   maxPoolSize: parseInt(process.env.DB_POOL_SIZE || '10', 10),
-  connectionTimeoutMs: parseInt(process.env.DB_CONNECT_TIMEOUT || '30000', 10)
+  connectionTimeoutMs: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000', 10),
+  idleTimeoutMs: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10)
 };
 
 // Authentication configuration
 export const auth = {
-  sessionSecret: process.env.SESSION_SECRET || 'chers-closet-dev-secret', // Should be changed in production
+  sessionSecret: process.env.SESSION_SECRET || 'chers-closet-session-secret',
+  cookieMaxAge: parseInt(process.env.COOKIE_MAX_AGE || String(24 * 60 * 60 * 1000), 10), // 24 hours
   saltRounds: parseInt(process.env.SALT_ROUNDS || '10', 10),
-  tokenExpiryHours: parseInt(process.env.TOKEN_EXPIRY_HOURS || '24', 10),
-  cookieMaxAge: parseInt(process.env.COOKIE_MAX_AGE || '2592000000', 10) // 30 days in milliseconds
+  jwtSecret: process.env.JWT_SECRET || 'chers-closet-jwt-secret',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d'
 };
 
-// External Services
-export const services = {
-  openai: {
-    apiKey: process.env.OPENAI_API_KEY,
-    defaultModel: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
-    maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '1000', 10)
-  }
+// OpenAI configuration for AI features
+export const openai = {
+  apiKey: process.env.OPENAI_API_KEY || '',
+  model: process.env.OPENAI_MODEL || 'gpt-4o',
+  maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '2000', 10),
+  temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.7')
 };
 
-// Feature flags
-export const features = {
-  enableAiSuggestions: process.env.ENABLE_AI_SUGGESTIONS !== 'false',
-  enableWeatherIntegration: process.env.ENABLE_WEATHER !== 'false',
-  debugMode: process.env.DEBUG_MODE === 'true'
+// Application-specific configuration
+export const app = {
+  name: 'Cher\'s Closet',
+  version: process.env.npm_package_version || '1.0.0',
+  defaultAdminUser: process.env.DEFAULT_ADMIN_USER || 'admin',
+  defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD,
+  defaultAdminEmail: process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com'
 };
 
-// Application paths
-export const paths = {
-  uploads: process.env.UPLOAD_PATH || './uploads',
-  assets: process.env.ASSET_PATH || './assets',
-  temp: process.env.TEMP_PATH || './temp'
+// Weather API configuration
+export const weather = {
+  apiKey: process.env.WEATHER_API_KEY || '',
+  baseUrl: process.env.WEATHER_API_BASE_URL || 'https://api.weatherapi.com/v1',
+  defaultLocation: process.env.DEFAULT_WEATHER_LOCATION || 'Los Angeles'
 };
 
-// Default export for convenience
+// Export configuration object
 export default {
   environment,
   server,
   database,
   auth,
-  services,
-  features,
-  paths
+  openai,
+  app,
+  weather
 };
