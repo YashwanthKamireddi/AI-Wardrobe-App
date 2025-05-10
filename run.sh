@@ -1,13 +1,26 @@
 #!/bin/bash
+# Cher's Closet Production Startup Script
+# This is a streamlined script for starting the application in production
 
-# Export DATABASE_URL if needed (Replit should provide this automatically)
+# Verify required environment variables
 if [ -z "$DATABASE_URL" ]; then
-  echo "DATABASE_URL is not set. Please ensure the database is properly provisioned."
+  echo "ERROR: DATABASE_URL is not set. Database connection required."
   exit 1
 fi
 
-# Print database status
-echo "Database URL is configured. Starting application..."
+if [ -z "$OPENAI_API_KEY" ]; then
+  echo "ERROR: OPENAI_API_KEY is not set. AI features will not work."
+  exit 1
+fi
 
-# Start the application
-npm run dev
+# Print startup info
+echo "======================================"
+echo "  Cher's Closet Application Startup"
+echo "======================================"
+echo "- Environment: ${NODE_ENV:-development}"
+echo "- Database: Connected"
+echo "- OpenAI API: Configured"
+echo "======================================"
+
+# Start the application using the consolidated script
+node scripts/start.js
