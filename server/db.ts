@@ -10,18 +10,24 @@ import fs from 'fs';
 // Load .env file directly
 try {
   // First try from the current directory
-  let envPath = path.resolve('.env');
+  let envPath = path.resolve(process.cwd(), '.env');
   
   // If not found, try from the parent directory (project root when running from '/server')
   if (!fs.existsSync(envPath)) {
-    envPath = path.resolve('../.env');
+    envPath = path.resolve(process.cwd(), '../.env');
   }
 
   if (fs.existsSync(envPath)) {
     console.log(`Loading environment from: ${envPath}`);
-    dotenv.config({ path: envPath });
+    const result = dotenv.config({ path: envPath });
+    if (result.error) {
+      console.error('Error parsing .env file:', result.error);
+    } else {
+      console.log('Environment variables loaded successfully from .env file');
+    }
   } else {
     console.warn(`No .env file found at ${envPath}`);
+    console.warn('Current directory:', process.cwd());
   }
 } catch (error) {
   console.error('Error loading .env file:', error);

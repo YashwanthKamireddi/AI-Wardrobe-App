@@ -2,11 +2,11 @@
 # This is helpful when .env file loading isn't working properly
 
 # Database Configuration
-$env:DATABASE_URL = "postgres://postgres:postgres@localhost:5432/chers_closet"
+$env:DATABASE_URL = "postgres://postgres:postgres@localhost:3000/chers_closet"
 $env:PGHOST = "localhost"
-$env:PGPORT = "5432"
+$env:PGPORT = "3000"
 $env:PGUSER = "postgres"
-$env:PGPASSWORD = "postgres"
+$env:PGPASSWORD = "postgres" 
 $env:PGDATABASE = "chers_closet"
 
 # Session Configuration
