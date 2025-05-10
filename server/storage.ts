@@ -103,10 +103,11 @@ export class DatabaseStorage implements IStorage {
    * Also runs initial data seeding if the database is empty
    */
   constructor() {
-    // Initialize PostgreSQL session store with connection pool
+    // Initialize PostgreSQL session store with connection details from the database URL
     this.sessionStore = new PostgresSessionStore({
-      pool,
+      conString: process.env.DATABASE_URL,
       createTableIfMissing: true, // Auto-creates session table if not exists
+      tableName: 'sessions',
     });
 
     // Add sample inspiration data on first run

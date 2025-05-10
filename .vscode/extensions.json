@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "csstools.postcss",
+    "mikestead.dotenv",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "christian-kohler.path-intellisense",
+    "wix.vscode-import-cost",
+    "ms-vscode.vscode-typescript-next",
+    "formulahendry.auto-rename-tag",
+    "eamodio.gitlens",
+    "ms-azuretools.vscode-docker",
+    "rangav.vscode-thunder-client",
+    "yzhang.markdown-all-in-one",
+    "gruntfuggly.todo-tree",
+    "visualstudioexptteam.vscodeintellicode"
+  ]
+}

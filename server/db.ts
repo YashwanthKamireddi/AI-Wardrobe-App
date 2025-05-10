@@ -155,7 +155,7 @@ export async function verifyDatabaseHealth() {
     
     // Check all tables exist
     const tables = [
-      'users', 'wardrobe_items', 'outfits', 'inspirations', 
+      'sessions', 'users', 'wardrobe_items', 'outfits', 'inspirations', 
       'weather_preferences', 'mood_preferences'
     ];
     
