@@ -1,0 +1,299 @@
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+
+node:internal/modules/run_main:122
+    triggerUncaughtException(
+    ^
+Error [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './pg' is not defined by "exports" in C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node_modules\drizzle-orm\package.json imported from C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\server\db.ts       
+    at exportsNotFound (node:internal/modules/esm/resolve:314:10)
+    at packageExportsResolve (node:internal/modules/esm/resolve:661:9)
+    at packageResolve (node:internal/modules/esm/resolve:774:12)
+    at moduleResolve (node:internal/modules/esm/resolve:854:18)
+    at defaultResolve (node:internal/modules/esm/resolve:984:11)
+    at nextResolve (node:internal/modules/esm/hooks:748:28)
+    at resolveBase (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746862147315:2:3212)
+    at resolveDirectory (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746862147315:2:3584)
+    at resolveTsPaths (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746862147315:2:4073)
+    at async resolve (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746862147315:2:4441) {
+  code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'
+}
+
+Node.js v22.14.0
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> npm install
+
+changed 2 packages, and audited 666 packages in 4s
+
+72 packages are looking for funding
+  run `npm fund` for details
+
+10 vulnerabilities (8 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> npm run db:push
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file 'C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+error: password authentication failed for user "postgres"
+    at C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Object.query (C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node_modules\drizzle-kit\bin.cjs:78355:26)
+    at async fromDatabase2 (C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node_modules\drizzle-kit\bin.cjs:19095:25) {
+  length: 104,
+  severity: 'FATAL',
+  code: '28P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'auth.c',
+  line: '324',
+  routine: 'auth_failed'
+}
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> node scripts/direct-db-connect.js
+file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/scripts/direct-db-connect.js:16
+const { Pool } = require('pg');
+                 ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+This file is being treated as an ES module because it has a '.js' file extension and 'C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\package.json' contains "type": "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+    at file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/scripts/direct-db-connect.js:16:18
+    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)
+
+Node.js v22.14.0
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> node scripts/debug-env.js
+file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/scripts/debug-env.js:9
+const fs = require('fs');
+           ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+This file is being treated as an ES module because it has a '.js' file extension and 'C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\package.json' contains "type": "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+    at file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/scripts/debug-env.js:9:12
+    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)
+
+Node.js v22.14.0
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> CREATE DATABASE chers_closet_db;
+>> CREATE USER your_postgres_user WITH PASSWORD 'your_postgres_password';      
+>> GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO your_postgres_user;     
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:1 char:1
++ CREATE DATABASE chers_closet_db;
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:2 char:1
++ CREATE USER your_postgres_user WITH PASSWORD 'your_postgres_password' ...    
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+GRANT : The term 'GRANT' is not recognized as the name of a cmdlet, function, 
+script file, or operable program. Check the spelling of the name, or if a      
+path was included, verify that the path is correct and try again.
+At line:3 char:1
++ GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO your_postgres_use ...    
++ ~~~~~
+    + CategoryInfo          : ObjectNotFound: (GRANT:String) [], CommandNotFo  
+   undException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> CREATE DATABASE chers_closet_db;
+>> CREATE USER your_postgres_user WITH PASSWORD '12345';                       
+>> GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO your_postgres_user;     
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:1 char:1
++ CREATE DATABASE chers_closet_db;
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:2 char:1
++ CREATE USER your_postgres_user WITH PASSWORD '12345';
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+GRANT : The term 'GRANT' is not recognized as the name of a cmdlet, function, 
+script file, or operable program. Check the spelling of the name, or if a      
+path was included, verify that the path is correct and try again.
+At line:3 char:1
++ GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO your_postgres_use ...    
++ ~~~~~
+    + CategoryInfo          : ObjectNotFound: (GRANT:String) [], CommandNotFo  
+   undException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> CREATE DATABASE chers_closet_db;
+>> CREATE USER your_postgres_user WITH PASSWORD '12345';
+>> GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO postgres;               
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:1 char:1
++ CREATE DATABASE chers_closet_db;
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:2 char:1
++ CREATE USER your_postgres_user WITH PASSWORD '12345';
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+GRANT : The term 'GRANT' is not recognized as the name of a cmdlet, function, 
+script file, or operable program. Check the spelling of the name, or if a      
+path was included, verify that the path is correct and try again.
+At line:3 char:1
++ GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO postgres;
++ ~~~~~
+    + CategoryInfo          : ObjectNotFound: (GRANT:String) [], CommandNotFo  
+   undException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> CREATE DATABASE chers_closet_db;
+>> CREATE USER your_postgres_user WITH PASSWORD '12345';
+>> GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO localhost;
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:1 char:1
++ CREATE DATABASE chers_closet_db;
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+CREATE : The term 'CREATE' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name,    
+or if a path was included, verify that the path is correct and try again.      
+At line:2 char:1
++ CREATE USER your_postgres_user WITH PASSWORD '12345';
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (CREATE:String) [], CommandNotF  
+   oundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+GRANT : The term 'GRANT' is not recognized as the name of a cmdlet, function, 
+script file, or operable program. Check the spelling of the name, or if a      
+path was included, verify that the path is correct and try again.
+At line:3 char:1
++ GRANT ALL PRIVILEGES ON DATABASE chers_closet_db TO localhost;
++ ~~~~~
+    + CategoryInfo          : ObjectNotFound: (GRANT:String) [], CommandNotFo  
+   undException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> npm install
+
+up to date, audited 666 packages in 3s
+
+72 packages are looking for funding
+  run `npm fund` for details
+
+10 vulnerabilities (8 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> npm run migrate
+>> # or
+>> npm run db:migrate
+>> # or similar, check your package.json "scripts" section
+npm error Missing script: "migrate"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: C:\Users\yashw\AppData\Local\npm-cache\_logs\2025-05-10T07_58_07_934Z-debug-0.log
+npm error Missing script: "db:migrate"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: C:\Users\yashw\AppData\Local\npm-cache\_logs\2025-05-10T07_58_08_112Z-debug-0.log
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> node scripts/test-env.js
+file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/scripts/test-env.js:14
+import { Pool } from 'pg';
+         ^^^^
+SyntaxError: Named export 'Pool' not found. The requested module 'pg' is a CommonJS module, which may not support all module.exports as named exports.        
+CommonJS modules can always be imported via the default export, for example using:
+
+import pkg from 'pg';
+const { Pool } = pkg;
+
+    at ModuleJob._instantiate (node:internal/modules/esm/module_job:180:21)    
+    at async ModuleJob.run (node:internal/modules/esm/module_job:263:5)        
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)
+
+Node.js v22.14.0
+PS C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App> npm run dev
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+
+node:internal/modules/run_main:122
+    triggerUncaughtException(
+    ^
+Error [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './pg' is not defined by "exports" in C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\node_modules\drizzle-orm\package.json imported from C:\Users\yashw\AI-Wardrobe-App\AI-Wardrobe-App\server\db.ts
+    at exportsNotFound (node:internal/modules/esm/resolve:314:10)
+    at packageExportsResolve (node:internal/modules/esm/resolve:661:9)
+    at packageResolve (node:internal/modules/esm/resolve:774:12)
+    at moduleResolve (node:internal/modules/esm/resolve:854:18)
+    at defaultResolve (node:internal/modules/esm/resolve:984:11)
+    at nextResolve (node:internal/modules/esm/hooks:748:28)
+    at resolveBase (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746863914472:2:3212)
+    at resolveDirectory (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746863914472:2:3584)
+    at resolveTsPaths (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746863914472:2:4073)
+    at async resolve (file:///C:/Users/yashw/AI-Wardrobe-App/AI-Wardrobe-App/node_modules/tsx/dist/esm/index.mjs?1746863914472:2:4441) {
+  code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'
+}
+
+Node.js v22.14.0
