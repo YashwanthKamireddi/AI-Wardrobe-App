@@ -396,9 +396,131 @@ Format your response as JSON:
   }
 }
 
-// Export the service
+/**
+ * Analyze the user's style based on their wardrobe items
+ */
+export async function analyzeStyle(wardrobeItems: any[]) {
+  try {
+    validateApiKey();
+    
+    // Prepare wardrobe items for the prompt
+    const itemsText = wardrobeItems.map(item => 
+      `${item.name} (${item.category}): ${item.color}, ${item.description || ''}`
+    ).join('\n');
+    
+    // Build a detailed prompt for the AI
+    const prompt = `Analyze this user's wardrobe and describe their style profile:
+
+Wardrobe Items:
+${itemsText}
+
+Based on these items, provide:
+1. A summary of their overall style aesthetic
+2. Their preferred color palette
+3. Common patterns or themes in their clothing choices
+4. Style strengths
+5. Potential style areas for development
+6. Recommendations for versatile items that would complement their existing wardrobe
+
+Format your response as JSON with:
+{
+  "styleProfile": "Overall style description",
+  "colorPalette": ["Primary colors", "Secondary colors"],
+  "patterns": ["Pattern 1", "Pattern 2"],
+  "strengths": ["Strength 1", "Strength 2"],
+  "developmentAreas": ["Area 1", "Area 2"],
+  "recommendations": ["Item 1", "Item 2"]
+}`;
+
+    // Make API request to OpenAI
+    logger.info('Requesting style analysis from OpenAI');
+    const response = await openai.chat.completions.create({
+      model: openaiConfig.model,
+      messages: [
+        { 
+          role: "system", 
+          content: "You are a professional fashion stylist with expertise in analyzing wardrobes. Always respond in valid JSON format."
+        },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: openaiConfig.maxTokens,
+      temperature: openaiConfig.temperature,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const content = response.choices[0]?.message?.content || '';
+    logger.debug('OpenAI response received', { content });
+    
+    // Parse JSON response
+    try {
+      return JSON.parse(content);
+    } catch (parseError) {
+      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      throw new ApiError('Failed to parse style analysis', 500);
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error; // Re-throw API errors
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Error analyzing style:', { error: errorMessage });
+    throw new ApiError(`Failed to analyze style: ${errorMessage}`, 500);
+  }
+}
+
+/**
+ * Create a detailed user style profile based on their wardrobe
+ */
+export async function createUserStyleProfile(wardrobeItems: any[]) {
+  try {
+    validateApiKey();
+    
+    // This could be more complex, but for now we'll leverage the analyzeStyle function
+    // and add some additional processing
+    const styleAnalysis = await analyzeStyle(wardrobeItems);
+    
+    // Add a profile summary and creation date
+    return {
+      ...styleAnalysis,
+      profileSummary: `Style profile based on ${wardrobeItems.length} wardrobe items`,
+      createdAt: new Date().toISOString()
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error; // Re-throw API errors
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Error creating user style profile:', { error: errorMessage });
+    throw new ApiError(`Failed to create style profile: ${errorMessage}`, 500);
+  }
+}
+
+/**
+ * Generate advanced outfit recommendations based on various factors
+ */
+export async function generateAdvancedOutfitRecommendations(params: any) {
+  // This is an alias for getOutfitRecommendations but with a more specific name
+  return getOutfitRecommendations(params);
+}
+
+/**
+ * Get outfit suggestions for a specific occasion
+ */
+export async function getOutfitSuggestionForOccasion(params: any) {
+  // This is an alias for getOccasionOutfit with a more specific name
+  return getOccasionOutfit(params);
+}
+
+// Export as default for default imports
 export default {
   getOutfitRecommendations,
-  analyzeUserStyle,
-  getOccasionOutfit
+  getOccasionOutfit, // If this function exists in the full file
+  analyzeUserStyle, // If this function exists in the full file
+  analyzeStyle,
+  createUserStyleProfile,
+  generateAdvancedOutfitRecommendations,
+  getOutfitSuggestionForOccasion
 };
