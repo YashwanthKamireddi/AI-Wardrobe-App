@@ -1,551 +1,404 @@
-import OpenAI from "openai";
-import { WardrobeItem, clothingCategories } from "@shared/schema";
+/**
+ * AI Service
+ * 
+ * This service handles all AI-related operations using OpenAI.
+ * It provides functions for outfit recommendations, style analysis, and other AI features.
+ */
 
+import OpenAI from 'openai';
+import { createLogger } from '../utils/logger';
+import { openai as openaiConfig } from '../config/app-config';
+import { ApiError } from '../middleware/error-handler';
+
+// Initialize logger for AI service
+const logger = createLogger('ai-service');
+
+// Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: openaiConfig.apiKey,
 });
 
-interface ClassificationResult {
-  category: string;
-  subcategory: string;
-  color: string;
-  season: string;
-  tags: string[];
-  style_description: string;
+/**
+ * Validates that the OpenAI API key is configured
+ * Throws an error if the key is missing
+ */
+function validateApiKey() {
+  if (!openaiConfig.apiKey) {
+    logger.error('OpenAI API key is missing');
+    throw new ApiError(
+      'OpenAI API key is required for AI features. Please set the OPENAI_API_KEY environment variable.',
+      500
+    );
+  }
 }
 
-export interface AIOutfitRecommendation {
-  outfitName: string;
-  description: string;
-  items: {
-    id: number;
-    name: string;
-    reason: string;
-  }[];
-  styleAdvice: string;
+/**
+ * Get outfit recommendations based on wardrobe items, weather, and occasion
+ */
+export async function getOutfitRecommendations({
+  wardrobeItems,
+  weatherCondition,
+  occasion,
+  mood,
+  userPreferences,
+}: {
+  wardrobeItems: any[];
+  weatherCondition?: {
+    temperature: number;
+    condition: string;
+    humidity: number;
+    precipitation: number;
+  };
+  occasion?: string;
+  mood?: string;
+  userPreferences?: Record<string, any>;
+}) {
+  try {
+    validateApiKey();
+    
+    // Prepare wardrobe items for the prompt
+    const itemsText = wardrobeItems.map(item => 
+      `${item.name} (${item.category}): ${item.color}, ${item.material}, ${item.style}`
+    ).join('\n');
+    
+    // Build a detailed prompt for the AI
+    let prompt = `You are a personal styling assistant. Based on the user's wardrobe items, create 3 stylish outfit recommendations.
+
+Wardrobe Items:
+${itemsText}
+
+`;
+
+    // Add weather information if available
+    if (weatherCondition) {
+      prompt += `Weather Conditions:
+- Temperature: ${weatherCondition.temperature}°C
+- Condition: ${weatherCondition.condition}
+- Humidity: ${weatherCondition.humidity}%
+- Precipitation: ${weatherCondition.precipitation}%
+
+`;
+    }
+
+    // Add occasion if specified
+    if (occasion) {
+      prompt += `Occasion: ${occasion}\n\n`;
+    }
+
+    // Add mood if specified
+    if (mood) {
+      prompt += `Current Mood: ${mood}\n\n`;
+    }
+
+    // Add user preferences if available
+    if (userPreferences) {
+      const preferencesText = Object.entries(userPreferences)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+      
+      prompt += `User Style Preferences:
+${preferencesText}
+
+`;
+    }
+
+    // Specify the output format
+    prompt += `
+For each outfit, provide:
+1. A name for the outfit (creative, catchy)
+2. A list of specific clothing items from the wardrobe to wear together
+3. A brief styling tip
+4. A reason why this outfit works well for the weather/occasion/mood
+5. A confidence score from 1-100 on how well this outfit matches the user's preferences
+
+Format your response as JSON with an array of outfits, each containing:
+{
+  "name": "Outfit name",
+  "items": ["Item 1", "Item 2", ...],
+  "stylingTip": "Tip text",
+  "reasoning": "Why this works",
+  "confidenceScore": 87
+}`;
+
+    // Make API request to OpenAI
+    logger.info('Requesting outfit recommendations from OpenAI');
+    const response = await openai.chat.completions.create({
+      model: openaiConfig.model,
+      messages: [
+        { 
+          role: "system", 
+          content: "You are a luxury fashion styling assistant with expertise in creating outfit combinations from available clothing items. Always respond in valid JSON format."
+        },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: openaiConfig.maxTokens,
+      temperature: openaiConfig.temperature,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const content = response.choices[0]?.message?.content || '';
+    logger.debug('OpenAI response received', { content });
+    
+    // Parse JSON response
+    try {
+      const data = JSON.parse(content);
+      return data.outfits || [];
+    } catch (parseError) {
+      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      throw new ApiError('Failed to parse outfit recommendations', 500);
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error; // Re-throw API errors
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Error generating outfit recommendations:', { error: errorMessage });
+    throw new ApiError(`Failed to generate outfit recommendations: ${errorMessage}`, 500);
+  }
+}
+
+/**
+ * Analyze a user's style based on their wardrobe and preferences
+ */
+export async function analyzeUserStyle({
+  wardrobeItems,
+  outfitHistory,
+  userPreferences,
+}: {
+  wardrobeItems: any[];
+  outfitHistory?: any[];
+  userPreferences?: Record<string, any>;
+}) {
+  try {
+    validateApiKey();
+    
+    // Prepare wardrobe data for the prompt
+    const itemsByCategory = wardrobeItems.reduce((acc, item) => {
+      if (!acc[item.category]) {
+        acc[item.category] = [];
+      }
+      acc[item.category].push(item);
+      return acc;
+    }, {});
+    
+    // Create summary of wardrobe by category
+    const categorySummary = Object.entries(itemsByCategory).map(([category, items]) => {
+      const colors = [...new Set(items.map(item => item.color))];
+      const styles = [...new Set(items.map(item => item.style))];
+      
+      return `${category}: ${items.length} items
+- Common colors: ${colors.join(', ')}
+- Styles: ${styles.join(', ')}`;
+    }).join('\n\n');
+    
+    // Build the prompt
+    let prompt = `You are a professional fashion stylist analyzing a user's wardrobe to determine their style profile.
+
+Wardrobe Summary:
+${categorySummary}
+
+`;
+
+    // Add outfit history if available
+    if (outfitHistory && outfitHistory.length > 0) {
+      const historyText = outfitHistory.map(outfit => 
+        `- ${outfit.name}: ${outfit.items.join(', ')}`
+      ).join('\n');
+      
+      prompt += `Recent Outfit Choices:
+${historyText}
+
+`;
+    }
+
+    // Add user preferences if available
+    if (userPreferences) {
+      const preferencesText = Object.entries(userPreferences)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+      
+      prompt += `User Stated Preferences:
+${preferencesText}
+
+`;
+    }
+
+    // Specify the output format
+    prompt += `
+Based on this information, provide a comprehensive style analysis with:
+1. Primary style archetype (e.g., Classic, Bohemian, Minimalist)
+2. Secondary style influences
+3. Color palette analysis
+4. Strengths of current wardrobe
+5. Gaps or opportunities to enhance the wardrobe
+6. Personalized style advice
+
+Format your response as JSON with:
+{
+  "primaryStyle": "Style name",
+  "secondaryInfluences": ["Style 1", "Style 2"],
+  "colorAnalysis": "Description of color preferences and palette",
+  "strengths": ["Strength 1", "Strength 2", ...],
+  "opportunities": ["Opportunity 1", "Opportunity 2", ...],
+  "personalizedAdvice": "Detailed advice paragraph",
+  "recommendedItems": ["Item type 1", "Item type 2", ...]
+}`;
+
+    // Make API request to OpenAI
+    logger.info('Requesting style analysis from OpenAI');
+    const response = await openai.chat.completions.create({
+      model: openaiConfig.model,
+      messages: [
+        { 
+          role: "system", 
+          content: "You are a luxury fashion consultant with expertise in analyzing personal style. Always respond in valid JSON format."
+        },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: openaiConfig.maxTokens,
+      temperature: openaiConfig.temperature,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const content = response.choices[0]?.message?.content || '';
+    logger.debug('OpenAI response received', { content });
+    
+    // Parse JSON response
+    try {
+      return JSON.parse(content);
+    } catch (parseError) {
+      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      throw new ApiError('Failed to parse style analysis', 500);
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error; // Re-throw API errors
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Error analyzing user style:', { error: errorMessage });
+    throw new ApiError(`Failed to analyze user style: ${errorMessage}`, 500);
+  }
+}
+
+/**
+ * Generate an outfit recommendation for a specific occasion
+ */
+export async function getOccasionOutfit({
+  occasion,
+  wardrobeItems,
+  weatherCondition,
+  userPreferences,
+}: {
   occasion: string;
-  confidence: number;
-}
-
-export interface StyleProfile {
-  dominantStyle: string;
-  colorPalette: string[];
-  keyItems: string[];
-  preferences: Record<string, any>;
-  personalityTraits: string[];
-}
-
-export async function classifyClothingItem(imageUrl: string): Promise<ClassificationResult> {
+  wardrobeItems: any[];
+  weatherCondition?: {
+    temperature: number;
+    condition: string;
+  };
+  userPreferences?: Record<string, any>;
+}) {
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `You are a fashion expert AI that classifies clothing items. 
-          Return JSON format only with the following properties:
-          {
-            "category": one of [${clothingCategories.map(c => `"${c.value}"`).join(", ")}],
-            "subcategory": appropriate subcategory based on the category,
-            "color": main color(s) of the item,
-            "season": "winter", "summer", "spring", "fall", or "all",
-            "tags": [array of style tags like "casual", "formal", "vintage", etc.],
-            "style_description": brief description of the style
-          }`
-        },
-        {
-          role: "user",
-          content: `I have a clothing item image at this URL: ${imageUrl}. 
-          Please classify this clothing item with category, subcategory, color, season, and style tags.`
-        }
-      ],
-      max_tokens: 1000,
-    });
-
-    const result = JSON.parse(completion.choices[0].message.content!);
-    return result as ClassificationResult;
-  } catch (error) {
-    console.error("Error classifying clothing item:", error);
-    throw new Error("Failed to classify clothing item");
-  }
-}
-
-export async function generateMoodBasedRecommendation(
-  mood: string,
-  weather: string,
-  availableItems: WardrobeItem[]
-): Promise<string> {
-  try {
-    const itemDescriptions = availableItems.map(item => 
-      `${item.name} (${item.category}, ${item.color}, tags: ${item.tags?.join(", ")})`
-    ).join("\n");
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are a fashion expert AI that provides personalized outfit recommendations."
-        },
-        {
-          role: "user",
-          content: `Given the following context:
-          - Current mood: ${mood}
-          - Weather: ${weather}
-          - Available items:\n${itemDescriptions}
-          
-          Provide a natural, conversational outfit recommendation that matches the mood and weather conditions.
-          Include specific items from the available list and explain why they work well together.`
-        }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    });
-
-    return completion.choices[0].message.content || "No recommendation available";
-  } catch (error) {
-    console.error("Error generating mood-based recommendation:", error);
-    throw new Error("Failed to generate outfit recommendation");
-  }
-}
-
-export async function analyzeStyle(items: WardrobeItem[]): Promise<string> {
-  try {
-    const itemDescriptions = items.map(item => 
-      `${item.name} (${item.category}, ${item.color}, tags: ${item.tags?.join(", ")})`
-    ).join("\n");
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are a fashion expert AI that analyzes personal style based on wardrobe items."
-        },
-        {
-          role: "user",
-          content: `Analyze the following wardrobe items and provide insights about the person's style:
-          ${itemDescriptions}
-          
-          Consider:
-          - Dominant colors and patterns
-          - Most common categories
-          - Style preferences (casual vs formal, classic vs trendy)
-          - Seasonal preferences
-          - Suggested additions to complete the wardrobe`
-        }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    });
-
-    return completion.choices[0].message.content || "No style analysis available";
-  } catch (error: any) {
-    console.error("Error analyzing style:", error);
+    validateApiKey();
     
-    // Check for rate limit or quota errors and throw a more specific error
-    if (error.status === 429 || 
-        (error.message && (
-          error.message.includes("rate limit") || 
-          error.message.includes("quota") || 
-          error.message.includes("capacity")
-        ))) {
-      throw new Error("API rate limit exceeded. Please try again later.");
+    // Prepare wardrobe items for the prompt
+    const itemsText = wardrobeItems.map(item => 
+      `${item.name} (${item.category}): ${item.color}, ${item.material}, ${item.style}`
+    ).join('\n');
+    
+    // Build a detailed prompt
+    let prompt = `You are a personal styling assistant. Create the perfect outfit for a specific occasion using items from the user's wardrobe.
+
+Occasion: ${occasion}
+
+Wardrobe Items:
+${itemsText}
+
+`;
+
+    // Add weather information if available
+    if (weatherCondition) {
+      prompt += `Weather Conditions:
+- Temperature: ${weatherCondition.temperature}°C
+- Condition: ${weatherCondition.condition}
+
+`;
     }
+
+    // Add user preferences if available
+    if (userPreferences) {
+      const preferencesText = Object.entries(userPreferences)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+      
+      prompt += `User Style Preferences:
+${preferencesText}
+
+`;
+    }
+
+    // Specify the output format
+    prompt += `
+Provide a detailed outfit recommendation with:
+1. A name for the outfit
+2. Specific clothing items from the wardrobe
+3. Accessories to complete the look
+4. Styling instructions
+5. Why this outfit is perfect for the occasion
+
+Format your response as JSON:
+{
+  "name": "Outfit name",
+  "items": ["Item 1", "Item 2", ...],
+  "accessories": ["Accessory 1", "Accessory 2", ...],
+  "stylingInstructions": "Detailed instructions",
+  "occasionReasoning": "Why this outfit works for the occasion"
+}`;
+
+    // Make API request to OpenAI
+    logger.info('Requesting occasion outfit from OpenAI');
+    const response = await openai.chat.completions.create({
+      model: openaiConfig.model,
+      messages: [
+        { 
+          role: "system", 
+          content: "You are a luxury fashion styling assistant specializing in occasion dressing. Always respond in valid JSON format."
+        },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: openaiConfig.maxTokens,
+      temperature: openaiConfig.temperature,
+      response_format: { type: "json_object" }
+    });
     
-    throw new Error("Failed to analyze style");
-  }
-}
-
-export async function generateAdvancedOutfitRecommendations(
-  mood: string,
-  weather: string,
-  occasion: string,
-  wardrobe: WardrobeItem[],
-  styleProfile?: Partial<StyleProfile>
-): Promise<AIOutfitRecommendation[]> {
-  if (wardrobe.length === 0) {
-    return [];
-  }
-
-  try {
-    const itemsJSON = JSON.stringify(wardrobe.map(item => ({
-      id: item.id,
-      name: item.name,
-      category: item.category,
-      subcategory: item.subcategory || "",
-      color: item.color || "",
-      season: item.season || "",
-      tags: item.tags || [],
-      favorite: item.favorite || false
-    })));
-
-    const styleProfileJSON = styleProfile ? JSON.stringify(styleProfile) : "{}";
-
-    const prompt = `
-    You are an expert fashion stylist. Create ${wardrobe.length < 10 ? "1" : "3"} outfit recommendations based on the following:
-
-    MOOD: ${mood}
-    WEATHER: ${weather}
-    OCCASION: ${occasion || "everyday"}
-    STYLE PROFILE: ${styleProfileJSON}
+    // Parse the response
+    const content = response.choices[0]?.message?.content || '';
+    logger.debug('OpenAI response received', { content });
     
-    AVAILABLE ITEMS:
-    ${itemsJSON}
-
-    For each outfit recommendation, provide:
-    1. A creative name for the outfit
-    2. A brief description of the overall look and how it relates to the mood/weather/occasion
-    3. The specific items from the wardrobe that make up the outfit
-    4. For each item, a brief explanation of why it works in this outfit
-    5. One piece of styling advice for the outfit
-    6. A confidence score (0-100) representing how well this outfit matches the criteria
-
-    Return the result as a JSON array following this structure:
-    [
-      {
-        "outfitName": "Name of the outfit",
-        "description": "Overall description",
-        "items": [
-          {
-            "id": item_id,
-            "name": "Item name",
-            "reason": "Why this item works in the outfit"
-          }
-        ],
-        "styleAdvice": "One tip to style or wear this outfit better",
-        "occasion": "What this outfit is best suited for",
-        "confidence": confidence_score
-      }
-    ]
-
-    Only include items that actually exist in the provided wardrobe.
-    `;
-
-    // Try the OpenAI generation with the fallback mechanism
+    // Parse JSON response
     try {
-      // Add exponential backoff retry logic for rate limiting
-      const maxRetries = 2;
-      let retryCount = 0;
-      let lastError: any = null;
-      let completion = null;
-      
-      // Retry logic for rate limiting
-      while (retryCount <= maxRetries) {
-        try {
-          completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-              {
-                role: "system",
-                content: "You are FashionGPT, an expert clothing stylist and personal shopper with deep knowledge of fashion principles, color theory, and style concepts."
-              },
-              {
-                role: "user",
-                content: prompt
-              }
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.7,
-            max_tokens: 2000
-          });
-          break; // If successful, exit the retry loop
-        } catch (error: any) {
-          lastError = error;
-          
-          // Check if it's a rate limit error (429)
-          if (error.status === 429) {
-            // Calculate delay with exponential backoff (1s, 2s, 4s, etc.)
-            const delay = Math.pow(2, retryCount) * 1000;
-            console.log(`Rate limit exceeded. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${maxRetries + 1})`);
-            
-            // Wait before retrying
-            await new Promise(resolve => setTimeout(resolve, delay));
-            retryCount++;
-          } else {
-            // For other errors, don't retry
-            throw error;
-          }
-        }
-      }
-      
-      // If we've exhausted all retries without success
-      if (!completion) {
-        console.log(`Exhausted all ${maxRetries + 1} attempts. Falling back to algorithm.`);
-        throw lastError;
-      }
-      
-      // Parse the response as JSON
-      const responseContent = completion.choices[0].message.content || "{}";
-      const parsedResponse = JSON.parse(responseContent);
-      
-      // Check if the response contains recommendations
-      if (Array.isArray(parsedResponse.recommendations)) {
-        return parsedResponse.recommendations as AIOutfitRecommendation[];
-      } else if (Array.isArray(parsedResponse)) {
-        return parsedResponse as AIOutfitRecommendation[];
-      } else {
-        console.error("Unexpected response format:", parsedResponse);
-        return [];
-      }
-    } catch (error: any) {
-      console.error("Error generating advanced outfit recommendations:", error.message || error);
-      return [];
-    }
-  } catch (error) {
-    console.error("Error generating advanced outfit recommendations:", error);
-    return [];
-  }
-}
-
-export async function createUserStyleProfile(wardrobe: WardrobeItem[]): Promise<StyleProfile> {
-  if (wardrobe.length === 0) {
-    return {
-      dominantStyle: "casual",
-      colorPalette: ["neutral"],
-      keyItems: [],
-      preferences: {},
-      personalityTraits: ["practical"]
-    };
-  }
-
-  try {
-    const itemsJSON = JSON.stringify(wardrobe.map(item => ({
-      name: item.name,
-      category: item.category,
-      subcategory: item.subcategory || "",
-      color: item.color || "",
-      season: item.season || "",
-      tags: item.tags || [],
-      favorite: item.favorite || false
-    })));
-
-    const prompt = `
-    You are a fashion psychologist and style analyst. Based on the following wardrobe items:
-    
-    ${itemsJSON}
-    
-    Create a detailed style profile for this user following this structure:
-    {
-      "dominantStyle": "The primary style category (e.g., classic, bohemian, minimalist, etc.)",
-      "colorPalette": ["Array of 3-5 colors that define their wardrobe"],
-      "keyItems": ["List of 3-5 signature or staple items in their wardrobe"],
-      "preferences": {
-        "formality": score from 1-10,
-        "boldness": score from 1-10,
-        "trendiness": score from 1-10,
-        "seasonality": "preferred season or 'versatile'",
-        "silhouette": "preferred fit and shape"
-      },
-      "personalityTraits": ["3-5 personality traits reflected in their style choices"]
-    }
-
-    Return only the JSON object without any additional text.
-    `;
-
-    // Try with rate limiting retry logic
-    let completion = null;
-    const maxRetries = 2;
-    let retryCount = 0;
-    let lastError: any = null;
-    
-    // Retry logic for rate limiting
-    while (retryCount <= maxRetries) {
-      try {
-        completion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are a fashion psychology expert who can analyze personal style preferences from wardrobe data."
-            },
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.7,
-          max_tokens: 1000
-        });
-        break; // If successful, exit the retry loop
-      } catch (error: any) {
-        lastError = error;
-        
-        // Check if it's a rate limit error (429)
-        if (error.status === 429) {
-          // Calculate delay with exponential backoff (1s, 2s, 4s, etc.)
-          const delay = Math.pow(2, retryCount) * 1000;
-          console.log(`Rate limit exceeded for style profile. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${maxRetries + 1})`);
-          
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, delay));
-          retryCount++;
-        } else {
-          // For other errors, don't retry
-          throw error;
-        }
-      }
-    }
-    
-    // If we've exhausted all retries without success
-    if (!completion) {
-      console.log(`Exhausted all ${maxRetries + 1} attempts for style profile. Failing.`);
-      throw lastError;
-    }
-
-    try {
-      // Parse the response as JSON
-      const responseContent = completion.choices[0].message.content || "{}";
-      const parsedResponse = JSON.parse(responseContent);
-      
-      return parsedResponse as StyleProfile;
+      return JSON.parse(content);
     } catch (parseError) {
-      console.error("Error parsing style profile response:", parseError);
-      return {
-        dominantStyle: "undefined",
-        colorPalette: [],
-        keyItems: [],
-        preferences: {},
-        personalityTraits: []
-      };
+      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      throw new ApiError('Failed to parse occasion outfit recommendation', 500);
     }
   } catch (error) {
-    console.error("Error creating user style profile:", error);
-    return {
-      dominantStyle: "undefined",
-      colorPalette: [],
-      keyItems: [],
-      preferences: {},
-      personalityTraits: []
-    };
+    if (error instanceof ApiError) {
+      throw error; // Re-throw API errors
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Error generating occasion outfit:', { error: errorMessage });
+    throw new ApiError(`Failed to generate occasion outfit: ${errorMessage}`, 500);
   }
 }
 
-export async function getOutfitSuggestionForOccasion(
-  occasion: string, 
-  wardrobe: WardrobeItem[],
-  weather?: string,
-  styleProfile?: Partial<StyleProfile>
-): Promise<AIOutfitRecommendation | null> {
-  if (wardrobe.length === 0) {
-    return null;
-  }
-
-  try {
-    const itemsJSON = JSON.stringify(wardrobe.map(item => ({
-      id: item.id,
-      name: item.name,
-      category: item.category,
-      subcategory: item.subcategory || "",
-      color: item.color || "",
-      season: item.season || "",
-      tags: item.tags || [],
-      favorite: item.favorite || false
-    })));
-
-    const styleProfileJSON = styleProfile ? JSON.stringify(styleProfile) : "{}";
-    const weatherContext = weather ? `WEATHER: ${weather}` : "";
-
-    const prompt = `
-    You are an expert personal stylist. Create a perfect outfit recommendation for the following occasion:
-
-    OCCASION: ${occasion}
-    ${weatherContext}
-    STYLE PROFILE: ${styleProfileJSON}
-    
-    AVAILABLE ITEMS:
-    ${itemsJSON}
-
-    Provide:
-    1. A creative name for the outfit
-    2. A brief description of the overall look and why it works for the occasion
-    3. The specific items from the wardrobe that make up the outfit
-    4. For each item, a brief explanation of why it works in this outfit
-    5. One piece of styling advice for this specific occasion
-    6. A confidence score (0-100) representing how appropriate this outfit is for the occasion
-
-    Return the result as a JSON object with this structure:
-    {
-      "outfitName": "Name of the outfit",
-      "description": "Overall description",
-      "items": [
-        {
-          "id": item_id,
-          "name": "Item name",
-          "reason": "Why this item works for the occasion"
-        }
-      ],
-      "styleAdvice": "One tip to style or wear this outfit better for this occasion",
-      "occasion": "${occasion}",
-      "confidence": confidence_score
-    }
-
-    Only include items that actually exist in the provided wardrobe.
-    `;
-
-    // Try with rate limiting retry logic
-    let completion = null;
-    const maxRetries = 2;
-    let retryCount = 0;
-    let lastError: any = null;
-    
-    // Retry logic for rate limiting
-    while (retryCount <= maxRetries) {
-      try {
-        completion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are FashionGPT, an expert clothing stylist and personal shopper with deep knowledge of occasion-appropriate dressing."
-            },
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.7,
-          max_tokens: 1000
-        });
-        break; // If successful, exit the retry loop
-      } catch (error: any) {
-        lastError = error;
-        
-        // Check if it's a rate limit error (429)
-        if (error.status === 429) {
-          // Calculate delay with exponential backoff (1s, 2s, 4s, etc.)
-          const delay = Math.pow(2, retryCount) * 1000;
-          console.log(`Rate limit exceeded for occasion outfit. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${maxRetries + 1})`);
-          
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, delay));
-          retryCount++;
-        } else {
-          // For other errors, don't retry
-          throw error;
-        }
-      }
-    }
-    
-    // If we've exhausted all retries without success
-    if (!completion) {
-      console.log(`Exhausted all ${maxRetries + 1} attempts for occasion outfit. Failing.`);
-      throw lastError;
-    }
-
-    try {
-      // Parse the response as JSON
-      const responseContent = completion.choices[0].message.content || "{}";
-      return JSON.parse(responseContent) as AIOutfitRecommendation;
-    } catch (parseError) {
-      console.error("Error parsing occasion outfit response:", parseError);
-      console.log("Raw response:", completion.choices[0].message.content);
-      return null;
-    }
-  } catch (error) {
-    console.error("Error generating occasion outfit recommendation:", error);
-    return null;
-  }
-}
+// Export the service
+export default {
+  getOutfitRecommendations,
+  analyzeUserStyle,
+  getOccasionOutfit
+};
