@@ -1,6 +1,5 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/pg';
 import * as schema from "@shared/schema";
 import { sql } from 'drizzle-orm';
 import dotenv from 'dotenv';
@@ -33,12 +32,6 @@ try {
   console.error('Error loading .env file:', error);
 }
 
-// Configure Neon database to use WebSocket for connection
-neonConfig.webSocketConstructor = ws;
-
-// Add additional configuration for better stability
-neonConfig.useSecureWebSocket = true;
-
 // Optional configuration that has type constraints
 // Neon pipelineTLS only accepts false or "password"
 // neonConfig.pipelineTLS = false; 
@@ -46,7 +39,7 @@ neonConfig.useSecureWebSocket = true;
 
 // Environment validation
 function validateDbEnvironment() {
-  const requiredVars = ['DATABASE_URL', 'PGHOST', 'PGUSER', 'PGDATABASE'];
+  const requiredVars = ['PGHOST', 'PGUSER', 'PGDATABASE', 'PGPORT'];
   const missing = requiredVars.filter(name => !process.env[name]);
   
   if (missing.length > 0) {
@@ -59,14 +52,24 @@ function validateDbEnvironment() {
 // Validate environment variables before proceeding
 validateDbEnvironment();
 
-// Configuration parameters with reasonable defaults
+// Configuration parameters for local PostgreSQL
 const dbConfig = {
-  connectionString: process.env.DATABASE_URL,
+  host: process.env.PGHOST,
+  port: parseInt(process.env.PGPORT || '5432'),
+  user: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE,
   max: parseInt(process.env.DB_POOL_SIZE || '10'), // Maximum number of clients the pool should contain
   idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000'), // Close idle clients after 30 seconds
   connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000'), // Return an error after 10 seconds if connection not established
-  maxUses: parseInt(process.env.DB_MAX_USES || '7500'), // Close a connection after it has been used 7500 times (helps prevent memory leaks)
 };
+
+console.log('Connecting to PostgreSQL with:', {
+  host: dbConfig.host,
+  port: dbConfig.port,
+  user: dbConfig.user,
+  database: dbConfig.database
+});
 
 // Create connection pool with better error handling and reconnection
 export const pool = new Pool(dbConfig);
@@ -127,7 +130,7 @@ async function attemptReconnection() {
 }
 
 // Create Drizzle ORM instance with the pool
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(pool, { schema });
 
 // Function to get pool status
 export function getPoolStatus() {
