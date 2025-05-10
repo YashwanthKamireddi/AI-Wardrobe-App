@@ -60,7 +60,7 @@ export function createRequestLogger(options: {
     (req as any).requestId = requestId;
     
     // Basic request information
-    const requestInfo = {
+    const requestInfo: Record<string, any> = {
       id: requestId,
       method: req.method,
       path: req.path,
@@ -106,16 +106,17 @@ export function createRequestLogger(options: {
       };
       
       // Log at appropriate level based on status code
+      const logMessage = `${req.method} ${req.path} ${res.statusCode} - ${duration}ms`;
       if (res.statusCode >= 500) {
-        logger.error(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`, responseInfo);
+        logger.error(logMessage, responseInfo);
       } else if (res.statusCode >= 400) {
-        logger.warn(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`, responseInfo);
+        logger.warn(logMessage, responseInfo);
       } else {
-        logger.info(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`, responseInfo);
+        logger.info(logMessage, responseInfo);
       }
       
-      // Call the original end method
-      return originalEnd.apply(this, args);
+      // Call the original end method with proper type handling
+      return originalEnd.apply(this, args as [any, ...any]);
     };
     
     next();
