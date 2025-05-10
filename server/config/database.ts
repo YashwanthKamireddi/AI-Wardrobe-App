@@ -229,7 +229,8 @@ export async function initializeDatabase() {
       return false;
     }
   } catch (error) {
-    logger.error('Failed to initialize database', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to initialize database: ' + errorMessage);
     return false;
   }
 }
