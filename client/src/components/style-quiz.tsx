@@ -51,7 +51,7 @@ const QUIZ_QUESTIONS: Question[] = [
   },
   {
     id: 'q2',
-    question: 'What's your ideal weekend outfit?',
+    question: "What's your ideal weekend outfit?",
     options: [
       {
         id: 'q2o1',
