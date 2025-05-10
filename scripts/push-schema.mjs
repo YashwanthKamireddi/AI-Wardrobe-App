@@ -2,10 +2,9 @@
  * Custom schema push script that ensures the password is used correctly
  */
 
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import * as schema from '../shared/schema.js';
+// We can't import the schema directly due to TypeScript/ESM issues
+// So we'll just create the tables directly with SQL queries
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -29,8 +28,7 @@ const pool = new Pool({
   database: process.env.PGDATABASE || 'chers_closet_db'
 });
 
-// Create Drizzle ORM instance
-const db = drizzle(pool, { schema });
+// We're using direct SQL queries so we don't need a Drizzle ORM instance
 
 // Main function
 async function main() {
