@@ -40,7 +40,7 @@ export function validateSchema<T>(schema: z.ZodSchema<T>, data: unknown): T {
     
     // Handle unexpected errors
     const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
-    logger.error('Unexpected validation error', { message: errorMessage });
+    logger.error('Unexpected validation error: ' + errorMessage);
     throw ApiError.internal('An unexpected error occurred during validation');
   }
 }

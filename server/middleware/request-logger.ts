@@ -94,29 +94,24 @@ export function createRequestLogger(options: {
     
     // Capture the response
     const originalEnd = res.end;
-    res.end = function(this: Response, ...args: any[]) {
+    // @ts-ignore - Overriding complex express type definitions
+    res.end = function(this: any, ...args: any[]) {
       // Calculate request duration
       const duration = Date.now() - startTime;
-      
-      // Response information
-      const responseInfo = {
-        id: requestId,
-        statusCode: res.statusCode,
-        duration: `${duration}ms`
-      };
       
       // Log at appropriate level based on status code
       const logMessage = `${req.method} ${req.path} ${res.statusCode} - ${duration}ms`;
       if (res.statusCode >= 500) {
-        logger.error(logMessage, responseInfo);
+        logger.error(logMessage);
       } else if (res.statusCode >= 400) {
-        logger.warn(logMessage, responseInfo);
+        logger.warn(logMessage);
       } else {
-        logger.info(logMessage, responseInfo);
+        logger.info(logMessage);
       }
       
-      // Call the original end method with proper type handling
-      return originalEnd.apply(this, args as [any, ...any]);
+      // Call the original end method with original arguments
+      // @ts-ignore - Express typings are complex, but this works at runtime
+      return originalEnd.apply(this, args);
     };
     
     next();
