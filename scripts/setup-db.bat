@@ -6,7 +6,7 @@ set PGUSER=postgres
 set PGPASSWORD=postgres
 set PGDATABASE=chers_closet_db
 set PGHOST=localhost
-set PGPORT=5432
+set PGPORT=3000
 
 echo Using PostgreSQL credentials:
 echo - Host: %PGHOST%

@@ -1,21 +1,20 @@
 @echo off
-echo Setting up environment for Cher's Closet...
+echo Setting up environment variables for Cher's Closet...
 
-rem Set environment variables directly
+rem Database connection
 set PGHOST=localhost
-set PGPORT=5432
+set PGPORT=3000
 set PGUSER=postgres
-set PGPASSWORD=Yello12345
+set PGPASSWORD=postgres
 set PGDATABASE=chers_closet_db
-set DATABASE_URL=postgres://postgres:Yello12345@localhost:5432/chers_closet_db
+set DATABASE_URL=postgres://postgres:postgres@localhost:3000/chers_closet_db
+
+rem Session configuration
 set SESSION_SECRET=super_secret_session_key_change_this_in_production
 
-echo Environment variables set:
-echo - Host: %PGHOST%
-echo - Port: %PGPORT%
-echo - Database: %PGDATABASE%
-echo - User: %PGUSER%
-
+echo Environment variables set!
 echo.
-echo Starting the application...
+echo Starting application...
+echo.
+
 npm run dev
