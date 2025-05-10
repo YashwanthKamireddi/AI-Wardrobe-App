@@ -4,41 +4,28 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Start Server",
+      "name": "Debug Server",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/start.js",
+      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.js",
+      "args": ["server/index.ts"],
+      "console": "integratedTerminal",
       "outFiles": ["${workspaceFolder}/**/*.js"],
-      "env": {
-        "NODE_ENV": "development"
-      },
-      "console": "integratedTerminal"
+      "sourceMaps": true,
+      "envFile": "${workspaceFolder}/.env"
     },
     {
-      "type": "node",
+      "type": "chrome",
       "request": "launch",
-      "name": "Setup Database",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/scripts/setup-local-db.js",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
-      "console": "integratedTerminal"
-    },
+      "name": "Debug Frontend",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/client",
+      "sourceMaps": true
+    }
+  ],
+  "compounds": [
     {
-      "type": "node",
-      "request": "launch",
-      "name": "Manual Database Setup",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/scripts/manual-db-setup.js",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "VS Code Setup",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/scripts/setup-vscode.js",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
-      "console": "integratedTerminal"
+      "name": "Full Stack: Server + Frontend",
+      "configurations": ["Debug Server", "Debug Frontend"]
     }
   ]
 }
