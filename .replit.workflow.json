@@ -1,9 +1,16 @@
 {
-  "runs": [
+  "version": 1,
+  "workflows": [
     {
-      "id": "start-app",
-      "name": "Start application",
-      "path": "./run.sh"
+      "id": "run",
+      "name": "Run",
+      "description": "Start the development server",
+      "type": "interactive",
+      "order": 0,
+      "command": "npm run dev",
+      "openLogsOnRun": true,
+      "hasInteractiveTerminal": true,
+      "webviewUrl": "/"
     }
   ]
 }
