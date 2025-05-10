@@ -9,12 +9,8 @@ import {
   insertWeatherPreferenceSchema, 
   insertMoodPreferenceSchema 
 } from "@shared/schema";
-import { 
-  generateAdvancedOutfitRecommendations, 
-  getOutfitSuggestionForOccasion, 
-  createUserStyleProfile,
-  analyzeStyle
-} from "./services/ai-service";
+// Import AI service
+import aiService from "./services/ai-service";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -500,12 +496,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // First try AI-based recommendations
-        const recommendations = await generateAdvancedOutfitRecommendations(
+        const recommendations = await aiService.generateAdvancedOutfitRecommendations({
+          wardrobeItems,
           mood,
-          weather,
-          occasion || "everyday",
-          wardrobeItems
-        );
+          weatherCondition: weather,
+          occasion: occasion || "everyday"
+        });
         
         if (recommendations && recommendations.length > 0) {
           return res.json({
@@ -632,7 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate style profile
-      const styleProfile = await createUserStyleProfile(wardrobeItems);
+      const styleProfile = await aiService.createUserStyleProfile(wardrobeItems);
       
       res.json(styleProfile);
     } catch (error) {
@@ -671,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate style analysis
-      const analysis = await analyzeStyle(wardrobeItems);
+      const analysis = await aiService.analyzeStyle(wardrobeItems);
       
       res.json({
         analysis,
@@ -731,11 +727,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // First attempt to generate occasion-specific outfit recommendation using AI
-        const recommendation = await getOutfitSuggestionForOccasion(
-          occasion,
+        const recommendation = await aiService.getOutfitSuggestionForOccasion({
           wardrobeItems,
-          weather
-        );
+          occasion,
+          weatherCondition: weather
+        });
         
         if (recommendation) {
           return res.json({
