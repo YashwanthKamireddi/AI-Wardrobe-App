@@ -1,15 +1,17 @@
 -- Sessions table
-CREATE TABLE IF NOT EXISTS sessions (
+DROP TABLE IF EXISTS sessions CASCADE;
+CREATE TABLE sessions (
   sid VARCHAR PRIMARY KEY,
   sess JSONB NOT NULL,
   expire TIMESTAMP NOT NULL
 );
 
 -- Create index on sessions
-CREATE INDEX IF NOT EXISTS IDX_session_expire ON sessions (expire);
+CREATE INDEX IDX_session_expire ON sessions (expire);
 
 -- Users table
-CREATE TABLE IF NOT EXISTS users (
+DROP TABLE IF EXISTS users CASCADE;
+CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
@@ -20,7 +22,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Wardrobe items table
-CREATE TABLE IF NOT EXISTS wardrobe_items (
+DROP TABLE IF EXISTS wardrobe_items CASCADE;
+CREATE TABLE wardrobe_items (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -34,7 +37,8 @@ CREATE TABLE IF NOT EXISTS wardrobe_items (
 );
 
 -- Outfits table
-CREATE TABLE IF NOT EXISTS outfits (
+DROP TABLE IF EXISTS outfits CASCADE;
+CREATE TABLE outfits (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -48,7 +52,8 @@ CREATE TABLE IF NOT EXISTS outfits (
 );
 
 -- Inspirations table
-CREATE TABLE IF NOT EXISTS inspirations (
+DROP TABLE IF EXISTS inspirations CASCADE;
+CREATE TABLE inspirations (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
@@ -60,7 +65,8 @@ CREATE TABLE IF NOT EXISTS inspirations (
 );
 
 -- Weather preferences table
-CREATE TABLE IF NOT EXISTS weather_preferences (
+DROP TABLE IF EXISTS weather_preferences CASCADE;
+CREATE TABLE weather_preferences (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
   weather_type TEXT NOT NULL,
@@ -68,7 +74,8 @@ CREATE TABLE IF NOT EXISTS weather_preferences (
 );
 
 -- Mood preferences table
-CREATE TABLE IF NOT EXISTS mood_preferences (
+DROP TABLE IF EXISTS mood_preferences CASCADE;
+CREATE TABLE mood_preferences (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
   mood TEXT NOT NULL,
