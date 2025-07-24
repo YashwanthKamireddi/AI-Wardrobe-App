@@ -1,31 +1,29 @@
 {
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "tailwindCSS.includeLanguages": {
-    "typescript": "javascript",
-    "typescriptreact": "javascript"
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.cache": true
   },
-  "tailwindCSS.experimental.configFile": "./tailwind.config.ts",
-  "files.associations": {
-    "*.css": "tailwindcss"
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.cache": true
   },
-  "cSpell.words": [
-    "autodocs",
-    "autoname",
-    "clsx",
-    "cmdk",
-    "exif",
-    "lucide",
-    "nextjs",
-    "superjson",
-    "tailwindcss",
-    "tanstack",
-    "trpc",
-    "wouter"
-  ]
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact"
+  },
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "args": ["-NoExit", "-Command", "& {Import-Module posh-git}"]
+    }
+  }
 }

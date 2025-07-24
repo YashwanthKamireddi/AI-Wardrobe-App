@@ -2,18 +2,36 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Start Development Server",
       "type": "node",
       "request": "launch",
-      "name": "Debug Server",
-      "skipFiles": ["<node_internals>/**"],
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "program": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": ["server/index.ts"],
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "PORT": "3000",
+        "HOST": "localhost"
       },
       "console": "integratedTerminal",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "sourceMaps": true
+      "restart": true,
+      "protocol": "inspector",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Server",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": ["--inspect", "server/index.ts"],
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "3000",
+        "HOST": "localhost"
+      },
+      "console": "integratedTerminal",
+      "restart": true,
+      "protocol": "inspector",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }
