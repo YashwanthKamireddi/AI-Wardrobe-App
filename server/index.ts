@@ -37,8 +37,14 @@ import appConfig from './config/app-config';
     
     // Start listening on the configured port
     logger.info(`Starting server on port ${port}...`);
+    logger.info(`Binding to host: ${host}`);
     
-    server.listen(port, host, () => {
+    // Force IPv4 for Windows compatibility
+    const listenOptions = process.platform === 'win32' 
+      ? { port, host: '127.0.0.1', family: 4 }
+      : { port, host };
+    
+    server.listen(listenOptions, () => {
       logger.info(`Server running at http://${host}:${port}`);
       logger.info(`Environment: ${app.get('env')} (${appConfig.environment.isReplit ? 'Replit' : 'Local'})`);
     }).on('error', (err: any) => {
