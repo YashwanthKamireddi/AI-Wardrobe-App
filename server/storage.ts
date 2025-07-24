@@ -1,45 +1,32 @@
 /**
- * Database Storage Implementation for Cher's Closet
+ * In-Memory Storage Implementation for Cher's Closet
  * 
- * This file contains the storage layer implementation that connects the application 
- * to the PostgreSQL database using Drizzle ORM. It provides a complete set of CRUD operations
+ * This file contains the storage layer implementation using in-memory storage
+ * instead of a database. It provides a complete set of CRUD operations
  * for all entities in the Cher's Closet wardrobe management application.
  * 
- * The storage implementation follows the repository pattern:
- * - Defines an interface (IStorage) that specifies all available operations
- * - Implements the interface with a concrete class (DatabaseStorage)
- * - Exports a singleton instance for use throughout the application
- * 
  * Key features:
- * - Type-safe database operations using TypeScript and Drizzle ORM
- * - Session management with PostgreSQL session store
+ * - Type-safe operations using TypeScript
+ * - In-memory session management using MemoryStore
  * - Automatic sample data generation for first-time setup
- * - Error handling and logging for database operations
+ * - Auto-incrementing IDs for entities
  */
 
 import { 
-  users, type User, type InsertUser,
-  wardrobeItems, type WardrobeItem, type InsertWardrobeItem,
-  outfits, type Outfit, type InsertOutfit,
-  inspirations, type Inspiration, type InsertInspiration,
-  weatherPreferences, type WeatherPreference, type InsertWeatherPreference,
-  moodPreferences, type MoodPreference, type InsertMoodPreference
+  type User, type InsertUser,
+  type WardrobeItem, type InsertWardrobeItem,
+  type Outfit, type InsertOutfit,
+  type Inspiration, type InsertInspiration,
+  type WeatherPreference, type InsertWeatherPreference,
+  type MoodPreference, type InsertMoodPreference
 } from "@shared/schema";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
-import connectPg from "connect-pg-simple";
 import session from "express-session";
-import { pool } from "./db";
-
-// Session store for persistent user sessions in PostgreSQL
-const PostgresSessionStore = connectPg(session);
+import MemoryStore from "memorystore";
 
 /**
  * Storage Interface
  * 
- * Defines all database operations available throughout the application.
- * This interface ensures consistent access patterns and enables potential
- * alternative implementations (e.g., for testing or different databases).
+ * Defines all storage operations available throughout the application.
  */
 export interface IStorage {
   // User operations
@@ -82,415 +69,255 @@ export interface IStorage {
 }
 
 /**
- * Database Storage Implementation
- * 
- * This class implements the IStorage interface using Drizzle ORM with PostgreSQL.
- * It provides concrete implementations for all CRUD operations defined in the interface,
- * with appropriate error handling and data validation.
- * 
- * Features:
- * - Type-safe database queries with Drizzle ORM
- * - Session management with PostgreSQL
- * - Sample data initialization for first-time setup
- * - Comprehensive methods for all entity types in the application
+ * In-Memory Storage Implementation
  */
-export class DatabaseStorage implements IStorage {
-  /** PostgreSQL session store for user authentication persistence */
+export class MemoryStorage implements IStorage {
+  private users: Map<number, User> = new Map();
+  private wardrobeItems: Map<number, WardrobeItem> = new Map();
+  private outfits: Map<number, Outfit> = new Map();
+  private inspirations: Map<number, Inspiration> = new Map();
+  private weatherPreferences: Map<number, WeatherPreference> = new Map();
+  private moodPreferences: Map<number, MoodPreference> = new Map();
+  
+  private userIdCounter = 1;
+  private wardrobeItemIdCounter = 1;
+  private outfitIdCounter = 1;
+  private inspirationIdCounter = 1;
+  private weatherPreferenceIdCounter = 1;
+  private moodPreferenceIdCounter = 1;
+
   sessionStore: session.Store;
 
-  /**
-   * Constructor initializes the database connection and session store
-   * Also runs initial data seeding if the database is empty
-   */
   constructor() {
-    // Initialize PostgreSQL session store with connection details from the database URL
-    this.sessionStore = new PostgresSessionStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true, // Auto-creates session table if not exists
-      tableName: 'sessions',
+    // Initialize memory session store
+    const MemoryStoreClass = MemoryStore(session);
+    this.sessionStore = new MemoryStoreClass({
+      checkPeriod: 86400000 // prune expired entries every 24h
     });
 
-    // Add sample inspiration data on first run
-    this.addSampleInspirations();
+    // Add sample data
+    this.addSampleData();
   }
 
-  /**
-   * User Management Methods
-   * These methods handle user account operations including retrieval and updates
-   */
+  // User operations
   async getUser(id: number): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.username, username));
-    return result[0];
+    for (const user of Array.from(this.users.values())) {
+      if (user.username === username) {
+        return user;
+      }
+    }
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db.insert(users).values(insertUser).returning();
-    return result[0];
+    const user: User = {
+      id: this.userIdCounter++,
+      username: insertUser.username,
+      password: insertUser.password,
+      name: insertUser.name || null,
+      email: insertUser.email || null,
+      profilePicture: insertUser.profilePicture || null,
+      role: insertUser.role || "user"
+    };
+    this.users.set(user.id, user);
+    return user;
   }
 
   async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
-    const result = await db.update(users)
-      .set(userData)
-      .where(eq(users.id, id))
-      .returning();
-    return result[0];
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser = { ...existingUser, ...userData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
-  /**
-   * Wardrobe Item Management Methods
-   * These methods handle all clothing items in a user's digital wardrobe
-   */
-
-  /**
-   * Retrieves all wardrobe items belonging to a specific user
-   * @param userId - The ID of the user whose wardrobe items to retrieve
-   * @returns Promise resolving to an array of wardrobe items
-   */
+  // Wardrobe operations
   async getWardrobeItems(userId: number): Promise<WardrobeItem[]> {
-    return db.select().from(wardrobeItems).where(eq(wardrobeItems.userId, userId));
+    return Array.from(this.wardrobeItems.values()).filter(item => item.userId === userId);
   }
 
-  /**
-   * Retrieves a specific wardrobe item by its ID
-   * @param id - The ID of the wardrobe item to retrieve
-   * @returns Promise resolving to the wardrobe item or undefined if not found
-   */
   async getWardrobeItem(id: number): Promise<WardrobeItem | undefined> {
-    const result = await db.select().from(wardrobeItems).where(eq(wardrobeItems.id, id));
-    return result[0];
+    return this.wardrobeItems.get(id);
   }
 
-  /**
-   * Creates a new wardrobe item in the database
-   * @param item - The wardrobe item data to insert
-   * @returns Promise resolving to the newly created wardrobe item
-   */
-  async createWardrobeItem(item: InsertWardrobeItem): Promise<WardrobeItem> {
-    const result = await db.insert(wardrobeItems).values(item).returning();
-    return result[0];
+  async createWardrobeItem(insertItem: InsertWardrobeItem): Promise<WardrobeItem> {
+    const item: WardrobeItem = {
+      id: this.wardrobeItemIdCounter++,
+      userId: insertItem.userId,
+      name: insertItem.name,
+      category: insertItem.category,
+      subcategory: insertItem.subcategory || null,
+      color: insertItem.color || null,
+      season: insertItem.season || null,
+      imageUrl: insertItem.imageUrl,
+      tags: insertItem.tags || null,
+      favorite: insertItem.favorite || false
+    };
+    this.wardrobeItems.set(item.id, item);
+    return item;
   }
 
-  /**
-   * Updates an existing wardrobe item with new data
-   * @param id - The ID of the wardrobe item to update
-   * @param itemData - The partial wardrobe item data to update
-   * @returns Promise resolving to the updated wardrobe item or undefined if not found
-   */
   async updateWardrobeItem(id: number, itemData: Partial<InsertWardrobeItem>): Promise<WardrobeItem | undefined> {
-    const result = await db.update(wardrobeItems)
-      .set(itemData)
-      .where(eq(wardrobeItems.id, id))
-      .returning();
-    return result[0];
+    const existingItem = this.wardrobeItems.get(id);
+    if (!existingItem) return undefined;
+
+    const updatedItem = { ...existingItem, ...itemData };
+    this.wardrobeItems.set(id, updatedItem);
+    return updatedItem;
   }
 
-  /**
-   * Deletes a wardrobe item from the database
-   * @param id - The ID of the wardrobe item to delete
-   * @returns Promise resolving to a boolean indicating success
-   */
   async deleteWardrobeItem(id: number): Promise<boolean> {
-    const result = await db.delete(wardrobeItems).where(eq(wardrobeItems.id, id)).returning();
-    return result.length > 0;
+    return this.wardrobeItems.delete(id);
   }
 
-  /**
-   * Retrieves wardrobe items filtered by category for a specific user
-   * @param userId - The ID of the user whose wardrobe items to retrieve
-   * @param category - The category to filter by (e.g., "tops", "bottoms", etc.)
-   * @returns Promise resolving to an array of matching wardrobe items
-   */
   async getWardrobeItemsByCategory(userId: number, category: string): Promise<WardrobeItem[]> {
-    return db.select()
-      .from(wardrobeItems)
-      .where(
-        eq(wardrobeItems.userId, userId) &&
-        eq(wardrobeItems.category, category)
-      );
+    return Array.from(this.wardrobeItems.values())
+      .filter(item => item.userId === userId && item.category === category);
   }
 
-  /**
-   * Outfit Management Methods
-   * These methods handle complete outfits created from wardrobe items
-   */
-
-  /**
-   * Retrieves all outfits belonging to a specific user
-   * @param userId - The ID of the user whose outfits to retrieve
-   * @returns Promise resolving to an array of outfits
-   */
+  // Outfit operations
   async getOutfits(userId: number): Promise<Outfit[]> {
-    return db.select().from(outfits).where(eq(outfits.userId, userId));
+    return Array.from(this.outfits.values()).filter(outfit => outfit.userId === userId);
   }
 
-  /**
-   * Retrieves a specific outfit by its ID
-   * @param id - The ID of the outfit to retrieve
-   * @returns Promise resolving to the outfit or undefined if not found
-   */
   async getOutfit(id: number): Promise<Outfit | undefined> {
-    const result = await db.select().from(outfits).where(eq(outfits.id, id));
-    return result[0];
+    return this.outfits.get(id);
   }
 
-  /**
-   * Creates a new outfit in the database
-   * @param outfit - The outfit data to insert
-   * @returns Promise resolving to the newly created outfit
-   */
-  async createOutfit(outfit: InsertOutfit): Promise<Outfit> {
-    const result = await db.insert(outfits).values(outfit).returning();
-    return result[0];
+  async createOutfit(insertOutfit: InsertOutfit): Promise<Outfit> {
+    const outfit: Outfit = {
+      id: this.outfitIdCounter++,
+      userId: insertOutfit.userId,
+      name: insertOutfit.name,
+      description: insertOutfit.description || null,
+      items: insertOutfit.items,
+      occasion: insertOutfit.occasion || null,
+      season: insertOutfit.season || null,
+      favorite: insertOutfit.favorite || false,
+      weatherConditions: insertOutfit.weatherConditions || null,
+      mood: insertOutfit.mood || null
+    };
+    this.outfits.set(outfit.id, outfit);
+    return outfit;
   }
 
-  /**
-   * Updates an existing outfit with new data
-   * @param id - The ID of the outfit to update
-   * @param outfitData - The partial outfit data to update
-   * @returns Promise resolving to the updated outfit or undefined if not found
-   */
   async updateOutfit(id: number, outfitData: Partial<InsertOutfit>): Promise<Outfit | undefined> {
-    const result = await db.update(outfits)
-      .set(outfitData)
-      .where(eq(outfits.id, id))
-      .returning();
-    return result[0];
+    const existingOutfit = this.outfits.get(id);
+    if (!existingOutfit) return undefined;
+
+    const updatedOutfit = { ...existingOutfit, ...outfitData };
+    this.outfits.set(id, updatedOutfit);
+    return updatedOutfit;
   }
 
-  /**
-   * Deletes an outfit from the database
-   * @param id - The ID of the outfit to delete
-   * @returns Promise resolving to a boolean indicating success
-   */
   async deleteOutfit(id: number): Promise<boolean> {
-    const result = await db.delete(outfits).where(eq(outfits.id, id)).returning();
-    return result.length > 0;
+    return this.outfits.delete(id);
   }
 
-  /**
-   * Fashion Inspiration Management Methods
-   * These methods handle curated fashion inspiration content
-   */
-
-  /**
-   * Retrieves all fashion inspirations
-   * @returns Promise resolving to an array of inspiration items
-   */
+  // Inspiration operations
   async getInspirations(): Promise<Inspiration[]> {
-    return db.select().from(inspirations);
+    return Array.from(this.inspirations.values());
   }
 
-  /**
-   * Retrieves a specific inspiration by its ID
-   * @param id - The ID of the inspiration to retrieve
-   * @returns Promise resolving to the inspiration or undefined if not found
-   */
   async getInspiration(id: number): Promise<Inspiration | undefined> {
-    const result = await db.select().from(inspirations).where(eq(inspirations.id, id));
-    return result[0];
+    return this.inspirations.get(id);
   }
 
-  /**
-   * Deletes all inspirations from the database
-   * Used for refreshing inspiration content
-   * @returns Promise that resolves when deletion is complete
-   */
+  async createInspiration(insertInspiration: InsertInspiration): Promise<Inspiration> {
+    const inspiration: Inspiration = {
+      id: this.inspirationIdCounter++,
+      title: insertInspiration.title,
+      description: insertInspiration.description || null,
+      imageUrl: insertInspiration.imageUrl,
+      tags: insertInspiration.tags || null,
+      category: insertInspiration.category || null,
+      source: insertInspiration.source || null,
+      content: insertInspiration.content || null
+    };
+    this.inspirations.set(inspiration.id, inspiration);
+    return inspiration;
+  }
+
   async deleteAllInspirations(): Promise<void> {
-    console.log('Deleting all existing inspirations...');
-    await db.delete(inspirations);
-    console.log('Successfully deleted all inspirations');
+    this.inspirations.clear();
   }
 
-  /**
-   * Creates a new fashion inspiration in the database
-   * @param inspiration - The inspiration data to insert
-   * @returns Promise resolving to the newly created inspiration
-   */
-  async createInspiration(inspiration: InsertInspiration): Promise<Inspiration> {
-    console.log('Creating new inspiration:', inspiration.title);
-    const result = await db.insert(inspirations).values(inspiration).returning();
-    console.log('Successfully created inspiration:', result[0].id);
-    return result[0];
-  }
-
-  /**
-   * Weather Preference Management Methods
-   * These methods handle user preferences for clothing based on weather conditions
-   */
-  
-  /**
-   * Retrieves all weather preferences for a specific user
-   * @param userId - The ID of the user whose weather preferences to retrieve
-   * @returns Promise resolving to an array of weather preferences
-   */
+  // Weather preference operations
   async getWeatherPreferences(userId: number): Promise<WeatherPreference[]> {
-    return db.select().from(weatherPreferences).where(eq(weatherPreferences.userId, userId));
+    return Array.from(this.weatherPreferences.values()).filter(pref => pref.userId === userId);
   }
 
-  /**
-   * Creates a new weather preference in the database
-   * @param preference - The weather preference data to insert
-   * @returns Promise resolving to the newly created weather preference
-   */
-  async createWeatherPreference(preference: InsertWeatherPreference): Promise<WeatherPreference> {
-    const result = await db.insert(weatherPreferences).values(preference).returning();
-    return result[0];
+  async createWeatherPreference(insertPreference: InsertWeatherPreference): Promise<WeatherPreference> {
+    const preference: WeatherPreference = {
+      id: this.weatherPreferenceIdCounter++,
+      userId: insertPreference.userId,
+      weatherType: insertPreference.weatherType,
+      preferredCategories: insertPreference.preferredCategories || null
+    };
+    this.weatherPreferences.set(preference.id, preference);
+    return preference;
   }
 
-  /**
-   * Mood Preference Management Methods
-   * These methods handle user preferences for clothing based on emotional states
-   */
-  
-  /**
-   * Retrieves all mood preferences for a specific user
-   * @param userId - The ID of the user whose mood preferences to retrieve
-   * @returns Promise resolving to an array of mood preferences
-   */
+  // Mood preference operations
   async getMoodPreferences(userId: number): Promise<MoodPreference[]> {
-    return db.select().from(moodPreferences).where(eq(moodPreferences.userId, userId));
+    return Array.from(this.moodPreferences.values()).filter(pref => pref.userId === userId);
   }
 
-  /**
-   * Creates a new mood preference in the database
-   * @param preference - The mood preference data to insert
-   * @returns Promise resolving to the newly created mood preference
-   */
-  async createMoodPreference(preference: InsertMoodPreference): Promise<MoodPreference> {
-    const result = await db.insert(moodPreferences).values(preference).returning();
-    return result[0];
+  async createMoodPreference(insertPreference: InsertMoodPreference): Promise<MoodPreference> {
+    const preference: MoodPreference = {
+      id: this.moodPreferenceIdCounter++,
+      userId: insertPreference.userId,
+      mood: insertPreference.mood,
+      preferredCategories: insertPreference.preferredCategories || null,
+      preferredColors: insertPreference.preferredColors || null
+    };
+    this.moodPreferences.set(preference.id, preference);
+    return preference;
   }
 
-
-
-  /**
-   * Sample Data Initialization
-   * Populates the database with initial fashion inspiration data
-   * Only runs when the database is empty (first-time setup)
-   * 
-   * @private
-   * @returns Promise that resolves when initialization is complete
-   */
-  private async addSampleInspirations() {
-    // Check if inspirations already exist in the database
-    const existingInspirations = await db.select({ count: { value: inspirations.id } })
-      .from(inspirations);
-
-    // Only add sample data if there are no inspirations yet
-    if (existingInspirations.length === 0 || existingInspirations[0].count.value === 0) {
-      // Array of curated fashion inspirations with high-quality images from Pexels
-      const sampleInspirations: InsertInspiration[] = [
-        {
-          title: "Minimalist Chic",
-          description: "Clean lines and neutral tones create a timeless wardrobe foundation",
-          imageUrl: "https://images.pexels.com/photos/2043590/pexels-photo-2043590.jpeg",
-          tags: ["minimalist", "neutral", "classic", "elegant"],
-          category: "casual",
-          source: "Fashion Editor's Pick"
-        },
-        {
-          title: "Street Style Edge",
-          description: "Urban fashion with attitude and personality",
-          imageUrl: "https://images.pexels.com/photos/2901915/pexels-photo-2901915.jpeg",
-          tags: ["streetwear", "urban", "edgy", "trendy"],
-          category: "casual",
-          source: "Street Fashion"
-        },
-        {
-          title: "Professional Power",
-          description: "Modern workwear that commands attention",
-          imageUrl: "https://images.pexels.com/photos/2584269/pexels-photo-2584269.jpeg",
-          tags: ["business", "professional", "workwear", "formal"],
-          category: "formal",
-          source: "Business Style"
-        },
-        {
-          title: "Bohemian Dreams",
-          description: "Free-spirited fashion with romantic details",
-          imageUrl: "https://images.pexels.com/photos/4725133/pexels-photo-4725133.jpeg",
-          tags: ["boho", "romantic", "flowy", "summer"],
-          category: "casual",
-          source: "Lifestyle Fashion"
-        },
-        {
-          title: "Evening Glamour",
-          description: "Sophisticated evening wear for special occasions",
-          imageUrl: "https://images.pexels.com/photos/1755428/pexels-photo-1755428.jpeg",
-          tags: ["evening", "glamour", "formal", "luxury"],
-          category: "formal",
-          source: "Evening Style"
-        },
-        {
-          title: "Sporty Luxe",
-          description: "Athletic wear meets high fashion",
-          imageUrl: "https://images.pexels.com/photos/2475878/pexels-photo-2475878.jpeg",
-          tags: ["athleisure", "sporty", "comfortable", "modern"],
-          category: "casual",
-          source: "Active Style"
-        },
-        {
-          title: "Vintage Revival",
-          description: "Classic styles reimagined for today",
-          imageUrl: "https://images.pexels.com/photos/4725117/pexels-photo-4725117.jpeg",
-          tags: ["vintage", "retro", "classic", "timeless"],
-          category: "casual",
-          source: "Vintage Collection"
-        },
-        {
-          title: "Modern Minimalism",
-          description: "Contemporary takes on minimalist fashion",
-          imageUrl: "https://images.pexels.com/photos/2681751/pexels-photo-2681751.jpeg",
-          tags: ["minimal", "modern", "clean", "sophisticated"],
-          category: "casual",
-          source: "Modern Style"
-        },
-        {
-          title: "Urban Explorer",
-          description: "City-ready looks for the fashion adventurer",
-          imageUrl: "https://images.pexels.com/photos/2905238/pexels-photo-2905238.jpeg",
-          tags: ["urban", "explorer", "streetwear", "practical"],
-          category: "casual",
-          source: "Urban Fashion"
-        },
-        {
-          title: "Resort Elegance",
-          description: "Vacation-ready looks with refined style",
-          imageUrl: "https://images.pexels.com/photos/4725119/pexels-photo-4725119.jpeg",
-          tags: ["resort", "summer", "elegant", "vacation"],
-          category: "casual",
-          source: "Resort Collection"
-        },
-        {
-          title: "Autumn Layers",
-          description: "Sophisticated layering for fall weather",
-          imageUrl: "https://images.pexels.com/photos/2887766/pexels-photo-2887766.jpeg",
-          tags: ["autumn", "layers", "cozy", "seasonal"],
-          category: "casual",
-          source: "Seasonal Edit"
-        },
-        {
-          title: "Weekend Casual",
-          description: "Effortless style for your days off",
-          imageUrl: "https://images.pexels.com/photos/2896840/pexels-photo-2896840.jpeg",
-          tags: ["casual", "weekend", "relaxed", "comfortable"],
-          category: "casual",
-          source: "Casual Style"
-        }
-      ];
-
-      for (const inspiration of sampleInspirations) {
-        await db.insert(inspirations).values(inspiration);
+  private addSampleData() {
+    // Add sample inspirations
+    const sampleInspirations = [
+      {
+        title: "Casual Weekend Look",
+        description: "Perfect for a relaxed weekend outing",
+        imageUrl: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400",
+        tags: ["casual", "weekend", "comfortable"],
+        category: "casual",
+        source: "Curated Collection",
+        content: "A comfortable yet stylish approach to weekend dressing"
+      },
+      {
+        title: "Professional Chic",
+        description: "Sophisticated office wear with a modern twist",
+        imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
+        tags: ["professional", "work", "chic"],
+        category: "formal",
+        source: "Business Fashion Guide",
+        content: "Elevate your office wardrobe with modern professional styling"
+      },
+      {
+        title: "Summer Vibes",
+        description: "Light and breezy summer outfit inspiration",
+        imageUrl: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400",
+        tags: ["summer", "light", "breezy"],
+        category: "seasonal",
+        source: "Seasonal Style Guide",
+        content: "Stay cool and fashionable during warm summer days"
       }
+    ];
 
-      console.log('Added sample inspirations to the database');
-    }
+    sampleInspirations.forEach(inspiration => {
+      this.createInspiration(inspiration);
+    });
   }
 }
 
-// Export a singleton instance of the storage
-export const storage = new DatabaseStorage();
+// Export singleton instance
+const storage = new MemoryStorage();
+export default storage;
