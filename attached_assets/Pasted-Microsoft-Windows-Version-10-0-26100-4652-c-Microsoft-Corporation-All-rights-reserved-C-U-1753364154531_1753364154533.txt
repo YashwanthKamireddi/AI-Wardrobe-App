@@ -1,0 +1,69 @@
+Microsoft Windows [Version 10.0.26100.4652]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\yashw\Downloads\War\War>npm install
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated npmlog@5.0.1: This package is no longer supported.
+npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+npm warn deprecated are-we-there-yet@2.0.0: This package is no longer supported.
+npm warn deprecated gauge@3.0.2: This package is no longer supported.
+
+added 665 packages, and audited 666 packages in 21s
+
+72 packages are looking for funding
+  run `npm fund` for details
+
+14 vulnerabilities (3 low, 8 moderate, 2 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+C:\Users\yashw\Downloads\War\War>npm run dev
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+[2025-07-24T13:31:27.848Z] [INFO] [app] Starting Cher's Closet application with in-memory storage...
+[2025-07-24T13:31:28.013Z] [INFO] [app] Starting server on port 3000...
+[2025-07-24T13:31:28.020Z] [ERROR] [app] Server startup error: {"errorName":"Error","stack":"Error: listen ENOTSUP: operation not supported on socket 0.0.0.0:3000\n    at Server.setupListenHandle [as _listen2] (node:net:1918:21)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+
+C:\Users\yashw\Downloads\War\War>
+
+C:\Users\yashw\Downloads\War\War>npm run dev
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+[2025-07-24T13:34:56.768Z] [INFO] [app] Starting Cher's Closet application with in-memory storage...
+[2025-07-24T13:34:56.911Z] [INFO] [app] Starting server on port 3000...
+[2025-07-24T13:34:56.921Z] [ERROR] [app] Server startup error: {"errorName":"Error","stack":"Error: listen ENOTSUP: operation not supported on socket ::1:3000\n    at Server.setupListenHandle [as _listen2] (node:net:1918:21)\n    at listenInCluster (node:net:1997:12)\n    at GetAddrInfoReqWrap.callback (node:net:2206:7)\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)"}     
+
+C:\Users\yashw\Downloads\War\War>npm run dev
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+[2025-07-24T13:35:30.865Z] [INFO] [app] Starting Cher's Closet application with in-memory storage...
+[2025-07-24T13:35:30.993Z] [INFO] [app] Starting server on port 3000...
+[2025-07-24T13:35:31.001Z] [ERROR] [app] Server startup error: {"errorName":"Error","stack":"Error: listen ENOTSUP: operation not supported on socket ::1:3000\n    at Server.setupListenHandle [as _listen2] (node:net:1918:21)\n    at listenInCluster (node:net:1997:12)\n    at GetAddrInfoReqWrap.callback (node:net:2206:7)\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)"}     
+
+C:\Users\yashw\Downloads\War\War>set HOST=localhost
+
+C:\Users\yashw\Downloads\War\War>npm run dev       
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+[2025-07-24T13:35:50.235Z] [INFO] [app] Starting Cher's Closet application with in-memory storage...
+[2025-07-24T13:35:50.356Z] [INFO] [app] Starting server on port 3000...
+[2025-07-24T13:35:50.365Z] [ERROR] [app] Server startup error: {"errorName":"Error","stack":"Error: listen ENOTSUP: operation not supported on socket ::1:3000\n    at Server.setupListenHandle [as _listen2] (node:net:1918:21)\n    at listenInCluster (node:net:1997:12)\n    at GetAddrInfoReqWrap.callback (node:net:2206:7)\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)"}     
+
+C:\Users\yashw\Downloads\War\War>
