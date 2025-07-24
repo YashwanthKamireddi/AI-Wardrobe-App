@@ -2,41 +2,21 @@
  * Main Server Entry Point
  * 
  * This file is responsible for:
- * 1. Loading environment variables
- * 2. Starting the Express application
- * 3. Connecting to the database
- * 4. Setting up Vite in development mode
- * 5. Handling graceful shutdown
+ * 1. Starting the Express application
+ * 2. Setting up Vite in development mode
+ * 3. Handling graceful shutdown
  */
-
-// Load environment variables first before any other imports
-import './config/env';
 
 import { createServer } from 'http';
 import { setupVite, serveStatic } from './vite';
 import { createApp } from './app';
 import { logger } from './utils';
-import database from './config/database';
 import appConfig from './config/app-config';
 
 // Start the server
 (async () => {
   try {
-    // Verify database health before starting server
-    logger.info('Verifying database health...');
-    const dbHealth = await database.verifyDatabaseHealth();
-    
-    if (!dbHealth.healthy) {
-      logger.warn(`WARNING: Database health check failed: ${dbHealth.message}`);
-      if (dbHealth.details) {
-        logger.debug(`Details: ${JSON.stringify(dbHealth.details)}`);
-      }
-      logger.warn('The server will start, but database-dependent features may not work correctly.');
-    } else {
-      logger.info('Database health check successful');
-      logger.info(`Connected to ${dbHealth.details?.tables?.length || 0} tables`);
-      logger.debug(`Connection pool status: ${JSON.stringify(database.getPoolStatus())}`);
-    }
+    logger.info('Starting Cher\'s Closet application with in-memory storage...');
     
     // Create Express app
     const app = await createApp();
@@ -86,14 +66,7 @@ import appConfig from './config/app-config';
         });
       });
       
-      // Close database pool
-      try {
-        await database.pool.end();
-        logger.info('Database connections closed');
-      } catch (err) {
-        logger.error('Error closing database connections:', err instanceof Error ? err : new Error(String(err)));
-      }
-      
+      logger.info('Application shut down complete');
       process.exit(0);
     };
     

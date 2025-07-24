@@ -6,7 +6,7 @@
  * fashion inspiration resources to users.
  */
 
-import { storage } from '../storage';
+import storage from '../storage';
 import { createLogger } from '../utils/logger';
 import { ApiError } from '../middleware/error-handler';
 import { InsertInspiration } from '@shared/schema';
