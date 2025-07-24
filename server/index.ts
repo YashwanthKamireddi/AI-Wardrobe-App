@@ -91,7 +91,7 @@ import appConfig from './config/app-config';
         await database.pool.end();
         logger.info('Database connections closed');
       } catch (err) {
-        logger.error('Error closing database connections:', err);
+        logger.error('Error closing database connections:', err instanceof Error ? err : new Error(String(err)));
       }
       
       process.exit(0);
@@ -102,7 +102,7 @@ import appConfig from './config/app-config';
     process.on('SIGTERM', shutdownHandler);
     
   } catch (err) {
-    logger.error('Failed to start server:', err);
+    logger.error('Failed to start server:', err instanceof Error ? err : new Error(String(err)));
     process.exit(1);
   }
 })();
