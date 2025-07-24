@@ -38,11 +38,7 @@ import appConfig from './config/app-config';
     // Start listening on the configured port
     logger.info(`Starting server on port ${port}...`);
     
-    server.listen({
-      port,
-      host,
-      reusePort: true,
-    }, () => {
+    server.listen(port, host, () => {
       logger.info(`Server running at http://${host}:${port}`);
       logger.info(`Environment: ${app.get('env')} (${appConfig.environment.isReplit ? 'Replit' : 'Local'})`);
     }).on('error', (err: any) => {
