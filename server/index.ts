@@ -39,15 +39,22 @@ import appConfig from './config/app-config';
     logger.info(`Starting server on port ${port}...`);
     logger.info(`Binding to host: ${host}`);
     
-    // Force IPv4 for Windows compatibility
-    const listenOptions = process.platform === 'win32' 
-      ? { port, host: '127.0.0.1', family: 4 }
-      : { port, host };
+    // Windows-specific listen method to avoid socket issues
+    if (process.platform === 'win32') {
+      // On Windows, listen only on port without specifying host
+      server.listen(port, () => {
+        logger.info(`Server running at http://127.0.0.1:${port}`);
+        logger.info(`Environment: ${app.get('env')} (${appConfig.environment.isReplit ? 'Replit' : 'Local'})`);
+      });
+    } else {
+      // On other platforms, use the configured host
+      server.listen(port, host, () => {
+        logger.info(`Server running at http://${host}:${port}`);
+        logger.info(`Environment: ${app.get('env')} (${appConfig.environment.isReplit ? 'Replit' : 'Local'})`);
+      });
+    }
     
-    server.listen(listenOptions, () => {
-      logger.info(`Server running at http://${host}:${port}`);
-      logger.info(`Environment: ${app.get('env')} (${appConfig.environment.isReplit ? 'Replit' : 'Local'})`);
-    }).on('error', (err: any) => {
+    server.on('error', (err: any) => {
       if (err.code === 'EADDRINUSE') {
         logger.error(`Port ${port} is already in use. Please choose a different port.`);
       } else {
