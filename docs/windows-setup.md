@@ -10,7 +10,7 @@ The error you're seeing (`ENOTSUP: operation not supported on socket`) is a Wind
 
 ```cmd
 # In your terminal, before running npm run dev:
-set HOST=localhost
+set HOST=127.0.0.1
 npm run dev
 ```
 
@@ -19,7 +19,7 @@ Or create a `.env` file in your project root with:
 ```env
 NODE_ENV=development
 PORT=3000
-HOST=localhost
+HOST=127.0.0.1
 SESSION_SECRET=your-secret-key-here
 ```
 
@@ -51,7 +51,7 @@ npm install
 # Create .env file
 echo NODE_ENV=development > .env
 echo PORT=3000 >> .env
-echo HOST=localhost >> .env
+echo HOST=127.0.0.1 >> .env
 echo SESSION_SECRET=change-me-in-production >> .env
 
 # Start the application
