@@ -25,7 +25,7 @@ export async function createApp(): Promise<Express> {
   const app = express();
   
   // Set application variables
-  app.set('isReplit', appConfig.environment.isReplit);
+  app.set('isLocal', appConfig.environment.isLocal);
   app.set('env', appConfig.environment.nodeEnv);
   
   // Apply basic middleware
@@ -65,7 +65,7 @@ export async function createApp(): Promise<Express> {
       return res.status(200).json({
         status: 'OK',
         environment: app.get('env'),
-        platform: appConfig.environment.isReplit ? 'Replit' : 'Local',
+        platform: 'Local',
         storage: {
           type: 'in-memory',
           status: 'ready'

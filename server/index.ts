@@ -44,13 +44,13 @@ import appConfig from './config/app-config';
       // On Windows, listen only on port without specifying host
       server.listen(port, () => {
         logger.info(`Server running at http://127.0.0.1:${port}`);
-        logger.info(`Environment: ${app.get('env')} (${appConfig.environment.isReplit ? 'Replit' : 'Local'})`);
+        logger.info(`Environment: ${app.get('env')} (Local)`);
       });
     } else {
       // On other platforms, use the configured host
       server.listen(port, host, () => {
         logger.info(`Server running at http://${host}:${port}`);
-        logger.info(`Environment: ${app.get('env')} (${appConfig.environment.isReplit ? 'Replit' : 'Local'})`);
+        logger.info(`Environment: ${app.get('env')} (Local)`);
       });
     }
     

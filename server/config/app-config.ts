@@ -10,7 +10,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
 const isProduction = nodeEnv === 'production';
 const isDevelopment = nodeEnv === 'development';
 const isTest = nodeEnv === 'test';
-const isReplit = process.env.REPL_ID != null && process.env.REPL_OWNER != null;
+const isLocal = true; // Always running locally
 
 // Environment configuration
 export const environment = {
@@ -18,7 +18,7 @@ export const environment = {
   isProduction,
   isDevelopment,
   isTest,
-  isReplit
+  isLocal
 };
 
 // Server configuration

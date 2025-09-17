@@ -1,47 +1,41 @@
-# Cher's Closet - AI Wardrobe Management
+# Cher's Closet - My Personal Wardrobe App
 
-A full-stack wardrobe management application with AI-powered outfit recommendations.
+An AI-powered wardrobe management application I built to organize my closet and get smart outfit recommendations.
 
-## Quick Start
+## What This App Does
+
+- **Manage Your Wardrobe**: Add all your clothes with photos, categories, colors
+- **Smart Outfit Suggestions**: AI recommends outfits based on weather and mood  
+- **Style Discovery**: Browse fashion inspiration and trends
+- **Mobile Friendly**: Use it anywhere on your phone or computer
+
+## Getting Started
 
 ```bash
+# Install everything
 npm install
+
+# Start the app
 npm run dev
 ```
 
-Open http://localhost:3000
+Visit http://localhost:3000 to use the app
 
-## Features
+## Setup
 
-- User authentication
-- Wardrobe item management
-- Outfit creation
-- AI-powered recommendations (requires OpenAI API key)
-- Fashion inspiration gallery
-- Mobile responsive design
+The app works right away! For AI features, you'll need an OpenAI API key:
 
-## Environment Setup
+1. Get your API key from https://platform.openai.com/api-keys
+2. Add it when the app asks for it
 
-Create a `.env` file:
+## Built With
 
-```env
-NODE_ENV=development
-PORT=3000
-HOST=127.0.0.1
-SESSION_SECRET=your-secret-key
-OPENAI_API_KEY=your-openai-key
-```
+- React & TypeScript for the interface
+- Node.js backend with Express
+- OpenAI for smart recommendations  
+- Tailwind CSS for beautiful styling
+- In-memory storage (perfect for personal use)
 
-## Architecture
+---
 
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend**: Node.js + Express
-- **Storage**: In-memory (data resets on restart)
-- **AI**: OpenAI GPT integration
-- **UI**: Radix UI components
-
-## Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
+*Created as my personal project to solve my daily "what should I wear?" problem* 💫
