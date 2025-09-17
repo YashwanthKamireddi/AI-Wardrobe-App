@@ -2,12 +2,12 @@
   "version": 1,
   "workflows": [
     {
-      "id": "run",
-      "name": "Run",
+      "id": "start-application",
+      "name": "Start application",
       "description": "Start the development server",
       "type": "interactive",
       "order": 0,
-      "command": "npm run dev",
+      "command": "node start.js",
       "openLogsOnRun": true,
       "hasInteractiveTerminal": true,
       "webviewUrl": "/"
