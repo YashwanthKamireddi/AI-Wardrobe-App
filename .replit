@@ -15,4 +15,7 @@ externalPort = 80
 [[ports]]
 localPort = 3001
 externalPort = 81
-run = ["npm", "run", "dev"]
+
+[[ports]]
+localPort = 5000
+externalPort = 5000

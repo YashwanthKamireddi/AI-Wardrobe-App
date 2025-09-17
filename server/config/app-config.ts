@@ -23,7 +23,7 @@ export const environment = {
 
 // Server configuration
 export const server = {
-  port: parseInt(process.env.PORT || '3000', 10),
+  port: parseInt(process.env.PORT || '5000', 10),
   host: process.env.HOST || (process.platform === 'win32' ? '127.0.0.1' : '0.0.0.0'),
   corsOrigins: process.env.CORS_ORIGINS 
     ? process.env.CORS_ORIGINS.split(',') 
