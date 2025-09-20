@@ -207,7 +207,7 @@ export function AuthPage() {
                 </TabsList>
 
                 <AnimatePresence mode="wait">
-                  <TabsContent value="login" className="space-y-4 mt-0">
+                  <TabsContent key="login-tab" value="login" className="space-y-4 mt-0">
                     <motion.div
                       key="login-form"
                       initial={{ opacity: 0, x: -20 }}
@@ -291,7 +291,7 @@ export function AuthPage() {
                     </motion.div>
                   </TabsContent>
 
-                  <TabsContent value="register" className="space-y-4 mt-0">
+                  <TabsContent key="register-tab" value="register" className="space-y-4 mt-0">
                     <motion.div
                       key="register-form"
                       initial={{ opacity: 0, x: 20 }}

@@ -118,7 +118,7 @@ export function RunwayDisplay({
 
             return (
               <motion.div
-                key={index}
+                key={`runway-item-${index}`}
                 className={`absolute transition-shadow ${isActive ? 'z-10 shadow-xl' : 'z-[5]'}`}
                 initial={{ opacity: 0, x: 0, y: 20 }}
                 animate={{ 
@@ -158,7 +158,7 @@ export function RunwayDisplay({
       <div className="flex justify-center items-center gap-1.5 mt-4">
         {items.map((_, index) => (
           <button
-            key={index}
+            key={`runway-indicator-${index}`}
             className={`w-1.5 h-1.5 rounded-full transition-all ${
               index === currentIndex 
                 ? 'bg-amber-500 w-4' 

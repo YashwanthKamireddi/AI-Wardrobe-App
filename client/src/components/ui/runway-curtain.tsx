@@ -173,6 +173,7 @@ export const RunwayCurtain = ({
           >
             {/* Left/Top Curtain */}
             <motion.div
+              key={isHorizontal ? "curtain-left" : "curtain-top"}
               className={cn(
                 "bg-gradient-to-br from-amber-100 via-amber-50 to-white dark:from-slate-900 dark:via-amber-950/30 dark:to-slate-900/90",
                 isHorizontal ? "w-1/2 h-full" : "w-full h-1/2"
@@ -211,6 +212,7 @@ export const RunwayCurtain = ({
             
             {/* Right/Bottom Curtain */}
             <motion.div
+              key={isHorizontal ? "curtain-right" : "curtain-bottom"}
               className={cn(
                 "bg-gradient-to-bl from-amber-100 via-amber-50 to-white dark:from-slate-900 dark:via-amber-950/30 dark:to-slate-900/90",
                 isHorizontal ? "w-1/2 h-full" : "w-full h-1/2"
