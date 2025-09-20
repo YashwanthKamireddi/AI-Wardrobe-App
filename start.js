@@ -17,7 +17,11 @@ console.log('Starting Cher\'s Closet application...');
 const child = spawn('npm', ['run', 'dev'], {
   cwd: __dirname,
   stdio: 'inherit',
-  shell: true
+  shell: true,
+  env: {
+    ...process.env,
+    TSX_TRANSPILE_ONLY: '1'
+  }
 });
 
 child.on('error', (error) => {
