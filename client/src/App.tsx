@@ -6,13 +6,13 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "@/lib/protected-route";
 
-import HomePage from "@/pages/home-page";
-import AuthPage from "@/pages/auth-page";
-import WardrobePage from "@/pages/wardrobe-page";
-import OutfitPage from "@/pages/outfit-page";
-import InspirationPage from "@/pages/inspiration-page";
-import ProfilePage from "@/pages/profile-page";
-import NotFound from "@/pages/not-found";
+import { HomePage } from "@/pages/home-page";
+import { AuthPage } from "@/pages/auth-page";
+import { WardrobePage } from "@/pages/wardrobe-page";
+import { OutfitPage } from "@/pages/outfit-page";
+import { InspirationPage } from "@/pages/inspiration-page";
+import { ProfilePage } from "@/pages/profile-page";
+import { NotFound } from "@/pages/not-found";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 function Router() {
