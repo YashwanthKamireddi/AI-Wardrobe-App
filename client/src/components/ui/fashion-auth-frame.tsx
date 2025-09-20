@@ -305,21 +305,20 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
           {/* Subtle horizontal thread */}
           <div className="absolute top-12 left-0 w-full h-6 opacity-40">
             <GoldenThread 
-              pathType="wave" 
+              direction="horizontal"
+              length="100%"
               thickness={0.5} // Thinner line
-              color={accentColor}
-              duration={3}
+              animationDuration={3}
             />
           </div>
           
           {/* Subtle bottom thread */}
           <div className="absolute bottom-12 left-0 w-full h-6 opacity-40">
             <GoldenThread 
-              pathType="stitch" 
+              direction="horizontal"
+              length="100%"
               thickness={0.5} // Thinner line
-              color={accentColor}
-              duration={3}
-              delay={0.5}
+              animationDuration={3}
             />
           </div>
           
