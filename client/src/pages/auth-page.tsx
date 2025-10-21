@@ -137,7 +137,7 @@ export function AuthPage() {
   // Show loading spinner if checking auth status
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 dark:from-amber-950/20 dark:via-black dark:to-orange-950/20">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -158,7 +158,7 @@ export function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 dark:from-amber-950/20 dark:via-black dark:to-orange-950/20">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30">
       <FashionAuthFrame 
         title="Welcome to Cher's Closet"
         subtitle="Your personal fashion stylist awaits"
@@ -171,14 +171,14 @@ export function AuthPage() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="w-full max-w-md"
         >
-          <Card className="backdrop-blur-sm bg-white/90 dark:bg-black/90 border-amber-200/50 dark:border-amber-800/50 shadow-2xl">
+          <Card className="backdrop-blur-sm bg-white/90 border-amber-200/50 shadow-2xl">
             <CardHeader className="space-y-1 text-center">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
+                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
                   Enter Your Fashion Universe
                 </CardTitle>
                 <CardDescription className="text-muted-foreground mt-2">
@@ -189,18 +189,18 @@ export function AuthPage() {
             
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6 bg-amber-100/50 dark:bg-amber-900/20">
+                <TabsList className="grid w-full grid-cols-2 mb-6 bg-amber-100/50">
                   <TabsTrigger 
                     value="login"
                     data-testid="tab-login"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-400"
+                    className="data-[state=active]:bg-white data-[state=active]:text-amber-700"
                   >
                     Sign In
                   </TabsTrigger>
                   <TabsTrigger 
                     value="register"
                     data-testid="tab-register"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-400"
+                    className="data-[state=active]:bg-white data-[state=active]:text-amber-700"
                   >
                     Create Account
                   </TabsTrigger>
@@ -222,13 +222,13 @@ export function AuthPage() {
                             name="username"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-amber-700 dark:text-amber-400">Username</FormLabel>
+                                <FormLabel className="text-amber-700">Username</FormLabel>
                                 <FormControl>
                                   <div className="relative">
                                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                       placeholder="Enter your username"
-                                      className="pl-10 border-amber-200 dark:border-amber-800 focus:border-amber-400 dark:focus:border-amber-600"
+                                      className="pl-10 border-amber-200 focus:border-amber-400"
                                       data-testid="input-login-username"
                                       {...field}
                                     />
@@ -244,14 +244,14 @@ export function AuthPage() {
                             name="password"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-amber-700 dark:text-amber-400">Password</FormLabel>
+                                <FormLabel className="text-amber-700">Password</FormLabel>
                                 <FormControl>
                                   <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                       type={showPassword ? "text" : "password"}
                                       placeholder="Enter your password"
-                                      className="pl-10 pr-10 border-amber-200 dark:border-amber-800 focus:border-amber-400 dark:focus:border-amber-600"
+                                      className="pl-10 pr-10 border-amber-200 focus:border-amber-400"
                                       data-testid="input-login-password"
                                       {...field}
                                     />
@@ -306,13 +306,13 @@ export function AuthPage() {
                             name="username"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-amber-700 dark:text-amber-400">Username *</FormLabel>
+                                <FormLabel className="text-amber-700">Username *</FormLabel>
                                 <FormControl>
                                   <div className="relative">
                                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                       placeholder="Choose a username"
-                                      className="pl-10 border-amber-200 dark:border-amber-800 focus:border-amber-400 dark:focus:border-amber-600"
+                                      className="pl-10 border-amber-200 focus:border-amber-400"
                                       data-testid="input-register-username"
                                       {...field}
                                     />
@@ -329,13 +329,13 @@ export function AuthPage() {
                               name="name"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-amber-700 dark:text-amber-400">Name</FormLabel>
+                                  <FormLabel className="text-amber-700">Name</FormLabel>
                                   <FormControl>
                                     <div className="relative">
                                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                       <Input
                                         placeholder="Your name"
-                                        className="pl-10 border-amber-200 dark:border-amber-800 focus:border-amber-400 dark:focus:border-amber-600"
+                                        className="pl-10 border-amber-200 focus:border-amber-400"
                                         data-testid="input-register-name"
                                         {...field}
                                       />
@@ -351,14 +351,14 @@ export function AuthPage() {
                               name="email"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-amber-700 dark:text-amber-400">Email</FormLabel>
+                                  <FormLabel className="text-amber-700">Email</FormLabel>
                                   <FormControl>
                                     <div className="relative">
                                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                       <Input
                                         type="email"
                                         placeholder="your@email.com"
-                                        className="pl-10 border-amber-200 dark:border-amber-800 focus:border-amber-400 dark:focus:border-amber-600"
+                                        className="pl-10 border-amber-200 focus:border-amber-400"
                                         data-testid="input-register-email"
                                         {...field}
                                       />
@@ -375,14 +375,14 @@ export function AuthPage() {
                             name="password"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-amber-700 dark:text-amber-400">Password *</FormLabel>
+                                <FormLabel className="text-amber-700">Password *</FormLabel>
                                 <FormControl>
                                   <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                       type={showPassword ? "text" : "password"}
                                       placeholder="Create a password"
-                                      className="pl-10 pr-10 border-amber-200 dark:border-amber-800 focus:border-amber-400 dark:focus:border-amber-600"
+                                      className="pl-10 pr-10 border-amber-200 focus:border-amber-400"
                                       data-testid="input-register-password"
                                       {...field}
                                     />
@@ -407,14 +407,14 @@ export function AuthPage() {
                             name="confirmPassword"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-amber-700 dark:text-amber-400">Confirm Password *</FormLabel>
+                                <FormLabel className="text-amber-700">Confirm Password *</FormLabel>
                                 <FormControl>
                                   <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                       type={showConfirmPassword ? "text" : "password"}
                                       placeholder="Confirm your password"
-                                      className="pl-10 pr-10 border-amber-200 dark:border-amber-800 focus:border-amber-400 dark:focus:border-amber-600"
+                                      className="pl-10 pr-10 border-amber-200 focus:border-amber-400"
                                       data-testid="input-register-confirm-password"
                                       {...field}
                                     />
@@ -465,7 +465,7 @@ export function AuthPage() {
                       Don't have an account?{" "}
                       <button
                         onClick={() => setActiveTab("register")}
-                        className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium underline-offset-4 hover:underline transition-colors"
+                        className="text-amber-600 hover:text-amber-700 font-medium underline-offset-4 hover:underline transition-colors"
                         data-testid="link-switch-to-register"
                       >
                         Create one now
@@ -476,7 +476,7 @@ export function AuthPage() {
                       Already have an account?{" "}
                       <button
                         onClick={() => setActiveTab("login")}
-                        className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium underline-offset-4 hover:underline transition-colors"
+                        className="text-amber-600 hover:text-amber-700 font-medium underline-offset-4 hover:underline transition-colors"
                         data-testid="link-switch-to-login"
                       >
                         Sign in here

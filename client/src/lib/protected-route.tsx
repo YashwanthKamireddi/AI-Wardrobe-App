@@ -25,7 +25,7 @@ export function ProtectedRoute({
   if (isLoading) {
     return (
       <Route path={path}>
-        <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-gradient-to-tr from-white/90 via-white/95 to-white/90 dark:from-black/90 dark:via-black/95 dark:to-black/90">
+        <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-gradient-to-tr from-white/90 via-white/95 to-white/90">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -49,7 +49,7 @@ export function ProtectedRoute({
   if (!user) {
     return (
       <Route path={path}>
-        <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-gradient-to-tr from-white/90 via-white/95 to-white/90 dark:from-black/90 dark:via-black/95 dark:to-black/90">
+        <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-gradient-to-tr from-white/90 via-white/95 to-white/90">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}

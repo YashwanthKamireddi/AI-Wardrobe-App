@@ -61,6 +61,8 @@ export default function InspirationCard({ inspiration, onSave, onShare }: Inspir
                   e.stopPropagation();
                   onSave();
                 }}
+                data-testid={`button-save-${inspiration.id}`}
+                aria-label="Save inspiration"
               >
                 <BookmarkPlus className="h-4 w-4 text-black" />
               </Button>
@@ -75,6 +77,8 @@ export default function InspirationCard({ inspiration, onSave, onShare }: Inspir
                   e.stopPropagation();
                   onShare();
                 }}
+                data-testid={`button-share-${inspiration.id}`}
+                aria-label="Share inspiration"
               >
                 <Share2 className="h-4 w-4 text-black" />
               </Button>

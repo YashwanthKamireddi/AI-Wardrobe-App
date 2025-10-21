@@ -120,57 +120,6 @@
     --sidebar-border: 337 30% 25%;
     --sidebar-ring: 337 60% 40%;
   }
- 
-  .dark {
-    /* Rich deep navy with vibrant gold accents for luxury feel */
-    --background: 233 40% 8%;
-    --foreground: 35 40% 98%;
- 
-    --card: 233 35% 11%;
-    --card-foreground: 35 40% 98%;
- 
-    --popover: 233 35% 12%;
-    --popover-foreground: 35 40% 98%;
- 
-    /* Vibrant indigo-blue primary */
-    --primary: 225 70% 45%;
-    --primary-foreground: 35 40% 98%;
- 
-    /* Deep navy secondary */
-    --secondary: 233 35% 20%;
-    --secondary-foreground: 35 40% 98%;
- 
-    --muted: 233 30% 18%;
-    --muted-foreground: 35 35% 85%;
- 
-    /* Upgraded luxury gold accent - more vibrant and premium */
-    --accent: 43 95% 55%;
-    --accent-foreground: 233 40% 10%;
- 
-    --destructive: 0 70% 45%;
-    --destructive-foreground: 35 40% 98%;
- 
-    --border: 233 25% 22%;
-    --input: 233 25% 22%;
-    --ring: 225 70% 45%;
-
-    /* Chart colors - more vibrant for dark mode */
-    --chart-1: 225 80% 65%;
-    --chart-2: 43 95% 55%;
-    --chart-3: 15 80% 65%;
-    --chart-4: 290 70% 65%;
-    --chart-5: 190 70% 65%;
-    
-    /* Sidebar colors - aligned with premium luxury theme */
-    --sidebar-background: 233 45% 12%;
-    --sidebar-foreground: 35 40% 98%;
-    --sidebar-primary: 225 70% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 43 95% 55%;
-    --sidebar-accent-foreground: 233 45% 10%;
-    --sidebar-border: 233 30% 25%;
-    --sidebar-ring: 225 70% 50%;
-  }
 }
  
 @layer base {
@@ -193,12 +142,12 @@
   }
   
   .thin-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/20 dark:bg-accent/30;
+    @apply bg-primary/20;
     border-radius: 3px;
   }
   
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/30 dark:bg-accent/40;
+    @apply bg-primary/30;
   }
 }
 
@@ -346,10 +295,6 @@
   backdrop-filter: blur(5px);
 }
 
-.dark .elegant-card {
-  background: linear-gradient(to bottom right, rgba(30,30,35,0.9), rgba(20,20,25,0.7));
-}
-
 /* Modern button styles */
 .btn-modern {
   @apply px-5 py-2 rounded-lg font-medium transition-all duration-200;
@@ -445,11 +390,6 @@
   height: 6px;
   width: 60px;
   background: linear-gradient(90deg, transparent, hsl(var(--accent)));
-}
-
-.dark .luxury-card {
-  @apply bg-card;
-  border: 1px solid rgba(50, 50, 70, 0.8);
 }
 
 /* Runway-inspired elements */

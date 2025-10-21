@@ -31,9 +31,10 @@ import { AnimatedWardrobeItem, wardrobeAnimations } from "@/components/ui/animat
 interface WardrobeItemProps {
   item: WardrobeItemType;
   onDelete: () => void;
+  onEdit?: () => void;
 }
 
-export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
+export default function WardrobeItem({ item, onDelete, onEdit }: WardrobeItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const updateItem = useUpdateWardrobeItem();
@@ -198,7 +199,11 @@ export default function WardrobeItem({ item, onDelete }: WardrobeItemProps) {
                     </>
                   )}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer font-luxury-body text-amber-900">
+                <DropdownMenuItem 
+                  className="cursor-pointer font-luxury-body text-amber-900"
+                  onClick={onEdit}
+                  data-testid={`button-edit-item-${item.id}`}
+                >
                   <Edit className="h-4 w-4 mr-2 text-amber-500" />
                   Edit details
                 </DropdownMenuItem>

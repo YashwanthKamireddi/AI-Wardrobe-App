@@ -191,7 +191,7 @@ const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent(
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="ai-outfit-recommender">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -210,7 +210,7 @@ const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent(
                 value={selectedMood} 
                 onValueChange={setSelectedMood}
               >
-                <SelectTrigger id="mood" className="w-full">
+                <SelectTrigger id="mood" className="w-full" data-testid="select-mood">
                   <SelectValue placeholder="Select your mood" />
                 </SelectTrigger>
                 <SelectContent>
@@ -231,7 +231,7 @@ const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent(
                 value={selectedOccasion} 
                 onValueChange={setSelectedOccasion}
               >
-                <SelectTrigger id="occasion" className="w-full">
+                <SelectTrigger id="occasion" className="w-full" data-testid="select-occasion">
                   <SelectValue placeholder="Select an occasion (optional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -268,6 +268,7 @@ const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent(
             onClick={handleGenerateRecommendations} 
             className="w-full"
             disabled={isPending}
+            data-testid="button-generate-recommendations"
           >
             {isPending ? (
               <>
@@ -405,6 +406,7 @@ const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent(
                         description: "Calendar integration is coming soon!",
                       });
                     }}
+                    data-testid="button-schedule-outfit"
                   >
                     <Calendar className="mr-2 h-4 w-4" />
                     Schedule
@@ -413,6 +415,7 @@ const AIOutfitRecommenderComponent = memo(function AIOutfitRecommenderComponent(
                   <Button
                     onClick={() => handleSaveOutfit(recommendation)}
                     disabled={isSavingOutfit}
+                    data-testid="button-save-outfit"
                   >
                     {isSavingOutfit ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

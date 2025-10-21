@@ -137,7 +137,7 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
           <div className="absolute inset-0 z-0 overflow-hidden">
             {/* Subtle gradient background */}
             <motion.div 
-              className="absolute inset-0 bg-gradient-to-tr from-amber-50/5 via-transparent to-amber-100/5 dark:from-amber-900/10 dark:via-transparent dark:to-amber-800/5"
+              className="absolute inset-0 bg-gradient-to-tr from-amber-50/5 via-transparent to-amber-100/5"
               style={{ x: bgX, y: bgY }}
             />
             
@@ -231,7 +231,7 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
             
             {/* Floating gradient overlay */}
             <motion.div 
-              className="absolute inset-0 bg-gradient-to-br from-amber-50/3 to-amber-100/3 dark:from-amber-900/3 dark:to-amber-950/3" 
+              className="absolute inset-0 bg-gradient-to-br from-amber-50/3 to-amber-100/3" 
               style={{ x: glowX, y: glowY }}
             />
           </div>
@@ -265,7 +265,7 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
         return (
           <div className="absolute inset-0 z-0 overflow-hidden">
             <motion.div 
-              className="w-full h-full bg-gradient-to-br from-amber-50/20 to-amber-100/20 dark:from-amber-900/10 dark:to-amber-950/5" // More subtle gradients
+              className="w-full h-full bg-gradient-to-br from-amber-50/20 to-amber-100/20" // More subtle gradients
               style={{ x: bgX, y: bgY }}
             />
             <motion.div 
@@ -433,12 +433,12 @@ const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
               />
               
               {/* Modernized minimal card design */}
-              <div className="backdrop-blur-sm relative overflow-hidden rounded-xl border border-amber-200/10 dark:border-amber-700/10"> {/* Thinner border */}
+              <div className="backdrop-blur-sm relative overflow-hidden rounded-xl border border-amber-200/10"> {/* Thinner border */}
                 {/* Almost invisible edge highlight */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent dark:from-white/3 dark:to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
                 
                 {/* Minimal content container */}
-                <div className="p-8 relative bg-white/5 dark:bg-black/5"> {/* Subtle background */}
+                <div className="p-8 relative bg-white/5"> {/* Subtle background */}
                   {/* Subtle shimmer effect - single line */}
                   <div className="absolute top-0 right-0 left-0 overflow-hidden">
                     <motion.div

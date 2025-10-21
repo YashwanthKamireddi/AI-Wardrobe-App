@@ -49,7 +49,7 @@ interface CloudSunIconProps {
 export const CloudSunIcon = ({ size = 48 }: CloudSunIconProps) => (
   <div className="relative">
     <motion.div
-      className="text-amber-600 dark:text-amber-400"
+      className="text-amber-600"
       style={{ width: `${size}px`, height: `${size}px` }}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -128,7 +128,7 @@ export const CloudSunIcon = ({ size = 48 }: CloudSunIconProps) => (
     
     {/* Subtle glow effect */}
     <div className="absolute inset-0 blur-lg opacity-20 scale-110">
-      <div className="w-full h-full rounded-full bg-amber-200 dark:bg-amber-300/30"></div>
+      <div className="w-full h-full rounded-full bg-amber-200"></div>
     </div>
   </div>
 );

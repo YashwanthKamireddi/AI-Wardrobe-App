@@ -38,9 +38,9 @@ export const AnimatedCard = React.forwardRef<
       case "scale":
         return "hover:scale-[1.02]";
       case "luxury":
-        return "hover:border-amber-300/40 dark:hover:border-amber-700/50 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.1),0_0_0_1px_rgba(251,191,36,0.1)]";
+        return "hover:border-amber-300/40 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.1),0_0_0_1px_rgba(251,191,36,0.1)]";
       case "luxury-glow":
-        return "hover:border-amber-300/60 dark:hover:border-amber-600/60 hover:shadow-[0_5px_20px_rgba(251,191,36,0.2),0_0_0_1px_rgba(251,191,36,0.2)]";
+        return "hover:border-amber-300/60 hover:shadow-[0_5px_20px_rgba(251,191,36,0.2),0_0_0_1px_rgba(251,191,36,0.2)]";
       case "none":
         return "";
       default:

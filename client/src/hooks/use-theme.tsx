@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light";
 
 interface ThemeContextType {
   theme: Theme;
@@ -10,42 +10,12 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ 
-  children, 
-  defaultTheme = "light" 
+  children 
 }: { 
   children: React.ReactNode;
-  defaultTheme?: Theme;
 }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Try to load from localStorage, or use the provided default
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    return savedTheme || defaultTheme;
-  });
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    
-    // Remove previous classes
-    root.classList.remove("light", "dark");
-
-    // Apply theme
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
-    }
-
-    // Save to localStorage
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  // Force light mode initially
-  useEffect(() => {
-    setTheme("light");
-  }, []);
+  const theme: Theme = "light";
+  const setTheme = () => {}; // No-op function for compatibility
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>

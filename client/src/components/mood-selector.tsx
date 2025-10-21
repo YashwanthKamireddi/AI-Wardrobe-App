@@ -74,8 +74,8 @@ export default function MoodSelector({ selectedMood, setSelectedMood }: MoodSele
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-4 gap-2">
+    <div className="space-y-4" data-testid="mood-selector">
+      <div className="grid grid-cols-4 gap-2" data-testid="mood-options">
         {moodTypes.map((mood) => (
           <Button
             key={mood.value}
@@ -87,6 +87,7 @@ export default function MoodSelector({ selectedMood, setSelectedMood }: MoodSele
               selectedMood === mood.value && getMoodGradient(mood.value)
             )}
             onClick={() => setSelectedMood(mood.value)}
+            data-testid={`mood-button-${mood.value}`}
           >
             <div className={cn(
               "p-1 rounded-full transition-transform duration-300",
@@ -104,12 +105,15 @@ export default function MoodSelector({ selectedMood, setSelectedMood }: MoodSele
         ))}
       </div>
 
-      <div className={cn(
-        "p-3 rounded-lg bg-gradient-to-br shadow-md transform transition-all duration-300",
-        selectedMood && "translate-y-0 opacity-100",
-        !selectedMood && "translate-y-2 opacity-90",
-        getMoodGradient(selectedMood)
-      )}>
+      <div 
+        className={cn(
+          "p-3 rounded-lg bg-gradient-to-br shadow-md transform transition-all duration-300",
+          selectedMood && "translate-y-0 opacity-100",
+          !selectedMood && "translate-y-2 opacity-90",
+          getMoodGradient(selectedMood)
+        )}
+        data-testid="mood-description"
+      >
         <p className="text-white text-sm font-medium">
           {getMoodDescription(selectedMood)}
         </p>

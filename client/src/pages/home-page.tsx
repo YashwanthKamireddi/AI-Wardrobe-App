@@ -72,7 +72,7 @@ export function HomePage() {
   const { data: weather, isLoading: weatherLoading, error: weatherError } = useWeather();
   const { data: wardrobeItems, isLoading: wardrobeLoading, error: wardrobeError } = useWardrobeItems();
   const { data: outfits, isLoading: outfitsLoading, error: outfitsError } = useOutfits();
-  const { stats, isLoading: statsLoading, hasError: statsError, error: statsErrorMessage } = useUserStats(
+  const { stats, isLoading: statsLoading, hasError: statsError, error } = useUserStats(
     wardrobeItems,
     wardrobeLoading,
     wardrobeError,
@@ -301,7 +301,7 @@ export function HomePage() {
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold text-destructive">Unable to Load Statistics</h3>
                   <p className="text-sm text-muted-foreground">
-                    {statsErrorMessage?.message || 'There was an issue loading your wardrobe and outfit data.'}
+                    {error?.message || 'There was an issue loading your wardrobe and outfit data.'}
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 justify-center">

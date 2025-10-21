@@ -235,8 +235,8 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
             )}
 
             {isStyleProfileError && (
-              <div className="text-center py-8 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm">
-                <div className="size-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+              <div className="text-center py-8 bg-white/50 rounded-lg shadow-sm">
+                <div className="size-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="h-8 w-8 text-red-500" />
                 </div>
                 <h3 className="text-lg font-medium mb-2">Unable to Create Style Profile</h3>
@@ -259,8 +259,8 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
             )}
 
             {!styleProfile && !isStyleProfileLoading && !isStyleProfileError && wardrobeItemsCount < 5 && (
-              <div className="text-center py-8 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm">
-                <div className="size-20 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
+              <div className="text-center py-8 bg-white/50 rounded-lg shadow-sm">
+                <div className="size-20 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
                   <Flame className="h-10 w-10 text-amber-500" />
                 </div>
                 <h3 className="text-xl font-medium mb-2">Complete Your Collection</h3>
@@ -268,7 +268,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                   You're almost ready for a style profile! Add {5 - wardrobeItemsCount} more items to your wardrobe to unlock this feature.
                 </p>
                 
-                <div className="w-full max-w-sm mx-auto mb-6 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+                <div className="w-full max-w-sm mx-auto mb-6 bg-white p-4 rounded-lg shadow-sm">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium">Progress:</span>
                     <span className="font-medium">{wardrobeItemsCount}/5 items</span>
@@ -305,7 +305,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
               <>
                 <TabsContent value="profile" className="pt-2 m-0">
                   <div className="text-center mb-6 py-6 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-lg shadow-lg border border-primary/20">
-                    <div className="inline-block bg-white dark:bg-slate-800 p-4 rounded-full mb-3 shadow-md border border-primary/30 transform hover:scale-105 transition-transform duration-300">
+                    <div className="inline-block bg-white p-4 rounded-full mb-3 shadow-md border border-primary/30 transform hover:scale-105 transition-transform duration-300">
                       <Sparkles className="h-7 w-7 text-primary animate-pulse" />
                     </div>
                     <h3 className="text-3xl font-bold mb-2 font-fashion-heading tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent">
@@ -317,7 +317,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    <div className="space-y-4 bg-white/90 dark:bg-slate-900/70 p-5 rounded-lg shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300">
+                    <div className="space-y-4 bg-white/90 p-5 rounded-lg shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300">
                       <h4 className="text-sm font-medium flex items-center gap-2 border-b border-primary/20 pb-2">
                         <div className="bg-primary/10 p-1.5 rounded-full">
                           <TagIcon className="h-4 w-4 text-primary" />
@@ -326,7 +326,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {styleProfile.keyItems && styleProfile.keyItems.length > 0 ? (
-                          styleProfile.keyItems.map((item, index) => (
+                          styleProfile.keyItems.map((item: string, index: number) => (
                             <Badge 
                               key={index} 
                               variant="outline" 
@@ -343,7 +343,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                       </div>
                     </div>
                     
-                    <div className="space-y-4 bg-white/90 dark:bg-slate-900/70 p-5 rounded-lg shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300">
+                    <div className="space-y-4 bg-white/90 p-5 rounded-lg shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300">
                       <h4 className="text-sm font-medium flex items-center gap-2 border-b border-primary/20 pb-2">
                         <div className="bg-primary/10 p-1.5 rounded-full">
                           <Flower2 className="h-4 w-4 text-primary" />
@@ -376,10 +376,10 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                     
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {styleProfile.colorPalette && styleProfile.colorPalette.length > 0 ? (
-                        styleProfile.colorPalette.map((color, index) => (
+                        styleProfile.colorPalette.map((color: string, index: number) => (
                           <div 
                             key={index} 
-                            className="bg-white dark:bg-slate-900/80 rounded-lg p-3 text-center shadow-md border border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+                            className="bg-white rounded-lg p-3 text-center shadow-md border border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
                           >
                             <div 
                               className="w-full aspect-square rounded-md mb-3 border border-primary/20 shadow-inner overflow-hidden" 
@@ -391,7 +391,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                           </div>
                         ))
                       ) : (
-                        <div className="col-span-full text-center py-8 bg-white/80 dark:bg-slate-900/50 rounded-lg shadow-md border border-dashed border-primary/20">
+                        <div className="col-span-full text-center py-8 bg-white/80 rounded-lg shadow-md border border-dashed border-primary/20">
                           <div className="inline-block bg-primary/10 p-2 rounded-full mb-2">
                             <Palette className="h-5 w-5 text-primary/70" />
                           </div>
@@ -421,7 +421,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                     <div className="space-y-4">
                       <h3 className="text-2xl font-medium text-center font-fashion-heading tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent mb-6">Style Metrics</h3>
                       
-                      <div className="space-y-6 bg-white/90 dark:bg-slate-900/70 p-5 rounded-lg shadow-md border border-primary/10">
+                      <div className="space-y-6 bg-white/90 p-5 rounded-lg shadow-md border border-primary/10">
                         <div className="text-sm text-center text-muted-foreground mb-2">
                           Your personal style profile, based on your wardrobe composition
                         </div>
@@ -471,7 +471,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                     
                     <div className="flex flex-wrap justify-center gap-2 py-3">
                       {styleProfile.personalityTraits && styleProfile.personalityTraits.length > 0 ? (
-                        styleProfile.personalityTraits.map((trait, index) => (
+                        styleProfile.personalityTraits.map((trait: string, index: number) => (
                           <Badge key={index} variant="default" className="px-3 py-1.5 text-sm">
                             <ThumbsUp className="h-3 w-3 mr-1" />
                             {trait}
@@ -563,7 +563,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
 
           {isStyleAnalysisError && (
             <div className="text-center py-8">
-              <div className="size-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+              <div className="size-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="h-8 w-8 text-red-500" />
               </div>
               <h3 className="text-lg font-medium mb-2">Unable to Create Analysis</h3>
@@ -597,7 +597,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
                 </p>
               </div>
               
-              <div className="prose prose-sm dark:prose-invert max-w-none bg-white/50 dark:bg-slate-900/50 rounded-lg p-4 shadow-sm">
+              <div className="prose prose-sm max-w-none bg-white/50 rounded-lg p-4 shadow-sm">
                 {styleAnalysis.analysis.split('\n').map((paragraph, i) => {
                   // Format the paragraphs for better readability
                   if (!paragraph.trim()) return null;
@@ -635,7 +635,7 @@ export default function StyleProfileAnalysis({ wardrobeItemsCount }: StyleProfil
           )}
 
           {!styleAnalysis && !isStyleAnalysisLoading && !isStyleAnalysisError && (
-            <div className="text-center py-8 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm">
+            <div className="text-center py-8 bg-white/50 rounded-lg shadow-sm">
               <div className="size-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="h-10 w-10 text-primary" />
               </div>
@@ -724,15 +724,15 @@ function StylePreferenceBar({ label, value, leftLabel, rightLabel }: {
           {safeValue}/10
         </span>
       </div>
-      <div className="h-3 bg-white dark:bg-slate-800 rounded-full overflow-hidden shadow-inner border border-primary/20">
+      <div className="h-3 bg-white rounded-full overflow-hidden shadow-inner border border-primary/20">
         <div
           className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full transition-all duration-500"
           style={{ width: `${(safeValue / 10) * 100}%` }}
         ></div>
       </div>
       <div className="flex justify-between text-xs">
-        <span className="text-muted-foreground bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded-md shadow-sm border border-primary/10">{leftLabel}</span>
-        <span className="text-muted-foreground bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded-md shadow-sm border border-primary/10">{rightLabel}</span>
+        <span className="text-muted-foreground bg-white/80 px-2 py-0.5 rounded-md shadow-sm border border-primary/10">{leftLabel}</span>
+        <span className="text-muted-foreground bg-white/80 px-2 py-0.5 rounded-md shadow-sm border border-primary/10">{rightLabel}</span>
       </div>
     </div>
   );
@@ -744,7 +744,7 @@ function StylePreferenceCard({ label, value, icon }: {
   icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-white/90 dark:bg-slate-900/70 rounded-lg p-4 flex flex-col items-center text-center shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+    <div className="bg-white/90 rounded-lg p-4 flex flex-col items-center text-center shadow-md border border-primary/10 hover:border-primary/20 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
       <div className="bg-primary/10 p-2 rounded-full mb-3">
         <div className="text-primary">
           {icon}

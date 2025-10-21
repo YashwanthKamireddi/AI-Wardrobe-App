@@ -110,7 +110,7 @@ const GoldenThread = ({
           isHorizontal 
             ? "bg-gradient-to-r from-amber-200/30 via-amber-400/40 to-amber-200/30" 
             : "bg-gradient-to-b from-amber-200/30 via-amber-400/40 to-amber-200/30"
-        } dark:from-amber-700/20 dark:via-amber-500/30 dark:to-amber-700/20`}
+        }
       />
       
       {/* Shimmer effect */}
@@ -119,7 +119,7 @@ const GoldenThread = ({
           isHorizontal 
             ? "bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" 
             : "bg-gradient-to-b from-transparent via-amber-400/80 to-transparent"
-        } dark:via-amber-300/60`}
+        }
         initial={{ 
           [isHorizontal ? "x" : "y"]: "-100%" 
         }}
@@ -151,7 +151,7 @@ const GoldenThread = ({
             return (
               <motion.div
                 key={i}
-                className="absolute w-1 h-1 bg-amber-200 dark:bg-amber-300 rounded-full shadow-glow"
+                className="absolute w-1 h-1 bg-amber-200 rounded-full shadow-glow"
                 style={{
                   [isHorizontal && !hasCustomPoints ? "left" : "top"]: hasCustomPoints ? 
                     undefined : 

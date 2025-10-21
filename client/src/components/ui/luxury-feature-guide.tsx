@@ -47,19 +47,19 @@ const LuxuryFeatureGuide: React.FC<LuxuryFeatureGuideProps> = ({
       title: "Weather-Smart Styling",
       description: "Never worry about weather again. Get outfit recommendations perfectly suited to current conditions.",
       icon: <Umbrella className="h-8 w-8 text-amber-400" />,
-      iconBg: "bg-amber-100/20 dark:bg-amber-900/20"
+      iconBg: "bg-amber-100/20"
     },
     {
       title: "Digital Luxury Wardrobe",
       description: "Organize your collection with a beautiful, intuitive interface that showcases your personal style.",
       icon: <Sparkle className="h-8 w-8 text-amber-400" />,
-      iconBg: "bg-amber-100/20 dark:bg-amber-900/20"
+      iconBg: "bg-amber-100/20"
     },
     {
       title: "Style Intelligence",
       description: "Our AI understands your preferences and helps you create perfectly coordinated outfits every time.",
       icon: <Wind className="h-8 w-8 text-amber-400" />,
-      iconBg: "bg-amber-100/20 dark:bg-amber-900/20"
+      iconBg: "bg-amber-100/20"
     }
   ];
   
@@ -85,39 +85,39 @@ const LuxuryFeatureGuide: React.FC<LuxuryFeatureGuideProps> = ({
           <h2 className="font-luxury-heading text-xl text-amber-500 font-semibold">
             Your Personal Fashion Assistant
           </h2>
-          <p className="text-sm text-luxury-brown/80 dark:text-amber-200/80">
+          <p className="text-sm text-luxury-brown/80">
             Elevate your style with sophisticated technology
           </p>
         </motion.div>
         
         {/* Before & After */}
         <motion.div
-          className="relative overflow-hidden rounded-xl h-36 border border-amber-200/30 dark:border-amber-800/30 shadow-sm"
+          className="relative overflow-hidden rounded-xl h-36 border border-amber-200/30 shadow-sm"
           variants={itemVariants}
         >
           <div className="absolute inset-0 flex">
             {/* Before side */}
-            <div className="w-1/2 h-full bg-gradient-to-r from-neutral-200 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 p-4 flex flex-col justify-between">
-              <div className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">BEFORE</div>
+            <div className="w-1/2 h-full bg-gradient-to-r from-neutral-200 to-neutral-100 p-4 flex flex-col justify-between">
+              <div className="text-xs text-neutral-500 font-medium">BEFORE</div>
               <div className="flex justify-center items-center flex-1">
-                <Cloud className="w-8 h-8 text-neutral-400 dark:text-neutral-600 opacity-70" />
-                <span className="ml-2 font-medium text-neutral-500 dark:text-neutral-400 text-xs">❓</span>
+                <Cloud className="w-8 h-8 text-neutral-400 opacity-70" />
+                <span className="ml-2 font-medium text-neutral-500 text-xs">❓</span>
               </div>
-              <div className="text-xs text-neutral-500 dark:text-neutral-400">{beforeAfterVisual.before}</div>
+              <div className="text-xs text-neutral-500">{beforeAfterVisual.before}</div>
             </div>
             
             {/* After side */}
-            <div className="w-1/2 h-full bg-gradient-to-r from-amber-100 to-amber-50 dark:from-amber-900/40 dark:to-amber-800/20 p-4 flex flex-col justify-between">
-              <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">AFTER</div>
+            <div className="w-1/2 h-full bg-gradient-to-r from-amber-100 to-amber-50 p-4 flex flex-col justify-between">
+              <div className="text-xs text-amber-600 font-medium">AFTER</div>
               <div className="flex justify-center items-center flex-1">
                 <Sun className="w-8 h-8 text-amber-400" />
                 <span className="ml-2 font-medium text-amber-500 text-xs">✨</span>
               </div>
-              <div className="text-xs text-amber-600 dark:text-amber-400">{beforeAfterVisual.after}</div>
+              <div className="text-xs text-amber-600">{beforeAfterVisual.after}</div>
             </div>
             
             {/* Divider line */}
-            <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/50 dark:bg-black/50" />
+            <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/50" />
           </div>
         </motion.div>
         
@@ -133,10 +133,10 @@ const LuxuryFeatureGuide: React.FC<LuxuryFeatureGuideProps> = ({
                 {feature.icon}
               </div>
               <div>
-                <h3 className="font-luxury-heading text-luxury-brown dark:text-amber-300 font-medium text-sm">
+                <h3 className="font-luxury-heading text-luxury-brown font-medium text-sm">
                   {feature.title}
                 </h3>
-                <p className="text-xs text-luxury-brown/70 dark:text-amber-200/70 mt-1">
+                <p className="text-xs text-luxury-brown/70 mt-1">
                   {feature.description}
                 </p>
               </div>

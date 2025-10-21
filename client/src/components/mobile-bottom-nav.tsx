@@ -196,7 +196,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-background/90 to-background/98 backdrop-blur-md border-t border-amber-200/40 flex items-center justify-around z-50 px-1 shadow-lg pb-safe dark:bg-gradient-to-b dark:from-slate-900/90 dark:to-slate-900/98 dark:border-amber-700/30"
+      className="fixed bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-background/90 to-background/98 backdrop-blur-md border-t border-amber-200/40 flex items-center justify-around z-50 px-1 shadow-lg pb-safe"
       initial="hidden"
       animate="visible"
       variants={navVariants}
@@ -205,10 +205,10 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/80 via-amber-200/50 to-amber-400/80 transform -translate-y-0.5"></div>
       
       {/* Left luxury corner decoration */}
-      <div className="absolute top-0 left-0 w-6 h-6 border-l border-t border-amber-300/40 dark:border-amber-700/40 transform -translate-x-0.5 -translate-y-0.5"></div>
+      <div className="absolute top-0 left-0 w-6 h-6 border-l border-t border-amber-300/40 transform -translate-x-0.5 -translate-y-0.5"></div>
       
       {/* Right luxury corner decoration */}
-      <div className="absolute top-0 right-0 w-6 h-6 border-r border-t border-amber-300/40 dark:border-amber-700/40 transform translate-x-0.5 -translate-y-0.5"></div>
+      <div className="absolute top-0 right-0 w-6 h-6 border-r border-t border-amber-300/40 transform translate-x-0.5 -translate-y-0.5"></div>
       
       {/* Bottom luxury line decoration */}
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/30 via-amber-200/10 to-amber-400/30"></div>
@@ -233,7 +233,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
                     className={cn(
                       "flex flex-col items-center justify-center h-full w-full rounded-md transition-all px-1 font-luxury-heading",
                       isActive 
-                        ? "text-amber-800 dark:text-amber-200 bg-gradient-to-r " + getGradient(item.href, location)
+                        ? "text-amber-800 bg-gradient-to-r " + getGradient(item.href, location)
                         : "text-muted-foreground"
                     )}
                   >
@@ -243,8 +243,8 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
                       className={cn(
                         "flex items-center justify-center p-1.5 rounded-full mb-1 relative",
                         isActive 
-                          ? "bg-gradient-to-r from-amber-100/60 to-amber-200/40 shadow-md border border-amber-200/30 dark:from-amber-900/40 dark:to-amber-800/30 dark:border-amber-700/30" 
-                          : "hover:bg-amber-50/20 dark:hover:bg-amber-900/10"
+                          ? "bg-gradient-to-r from-amber-100/60 to-amber-200/40 shadow-md border border-amber-200/30" 
+                          : "hover:bg-amber-50/20"
                       )}
                     >
                       {isActive && (
@@ -256,14 +256,14 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
                       )}
                       <Icon className={cn(
                         "h-5 w-5",
-                        isActive ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground dark:text-slate-400"
+                        isActive ? "text-amber-700" : "text-muted-foreground"
                       )} />
                     </motion.div>
                     <AnimatePresence>
                       <motion.span
                         className={cn(
                           "text-xs font-luxury-heading tracking-wide relative",
-                          isActive ? "text-amber-800 dark:text-amber-200" : "text-slate-600 dark:text-slate-400"
+                          isActive ? "text-amber-800" : "text-slate-600"
                         )}
                         initial={{ opacity: 0.7 }}
                         animate={{ 
@@ -325,17 +325,17 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
                 {showTooltips && (
                   <TooltipContent 
                     side="top" 
-                    className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-amber-200/40 dark:border-amber-800/40 shadow-lg px-3 py-1.5 rounded-md"
+                    className="bg-white/90 backdrop-blur-md border border-amber-200/40 shadow-lg px-3 py-1.5 rounded-md"
                   >
                     <div className="flex flex-col">
-                      <span className="text-amber-800 dark:text-amber-200 text-xs font-semibold mb-0.5 font-luxury-heading">{item.label}</span>
-                      <span className="text-slate-600 dark:text-slate-300 text-[10px] italic font-luxury-serif">{item.description}</span>
+                      <span className="text-amber-800 text-xs font-semibold mb-0.5 font-luxury-heading">{item.label}</span>
+                      <span className="text-slate-600 text-[10px] italic font-luxury-serif">{item.description}</span>
                     </div>
                     {/* Tooltip decorations */}
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-amber-200/40 dark:border-amber-700/40"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-amber-200/40 dark:border-amber-700/40"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-amber-200/40 dark:border-amber-700/40"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-amber-200/40 dark:border-amber-700/40"></div>
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-amber-200/40"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-amber-200/40"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-amber-200/40"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-amber-200/40"></div>
                   </TooltipContent>
                 )}
               </Tooltip>

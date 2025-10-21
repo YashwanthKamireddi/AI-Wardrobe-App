@@ -175,7 +175,7 @@ export const RunwayCurtain = ({
             <motion.div
               key={isHorizontal ? "curtain-left" : "curtain-top"}
               className={cn(
-                "bg-gradient-to-br from-amber-100 via-amber-50 to-white dark:from-slate-900 dark:via-amber-950/30 dark:to-slate-900/90",
+                "bg-gradient-to-br from-amber-100 via-amber-50 to-white",
                 isHorizontal ? "w-1/2 h-full" : "w-full h-1/2"
               )}
               variants={isHorizontal ? curtainVariants.left : curtainVariants.top}
@@ -186,7 +186,7 @@ export const RunwayCurtain = ({
               {/* Gold trim */}
               <div 
                 className={cn(
-                  "absolute bg-gradient-to-b from-amber-300 to-amber-500/80 dark:from-amber-500/80 dark:to-amber-700/60",
+                  "absolute bg-gradient-to-b from-amber-300 to-amber-500/80",
                   isHorizontal ? "w-1 h-full right-0" : "h-1 w-full bottom-0"
                 )} 
               />
@@ -197,7 +197,7 @@ export const RunwayCurtain = ({
                   <div 
                     key={`line-left-${i}`}
                     className={cn(
-                      "absolute bg-amber-200/30 dark:bg-amber-700/20",
+                      "absolute bg-amber-200/30",
                       isHorizontal
                         ? "h-px w-full top-[10%]"
                         : "w-px h-full left-[10%]"
@@ -214,7 +214,7 @@ export const RunwayCurtain = ({
             <motion.div
               key={isHorizontal ? "curtain-right" : "curtain-bottom"}
               className={cn(
-                "bg-gradient-to-bl from-amber-100 via-amber-50 to-white dark:from-slate-900 dark:via-amber-950/30 dark:to-slate-900/90",
+                "bg-gradient-to-bl from-amber-100 via-amber-50 to-white",
                 isHorizontal ? "w-1/2 h-full" : "w-full h-1/2"
               )}
               variants={isHorizontal ? curtainVariants.right : curtainVariants.bottom}
@@ -225,7 +225,7 @@ export const RunwayCurtain = ({
               {/* Gold trim */}
               <div 
                 className={cn(
-                  "absolute bg-gradient-to-b from-amber-300 to-amber-500/80 dark:from-amber-500/80 dark:to-amber-700/60",
+                  "absolute bg-gradient-to-b from-amber-300 to-amber-500/80",
                   isHorizontal ? "w-1 h-full left-0" : "h-1 w-full top-0"
                 )} 
               />
@@ -236,7 +236,7 @@ export const RunwayCurtain = ({
                   <div 
                     key={`line-right-${i}`}
                     className={cn(
-                      "absolute bg-amber-200/30 dark:bg-amber-700/20",
+                      "absolute bg-amber-200/30",
                       isHorizontal
                         ? "h-px w-full top-[10%]"
                         : "w-px h-full left-[10%]"

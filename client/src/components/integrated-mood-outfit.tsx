@@ -232,7 +232,7 @@ export default function IntegratedMoodOutfit({ weather, wardrobeItems }: Integra
       )}
 
       {isError && (
-        <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300">
+        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircleIcon className="h-5 w-5" />
             <h3 className="font-medium font-poppins">Error Generating Recommendations</h3>

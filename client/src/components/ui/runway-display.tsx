@@ -52,17 +52,17 @@ export function RunwayDisplay({
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Virtual catwalk with spotlight effect */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-100/5 to-amber-200/10 dark:from-transparent dark:via-amber-900/5 dark:to-amber-800/10 pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-100/5 to-amber-200/10 pointer-events-none z-0"></div>
       
       {/* Spotlights */}
-      <div className="absolute top-0 left-1/2 w-[300px] h-[120px] -translate-x-1/2 bg-gradient-radial from-amber-200/20 to-transparent dark:from-amber-500/10 dark:to-transparent blur-xl pointer-events-none"></div>
+      <div className="absolute top-0 left-1/2 w-[300px] h-[120px] -translate-x-1/2 bg-gradient-radial from-amber-200/20 to-transparent blur-xl pointer-events-none"></div>
       
       {/* Runway "floor" */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-200 to-transparent dark:via-amber-500/40 z-0"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-200 to-transparent z-0"></div>
 
       {/* Control buttons */}
       <button 
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-black/50 shadow-md flex items-center justify-center text-amber-800 dark:text-amber-200 border border-amber-200/30 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center text-amber-800 border border-amber-200/30 hover:bg-amber-50 transition-all"
         onClick={handlePrevious}
         aria-label="Previous item"
       >
@@ -72,7 +72,7 @@ export function RunwayDisplay({
       </button>
       
       <button 
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 dark:bg-black/50 shadow-md flex items-center justify-center text-amber-800 dark:text-amber-200 border border-amber-200/30 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center text-amber-800 border border-amber-200/30 hover:bg-amber-50 transition-all"
         onClick={handleNext}
         aria-label="Next item"
       >
@@ -162,7 +162,7 @@ export function RunwayDisplay({
             className={`w-1.5 h-1.5 rounded-full transition-all ${
               index === currentIndex 
                 ? 'bg-amber-500 w-4' 
-                : 'bg-amber-200/50 hover:bg-amber-300/70 dark:bg-amber-700/30 dark:hover:bg-amber-600/50'
+                : 'bg-amber-200/50 hover:bg-amber-300/70
             }`}
             onClick={() => setCurrentIndex(index)}
             aria-label={`Go to item ${index + 1}`}

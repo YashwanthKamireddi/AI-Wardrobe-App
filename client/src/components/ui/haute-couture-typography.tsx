@@ -64,10 +64,10 @@ export function CoutureHeading({
   }[weight];
 
   const colorStyles = {
-    'default': 'text-amber-900 dark:text-amber-100',
-    'muted': 'text-amber-700/70 dark:text-amber-300/70',
-    'gold': 'text-amber-600 dark:text-amber-400',
-    'accent': 'text-amber-500 dark:text-amber-300',
+    'default': 'text-amber-900
+    'muted': 'text-amber-700/70
+    'gold': 'text-amber-600
+    'accent': 'text-amber-500
   }[color];
 
   const trackingStyles = {
@@ -78,10 +78,10 @@ export function CoutureHeading({
   }[tracking];
 
   const underlineStyles = {
-    'solid': 'border-b border-amber-300/50 dark:border-amber-700/50 pb-1',
-    'dotted': 'border-b border-dotted border-amber-300/70 dark:border-amber-700/70 pb-1',
-    'dashed': 'border-b border-dashed border-amber-300/70 dark:border-amber-700/70 pb-1',
-    'gold': 'relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-amber-400 dark:after:via-amber-500 after:to-transparent after:opacity-70',
+    'solid': 'border-b border-amber-300/50 pb-1',
+    'dotted': 'border-b border-dotted border-amber-300/70 pb-1',
+    'dashed': 'border-b border-dashed border-amber-300/70 pb-1',
+    'gold': 'relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-amber-400 after:to-transparent after:opacity-70',
   }[underlineStyle];
 
   return (
@@ -97,8 +97,8 @@ export function CoutureHeading({
         bold && 'font-bold',
         italic && 'italic',
         underline && underlineStyles,
-        gradient && 'bg-gradient-to-r from-amber-700 via-amber-500 to-amber-700 dark:from-amber-300 dark:via-amber-500 dark:to-amber-300 bg-clip-text text-transparent',
-        decorative && 'relative pl-6 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[1px] before:w-4 before:bg-amber-400 dark:before:bg-amber-600',
+        gradient && 'bg-gradient-to-r from-amber-700 via-amber-500 to-amber-700 bg-clip-text text-transparent',
+        decorative && 'relative pl-6 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[1px] before:w-4 before:bg-amber-400
         className
       )}
       {...props}
@@ -136,8 +136,8 @@ export function PullQuote({
       className={cn(
         'my-8 max-w-lg relative p-6',
         position === 'center' ? 'w-full flex flex-col items-center justify-center' : 'w-fit',
-        bordered && 'border-l-2 border-amber-400/50 dark:border-amber-600/50',
-        luxury && 'bg-amber-50/30 dark:bg-amber-900/10 rounded-sm',
+        bordered && 'border-l-2 border-amber-400/50
+        luxury && 'bg-amber-50/30 rounded-sm',
         position === 'left' && bordered && 'pl-8',
         position === 'right' && bordered && 'pr-8 border-l-0 border-r-2',
         positionStyles,
@@ -145,18 +145,18 @@ export function PullQuote({
       )}
     >
       {/* Large quotation mark */}
-      <div className="absolute top-2 opacity-20 text-6xl font-serif text-amber-500 dark:text-amber-400 leading-none pointer-events-none">
+      <div className="absolute top-2 opacity-20 text-6xl font-serif text-amber-500 leading-none pointer-events-none">
         {position === 'right' ? '"' : '"'}
       </div>
       
       {/* Main quote text */}
-      <p className="relative font-luxury-body text-lg italic text-amber-900/80 dark:text-amber-200/80 mb-4 z-10">
+      <p className="relative font-luxury-body text-lg italic text-amber-900/80 mb-4 z-10">
         {children}
       </p>
       
       {/* Quote source/attribution if provided */}
       {source && (
-        <footer className="font-luxury-heading text-amber-600 dark:text-amber-400 text-sm font-medium not-italic">
+        <footer className="font-luxury-heading text-amber-600 text-sm font-medium not-italic">
           — {source}
         </footer>
       )}
@@ -164,8 +164,8 @@ export function PullQuote({
       {/* Decorative elements for luxury style */}
       {luxury && (
         <>
-          <div className="absolute top-0 right-0 w-12 h-12 border-t border-r border-amber-300/30 dark:border-amber-700/30" />
-          <div className="absolute bottom-0 left-0 w-12 h-12 border-b border-l border-amber-300/30 dark:border-amber-700/30" />
+          <div className="absolute top-0 right-0 w-12 h-12 border-t border-r border-amber-300/30" />
+          <div className="absolute bottom-0 left-0 w-12 h-12 border-b border-l border-amber-300/30" />
         </>
       )}
     </div>
@@ -190,17 +190,17 @@ export function EditorialCallout({
   children
 }: EditorialCalloutProps) {
   const variantStyles = {
-    'default': 'bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-100',
-    'highlight': 'bg-gradient-to-r from-amber-100/80 to-amber-50/80 dark:from-amber-900/30 dark:to-amber-900/10 text-amber-900 dark:text-amber-100',
-    'subtle': 'bg-amber-50/50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200',
-    'luxury': 'bg-gradient-to-br from-amber-50/90 to-amber-100/50 dark:from-amber-900/30 dark:to-amber-950/30 text-amber-900 dark:text-amber-100 shadow-md',
+    'default': 'bg-amber-50 text-amber-900
+    'highlight': 'bg-gradient-to-r from-amber-100/80 to-amber-50/80 text-amber-900
+    'subtle': 'bg-amber-50/50 text-amber-800
+    'luxury': 'bg-gradient-to-br from-amber-50/90 to-amber-100/50 text-amber-900 shadow-md',
   }[variant];
 
   return (
     <div 
       className={cn(
         'p-4 sm:p-6 my-6 rounded-md relative overflow-hidden',
-        bordered && 'border border-amber-200/50 dark:border-amber-800/50',
+        bordered && 'border border-amber-200/50
         variantStyles,
         variant === 'luxury' && 'gold-corner',
         className
@@ -215,26 +215,26 @@ export function EditorialCallout({
       
       {/* Title block if provided */}
       {title && (
-        <div className="mb-4 pb-3 border-b border-amber-200/40 dark:border-amber-800/40 flex items-center">
+        <div className="mb-4 pb-3 border-b border-amber-200/40 flex items-center">
           {icon && (
-            <span className="mr-3 text-amber-500 dark:text-amber-400">
+            <span className="mr-3 text-amber-500">
               {icon}
             </span>
           )}
-          <h4 className="font-luxury-heading text-lg font-medium text-amber-800 dark:text-amber-300">
+          <h4 className="font-luxury-heading text-lg font-medium text-amber-800">
             {title}
           </h4>
         </div>
       )}
       
       {/* Content */}
-      <div className="font-luxury-body text-amber-800/90 dark:text-amber-200/90 relative z-10">
+      <div className="font-luxury-body text-amber-800/90 relative z-10">
         {children}
       </div>
       
       {/* Additional decorative elements for luxury variant */}
       {variant === 'luxury' && (
-        <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-radial from-amber-200/20 to-transparent dark:from-amber-500/10 dark:to-transparent blur-md"></div>
+        <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-radial from-amber-200/20 to-transparent blur-md"></div>
       )}
     </div>
   );
@@ -283,7 +283,7 @@ export function MagazineTextBlock({
       
       return (
         <p>
-          <span className="float-left text-5xl font-luxury-heading font-bold text-amber-600 dark:text-amber-400 mr-2 mt-1 leading-none">
+          <span className="float-left text-5xl font-luxury-heading font-bold text-amber-600 mr-2 mt-1 leading-none">
             {firstLetter}
           </span>
           {restOfText}
@@ -297,7 +297,7 @@ export function MagazineTextBlock({
   return (
     <div 
       className={cn(
-        'font-luxury-body text-amber-900 dark:text-amber-100 my-6',
+        'font-luxury-body text-amber-900 my-6',
         alignmentStyles,
         columnStyles,
         columns > 1 && gapStyles,
@@ -321,10 +321,10 @@ export function FashionHighlight({
   ...props
 }: FashionHighlightProps) {
   const variantStyles = {
-    'underline': 'border-b-2 border-amber-300 dark:border-amber-500 pb-0.5 text-amber-800 dark:text-amber-200',
-    'highlight': 'bg-amber-100 dark:bg-amber-900/50 px-1 py-0.5 rounded-sm text-amber-900 dark:text-amber-100',
-    'gold': 'text-amber-600 dark:text-amber-400 font-medium',
-    'editorial': 'font-luxury-heading italic text-amber-700 dark:text-amber-300',
+    'underline': 'border-b-2 border-amber-300 pb-0.5 text-amber-800
+    'highlight': 'bg-amber-100 px-1 py-0.5 rounded-sm text-amber-900
+    'gold': 'text-amber-600 font-medium',
+    'editorial': 'font-luxury-heading italic text-amber-700
   }[variant];
 
   return (

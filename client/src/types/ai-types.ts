@@ -30,3 +30,18 @@ export interface AIOutfitRecommendationRequest {
   mood?: string;
   userPreferences?: Record<string, any>;
 }
+
+export interface StyleProfile {
+  dominantStyle: string;
+  keyItems?: string[];
+  colorPalette?: string[];
+  styleTraits?: string[];
+  personalityTraits?: string[];
+  preferences?: {
+    formality?: number;
+    boldness?: number;
+    trendiness?: number;
+    seasonality?: string;
+    silhouette?: string;
+  };
+}
