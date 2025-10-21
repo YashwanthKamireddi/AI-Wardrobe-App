@@ -76,8 +76,8 @@ const PageTransition: React.FC<PageTransitionProps> = ({
       <RunwayCurtain
         isOpen={transitionStage !== 'fadeOut'}
         direction="horizontal"
-        duration={duration}
-        bgColor="rgba(0, 0, 0, 0.92)"
+        openDuration={duration}
+        closeDuration={duration}
       >
         {/* Page content with fade transition */}
         <AnimatePresence mode="wait">

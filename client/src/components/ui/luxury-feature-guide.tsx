@@ -150,10 +150,10 @@ const LuxuryFeatureGuide: React.FC<LuxuryFeatureGuideProps> = ({
           variants={itemVariants}
         >
           <GoldenThread 
-            pathType="wave" 
+            direction="horizontal"
+            length="100%"
             thickness={1} 
-            color="rgba(251, 191, 36, 0.6)"
-            duration={4}
+            animationDuration={4}
           />
         </motion.div>
       </motion.div>
