@@ -110,7 +110,7 @@ const GoldenThread = ({
           isHorizontal 
             ? "bg-gradient-to-r from-amber-200/30 via-amber-400/40 to-amber-200/30" 
             : "bg-gradient-to-b from-amber-200/30 via-amber-400/40 to-amber-200/30"
-        }
+        }`}
       />
       
       {/* Shimmer effect */}
@@ -119,7 +119,7 @@ const GoldenThread = ({
           isHorizontal 
             ? "bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" 
             : "bg-gradient-to-b from-transparent via-amber-400/80 to-transparent"
-        }
+        }`}
         initial={{ 
           [isHorizontal ? "x" : "y"]: "-100%" 
         }}

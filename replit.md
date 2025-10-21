@@ -7,6 +7,7 @@ Cher's Closet is a full-stack wardrobe management application that combines mode
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Theme: Light mode only (dark mode completely removed).
 
 ## System Architecture
 
@@ -29,8 +30,10 @@ Preferred communication style: Simple, everyday language.
 ### Design System
 - **Typography**: Luxury font combinations (Cormorant Garamond, Playfair Display, Montserrat)
 - **Color Palette**: Warm amber/gold tones with sophisticated neutral backgrounds
+- **Theme**: Light mode exclusively (all dark mode infrastructure removed)
 - **Components**: Custom animated components with luxury aesthetics
-- **Responsive Design**: Mobile-first approach with dedicated mobile navigation
+- **Responsive Design**: Mobile-first approach with responsive hamburger menu navigation
+- **Navigation Bar**: Luxury amber gradient background with professional spacing and touch-friendly mobile drawer
 
 ## Key Components
 
