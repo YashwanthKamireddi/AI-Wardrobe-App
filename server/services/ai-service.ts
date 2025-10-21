@@ -145,7 +145,8 @@ Format your response as JSON with an array of outfits, each containing:
       const data = JSON.parse(content);
       return data.outfits || [];
     } catch (parseError) {
-      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      const errorMsg = parseError instanceof Error ? parseError.message : String(parseError);
+      logger.error(`Error parsing OpenAI response: ${errorMsg}`);
       throw new ApiError('Failed to parse outfit recommendations', 500);
     }
   } catch (error) {
@@ -154,7 +155,7 @@ Format your response as JSON with an array of outfits, each containing:
     }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error generating outfit recommendations:', { error: errorMessage });
+    logger.error(`Error generating outfit recommendations: ${errorMessage}`);
     throw new ApiError(`Failed to generate outfit recommendations: ${errorMessage}`, 500);
   }
 }
@@ -185,10 +186,11 @@ export async function analyzeUserStyle({
     
     // Create summary of wardrobe by category
     const categorySummary = Object.entries(itemsByCategory).map(([category, items]) => {
-      const colors = [...new Set(items.map(item => item.color))];
-      const styles = [...new Set(items.map(item => item.style))];
+      const itemArray = items as any[];
+      const colors = [...new Set(itemArray.map((item: any) => item.color))];
+      const styles = [...new Set(itemArray.map((item: any) => item.style))];
       
-      return `${category}: ${items.length} items
+      return `${category}: ${itemArray.length} items
 - Common colors: ${colors.join(', ')}
 - Styles: ${styles.join(', ')}`;
     }).join('\n\n');
@@ -270,7 +272,8 @@ Format your response as JSON with:
     try {
       return JSON.parse(content);
     } catch (parseError) {
-      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      const errorMsg = parseError instanceof Error ? parseError.message : String(parseError);
+      logger.error(`Error parsing OpenAI response: ${errorMsg}`);
       throw new ApiError('Failed to parse style analysis', 500);
     }
   } catch (error) {
@@ -279,7 +282,7 @@ Format your response as JSON with:
     }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error analyzing user style:', { error: errorMessage });
+    logger.error(`Error analyzing user style: ${errorMessage}`);
     throw new ApiError(`Failed to analyze user style: ${errorMessage}`, 500);
   }
 }
@@ -382,7 +385,8 @@ Format your response as JSON:
     try {
       return JSON.parse(content);
     } catch (parseError) {
-      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      const errorMsg = parseError instanceof Error ? parseError.message : String(parseError);
+      logger.error('Error parsing OpenAI response', { errorMessage: errorMsg, content });
       throw new ApiError('Failed to parse occasion outfit recommendation', 500);
     }
   } catch (error) {
@@ -391,7 +395,7 @@ Format your response as JSON:
     }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error generating occasion outfit:', { error: errorMessage });
+    logger.error(`Error generating occasion outfit: ${errorMessage}`);
     throw new ApiError(`Failed to generate occasion outfit: ${errorMessage}`, 500);
   }
 }
@@ -456,7 +460,8 @@ Format your response as JSON with:
     try {
       return JSON.parse(content);
     } catch (parseError) {
-      logger.error('Error parsing OpenAI response', { error: parseError, content });
+      const errorMsg = parseError instanceof Error ? parseError.message : String(parseError);
+      logger.error(`Error parsing OpenAI response: ${errorMsg}`);
       throw new ApiError('Failed to parse style analysis', 500);
     }
   } catch (error) {
@@ -465,7 +470,7 @@ Format your response as JSON with:
     }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error analyzing style:', { error: errorMessage });
+    logger.error(`Error analyzing style: ${errorMessage}`);
     throw new ApiError(`Failed to analyze style: ${errorMessage}`, 500);
   }
 }
@@ -493,7 +498,7 @@ export async function createUserStyleProfile(wardrobeItems: any[]) {
     }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error creating user style profile:', { error: errorMessage });
+    logger.error(`Error creating user style profile: ${errorMessage}`);
     throw new ApiError(`Failed to create style profile: ${errorMessage}`, 500);
   }
 }
