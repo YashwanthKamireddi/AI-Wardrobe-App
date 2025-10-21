@@ -843,12 +843,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Use the getWeatherForLocation function from weather.ts
     import("./weather").then(({ getWeatherForLocation }) => {
       getWeatherForLocation(location).then(weatherData => {
-        // Check if the response is an error
-        if ('error' in weatherData) {
-          console.log("Weather API error:", weatherData.error, weatherData.message);
-          return res.status(400).json(weatherData);
-        }
-
         // Map the weather data to the expected response format
         const response = {
           location: weatherData.type === 'snowy' || weatherData.type === 'cold' 
