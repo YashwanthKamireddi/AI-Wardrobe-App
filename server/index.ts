@@ -16,19 +16,29 @@ import appConfig from './config/app-config';
 // Start the server
 (async () => {
   try {
+    const timestamp = () => new Date().toISOString();
+    console.log(`[${timestamp()}] Starting Cher's Closet application with in-memory storage...`);
     logger.info('Starting Cher\'s Closet application with in-memory storage...');
     
     // Create Express app
+    console.log(`[${timestamp()}] About to call createApp()...`);
     const app = await createApp();
+    console.log(`[${timestamp()}] createApp() completed successfully`);
     
     // Create HTTP server
+    console.log(`[${timestamp()}] Creating HTTP server...`);
     const server = createServer(app);
+    console.log(`[${timestamp()}] HTTP server created`);
     
     // Set up Vite for development or serve static files for production
     if (appConfig.environment.isDevelopment) {
+      console.log(`[${timestamp()}] About to call setupVite()...`);
       await setupVite(app, server);
+      console.log(`[${timestamp()}] setupVite() completed successfully`);
     } else {
+      console.log(`[${timestamp()}] Serving static files...`);
       serveStatic(app);
+      console.log(`[${timestamp()}] Static files setup complete`);
     }
     
     // Get port from environment or use default

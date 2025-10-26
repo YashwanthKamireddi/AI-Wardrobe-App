@@ -1,5 +1,4 @@
 import type { Express, Request, Response, NextFunction } from "express";
-import { createServer, type Server } from "http";
 import storage from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
@@ -13,8 +12,7 @@ import {
 import aiService from "./services/ai-service";
 
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Return type is Server, make sure we return it at the end
+export async function registerRoutes(app: Express): Promise<void> {
   // Health check endpoint for basic API testing
   app.get("/api/health", (req: Request, res: Response) => {
     res.json({
@@ -887,9 +885,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch location suggestions" });
     });
   });
-
-
-
-  const httpServer = createServer(app);
-  return httpServer;
 }

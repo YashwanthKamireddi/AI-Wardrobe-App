@@ -21,12 +21,17 @@ import storage from './storage';
  * Creates and configures the Express application
  */
 export async function createApp(): Promise<Express> {
+  const timestamp = () => new Date().toISOString();
+  console.log(`[${timestamp()}] [createApp] Initializing Express application...`);
+  
   // Initialize the Express application
   const app = express();
+  console.log(`[${timestamp()}] [createApp] Express app created`);
   
   // Set application variables
   app.set('isLocal', appConfig.environment.isLocal);
   app.set('env', appConfig.environment.nodeEnv);
+  console.log(`[${timestamp()}] [createApp] Application variables set`);
   
   // Apply basic middleware
   app.use(cors({
@@ -35,11 +40,14 @@ export async function createApp(): Promise<Express> {
   }));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
+  console.log(`[${timestamp()}] [createApp] Basic middleware applied`);
   
   // Set up request logging
   app.use(requestLogger);
+  console.log(`[${timestamp()}] [createApp] Request logging configured`);
   
   // Set up session handling with in-memory storage
+  console.log(`[${timestamp()}] [createApp] Setting up session handling...`);
   const sessionConfig = {
     secret: appConfig.auth.sessionSecret,
     resave: false,
@@ -52,11 +60,15 @@ export async function createApp(): Promise<Express> {
   };
   
   app.use(session(sessionConfig));
+  console.log(`[${timestamp()}] [createApp] Session handling configured`);
   
   // Set up authentication
+  console.log(`[${timestamp()}] [createApp] Setting up authentication...`);
   setupAuth(app);
+  console.log(`[${timestamp()}] [createApp] Authentication configured`);
   
   // Health check endpoint that doesn't require authentication
+  console.log(`[${timestamp()}] [createApp] Registering health check endpoint...`);
   app.get('/api/health', async (req, res) => {
     try {
       // Check memory usage
@@ -86,13 +98,19 @@ export async function createApp(): Promise<Express> {
       });
     }
   });
+  console.log(`[${timestamp()}] [createApp] Health check endpoint registered`);
   
   // Register application routes
+  console.log(`[${timestamp()}] [createApp] About to register application routes...`);
   await registerRoutes(app);
+  console.log(`[${timestamp()}] [createApp] Application routes registered successfully`);
   
   // Apply global error handler (must be after routes)
+  console.log(`[${timestamp()}] [createApp] Applying error handler...`);
   app.use(errorHandler);
+  console.log(`[${timestamp()}] [createApp] Error handler applied`);
   
+  console.log(`[${timestamp()}] [createApp] Application initialization complete`);
   return app;
 }
 
