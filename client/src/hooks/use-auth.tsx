@@ -8,6 +8,11 @@ import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+export function clearAuth() {
+  queryClient.setQueryData(["/api/user"], null);
+  queryClient.invalidateQueries();
+}
+
 type AuthContextType = {
   user: SelectUser | null;
   isLoading: boolean;

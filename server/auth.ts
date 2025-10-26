@@ -4,7 +4,8 @@ import { Express, Request, Response } from "express";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import storage from "./storage";
-import { User as SelectUser } from "@shared/schema";
+import { User as SelectUser, registerUserSchema } from "@shared/schema";
+import { fromZodError } from "zod-validation-error";
 
 declare global {
   namespace Express {
@@ -63,14 +64,30 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req: Request, res: Response, next) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
+      // Validate and sanitize request body using schema
+      const validationResult = registerUserSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        const error = fromZodError(validationResult.error);
+        return res.status(400).json({ message: error.message });
+      }
+
+      const validatedData = validationResult.data;
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(validatedData.username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
       }
 
+      // Create user with validated data only (no id, role, or other privileged fields)
       const user = await storage.createUser({
-        ...req.body,
-        password: await hashPassword(req.body.password),
+        username: validatedData.username,
+        password: await hashPassword(validatedData.password),
+        name: validatedData.name || null,
+        email: validatedData.email || null,
+        profilePicture: validatedData.profilePicture || null,
+        // role is set by the database default (user), cannot be overridden by client
       });
 
       // Remove password from the response
@@ -129,12 +146,22 @@ export function setupAuth(app: Express) {
       // Get the current user's ID from the session
       const userId = req.user!.id;
 
-      // Make sure to exclude any attempts to change the password directly through this endpoint
-      // Password changes should go through a separate dedicated endpoint with proper validation
-      const { password, ...updateData } = req.body;
+      // Whitelist only safe fields that users can update themselves
+      // Explicitly exclude: id, password, role (privileged fields)
+      const { id, password, role, ...updateData } = req.body;
+      
+      // Only allow updates to safe profile fields
+      const safeUpdateData: Record<string, any> = {};
+      const allowedFields = ['name', 'email', 'profilePicture'];
+      
+      for (const field of allowedFields) {
+        if (field in updateData) {
+          safeUpdateData[field] = updateData[field];
+        }
+      }
 
-      // Update the user in the database
-      const updatedUser = await storage.updateUser(userId, updateData);
+      // Update the user in the database with only safe fields
+      const updatedUser = await storage.updateUser(userId, safeUpdateData);
 
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });

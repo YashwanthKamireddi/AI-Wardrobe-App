@@ -84,6 +84,20 @@ export const insertUserSchema = createInsertSchema(users).pick({
   role: true,
 });
 
+// Safe registration schema - excludes privileged fields (id, role)
+export const registerUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+  name: true,
+  email: true,
+  profilePicture: true,
+}).extend({
+  username: z.string().min(3, "Username must be at least 3 characters").max(20, "Username too long"),
+  password: z.string().min(6, "Password must be at least 6 characters").max(100, "Password too long"),
+  name: z.string().min(2, "Name too short").max(50, "Name too long").optional(),
+  email: z.string().email("Invalid email").max(100, "Email too long").optional(),
+});
+
 /**
  * Wardrobe Items Table
  * 

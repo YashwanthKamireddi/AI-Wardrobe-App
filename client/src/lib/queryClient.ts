@@ -1,4 +1,5 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { QueryClient, QueryFunction, MutationCache, QueryCache } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -62,7 +63,32 @@ export const getQueryFn: <T>(options: {
     return await res.json();
   };
 
+function handle401Error(error: Error) {
+  if (error.message.includes("401")) {
+    queryClient.setQueryData(["/api/user"], null);
+    queryClient.invalidateQueries();
+    
+    toast({
+      title: "Session expired",
+      description: "Please log in again.",
+      variant: "destructive",
+    });
+    
+    window.location.href = "/auth";
+  }
+}
+
 export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      handle401Error(error as Error);
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      handle401Error(error as Error);
+    },
+  }),
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),

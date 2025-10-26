@@ -33,6 +33,125 @@ function validateApiKey() {
 }
 
 /**
+ * Validates and filters wardrobe items to ensure they have required fields
+ * Returns only valid items and logs warnings for incomplete items
+ */
+function validateAndFilterWardrobeItems(items: any[]): any[] {
+  const validItems = items.filter(item => {
+    // Check for required fields
+    const hasRequiredFields = item.name && item.category && item.imageUrl;
+    
+    if (!hasRequiredFields) {
+      logger.warn('Filtering out wardrobe item with missing required fields', {
+        itemId: item.id,
+        hasName: !!item.name,
+        hasCategory: !!item.category,
+        hasImageUrl: !!item.imageUrl
+      });
+      return false;
+    }
+    
+    return true;
+  });
+  
+  if (validItems.length < items.length) {
+    logger.info(`Filtered wardrobe items: ${items.length} -> ${validItems.length} valid items`);
+  }
+  
+  return validItems;
+}
+
+/**
+ * Formats a wardrobe item for AI prompts using only valid fields
+ */
+function formatWardrobeItem(item: any): string {
+  const parts = [
+    item.name,
+    `(${item.category}${item.subcategory ? `, ${item.subcategory}` : ''})`
+  ];
+  
+  const details = [];
+  
+  if (item.color) {
+    details.push(`Color: ${item.color}`);
+  }
+  
+  if (item.season) {
+    details.push(`Season: ${item.season}`);
+  }
+  
+  if (item.tags && Array.isArray(item.tags) && item.tags.length > 0) {
+    details.push(`Tags: ${item.tags.join(', ')}`);
+  }
+  
+  if (details.length > 0) {
+    parts.push(`: ${details.join(', ')}`);
+  }
+  
+  return parts.join(' ');
+}
+
+/**
+ * Retry helper with exponential backoff for OpenAI API calls
+ * Retries on rate limit, timeout, and temporary errors
+ */
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  operationName: string,
+  maxRetries: number = 3
+): Promise<T> {
+  const delays = [1000, 2000, 4000]; // 1s, 2s, 4s
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      const isLastAttempt = attempt === maxRetries - 1;
+      
+      // Check if this is a retryable error
+      const isRateLimitError = error?.status === 429 || error?.code === 'rate_limit_exceeded';
+      const isTimeoutError = error?.code === 'timeout' || error?.message?.includes('timeout');
+      const isQuotaError = error?.code === 'insufficient_quota';
+      const isServerError = error?.status >= 500 && error?.status < 600;
+      
+      const shouldRetry = !isLastAttempt && (isRateLimitError || isTimeoutError || isServerError);
+      
+      if (isQuotaError) {
+        logger.error(`OpenAI quota exceeded for ${operationName}`);
+        throw new ApiError(
+          'AI service quota exceeded. Please try again later or contact support.',
+          503
+        );
+      }
+      
+      if (shouldRetry) {
+        const delay = delays[attempt];
+        logger.warn(`${operationName} failed (attempt ${attempt + 1}/${maxRetries}), retrying in ${delay}ms`, {
+          error: error?.message || String(error),
+          status: error?.status,
+          code: error?.code
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // If we shouldn't retry or this is the last attempt, throw the error
+      if (isLastAttempt) {
+        logger.error(`${operationName} failed after ${maxRetries} attempts`, {
+          error: error?.message || String(error)
+        });
+      }
+      
+      throw error;
+    }
+  }
+  
+  // This should never be reached, but TypeScript needs it
+  throw new Error(`${operationName} failed after all retries`);
+}
+
+/**
  * Get outfit recommendations based on wardrobe items, weather, and occasion
  */
 export async function getOutfitRecommendations({
@@ -56,10 +175,16 @@ export async function getOutfitRecommendations({
   try {
     validateApiKey();
     
-    // Prepare wardrobe items for the prompt
-    const itemsText = wardrobeItems.map(item => 
-      `${item.name} (${item.category}): ${item.color}, ${item.material}, ${item.style}`
-    ).join('\n');
+    // Validate and filter wardrobe items
+    const validItems = validateAndFilterWardrobeItems(wardrobeItems);
+    
+    if (validItems.length === 0) {
+      logger.warn('No valid wardrobe items for outfit recommendations');
+      return [];
+    }
+    
+    // Prepare wardrobe items for the prompt using correct fields
+    const itemsText = validItems.map(formatWardrobeItem).join('\n');
     
     // Build a detailed prompt for the AI
     let prompt = `You are a personal styling assistant. Based on the user's wardrobe items, create 3 stylish outfit recommendations.
@@ -120,21 +245,24 @@ Format your response as JSON with an array of outfits, each containing:
   "confidenceScore": 87
 }`;
 
-    // Make API request to OpenAI
+    // Make API request to OpenAI with retry logic
     logger.info('Requesting outfit recommendations from OpenAI');
-    const response = await openai.chat.completions.create({
-      model: openaiConfig.model,
-      messages: [
-        { 
-          role: "system", 
-          content: "You are a luxury fashion styling assistant with expertise in creating outfit combinations from available clothing items. Always respond in valid JSON format."
-        },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: openaiConfig.maxTokens,
-      temperature: openaiConfig.temperature,
-      response_format: { type: "json_object" }
-    });
+    const response = await retryWithBackoff(
+      () => openai.chat.completions.create({
+        model: openaiConfig.model,
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a luxury fashion styling assistant with expertise in creating outfit combinations from available clothing items. Always respond in valid JSON format."
+          },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: openaiConfig.maxTokens,
+        temperature: openaiConfig.temperature,
+        response_format: { type: "json_object" }
+      }),
+      'getOutfitRecommendations'
+    );
     
     // Parse the response
     const content = response.choices[0]?.message?.content || '';
@@ -156,7 +284,13 @@ Format your response as JSON with an array of outfits, each containing:
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Error generating outfit recommendations: ${errorMessage}`);
-    throw new ApiError(`Failed to generate outfit recommendations: ${errorMessage}`, 500);
+    
+    // Provide user-friendly error message
+    if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+      throw new ApiError('Unable to connect to AI service. Please check your internet connection and try again.', 503);
+    }
+    
+    throw new ApiError('Failed to generate outfit recommendations. Please try again later.', 500);
   }
 }
 
@@ -175,24 +309,45 @@ export async function analyzeUserStyle({
   try {
     validateApiKey();
     
+    // Validate and filter wardrobe items
+    const validItems = validateAndFilterWardrobeItems(wardrobeItems);
+    
+    if (validItems.length === 0) {
+      logger.warn('No valid wardrobe items for style analysis');
+      throw new ApiError('Not enough wardrobe items to analyze style. Please add more items to your wardrobe.', 400);
+    }
+    
     // Prepare wardrobe data for the prompt
-    const itemsByCategory = wardrobeItems.reduce((acc, item) => {
+    const itemsByCategory = validItems.reduce((acc, item) => {
       if (!acc[item.category]) {
         acc[item.category] = [];
       }
       acc[item.category].push(item);
       return acc;
-    }, {});
+    }, {} as Record<string, any[]>);
     
     // Create summary of wardrobe by category
     const categorySummary = Object.entries(itemsByCategory).map(([category, items]) => {
       const itemArray = items as any[];
-      const colors = [...new Set(itemArray.map((item: any) => item.color))];
-      const styles = [...new Set(itemArray.map((item: any) => item.style))];
+      const colors = [...new Set(itemArray.map((item: any) => item.color).filter(Boolean))];
+      const subcategories = [...new Set(itemArray.map((item: any) => item.subcategory).filter(Boolean))];
+      const seasons = [...new Set(itemArray.map((item: any) => item.season).filter(Boolean))];
       
-      return `${category}: ${itemArray.length} items
-- Common colors: ${colors.join(', ')}
-- Styles: ${styles.join(', ')}`;
+      let summary = `${category}: ${itemArray.length} items`;
+      
+      if (colors.length > 0) {
+        summary += `\n- Common colors: ${colors.join(', ')}`;
+      }
+      
+      if (subcategories.length > 0) {
+        summary += `\n- Subcategories: ${subcategories.join(', ')}`;
+      }
+      
+      if (seasons.length > 0) {
+        summary += `\n- Seasons: ${seasons.join(', ')}`;
+      }
+      
+      return summary;
     }).join('\n\n');
     
     // Build the prompt
@@ -248,21 +403,24 @@ Format your response as JSON with:
   "recommendedItems": ["Item type 1", "Item type 2", ...]
 }`;
 
-    // Make API request to OpenAI
+    // Make API request to OpenAI with retry logic
     logger.info('Requesting style analysis from OpenAI');
-    const response = await openai.chat.completions.create({
-      model: openaiConfig.model,
-      messages: [
-        { 
-          role: "system", 
-          content: "You are a luxury fashion consultant with expertise in analyzing personal style. Always respond in valid JSON format."
-        },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: openaiConfig.maxTokens,
-      temperature: openaiConfig.temperature,
-      response_format: { type: "json_object" }
-    });
+    const response = await retryWithBackoff(
+      () => openai.chat.completions.create({
+        model: openaiConfig.model,
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a luxury fashion consultant with expertise in analyzing personal style. Always respond in valid JSON format."
+          },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: openaiConfig.maxTokens,
+        temperature: openaiConfig.temperature,
+        response_format: { type: "json_object" }
+      }),
+      'analyzeUserStyle'
+    );
     
     // Parse the response
     const content = response.choices[0]?.message?.content || '';
@@ -283,7 +441,13 @@ Format your response as JSON with:
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Error analyzing user style: ${errorMessage}`);
-    throw new ApiError(`Failed to analyze user style: ${errorMessage}`, 500);
+    
+    // Provide user-friendly error message
+    if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+      throw new ApiError('Unable to connect to AI service. Please check your internet connection and try again.', 503);
+    }
+    
+    throw new ApiError('Failed to analyze style. Please try again later.', 500);
   }
 }
 
@@ -307,10 +471,16 @@ export async function getOccasionOutfit({
   try {
     validateApiKey();
     
-    // Prepare wardrobe items for the prompt
-    const itemsText = wardrobeItems.map(item => 
-      `${item.name} (${item.category}): ${item.color}, ${item.material}, ${item.style}`
-    ).join('\n');
+    // Validate and filter wardrobe items
+    const validItems = validateAndFilterWardrobeItems(wardrobeItems);
+    
+    if (validItems.length === 0) {
+      logger.warn('No valid wardrobe items for occasion outfit');
+      return null;
+    }
+    
+    // Prepare wardrobe items for the prompt using correct fields
+    const itemsText = validItems.map(formatWardrobeItem).join('\n');
     
     // Build a detailed prompt
     let prompt = `You are a personal styling assistant. Create the perfect outfit for a specific occasion using items from the user's wardrobe.
@@ -361,21 +531,24 @@ Format your response as JSON:
   "occasionReasoning": "Why this outfit works for the occasion"
 }`;
 
-    // Make API request to OpenAI
+    // Make API request to OpenAI with retry logic
     logger.info('Requesting occasion outfit from OpenAI');
-    const response = await openai.chat.completions.create({
-      model: openaiConfig.model,
-      messages: [
-        { 
-          role: "system", 
-          content: "You are a luxury fashion styling assistant specializing in occasion dressing. Always respond in valid JSON format."
-        },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: openaiConfig.maxTokens,
-      temperature: openaiConfig.temperature,
-      response_format: { type: "json_object" }
-    });
+    const response = await retryWithBackoff(
+      () => openai.chat.completions.create({
+        model: openaiConfig.model,
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a luxury fashion styling assistant specializing in occasion dressing. Always respond in valid JSON format."
+          },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: openaiConfig.maxTokens,
+        temperature: openaiConfig.temperature,
+        response_format: { type: "json_object" }
+      }),
+      'getOccasionOutfit'
+    );
     
     // Parse the response
     const content = response.choices[0]?.message?.content || '';
@@ -396,7 +569,13 @@ Format your response as JSON:
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Error generating occasion outfit: ${errorMessage}`);
-    throw new ApiError(`Failed to generate occasion outfit: ${errorMessage}`, 500);
+    
+    // Provide user-friendly error message
+    if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+      throw new ApiError('Unable to connect to AI service. Please check your internet connection and try again.', 503);
+    }
+    
+    throw new ApiError('Failed to generate occasion outfit. Please try again later.', 500);
   }
 }
 
@@ -407,10 +586,16 @@ export async function analyzeStyle(wardrobeItems: any[]) {
   try {
     validateApiKey();
     
-    // Prepare wardrobe items for the prompt
-    const itemsText = wardrobeItems.map(item => 
-      `${item.name} (${item.category}): ${item.color}, ${item.description || ''}`
-    ).join('\n');
+    // Validate and filter wardrobe items
+    const validItems = validateAndFilterWardrobeItems(wardrobeItems);
+    
+    if (validItems.length === 0) {
+      logger.warn('No valid wardrobe items for style analysis');
+      throw new ApiError('Not enough wardrobe items to analyze style. Please add more items to your wardrobe.', 400);
+    }
+    
+    // Prepare wardrobe items for the prompt using correct fields
+    const itemsText = validItems.map(formatWardrobeItem).join('\n');
     
     // Build a detailed prompt for the AI
     const prompt = `Analyze this user's wardrobe and describe their style profile:
@@ -436,21 +621,24 @@ Format your response as JSON with:
   "recommendations": ["Item 1", "Item 2"]
 }`;
 
-    // Make API request to OpenAI
+    // Make API request to OpenAI with retry logic
     logger.info('Requesting style analysis from OpenAI');
-    const response = await openai.chat.completions.create({
-      model: openaiConfig.model,
-      messages: [
-        { 
-          role: "system", 
-          content: "You are a professional fashion stylist with expertise in analyzing wardrobes. Always respond in valid JSON format."
-        },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: openaiConfig.maxTokens,
-      temperature: openaiConfig.temperature,
-      response_format: { type: "json_object" }
-    });
+    const response = await retryWithBackoff(
+      () => openai.chat.completions.create({
+        model: openaiConfig.model,
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a professional fashion stylist with expertise in analyzing wardrobes. Always respond in valid JSON format."
+          },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: openaiConfig.maxTokens,
+        temperature: openaiConfig.temperature,
+        response_format: { type: "json_object" }
+      }),
+      'analyzeStyle'
+    );
     
     // Parse the response
     const content = response.choices[0]?.message?.content || '';
@@ -471,7 +659,13 @@ Format your response as JSON with:
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Error analyzing style: ${errorMessage}`);
-    throw new ApiError(`Failed to analyze style: ${errorMessage}`, 500);
+    
+    // Provide user-friendly error message
+    if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+      throw new ApiError('Unable to connect to AI service. Please check your internet connection and try again.', 503);
+    }
+    
+    throw new ApiError('Failed to analyze style. Please try again later.', 500);
   }
 }
 
@@ -482,14 +676,22 @@ export async function createUserStyleProfile(wardrobeItems: any[]) {
   try {
     validateApiKey();
     
+    // Validate items first
+    const validItems = validateAndFilterWardrobeItems(wardrobeItems);
+    
+    if (validItems.length === 0) {
+      logger.warn('No valid wardrobe items for style profile');
+      throw new ApiError('Not enough wardrobe items to create a style profile. Please add more items to your wardrobe.', 400);
+    }
+    
     // This could be more complex, but for now we'll leverage the analyzeStyle function
     // and add some additional processing
-    const styleAnalysis = await analyzeStyle(wardrobeItems);
+    const styleAnalysis = await analyzeStyle(validItems);
     
     // Add a profile summary and creation date
     return {
       ...styleAnalysis,
-      profileSummary: `Style profile based on ${wardrobeItems.length} wardrobe items`,
+      profileSummary: `Style profile based on ${validItems.length} wardrobe items`,
       createdAt: new Date().toISOString()
     };
   } catch (error) {
@@ -499,7 +701,13 @@ export async function createUserStyleProfile(wardrobeItems: any[]) {
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Error creating user style profile: ${errorMessage}`);
-    throw new ApiError(`Failed to create style profile: ${errorMessage}`, 500);
+    
+    // Provide user-friendly error message
+    if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+      throw new ApiError('Unable to connect to AI service. Please check your internet connection and try again.', 503);
+    }
+    
+    throw new ApiError('Failed to create style profile. Please try again later.', 500);
   }
 }
 
@@ -522,8 +730,8 @@ export async function getOutfitSuggestionForOccasion(params: any) {
 // Export as default for default imports
 export default {
   getOutfitRecommendations,
-  getOccasionOutfit, // If this function exists in the full file
-  analyzeUserStyle, // If this function exists in the full file
+  getOccasionOutfit,
+  analyzeUserStyle,
   analyzeStyle,
   createUserStyleProfile,
   generateAdvancedOutfitRecommendations,
