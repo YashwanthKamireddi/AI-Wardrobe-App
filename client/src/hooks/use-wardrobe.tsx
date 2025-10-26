@@ -12,6 +12,15 @@ export function useWardrobeItems() {
 export function useWardrobeItem(id: number) {
   return useQuery<WardrobeItem, Error>({
     queryKey: ["/api/wardrobe", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/wardrobe/${id}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch wardrobe item: ${res.statusText}`);
+      }
+      return res.json();
+    },
     enabled: !!id,
   });
 }

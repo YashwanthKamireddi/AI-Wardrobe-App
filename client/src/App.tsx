@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -30,9 +31,11 @@ function Router() {
 }
 
 function App() {
-  // Setting default values in localStorage to bypass tutorial/onboarding
-  localStorage.setItem("onboardingComplete", "true");
-  localStorage.setItem("tutorialComplete", "true");
+  useEffect(() => {
+    // Setting default values in localStorage to bypass tutorial/onboarding
+    localStorage.setItem("onboardingComplete", "true");
+    localStorage.setItem("tutorialComplete", "true");
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

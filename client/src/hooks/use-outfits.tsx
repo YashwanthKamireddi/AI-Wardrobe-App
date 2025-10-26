@@ -13,6 +13,15 @@ export function useOutfits() {
 export function useOutfit(id: number) {
   return useQuery<Outfit, Error>({
     queryKey: ["/api/outfits", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/outfits/${id}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch outfit: ${res.statusText}`);
+      }
+      return res.json();
+    },
     enabled: !!id,
   });
 }

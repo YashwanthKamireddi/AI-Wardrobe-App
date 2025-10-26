@@ -127,7 +127,7 @@ async function retryWithBackoff<T>(
       if (shouldRetry) {
         const delay = delays[attempt];
         logger.warn(`${operationName} failed (attempt ${attempt + 1}/${maxRetries}), retrying in ${delay}ms`, {
-          error: error?.message || String(error),
+          errorMessage: error?.message || String(error),
           status: error?.status,
           code: error?.code
         });
@@ -138,9 +138,11 @@ async function retryWithBackoff<T>(
       
       // If we shouldn't retry or this is the last attempt, throw the error
       if (isLastAttempt) {
-        logger.error(`${operationName} failed after ${maxRetries} attempts`, {
-          error: error?.message || String(error)
-        });
+        logger.error(
+          `${operationName} failed after ${maxRetries} attempts`, 
+          error instanceof Error ? error : undefined,
+          error instanceof Error ? undefined : { errorMessage: String(error) }
+        );
       }
       
       throw error;

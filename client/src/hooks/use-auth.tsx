@@ -10,7 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 
 export function clearAuth() {
   queryClient.setQueryData(["/api/user"], null);
-  queryClient.invalidateQueries();
+  queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
+  queryClient.invalidateQueries({ queryKey: ["/api/outfits"] });
+  queryClient.invalidateQueries({ queryKey: ["/api/inspirations"] });
 }
 
 type AuthContextType = {

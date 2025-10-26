@@ -1,29 +1,58 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Camera, Upload, X, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface FileUploadProps {
   onUpload: (url: string) => void;
   currentImageUrl?: string;
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
 export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // For a real implementation, this would upload to a server
-  // For this demo, we'll simulate an upload and use base64 encoding
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     
+    setError(null);
+    
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      const errorMsg = "Please upload a valid image file (JPEG, PNG, WebP, or GIF)";
+      setError(errorMsg);
+      toast({
+        title: "Invalid file type",
+        description: errorMsg,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      const errorMsg = `File size must be less than ${MAX_FILE_SIZE / 1024 / 1024}MB`;
+      setError(errorMsg);
+      toast({
+        title: "File too large",
+        description: errorMsg,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     const reader = new FileReader();
+    
     reader.onload = () => {
-      // Simulate a network delay
       setTimeout(() => {
         const result = reader.result as string;
         setPreview(result);
@@ -31,6 +60,18 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
         setIsLoading(false);
       }, 800);
     };
+    
+    reader.onerror = () => {
+      const errorMsg = "Failed to read file. Please try again.";
+      setError(errorMsg);
+      setIsLoading(false);
+      toast({
+        title: "Upload error",
+        description: errorMsg,
+        variant: "destructive",
+      });
+    };
+    
     reader.readAsDataURL(file);
   };
   
@@ -42,17 +83,37 @@ export default function FileUpload({ onUpload, currentImageUrl }: FileUploadProp
     }
   };
   
-  // For demo purposes - using a URL directly
   const handleUrlInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const url = event.target.value.trim();
     if (url) {
-      setPreview(url);
-      onUpload(url);
+      setError(null);
+      
+      // Basic URL validation
+      try {
+        new URL(url);
+        setPreview(url);
+        onUpload(url);
+      } catch (e) {
+        const errorMsg = "Please enter a valid URL";
+        setError(errorMsg);
+        toast({
+          title: "Invalid URL",
+          description: errorMsg,
+          variant: "destructive",
+        });
+      }
     }
   };
   
   return (
     <div className="space-y-3">
+      {error && (
+        <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 p-2 rounded-md">
+          <AlertCircle className="h-3 w-3 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+      
       {preview ? (
         <div className="relative rounded-md overflow-hidden border border-amber-200 shadow-md">
           <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent pointer-events-none"></div>
