@@ -50,9 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("Login successful, user:", result);
       return result;
     },
-    onSuccess: (user: SelectUser) => {
+    onSuccess: async (user: SelectUser) => {
       console.log("onSuccess called with user:", user);
       queryClient.setQueryData(["/api/user"], user);
+      // Wait a brief moment to ensure session is established
+      await new Promise(resolve => setTimeout(resolve, 100));
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
@@ -81,9 +83,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("Registration successful, user:", result);
       return result;
     },
-    onSuccess: (user: SelectUser) => {
+    onSuccess: async (user: SelectUser) => {
       console.log("onSuccess called with user:", user);
       queryClient.setQueryData(["/api/user"], user);
+      // Wait a brief moment to ensure session is established
+      await new Promise(resolve => setTimeout(resolve, 100));
       toast({
         title: "Registration successful",
         description: `Welcome to Cher's Closet, ${user.username}!`,

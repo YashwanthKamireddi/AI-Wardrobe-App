@@ -75,7 +75,7 @@ export function AuthPage() {
   // Redirect authenticated users to home
   useEffect(() => {
     if (user) {
-      const timer = setTimeout(() => setLocation("/"), 100);
+      const timer = setTimeout(() => setLocation("/"), 300);
       return () => clearTimeout(timer);
     }
   }, [user, setLocation]);

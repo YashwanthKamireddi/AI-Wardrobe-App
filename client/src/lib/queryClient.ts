@@ -64,17 +64,12 @@ export const getQueryFn: <T>(options: {
   };
 
 function handle401Error(error: Error) {
+  // Only handle 401 errors, but don't redirect on mutation errors
+  // This prevents premature redirects during login/registration
   if (error.message.includes("401")) {
+    // Clear user data but don't show toast or redirect
+    // The individual mutation onError handlers will show appropriate messages
     queryClient.setQueryData(["/api/user"], null);
-    queryClient.invalidateQueries();
-    
-    toast({
-      title: "Session expired",
-      description: "Please log in again.",
-      variant: "destructive",
-    });
-    
-    window.location.href = "/auth";
   }
 }
 
