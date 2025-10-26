@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { Eye, EyeOff, Loader2, User, Mail, Lock } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,9 @@ const registerSchema = loginSchema.extend({
     .max(100, "Email is too long")
     .optional()
     .or(z.literal("")),
-  confirmPassword: z.string(),
+  confirmPassword: z
+    .string()
+    .min(6, "Password must be at least 6 characters"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -206,15 +208,8 @@ export function AuthPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <AnimatePresence mode="wait">
-                  <TabsContent key="login-tab" value="login" className="space-y-4 mt-0">
-                    <motion.div
-                      key="login-form"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      transition={{ duration: 0.3 }}
-                    >
+                  <TabsContent value="login" className="space-y-4 mt-0">
+                    <div>
                       <Form {...loginForm}>
                         <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                           <FormField
@@ -288,17 +283,11 @@ export function AuthPage() {
                           </Button>
                         </form>
                       </Form>
-                    </motion.div>
+                    </div>
                   </TabsContent>
 
-                  <TabsContent key="register-tab" value="register" className="space-y-4 mt-0">
-                    <motion.div
-                      key="register-form"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ duration: 0.3 }}
-                    >
+                  <TabsContent value="register" className="space-y-4 mt-0">
+                    <div>
                       <Form {...registerForm}>
                         <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
                           <FormField
@@ -451,9 +440,8 @@ export function AuthPage() {
                           </Button>
                         </form>
                       </Form>
-                    </motion.div>
+                    </div>
                   </TabsContent>
-                </AnimatePresence>
               </Tabs>
             </CardContent>
             
