@@ -386,7 +386,7 @@ Format your response as JSON:
       return JSON.parse(content);
     } catch (parseError) {
       const errorMsg = parseError instanceof Error ? parseError.message : String(parseError);
-      logger.error('Error parsing OpenAI response', { errorMessage: errorMsg, content });
+      logger.error(`Error parsing OpenAI response: ${errorMsg}`);
       throw new ApiError('Failed to parse occasion outfit recommendation', 500);
     }
   } catch (error) {
