@@ -41,13 +41,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      return await apiRequest<SelectUser>({
+      console.log("Attempting login with:", { username: credentials.username });
+      const result = await apiRequest<SelectUser>({
         path: "/api/login",
         method: "POST",
         body: credentials
       });
+      console.log("Login successful, user:", result);
+      return result;
     },
     onSuccess: (user: SelectUser) => {
+      console.log("onSuccess called with user:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Login successful",
@@ -55,9 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      console.error("Login error details:", error);
+      console.error("Error message:", error.message);
+      console.error("Error name:", error.name);
       toast({
         title: "Login failed",
-        description: error.message,
+        description: error.message || "An unknown error occurred",
         variant: "destructive",
       });
     },
@@ -65,13 +72,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
-      return await apiRequest<SelectUser>({
+      console.log("Attempting registration with:", { username: credentials.username });
+      const result = await apiRequest<SelectUser>({
         path: "/api/register",
         method: "POST",
         body: credentials
       });
+      console.log("Registration successful, user:", result);
+      return result;
     },
     onSuccess: (user: SelectUser) => {
+      console.log("onSuccess called with user:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Registration successful",
@@ -79,9 +90,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      console.error("Registration error details:", error);
+      console.error("Error message:", error.message);
+      console.error("Error name:", error.name);
       toast({
         title: "Registration failed",
-        description: error.message,
+        description: error.message || "An unknown error occurred",
         variant: "destructive",
       });
     },
