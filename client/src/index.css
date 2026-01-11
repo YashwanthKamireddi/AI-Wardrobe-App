@@ -62,7 +62,7 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
- 
+
 @layer base {
   :root {
     /* Ultra luxury fashion palette - rich burgundy, gold and cream */
@@ -74,33 +74,33 @@
     --card: 0 0% 100%;
     --card-foreground: 337 50% 15%;
     --card-rgb: 255, 255, 255;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 337 50% 15%;
- 
+
     /* Rich burgundy primary - deeper and more luxurious */
     --primary: 337 73% 26%;
     --primary-foreground: 30 30% 98%;
     --primary-rgb: 128, 22, 58;
- 
+
     /* Luxury cream secondary with a hint of warmth */
     --secondary: 35 30% 93%;
     --secondary-foreground: 337 50% 15%;
- 
+
     --muted: 35 25% 90%;
     --muted-foreground: 337 30% 35%;
- 
+
     /* Gold accent - more vibrant */
     --accent: 45 80% 50%;
     --accent-foreground: 337 50% 15%;
- 
+
     --destructive: 0 70% 45%;
     --destructive-foreground: 30 30% 98%;
 
     --border: 35 30% 85%;
     --input: 35 30% 85%;
     --ring: 337 73% 26%;
- 
+
     --radius: 0.5rem;
 
     /* Chart colors - harmonious with luxury palette */
@@ -109,7 +109,7 @@
     --chart-3: 15 70% 50%;
     --chart-4: 300 60% 40%;
     --chart-5: 180 50% 45%;
-    
+
     /* Sidebar colors - aligned with luxury palette */
     --sidebar-background: 337 40% 15%;
     --sidebar-foreground: 30 30% 98%;
@@ -121,7 +121,7 @@
     --sidebar-ring: 337 60% 40%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
@@ -136,16 +136,16 @@
     width: 5px;
     height: 5px;
   }
-  
+
   .thin-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .thin-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-primary/20;
     border-radius: 3px;
   }
-  
+
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-primary/30;
   }
@@ -223,6 +223,15 @@
   animation: slideUp 0.7s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
+.animate-slide-down {
+  animation: slideDown 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .animate-slide-in-right {
   animation: slideInRight 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
@@ -232,9 +241,9 @@
 }
 
 .animate-shimmer-gold {
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(212, 175, 55, 0.3), 
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(212, 175, 55, 0.3),
     transparent
   );
   background-size: 200% 100%;
@@ -512,8 +521,8 @@
 /* Fashion pattern background */
 .fashion-pattern {
   background-color: hsl(var(--background));
-  background-image: 
-    radial-gradient(hsl(var(--primary)/0.03) 1px, transparent 1px), 
+  background-image:
+    radial-gradient(hsl(var(--primary)/0.03) 1px, transparent 1px),
     radial-gradient(hsl(var(--primary)/0.03) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
@@ -659,7 +668,7 @@
   @apply relative p-0 rounded-xl;
   background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--background)));
   border: 1px solid hsl(var(--accent)/0.3);
-  box-shadow: 
+  box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(0, 0, 0, 0.05),
     0 0 0 1px hsl(var(--accent)/0.05),
@@ -721,7 +730,7 @@
 .weather-icon-luxury {
   @apply flex items-center justify-center p-3 rounded-full;
   background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--card)));
-  box-shadow: 
+  box-shadow:
     0 4px 15px rgba(0, 0, 0, 0.08),
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 1px rgba(255, 255, 255, 0.025);
@@ -730,7 +739,7 @@
 }
 
 .weather-icon-luxury:hover {
-  box-shadow: 
+  box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(255, 255, 255, 0.07),
     inset 0 1px 2px rgba(255, 255, 255, 0.05);

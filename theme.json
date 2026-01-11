@@ -1,6 +1,16 @@
 {
   "variant": "vibrant",
-  "primary": "hsl(37, 92%, 50%)",
+  "primary": "hsl(337, 73%, 26%)",
+  "accent": "hsl(38, 75%, 55%)",
   "appearance": "light",
-  "radius": 0.3
+  "radius": 0.5,
+  "brand": {
+    "name": "Celura",
+    "tagline": "Luxury AI-Powered Wardrobe",
+    "established": 2026,
+    "colors": {
+      "burgundy": "hsl(337, 73%, 26%)",
+      "gold": "hsl(38, 75%, 55%)"
+    }
+  }
 }

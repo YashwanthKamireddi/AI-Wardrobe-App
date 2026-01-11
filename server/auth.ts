@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express, Request, Response } from "express";
 import session from "express-session";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import storage from "./storage";
 import { User as SelectUser, registerUserSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
@@ -69,7 +69,7 @@ export function setupAuth(app: Express) {
     try {
       // Validate and sanitize request body using schema
       const validationResult = registerUserSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         const error = fromZodError(validationResult.error);
         return res.status(400).json({ message: error.message });
@@ -152,11 +152,11 @@ export function setupAuth(app: Express) {
       // Whitelist only safe fields that users can update themselves
       // Explicitly exclude: id, password, role (privileged fields)
       const { id, password, role, ...updateData } = req.body;
-      
+
       // Only allow updates to safe profile fields
       const safeUpdateData: Record<string, any> = {};
       const allowedFields = ['name', 'email', 'profilePicture'];
-      
+
       for (const field of allowedFields) {
         if (field in updateData) {
           safeUpdateData[field] = updateData[field];
@@ -192,7 +192,7 @@ export function setupAuth(app: Express) {
 
     try {
       const { currentPassword, newPassword } = req.body;
-      
+
       if (!currentPassword || !newPassword) {
         return res.status(400).json({ message: "Current password and new password are required" });
       }
@@ -231,7 +231,7 @@ export function setupAuth(app: Express) {
   app.post("/api/reset-password-request", async (req: Request, res: Response) => {
     try {
       const { username } = req.body;
-      
+
       if (!username) {
         return res.status(400).json({ message: "Username is required" });
       }
@@ -247,8 +247,8 @@ export function setupAuth(app: Express) {
       // In a real app, you would:
       // 1. Generate and store a reset token
       // 2. Send an email with the reset link
-      
-      res.status(200).json({ 
+
+      res.status(200).json({
         message: "If an account exists, a password reset link will be sent"
       });
     } catch (error) {
@@ -260,14 +260,14 @@ export function setupAuth(app: Express) {
   app.post("/api/reset-password", async (req: Request, res: Response) => {
     try {
       const { username, newPassword } = req.body;
-      
+
       if (!username || !newPassword) {
         return res.status(400).json({ message: "Username and new password are required" });
       }
 
       // Find the user by username
       const user = await storage.getUserByUsername(username);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }

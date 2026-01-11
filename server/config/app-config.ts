@@ -1,9 +1,14 @@
 /**
  * Application Configuration
- * 
+ *
  * This module centralizes all application configuration settings.
  * It loads values from environment variables with sensible defaults.
  */
+
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Determine the runtime environment
 const nodeEnv = process.env.NODE_ENV || 'development';
@@ -25,8 +30,8 @@ export const environment = {
 export const server = {
   port: parseInt(process.env.PORT || '5000', 10),
   host: process.env.HOST || (process.platform === 'win32' ? '127.0.0.1' : '0.0.0.0'),
-  corsOrigins: process.env.CORS_ORIGINS 
-    ? process.env.CORS_ORIGINS.split(',') 
+  corsOrigins: process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',')
     : '*'
 };
 

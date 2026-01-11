@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "@/lib/protected-route";
 
+import { LandingPage } from "@/pages/landing-page";
 import { HomePage } from "@/pages/home-page";
 import { AuthPage } from "@/pages/auth-page";
 import { WardrobePage } from "@/pages/wardrobe-page";
@@ -19,12 +20,18 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={HomePage} />
+      {/* Public routes */}
+      <Route path="/" component={LandingPage} />
+      <Route path="/auth" component={AuthPage} />
+
+      {/* Protected routes */}
+      <ProtectedRoute path="/home" component={HomePage} />
       <ProtectedRoute path="/wardrobe" component={WardrobePage} />
       <ProtectedRoute path="/outfits" component={OutfitPage} />
       <ProtectedRoute path="/inspirations" component={InspirationPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
-      <Route path="/auth" component={AuthPage} />
+
+      {/* 404 */}
       <Route component={NotFound} />
     </Switch>
   );

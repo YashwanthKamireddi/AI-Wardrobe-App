@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Filter, Grid3x3, List, X } from "lucide-react";
+import { Plus, Search, Grid3x3, List, X, Edit, Trash2, Shirt } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -37,13 +36,11 @@ import {
 } from "@/components/ui/select";
 
 import NavigationBar from "@/components/navigation-bar";
-import WardrobeItem from "@/components/wardrobe-item";
 import FileUpload from "@/components/file-upload";
 import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem, useUpdateWardrobeItem } from "@/hooks/use-wardrobe";
 import { clothingCategories, seasons, WardrobeItem as WardrobeItemType } from "@shared/schema";
-import { insertWardrobeItemSchema } from "@shared/schema";
 
-const addItemFormSchema = z.object({
+const itemSchema = z.object({
   name: z.string().min(1, "Name is required"),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().optional(),
@@ -54,7 +51,7 @@ const addItemFormSchema = z.object({
   favorite: z.boolean().optional(),
 });
 
-type AddItemFormData = z.infer<typeof addItemFormSchema>;
+type ItemFormData = z.infer<typeof itemSchema>;
 
 export function WardrobePage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -62,15 +59,14 @@ export function WardrobePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [seasonFilter, setSeasonFilter] = useState<string>('all');
 
   const { data: wardrobeItems, isLoading } = useWardrobeItems();
   const addItem = useAddWardrobeItem();
   const updateItem = useUpdateWardrobeItem();
   const deleteItem = useDeleteWardrobeItem();
 
-  const form = useForm<AddItemFormData>({
-    resolver: zodResolver(addItemFormSchema),
+  const form = useForm<ItemFormData>({
+    resolver: zodResolver(itemSchema),
     defaultValues: {
       name: "",
       category: "tops",
@@ -83,18 +79,8 @@ export function WardrobePage() {
     },
   });
 
-  const editForm = useForm<AddItemFormData>({
-    resolver: zodResolver(addItemFormSchema),
-    defaultValues: {
-      name: "",
-      category: "tops",
-      subcategory: "",
-      color: "",
-      season: "all",
-      imageUrl: "",
-      tags: "",
-      favorite: false,
-    },
+  const editForm = useForm<ItemFormData>({
+    resolver: zodResolver(itemSchema),
   });
 
   useEffect(() => {
@@ -105,7 +91,7 @@ export function WardrobePage() {
         subcategory: editingItem.subcategory || "",
         color: editingItem.color || "",
         season: editingItem.season || "all",
-        imageUrl: editingItem.imageUrl,
+        imageUrl: editingItem.imageUrl || "",
         tags: editingItem.tags?.join(", ") || "",
         favorite: editingItem.favorite || false,
       });
@@ -114,565 +100,241 @@ export function WardrobePage() {
 
   const filteredItems = useMemo(() => {
     if (!wardrobeItems) return [];
-
     return wardrobeItems.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.color?.toLowerCase().includes(searchQuery.toLowerCase());
-      
+        item.color?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-      const matchesSeason = seasonFilter === 'all' || item.season === seasonFilter || item.season === 'all';
-
-      return matchesSearch && matchesCategory && matchesSeason;
+      return matchesSearch && matchesCategory;
     });
-  }, [wardrobeItems, searchQuery, categoryFilter, seasonFilter]);
+  }, [wardrobeItems, searchQuery, categoryFilter]);
 
-  const onSubmit = async (data: AddItemFormData) => {
-    const tagsArray = data.tags ? data.tags.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
-    
-    await addItem.mutateAsync({
-      name: data.name,
-      category: data.category,
-      subcategory: data.subcategory || null,
-      color: data.color || null,
-      season: data.season || null,
-      imageUrl: data.imageUrl,
-      tags: tagsArray.length > 0 ? tagsArray : null,
-      favorite: data.favorite || false,
-    });
-    
-    setIsAddDialogOpen(false);
-    form.reset();
+  const onSubmitAdd = async (data: ItemFormData) => {
+    try {
+      await addItem.mutateAsync({
+        ...data,
+        tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
+      });
+      form.reset();
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to add item:', error);
+    }
   };
 
-  const onEditSubmit = async (data: AddItemFormData) => {
+  const onSubmitEdit = async (data: ItemFormData) => {
     if (!editingItem) return;
-
-    const tagsArray = data.tags ? data.tags.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
-    
-    await updateItem.mutateAsync({
-      id: editingItem.id,
-      name: data.name,
-      category: data.category,
-      subcategory: data.subcategory || null,
-      color: data.color || null,
-      season: data.season || null,
-      imageUrl: data.imageUrl,
-      tags: tagsArray.length > 0 ? tagsArray : null,
-      favorite: data.favorite || false,
-    });
-    
-    setEditingItem(null);
-    editForm.reset();
-  };
-
-  const handleDelete = (id: number) => {
-    deleteItem.mutate(id);
-  };
-
-  const currentCategory = clothingCategories.find(c => c.value === form.watch('category'));
-  const currentEditCategory = clothingCategories.find(c => c.value === editForm.watch('category'));
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
+    try {
+      await updateItem.mutateAsync({
+        id: editingItem.id,
+        data: {
+          ...data,
+          tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
+        },
+      });
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Failed to update item:', error);
     }
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 25
-      }
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteItem.mutateAsync(id);
+    } catch (error) {
+      console.error('Failed to delete item:', error);
     }
   };
+
+  const ItemForm = ({ formInstance, onSubmit, submitLabel }: { formInstance: any; onSubmit: (data: ItemFormData) => void; submitLabel: string }) => (
+    <Form {...formInstance}>
+      <form onSubmit={formInstance.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={formInstance.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Image</FormLabel>
+              <FormControl>
+                <FileUpload
+                  value={field.value}
+                  onChange={field.onChange}
+                  accept="image/*"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={formInstance.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="White cotton shirt" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={formInstance.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {clothingCategories.map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={formInstance.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Color</FormLabel>
+                <FormControl>
+                  <Input placeholder="White" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <FormField
+          control={formInstance.control}
+          name="season"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Season</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select season" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {seasons.map(s => (
+                    <SelectItem key={s} value={s}>
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={formInstance.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <Input placeholder="casual, work, favorite" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <DialogFooter>
+          <Button type="submit" className="w-full">{submitLabel}</Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-white to-amber-50/20">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24 md:pb-8">
       <NavigationBar />
 
-      <div className="container mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-6xl mx-auto px-6 py-8 md:py-12">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-        >
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-fashion-heading text-foreground">
-              Your Collection
-            </h1>
-            <p className="text-muted-foreground font-fashion-body mt-1">
-              Manage your wardrobe items
-            </p>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[hsl(38,75%,55%)]" />
+              <span className="text-sm tracking-widest uppercase text-slate-400">Collection</span>
+            </div>
+            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-1">Your Wardrobe</h1>
+            <p className="text-slate-500">{wardrobeItems?.length || 0} items in your collection</p>
           </div>
-
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                data-testid="button-add-item"
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md"
+                className="rounded-full px-6"
+                style={{ background: "hsl(337, 73%, 26%)" }}
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4 mr-2" />
                 Add Item
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white border-slate-200">
               <DialogHeader>
-                <DialogTitle className="font-fashion-heading text-amber-900">
-                  Add New Wardrobe Item
-                </DialogTitle>
-                <DialogDescription className="font-fashion-body">
-                  Add a new clothing item to your wardrobe collection.
-                </DialogDescription>
+                <DialogTitle className="font-serif text-xl text-slate-900">Add New Item</DialogTitle>
+                <DialogDescription className="text-slate-500">Add a new piece to your wardrobe collection.</DialogDescription>
               </DialogHeader>
-
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Image</FormLabel>
-                          <FormControl>
-                            <FileUpload
-                              onUpload={field.onChange}
-                              currentImageUrl={field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Item Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-name"
-                              placeholder="Blue Denim Jacket"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-category">
-                                <SelectValue placeholder="Select category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {clothingCategories.map(cat => (
-                                <SelectItem key={cat.value} value={cat.value}>
-                                  {cat.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="subcategory"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Subcategory (Optional)</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid="select-subcategory">
-                                <SelectValue placeholder="Select subcategory" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {currentCategory?.subcategories.map(subcat => (
-                                <SelectItem key={subcat} value={subcat}>
-                                  {subcat}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="color"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Color (Optional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-color"
-                              placeholder="Navy Blue"
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="season"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Season</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || "all"}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid="select-season">
-                                <SelectValue placeholder="Select season" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {seasons.map(season => (
-                                <SelectItem key={season.value} value={season.value}>
-                                  {season.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="tags"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Tags (Optional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-tags"
-                              placeholder="casual, summer, comfortable (comma-separated)"
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsAddDialogOpen(false)}
-                      data-testid="button-cancel"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={addItem.isPending}
-                      data-testid="button-submit"
-                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
-                    >
-                      {addItem.isPending ? "Adding..." : "Add Item"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
+              <ItemForm formInstance={form} onSubmit={onSubmitAdd} submitLabel="Add Item" />
             </DialogContent>
           </Dialog>
+        </header>
 
-          {/* Edit Item Dialog */}
-          <Dialog open={editingItem !== null} onOpenChange={(open) => !open && setEditingItem(null)}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-edit-item">
-              <DialogHeader>
-                <DialogTitle className="font-fashion-heading text-amber-900">
-                  Edit Wardrobe Item
-                </DialogTitle>
-                <DialogDescription className="font-fashion-body">
-                  Update the details of your wardrobe item.
-                </DialogDescription>
-              </DialogHeader>
-
-              <Form {...editForm}>
-                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={editForm.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Image</FormLabel>
-                          <FormControl>
-                            <FileUpload
-                              onUpload={field.onChange}
-                              currentImageUrl={field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={editForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Item Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-edit-name"
-                              placeholder="Blue Denim Jacket"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={editForm.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-edit-category">
-                                <SelectValue placeholder="Select category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {clothingCategories.map(cat => (
-                                <SelectItem key={cat.value} value={cat.value}>
-                                  {cat.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={editForm.control}
-                      name="subcategory"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Subcategory (Optional)</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid="select-edit-subcategory">
-                                <SelectValue placeholder="Select subcategory" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {currentEditCategory?.subcategories.map(subcat => (
-                                <SelectItem key={subcat} value={subcat}>
-                                  {subcat}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={editForm.control}
-                      name="color"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Color (Optional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-edit-color"
-                              placeholder="Navy Blue"
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={editForm.control}
-                      name="season"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Season</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || "all"}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid="select-edit-season">
-                                <SelectValue placeholder="Select season" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {seasons.map(season => (
-                                <SelectItem key={season.value} value={season.value}>
-                                  {season.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={editForm.control}
-                      name="tags"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Tags (Optional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-edit-tags"
-                              placeholder="casual, summer, comfortable (comma-separated)"
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setEditingItem(null)}
-                      data-testid="button-edit-cancel"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={updateItem.isPending}
-                      data-testid="button-edit-submit"
-                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
-                    >
-                      {updateItem.isPending ? "Updating..." : "Update Item"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </motion.div>
-
-        {/* Filters and Search */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-col md:flex-row gap-4"
-        >
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-amber-500" />
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              data-testid="input-search"
-              placeholder="Search items..."
+              placeholder="Search wardrobe..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-amber-200 focus:border-amber-400"
+              className="pl-10 rounded-full border-slate-200 bg-white focus:border-[hsl(337,73%,26%)] focus:ring-[hsl(337,73%,26%)]/20"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2"
               >
-                <X className="h-4 w-4 text-amber-500" />
+                <X className="h-4 w-4 text-slate-400 hover:text-slate-600 transition-colors" />
               </button>
             )}
           </div>
-
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger data-testid="select-filter-category" className="w-full md:w-[180px] border-amber-200">
-              <Filter className="h-4 w-4 mr-2 text-amber-500" />
+            <SelectTrigger className="w-full md:w-[180px] border-slate-200 bg-white">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="border-slate-200 bg-white">
               <SelectItem value="all">All Categories</SelectItem>
               {clothingCategories.map(cat => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
+                <SelectItem key={cat} value={cat}>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-
-          <Select value={seasonFilter} onValueChange={setSeasonFilter}>
-            <SelectTrigger data-testid="select-filter-season" className="w-full md:w-[180px] border-amber-200">
-              <SelectValue placeholder="Season" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Seasons</SelectItem>
-              {seasons.map(season => (
-                <SelectItem key={season.value} value={season.value}>
-                  {season.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           <div className="flex gap-2">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="icon"
               onClick={() => setViewMode('grid')}
-              data-testid="button-grid-view"
-              className={viewMode === 'grid' ? 'bg-amber-500 hover:bg-amber-600' : ''}
+              className={viewMode === 'grid' ? 'bg-[hsl(337,73%,26%)]' : 'border-slate-200 hover:bg-slate-50'}
             >
               <Grid3x3 className="h-4 w-4" />
             </Button>
@@ -680,37 +342,34 @@ export function WardrobePage() {
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="icon"
               onClick={() => setViewMode('list')}
-              data-testid="button-list-view"
-              className={viewMode === 'list' ? 'bg-amber-500 hover:bg-amber-600' : ''}
+              className={viewMode === 'list' ? 'bg-[hsl(337,73%,26%)]' : 'border-slate-200 hover:bg-slate-50'}
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Stats */}
-        {wardrobeItems && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="flex gap-4 flex-wrap"
-          >
-            <Badge variant="outline" className="border-amber-300 text-amber-800 px-3 py-1">
-              Total Items: {wardrobeItems.length}
-            </Badge>
-            <Badge variant="outline" className="border-amber-300 text-amber-800 px-3 py-1">
-              Showing: {filteredItems.length}
-            </Badge>
-          </motion.div>
+        {/* Results Count */}
+        {filteredItems.length > 0 && (
+          <div className="flex gap-3 mb-6">
+            <Badge variant="outline" className="border-slate-200 text-slate-600">Showing: {filteredItems.length}</Badge>
+            {categoryFilter !== 'all' && (
+              <Badge className="bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] hover:bg-[hsl(337,73%,26%)]/15">
+                {categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)}
+              </Badge>
+            )}
+          </div>
         )}
 
-        {/* Items Grid/List */}
+        {/* Content */}
         {isLoading ? (
-          <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1'}`}>
-            {[...Array(8)].map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-square w-full" />
+          <div className={viewMode === 'grid'
+            ? "grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+            : "space-y-4"
+          }>
+            {[...Array(10)].map((_, i) => (
+              <Card key={i} className="border-slate-100 bg-white">
+                <Skeleton className={viewMode === 'grid' ? "aspect-square" : "h-24"} />
                 <CardContent className="p-3">
                   <Skeleton className="h-4 w-3/4 mb-2" />
                   <Skeleton className="h-3 w-1/2" />
@@ -719,67 +378,155 @@ export function WardrobePage() {
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16"
-          >
-            <Card className="max-w-md mx-auto border-amber-200">
-              <CardHeader>
-                <CardTitle className="font-fashion-heading text-amber-900">
-                  {wardrobeItems && wardrobeItems.length > 0 ? 'No Items Found' : 'No Items Yet'}
+          <div className="space-y-8">
+            <Card className="max-w-md mx-auto border-slate-100 bg-white shadow-sm">
+              <CardHeader className="text-center pb-2">
+                <div
+                  className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                  style={{ background: "hsl(337, 73%, 26%)10" }}
+                >
+                  <Shirt className="h-7 w-7" style={{ color: "hsl(337, 73%, 26%)" }} />
+                </div>
+                <CardTitle className="font-serif text-2xl text-slate-900">
+                  {wardrobeItems?.length ? 'No Matches Found' : 'Start Your Collection'}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground font-fashion-body mb-4">
-                  {wardrobeItems && wardrobeItems.length > 0
-                    ? 'Try adjusting your filters or search query.'
-                    : 'Start building your wardrobe by adding your first item.'}
+              <CardContent className="text-center space-y-4">
+                <p className="text-slate-500">
+                  {wardrobeItems?.length
+                    ? 'Try adjusting your search or filters.'
+                    : 'Build your wardrobe by adding your first piece. Celura will help you create perfect outfits.'}
                 </p>
-                {(!wardrobeItems || wardrobeItems.length === 0) && (
+                {!wardrobeItems?.length && (
                   <Button
                     onClick={() => setIsAddDialogOpen(true)}
-                    data-testid="button-add-first-item"
-                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+                    className="rounded-full px-6"
+                    style={{ background: "hsl(337, 73%, 26%)" }}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="h-4 w-4 mr-2" />
                     Add Your First Item
                   </Button>
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+
+            {/* Inspiration Section */}
+            {!wardrobeItems?.length && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="font-serif text-xl text-slate-900 mb-1">Get Inspired</h3>
+                  <p className="text-slate-400 text-sm">Ideas for building your wardrobe</p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { name: 'Classic Blazer', category: 'Tops', color: 'Navy', img: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=300&h=300&fit=crop' },
+                    { name: 'White Silk Blouse', category: 'Tops', color: 'White', img: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=300&h=300&fit=crop' },
+                    { name: 'Tailored Trousers', category: 'Bottoms', color: 'Black', img: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop' },
+                    { name: 'Cashmere Sweater', category: 'Tops', color: 'Camel', img: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=300&h=300&fit=crop' },
+                  ].map((item, idx) => (
+                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group">
+                      <div className="aspect-square bg-slate-100 relative overflow-hidden">
+                        <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <CardContent className="p-3">
+                        <h4 className="font-medium text-sm text-slate-900 truncate">{item.name}</h4>
+                        <p className="text-xs text-slate-400">{item.category} • {item.color}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {filteredItems.map((item) => (
+              <Card key={item.id} className="group overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all">
+                <div className="relative aspect-square bg-slate-100">
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                      No Image
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => setEditingItem(item)} className="bg-white hover:bg-slate-50">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <CardContent className="p-3">
+                  <h3 className="font-medium text-slate-900 truncate">{item.name}</h3>
+                  <p className="text-sm text-slate-400 capitalize">{item.category}</p>
+                  {item.color && (
+                    <Badge variant="outline" className="mt-2 text-xs border-slate-200 text-slate-500">{item.color}</Badge>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className={`grid gap-4 ${
-              viewMode === 'grid'
-                ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
-                : 'grid-cols-1 max-w-2xl mx-auto'
-            }`}
-            data-testid="wardrobe-items-grid"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredItems.map((item) => (
-                <motion.div
-                  key={item.id}
-                  variants={itemVariants}
-                  layout
-                  data-testid={`wardrobe-item-${item.id}`}
-                >
-                  <WardrobeItem
-                    item={item}
-                    onDelete={() => handleDelete(item.id)}
-                    onEdit={() => setEditingItem(item)}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="space-y-3">
+            {filteredItems.map((item) => (
+              <Card key={item.id} className="flex overflow-hidden border-primary/10 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all">
+                <div className="w-24 h-24 flex-shrink-0 bg-muted">
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                      No Image
+                    </div>
+                  )}
+                </div>
+                <CardContent className="flex-1 p-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground capitalize">{item.category}</p>
+                    <div className="flex gap-2 mt-2">
+                      {item.color && <Badge variant="outline" className="text-xs border-primary/20">{item.color}</Badge>}
+                      {item.season && item.season !== 'all' && (
+                        <Badge variant="secondary" className="text-xs capitalize bg-primary/10 text-primary">{item.season}</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setEditingItem(item)} className="border-primary/20 hover:bg-primary/10">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
-      </div>
+      </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto border-primary/20 bg-card/95 backdrop-blur-sm">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-xl">Edit Item</DialogTitle>
+            <DialogDescription>Update the details of this wardrobe item.</DialogDescription>
+          </DialogHeader>
+          <ItemForm formInstance={editForm} onSubmit={onSubmitEdit} submitLabel="Save Changes" />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

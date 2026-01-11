@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       toast({
         title: "Registration successful",
-        description: `Welcome to Cher's Closet, ${user.username}!`,
+        description: `Welcome to Celura, ${user.username}!`,
       });
     },
     onError: (error: Error) => {

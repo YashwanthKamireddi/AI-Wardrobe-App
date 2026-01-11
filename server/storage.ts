@@ -1,10 +1,10 @@
 /**
  * In-Memory Storage Implementation for Cher's Closet
- * 
+ *
  * This file contains the storage layer implementation using in-memory storage
  * instead of a database. It provides a complete set of CRUD operations
  * for all entities in the Cher's Closet wardrobe management application.
- * 
+ *
  * Key features:
  * - Type-safe operations using TypeScript
  * - In-memory session management using MemoryStore
@@ -12,7 +12,7 @@
  * - Auto-incrementing IDs for entities
  */
 
-import { 
+import {
   type User, type InsertUser,
   type WardrobeItem, type InsertWardrobeItem,
   type Outfit, type InsertOutfit,
@@ -25,7 +25,7 @@ import MemoryStore from "memorystore";
 
 /**
  * Storage Interface
- * 
+ *
  * Defines all storage operations available throughout the application.
  */
 export interface IStorage {
@@ -63,7 +63,7 @@ export interface IStorage {
   // Mood preference operations
   getMoodPreferences(userId: number): Promise<MoodPreference[]>;
   createMoodPreference(preference: InsertMoodPreference): Promise<MoodPreference>;
-  
+
   // Session store
   sessionStore: session.Store;
 }
@@ -78,7 +78,7 @@ export class MemoryStorage implements IStorage {
   private inspirations: Map<number, Inspiration> = new Map();
   private weatherPreferences: Map<number, WeatherPreference> = new Map();
   private moodPreferences: Map<number, MoodPreference> = new Map();
-  
+
   private userIdCounter = 1;
   private wardrobeItemIdCounter = 1;
   private outfitIdCounter = 1;
@@ -318,6 +318,25 @@ export class MemoryStorage implements IStorage {
   }
 }
 
-// Export singleton instance
-const storage = new MemoryStorage();
+// Check if Supabase is configured
+import { isSupabaseConfigured } from './lib/supabase';
+import { createSupabaseStorage } from './storage/supabase-storage';
+
+// Use Supabase if configured, otherwise fall back to in-memory
+let storage: IStorage;
+
+if (isSupabaseConfigured()) {
+  const supabaseStorage = createSupabaseStorage();
+  if (supabaseStorage) {
+    storage = supabaseStorage;
+    console.log('[Storage] Using Supabase storage');
+  } else {
+    storage = new MemoryStorage();
+    console.log('[Storage] Supabase failed to initialize, using in-memory storage');
+  }
+} else {
+  storage = new MemoryStorage();
+  console.log('[Storage] No Supabase config found, using in-memory storage');
+}
+
 export default storage;

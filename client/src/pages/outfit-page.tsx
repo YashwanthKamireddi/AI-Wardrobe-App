@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, X, Layers, Heart } from "lucide-react";
+import { Plus, Search, X, Layers, Heart, Trash2, Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,8 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +26,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -39,43 +36,40 @@ import {
 } from "@/components/ui/select";
 
 import NavigationBar from "@/components/navigation-bar";
-import OutfitCard from "@/components/outfit-card";
 import { useOutfits, useCreateOutfit, useDeleteOutfit } from "@/hooks/use-outfits";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { seasons, moodTypes } from "@shared/schema";
 
-const createOutfitFormSchema = z.object({
+const outfitSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   items: z.array(z.number()).min(1, "Select at least one item"),
   occasion: z.string().optional(),
   season: z.string().optional(),
-  weatherConditions: z.string().optional(),
   mood: z.string().optional(),
   favorite: z.boolean().optional(),
 });
 
-type CreateOutfitFormData = z.infer<typeof createOutfitFormSchema>;
+type OutfitFormData = z.infer<typeof outfitSchema>;
 
 export function OutfitPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedTab, setSelectedTab] = useState<string>('all');
 
   const { data: outfits, isLoading: outfitsLoading } = useOutfits();
-  const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
+  const { data: wardrobeItems } = useWardrobeItems();
   const createOutfit = useCreateOutfit();
   const deleteOutfit = useDeleteOutfit();
 
-  const form = useForm<CreateOutfitFormData>({
-    resolver: zodResolver(createOutfitFormSchema),
+  const form = useForm<OutfitFormData>({
+    resolver: zodResolver(outfitSchema),
     defaultValues: {
       name: "",
       description: "",
       items: [],
       occasion: "",
       season: "",
-      weatherConditions: "",
       mood: "",
       favorite: false,
     },
@@ -85,274 +79,189 @@ export function OutfitPage() {
 
   const filteredOutfits = useMemo(() => {
     if (!outfits) return [];
-
     return outfits.filter(outfit => {
       const matchesSearch = outfit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         outfit.description?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      if (selectedCategory === 'all') return matchesSearch;
-      if (selectedCategory === 'favorites') return matchesSearch && outfit.favorite;
-      return matchesSearch && outfit.occasion === selectedCategory;
+      if (selectedTab === 'all') return matchesSearch;
+      if (selectedTab === 'favorites') return matchesSearch && outfit.favorite;
+      return matchesSearch;
     });
-  }, [outfits, searchQuery, selectedCategory]);
+  }, [outfits, searchQuery, selectedTab]);
 
-  const getOutfitItems = (outfitItemIds: number[]) => {
+  const getOutfitItems = (itemIds: number[]) => {
     if (!wardrobeItems) return [];
-    return wardrobeItems.filter(item => outfitItemIds.includes(item.id));
+    return wardrobeItems.filter(item => itemIds.includes(item.id));
   };
 
-  const onSubmit = async (data: CreateOutfitFormData) => {
-    await createOutfit.mutateAsync({
-      name: data.name,
-      description: data.description || null,
-      items: data.items,
-      occasion: data.occasion || null,
-      season: data.season || null,
-      weatherConditions: data.weatherConditions || null,
-      mood: data.mood || null,
-      favorite: data.favorite || false,
-    });
-    
-    setIsCreateDialogOpen(false);
-    form.reset();
+  const toggleItem = (itemId: number) => {
+    const current = form.getValues('items') || [];
+    const updated = current.includes(itemId)
+      ? current.filter(id => id !== itemId)
+      : [...current, itemId];
+    form.setValue('items', updated, { shouldValidate: true });
   };
 
-  const handleDelete = (id: number) => {
-    deleteOutfit.mutate(id);
-  };
-
-  const toggleItemSelection = (itemId: number) => {
-    const currentItems = selectedItems;
-    if (currentItems.includes(itemId)) {
-      form.setValue('items', currentItems.filter(id => id !== itemId));
-    } else {
-      form.setValue('items', [...currentItems, itemId]);
+  const onSubmit = async (data: OutfitFormData) => {
+    try {
+      await createOutfit.mutateAsync(data);
+      form.reset();
+      setIsCreateDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to create outfit:', error);
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteOutfit.mutateAsync(id);
+    } catch (error) {
+      console.error('Failed to delete outfit:', error);
     }
   };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 25
-      }
-    }
-  };
-
-  const isLoading = outfitsLoading || wardrobeLoading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-white to-amber-50/20">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24 md:pb-8">
       <NavigationBar />
 
-      <div className="container mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-6xl mx-auto px-6 py-8 md:py-12">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-        >
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-fashion-heading text-foreground">
-              Your Ensembles
-            </h1>
-            <p className="text-muted-foreground font-fashion-body mt-1">
-              Create and manage your outfits
-            </p>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[hsl(38,75%,55%)]" />
+              <span className="text-sm tracking-widest uppercase text-slate-400">Style</span>
+            </div>
+            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-1">Your Outfits</h1>
+            <p className="text-slate-500">{outfits?.length || 0} saved combinations</p>
           </div>
-
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                data-testid="button-create-outfit"
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md"
-                disabled={!wardrobeItems || wardrobeItems.length === 0}
+                className="rounded-full px-6"
+                style={{ background: "hsl(337, 73%, 26%)" }}
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4 mr-2" />
                 Create Outfit
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
               <DialogHeader>
-                <DialogTitle className="font-fashion-heading text-amber-900">
-                  Create New Outfit
-                </DialogTitle>
-                <DialogDescription className="font-fashion-body">
-                  Select wardrobe items to create a complete outfit.
-                </DialogDescription>
+                <DialogTitle className="font-serif text-xl text-slate-900">Create New Outfit</DialogTitle>
+                <DialogDescription className="text-slate-500">Combine your wardrobe items into a complete look.</DialogDescription>
               </DialogHeader>
-
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Outfit Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-outfit-name"
-                              placeholder="Summer Casual Look"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700">Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Casual Friday" className="border-slate-200 focus:border-[hsl(337,73%,26%)]" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700">Description</FormLabel>
+                        <FormControl>
+                          <Input placeholder="A relaxed look for the office..." className="border-slate-200 focus:border-[hsl(337,73%,26%)]" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="occasion"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Occasion (Optional)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormLabel className="text-slate-700">Occasion</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger data-testid="select-occasion">
+                              <SelectTrigger className="border-slate-200">
                                 <SelectValue placeholder="Select occasion" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="casual">Casual</SelectItem>
-                              <SelectItem value="work">Work</SelectItem>
-                              <SelectItem value="party">Party</SelectItem>
-                              <SelectItem value="formal">Formal</SelectItem>
-                              <SelectItem value="athletic">Athletic</SelectItem>
-                              <SelectItem value="date">Date Night</SelectItem>
+                            <SelectContent className="bg-white border-slate-200">
+                              {['casual', 'work', 'formal', 'date', 'party', 'sport'].map(o => (
+                                <SelectItem key={o} value={o}>
+                                  {o.charAt(0).toUpperCase() + o.slice(1)}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
-                          <FormMessage />
                         </FormItem>
                       )}
                     />
-
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Description (Optional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              data-testid="input-description"
-                              placeholder="Perfect for a weekend brunch..."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
                     <FormField
                       control={form.control}
                       name="season"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Season (Optional)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormLabel className="text-slate-700">Season</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger data-testid="select-season">
+                              <SelectTrigger className="border-slate-200">
                                 <SelectValue placeholder="Select season" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              {seasons.map(season => (
-                                <SelectItem key={season.value} value={season.value}>
-                                  {season.label}
+                            <SelectContent className="bg-white border-slate-200">
+                              {seasons.map(s => (
+                                <SelectItem key={s.value} value={s.value}>
+                                  {s.label}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="mood"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mood (Optional)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ""}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-mood">
-                                <SelectValue placeholder="Select mood" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {moodTypes.map(mood => (
-                                <SelectItem key={mood.value} value={mood.value}>
-                                  {mood.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
 
+                  {/* Item Selection */}
                   <FormField
                     control={form.control}
                     name="items"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Select Items ({selectedItems.length} selected)</FormLabel>
-                        <FormDescription>
-                          Choose wardrobe items to include in this outfit
-                        </FormDescription>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2 max-h-[300px] overflow-y-auto p-2 border rounded-md">
-                          {wardrobeItems?.map((item) => (
+                        <FormLabel className="text-slate-700">Select Items ({selectedItems.length} selected)</FormLabel>
+                        <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50">
+                          {wardrobeItems?.map(item => (
                             <div
                               key={item.id}
-                              onClick={() => toggleItemSelection(item.id)}
-                              className={`relative cursor-pointer rounded-md border-2 transition-all ${
+                              onClick={() => toggleItem(item.id)}
+                              className={`cursor-pointer rounded-lg border-2 overflow-hidden transition-all ${
                                 selectedItems.includes(item.id)
-                                  ? 'border-amber-500 ring-2 ring-amber-200'
-                                  : 'border-gray-200 hover:border-amber-300'
+                                  ? 'border-[hsl(337,73%,26%)] ring-2 ring-[hsl(337,73%,26%)]/20 shadow-md'
+                                  : 'border-slate-200 hover:border-slate-300'
                               }`}
-                              data-testid={`item-select-${item.id}`}
                             >
-                              <div className="aspect-square overflow-hidden rounded-md">
-                                <img
-                                  src={item.imageUrl}
-                                  alt={item.name}
-                                  className="w-full h-full object-cover"
-                                />
+                              <div className="relative aspect-square bg-white">
+                                {item.imageUrl ? (
+                                  <img
+                                    src={item.imageUrl}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">
+                                    {item.name}
+                                  </div>
+                                )}
+                                {selectedItems.includes(item.id) && (
+                                  <div className="absolute top-1 right-1 rounded-full p-0.5 shadow-md" style={{ background: "hsl(337, 73%, 26%)" }}>
+                                    <Check className="h-3 w-3 text-white" />
+                                  </div>
+                                )}
                               </div>
-                              <div className="p-1 bg-white">
-                                <p className="text-xs font-medium truncate">{item.name}</p>
-                                <p className="text-[10px] text-muted-foreground truncate">
-                                  {item.category}
-                                </p>
-                              </div>
-                              {selectedItems.includes(item.id) && (
-                                <div className="absolute top-1 right-1 bg-amber-500 text-white rounded-full p-1">
-                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                  </svg>
-                                </div>
-                              )}
                             </div>
                           ))}
                         </div>
@@ -361,187 +270,216 @@ export function OutfitPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="favorite"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            data-testid="checkbox-favorite"
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Mark as favorite
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
                   <DialogFooter>
                     <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsCreateDialogOpen(false)}
-                      data-testid="button-cancel"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
                       type="submit"
-                      disabled={createOutfit.isPending}
-                      data-testid="button-submit"
-                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+                      className="w-full rounded-full"
+                      style={{ background: "hsl(337, 73%, 26%)" }}
                     >
-                      {createOutfit.isPending ? "Creating..." : "Create Outfit"}
+                      Create Outfit
                     </Button>
                   </DialogFooter>
                 </form>
               </Form>
             </DialogContent>
           </Dialog>
-        </motion.div>
+        </header>
 
         {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-col md:flex-row gap-4"
-        >
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-amber-500" />
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              data-testid="input-search"
               placeholder="Search outfits..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-amber-200 focus:border-amber-400"
+              className="pl-10 rounded-full border-slate-200 bg-white focus:border-[hsl(337,73%,26%)]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2"
               >
-                <X className="h-4 w-4 text-amber-500" />
+                <X className="h-4 w-4 text-slate-400 hover:text-slate-600 transition-colors" />
               </button>
             )}
           </div>
-
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full md:w-auto">
-            <TabsList className="grid w-full md:w-auto grid-cols-4 md:grid-cols-6">
-              <TabsTrigger value="all" data-testid="tab-all">All</TabsTrigger>
-              <TabsTrigger value="favorites" data-testid="tab-favorites">
-                <Heart className="h-3 w-3 mr-1" />
+          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+            <TabsList className="bg-white border border-slate-200">
+              <TabsTrigger value="all" className="data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">All</TabsTrigger>
+              <TabsTrigger value="favorites" className="data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">
+                <Heart className="h-4 w-4 mr-1" />
                 Favorites
               </TabsTrigger>
-              <TabsTrigger value="casual" data-testid="tab-casual">Casual</TabsTrigger>
-              <TabsTrigger value="work" data-testid="tab-work">Work</TabsTrigger>
-              <TabsTrigger value="party" data-testid="tab-party">Party</TabsTrigger>
-              <TabsTrigger value="formal" data-testid="tab-formal">Formal</TabsTrigger>
             </TabsList>
           </Tabs>
-        </motion.div>
+        </div>
 
-        {/* Stats */}
-        {outfits && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="flex gap-4 flex-wrap"
-          >
-            <Badge variant="outline" className="border-amber-300 text-amber-800 px-3 py-1">
-              <Layers className="h-3 w-3 mr-1" />
-              Total Outfits: {outfits.length}
-            </Badge>
-            <Badge variant="outline" className="border-amber-300 text-amber-800 px-3 py-1">
-              Showing: {filteredOutfits.length}
-            </Badge>
-            <Badge variant="outline" className="border-amber-300 text-amber-800 px-3 py-1">
-              <Heart className="h-3 w-3 mr-1" />
-              Favorites: {outfits.filter(o => o.favorite).length}
-            </Badge>
-          </motion.div>
+        {/* Results Count */}
+        {filteredOutfits.length > 0 && (
+          <div className="flex gap-3 mb-6">
+            <Badge variant="outline" className="border-slate-200 text-slate-600">Showing: {filteredOutfits.length}</Badge>
+          </div>
         )}
 
-        {/* Outfits Grid */}
-        {isLoading ? (
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {/* Content */}
+        {outfitsLoading ? (
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-[4/3] w-full" />
+              <Card key={i} className="border-slate-100 bg-white">
+                <Skeleton className="aspect-[4/3]" />
                 <CardContent className="p-4">
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : filteredOutfits.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16"
-          >
-            <Card className="max-w-md mx-auto border-amber-200">
-              <CardHeader>
-                <CardTitle className="font-fashion-heading text-amber-900">
-                  {outfits && outfits.length > 0 ? 'No Outfits Found' : 'No Outfits Yet'}
+          <div className="space-y-8">
+            <Card className="max-w-md mx-auto border-slate-100 bg-white shadow-sm">
+              <CardHeader className="text-center pb-2">
+                <div
+                  className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                  style={{ background: "hsl(337, 73%, 26%)10" }}
+                >
+                  <Layers className="h-7 w-7" style={{ color: "hsl(337, 73%, 26%)" }} />
+                </div>
+                <CardTitle className="font-serif text-2xl text-slate-900">
+                  {outfits?.length ? 'No Matches Found' : 'Create Your First Outfit'}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground font-fashion-body mb-4">
-                  {outfits && outfits.length > 0
-                    ? 'Try adjusting your search or filters.'
-                    : wardrobeItems && wardrobeItems.length === 0
-                      ? 'Add wardrobe items first, then create outfits.'
-                      : 'Start creating outfits with your wardrobe items.'}
+              <CardContent className="text-center space-y-4">
+                <p className="text-slate-500">
+                  {outfits?.length
+                    ? 'Try adjusting your search.'
+                    : 'Combine your wardrobe pieces into stunning outfits. Celura will help you style them perfectly.'}
                 </p>
-                {wardrobeItems && wardrobeItems.length > 0 && (!outfits || outfits.length === 0) && (
+                {!outfits?.length && (
                   <Button
                     onClick={() => setIsCreateDialogOpen(true)}
-                    data-testid="button-create-first-outfit"
-                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+                    className="rounded-full px-6"
+                    style={{ background: "hsl(337, 73%, 26%)" }}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="h-4 w-4 mr-2" />
                     Create Your First Outfit
                   </Button>
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+
+            {/* Outfit Inspiration */}
+            {!outfits?.length && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="font-serif text-xl text-slate-900 mb-1">Outfit Inspiration</h3>
+                  <p className="text-slate-400 text-sm">Curated looks to inspire your style</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    {
+                      name: 'Business Casual',
+                      occasion: 'Work',
+                      items: 4,
+                      img: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=300&fit=crop',
+                      description: 'Professional yet relaxed'
+                    },
+                    {
+                      name: 'Weekend Brunch',
+                      occasion: 'Casual',
+                      items: 3,
+                      img: 'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=400&h=300&fit=crop',
+                      description: 'Effortlessly chic'
+                    },
+                    {
+                      name: 'Evening Elegance',
+                      occasion: 'Formal',
+                      items: 5,
+                      img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=300&fit=crop',
+                      description: 'Sophisticated glamour'
+                    },
+                  ].map((outfit, idx) => (
+                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group">
+                      <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
+                        <img src={outfit.img} alt={outfit.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                          <h4 className="font-serif text-lg">{outfit.name}</h4>
+                          <p className="text-sm text-white/80">{outfit.description}</p>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <Badge className="bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] text-xs hover:bg-[hsl(337,73%,26%)]/15">{outfit.occasion}</Badge>
+                          <span className="text-xs text-slate-400">{outfit.items} pieces</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            data-testid="outfits-grid"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredOutfits.map((outfit) => (
-                <motion.div
-                  key={outfit.id}
-                  variants={itemVariants}
-                  layout
-                  data-testid={`outfit-${outfit.id}`}
-                >
-                  <OutfitCard
-                    outfit={outfit}
-                    items={getOutfitItems(outfit.items)}
-                    onDelete={() => handleDelete(outfit.id)}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredOutfits.map((outfit) => {
+              const outfitItems = getOutfitItems(outfit.items || []);
+              return (
+                <Card key={outfit.id} className="group overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all">
+                  {/* Outfit Preview */}
+                  <div className="relative aspect-[4/3] bg-slate-100">
+                    <div className="grid grid-cols-2 gap-1 h-full p-2">
+                      {outfitItems.slice(0, 4).map((item, idx) => (
+                        <div key={item.id} className="bg-white rounded overflow-hidden">
+                          {item.imageUrl ? (
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs p-1 text-center">
+                              {item.name}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {outfit.favorite && (
+                      <div className="absolute top-2 right-2 rounded-full p-1.5 shadow-md" style={{ background: "hsl(337, 73%, 26%)" }}>
+                        <Heart className="h-4 w-4 fill-white text-white" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button size="sm" variant="destructive" onClick={() => handleDelete(outfit.id)}>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-medium text-slate-900 mb-1">{outfit.name}</h3>
+                    {outfit.description && (
+                      <p className="text-sm text-slate-500 line-clamp-2 mb-2">{outfit.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {outfit.occasion && (
+                        <Badge className="text-xs capitalize bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] hover:bg-[hsl(337,73%,26%)]/15">{outfit.occasion}</Badge>
+                      )}
+                      {outfit.season && outfit.season !== 'all' && (
+                        <Badge variant="outline" className="text-xs capitalize border-slate-200 text-slate-500">{outfit.season}</Badge>
+                      )}
+                      <Badge variant="outline" className="text-xs border-slate-200 text-slate-500">
+                        {outfitItems.length} items
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
