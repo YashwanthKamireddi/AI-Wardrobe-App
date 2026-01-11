@@ -127,10 +127,8 @@ export function WardrobePage() {
     try {
       await updateItem.mutateAsync({
         id: editingItem.id,
-        data: {
-          ...data,
-          tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
-        },
+        ...data,
+        tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
       });
       setEditingItem(null);
     } catch (error) {
@@ -194,8 +192,8 @@ export function WardrobePage() {
                   </FormControl>
                   <SelectContent>
                     {clothingCategories.map(cat => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -232,8 +230,8 @@ export function WardrobePage() {
                 </FormControl>
                 <SelectContent>
                   {seasons.map(s => (
-                    <SelectItem key={s} value={s}>
-                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -323,8 +321,8 @@ export function WardrobePage() {
             <SelectContent className="border-slate-200 bg-white">
               <SelectItem value="all">All Categories</SelectItem>
               {clothingCategories.map(cat => (
-                <SelectItem key={cat} value={cat}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                <SelectItem key={cat.value} value={cat.value}>
+                  {cat.label}
                 </SelectItem>
               ))}
             </SelectContent>

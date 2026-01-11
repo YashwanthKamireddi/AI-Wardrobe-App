@@ -162,7 +162,7 @@ export function RunwayDisplay({
             className={`w-1.5 h-1.5 rounded-full transition-all ${
               index === currentIndex 
                 ? 'bg-amber-500 w-4' 
-                : 'bg-amber-200/50 hover:bg-amber-300/70
+                : 'bg-amber-200/50 hover:bg-amber-300/70'
             }`}
             onClick={() => setCurrentIndex(index)}
             aria-label={`Go to item ${index + 1}`}

@@ -215,7 +215,7 @@ export function ProfilePage() {
                 <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
                   <CardContent className="pt-6">
                     <StyleProfileAnalysis
-                      wardrobeItemsCount={wardrobeItems?.length || 0}
+                      wardrobeCount={wardrobeItems?.length || 0}
                     />
                   </CardContent>
                 </Card>

@@ -229,9 +229,9 @@ export const StyleQuiz = () => {
                   <AnimatedCard 
                     key={option.id}
                     hoverEffect="lift"
-                    transitionDelay={`${index * 100}ms`}
                     className="cursor-pointer border-2 hover:border-primary transition-all overflow-hidden"
                     onClick={() => handleAnswer(currentQ.id, option.id)}
+                    style={{ transitionDelay: `${index * 100}ms` }}
                   >
                     <div className="h-40 overflow-hidden">
                       <img 

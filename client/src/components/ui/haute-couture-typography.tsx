@@ -64,10 +64,10 @@ export function CoutureHeading({
   }[weight];
 
   const colorStyles = {
-    'default': 'text-amber-900
-    'muted': 'text-amber-700/70
-    'gold': 'text-amber-600
-    'accent': 'text-amber-500
+    'default': 'text-amber-900',
+    'muted': 'text-amber-700/70',
+    'gold': 'text-amber-600',
+    'accent': 'text-amber-500',
   }[color];
 
   const trackingStyles = {
@@ -98,7 +98,7 @@ export function CoutureHeading({
         italic && 'italic',
         underline && underlineStyles,
         gradient && 'bg-gradient-to-r from-amber-700 via-amber-500 to-amber-700 bg-clip-text text-transparent',
-        decorative && 'relative pl-6 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[1px] before:w-4 before:bg-amber-400
+        decorative && 'relative pl-6 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[1px] before:w-4 before:bg-amber-400',
         className
       )}
       {...props}
@@ -136,7 +136,7 @@ export function PullQuote({
       className={cn(
         'my-8 max-w-lg relative p-6',
         position === 'center' ? 'w-full flex flex-col items-center justify-center' : 'w-fit',
-        bordered && 'border-l-2 border-amber-400/50
+        bordered && 'border-l-2 border-amber-400/50',
         luxury && 'bg-amber-50/30 rounded-sm',
         position === 'left' && bordered && 'pl-8',
         position === 'right' && bordered && 'pr-8 border-l-0 border-r-2',
@@ -190,9 +190,9 @@ export function EditorialCallout({
   children
 }: EditorialCalloutProps) {
   const variantStyles = {
-    'default': 'bg-amber-50 text-amber-900
-    'highlight': 'bg-gradient-to-r from-amber-100/80 to-amber-50/80 text-amber-900
-    'subtle': 'bg-amber-50/50 text-amber-800
+    'default': 'bg-amber-50 text-amber-900',
+    'highlight': 'bg-gradient-to-r from-amber-100/80 to-amber-50/80 text-amber-900',
+    'subtle': 'bg-amber-50/50 text-amber-800',
     'luxury': 'bg-gradient-to-br from-amber-50/90 to-amber-100/50 text-amber-900 shadow-md',
   }[variant];
 
@@ -200,7 +200,7 @@ export function EditorialCallout({
     <div 
       className={cn(
         'p-4 sm:p-6 my-6 rounded-md relative overflow-hidden',
-        bordered && 'border border-amber-200/50
+        bordered && 'border border-amber-200/50',
         variantStyles,
         variant === 'luxury' && 'gold-corner',
         className
@@ -321,10 +321,10 @@ export function FashionHighlight({
   ...props
 }: FashionHighlightProps) {
   const variantStyles = {
-    'underline': 'border-b-2 border-amber-300 pb-0.5 text-amber-800
-    'highlight': 'bg-amber-100 px-1 py-0.5 rounded-sm text-amber-900
+    'underline': 'border-b-2 border-amber-300 pb-0.5 text-amber-800',
+    'highlight': 'bg-amber-100 px-1 py-0.5 rounded-sm text-amber-900',
     'gold': 'text-amber-600 font-medium',
-    'editorial': 'font-luxury-heading italic text-amber-700
+    'editorial': 'font-luxury-heading italic text-amber-700',
   }[variant];
 
   return (

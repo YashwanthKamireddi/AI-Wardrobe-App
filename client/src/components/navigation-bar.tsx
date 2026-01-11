@@ -122,12 +122,6 @@ const NavigationBar = () => {
               })}
 
               {user && (
-                <div className="pt-4 mt-4 border-t border-primary/10 animate-fade-in">
-                  <button
-                    onClick={() => {
-                      logoutMutation.mutate();
-                      setMobileMenuOpen(false);
-              {user && (
                 <div className="pt-2 border-t border-slate-100">
                   <button
                     onClick={() => {

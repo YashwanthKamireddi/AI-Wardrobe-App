@@ -31,7 +31,7 @@ export default function WardrobeItem({ item, onEdit }: WardrobeItemProps) {
     try {
       await updateItem.mutateAsync({
         id: item.id,
-        data: { favorite: !item.favorite },
+        favorite: !item.favorite,
       });
     } catch (error) {
       console.error("Failed to update favorite:", error);
