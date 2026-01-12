@@ -19,6 +19,7 @@ import NavigationBar from "@/components/navigation-bar";
 import MobileBottomNav from "@/components/mobile-bottom-nav";
 import StyleProfileAnalysis from "@/components/style-profile-analysis";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/hooks/use-theme";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 
@@ -37,13 +38,19 @@ const getAchievements = (wardrobeCount: number, outfitsCount: number, favoriteCo
 
 export function ProfilePage() {
   const { user, logoutMutation } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const { data: wardrobeItems } = useWardrobeItems();
   const { data: outfits } = useOutfits();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     localStorage.getItem("notificationsEnabled") === "true"
   );
-  const [darkMode, setDarkMode] = useState(false);
+
+  const isDarkMode = resolvedTheme === "dark";
+
+  const handleDarkModeChange = (enabled: boolean) => {
+    setTheme(enabled ? "dark" : "light");
+  };
 
   const handleNotificationsChange = (checked: boolean) => {
     setNotificationsEnabled(checked);
@@ -468,7 +475,7 @@ export function ProfilePage() {
                       </h3>
                       <div className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:border-slate-200 transition-colors">
                         <div className="flex items-center gap-3">
-                          {darkMode ? <Moon className="w-4 h-4 text-slate-400" /> : <Sun className="w-4 h-4 text-slate-400" />}
+                          {isDarkMode ? <Moon className="w-4 h-4 text-slate-400" /> : <Sun className="w-4 h-4 text-slate-400" />}
                           <div className="space-y-0.5">
                             <Label className="text-sm font-medium text-slate-700">
                               Dark Mode
@@ -478,7 +485,7 @@ export function ProfilePage() {
                             </p>
                           </div>
                         </div>
-                        <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+                        <Switch checked={isDarkMode} onCheckedChange={handleDarkModeChange} />
                       </div>
                     </div>
 

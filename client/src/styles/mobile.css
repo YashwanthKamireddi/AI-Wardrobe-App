@@ -1,1 +1,156 @@
-/* Mobile styles placeholder */
+/* Mobile-first responsive styles for Celura */
+
+/* Base mobile styles */
+@media (max-width: 640px) {
+  /* Typography adjustments */
+  h1 {
+    font-size: 1.75rem !important;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  h3 {
+    font-size: 1.125rem !important;
+  }
+
+  /* Spacing adjustments */
+  .container,
+  main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Card adjustments */
+  .card {
+    border-radius: 0.75rem;
+  }
+
+  /* Button adjustments for touch targets */
+  button,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Form elements */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+
+  /* Grid adjustments */
+  .grid {
+    gap: 0.75rem;
+  }
+
+  /* Dialog adjustments */
+  [role="dialog"] {
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 4rem);
+    margin: 1rem;
+  }
+
+  /* Better touch scrolling */
+  .overflow-y-auto,
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide desktop-only elements */
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .container,
+  main {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  /* Two column grids on tablet */
+  .grid-cols-3,
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1024px) {
+  /* Hide mobile-only elements */
+  .hidden-desktop {
+    display: none !important;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Bottom navigation safe area */
+.pb-safe {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 30%;
+  }
+
+  .dark {
+    --border: 0 0% 70%;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Remove hover effects that don't work on touch */
+  .group:hover .group-hover\:opacity-100 {
+    opacity: 1;
+  }
+}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, X, Layers, Heart, Trash2, Check } from "lucide-react";
+import { Plus, Search, X, Layers, Heart, Trash2, Check, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,8 @@ type OutfitFormData = z.infer<typeof outfitSchema>;
 
 export function OutfitPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [outfitToDelete, setOutfitToDelete] = useState<{ id: number; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState<string>('all');
 
@@ -114,9 +117,15 @@ export function OutfitPage() {
   const handleDelete = async (id: number) => {
     try {
       await deleteOutfit.mutateAsync(id);
+      setOutfitToDelete(null);
     } catch (error) {
       console.error('Failed to delete outfit:', error);
     }
+  };
+
+  const openDeleteDialog = (outfit: { id: number; name: string }) => {
+    setOutfitToDelete(outfit);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -448,7 +457,14 @@ export function OutfitPage() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(outfit.id)}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDeleteDialog({ id: outfit.id, name: outfit.name });
+                        }}
+                      >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
                       </Button>
@@ -477,6 +493,22 @@ export function OutfitPage() {
           </div>
         )}
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Outfit"
+        description={`Are you sure you want to delete "${outfitToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={async () => {
+          if (outfitToDelete) {
+            await handleDelete(outfitToDelete.id);
+          }
+        }}
+        isLoading={deleteOutfit.isPending}
+      />
     </div>
   );
 }

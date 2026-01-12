@@ -120,6 +120,61 @@
     --sidebar-border: 337 30% 25%;
     --sidebar-ring: 337 60% 40%;
   }
+
+  /* Dark Mode - Elegant and luxurious */
+  .dark {
+    --background: 240 10% 8%;
+    --foreground: 30 30% 95%;
+    --background-rgb: 18, 18, 22;
+    --foreground-rgb: 245, 243, 240;
+
+    --card: 240 10% 12%;
+    --card-foreground: 30 30% 95%;
+    --card-rgb: 28, 28, 34;
+
+    --popover: 240 10% 10%;
+    --popover-foreground: 30 30% 95%;
+
+    /* Rich burgundy primary - slightly lighter for dark mode */
+    --primary: 337 65% 45%;
+    --primary-foreground: 30 30% 98%;
+    --primary-rgb: 180, 60, 100;
+
+    /* Dark secondary */
+    --secondary: 240 10% 18%;
+    --secondary-foreground: 30 30% 90%;
+
+    --muted: 240 10% 20%;
+    --muted-foreground: 30 25% 60%;
+
+    /* Gold accent - slightly muted for dark */
+    --accent: 45 70% 55%;
+    --accent-foreground: 240 10% 10%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 30 30% 98%;
+
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 337 65% 45%;
+
+    /* Chart colors for dark mode */
+    --chart-1: 337 60% 55%;
+    --chart-2: 45 70% 55%;
+    --chart-3: 15 60% 55%;
+    --chart-4: 300 50% 50%;
+    --chart-5: 180 45% 50%;
+
+    /* Sidebar dark mode */
+    --sidebar-background: 240 10% 6%;
+    --sidebar-foreground: 30 30% 95%;
+    --sidebar-primary: 337 55% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 45 70% 55%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 240 10% 15%;
+    --sidebar-ring: 337 55% 50%;
+  }
 }
 
 @layer base {

@@ -1,30 +1,38 @@
 import type { Express, Request, Response, NextFunction } from "express";
+import crypto from "crypto";
 import storage from "./storage";
-import { setupAuth } from "./auth";
 import { z } from "zod";
-import { 
-  insertWardrobeItemSchema, 
-  insertOutfitSchema, 
-  insertWeatherPreferenceSchema, 
-  insertMoodPreferenceSchema 
+import {
+  insertWardrobeItemSchema,
+  insertOutfitSchema,
+  insertWeatherPreferenceSchema,
+  insertMoodPreferenceSchema
 } from "@shared/schema";
 // Import AI service
 import aiService from "./services/ai-service";
 
 
 export async function registerRoutes(app: Express): Promise<void> {
-  // Health check endpoint for basic API testing
-  app.get("/api/health", (req: Request, res: Response) => {
-    res.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      database: "connected",
-      environment: process.env.NODE_ENV || "development"
-    });
-  });
+  // Note: Health check and auth are already configured in app.ts
+  // Only register business logic routes here
 
-  // Setup authentication routes
-  setupAuth(app);
+  // Helper function to validate and parse numeric IDs
+  const parseId = (id: string): number | null => {
+    const parsed = parseInt(id, 10);
+    return isNaN(parsed) || parsed < 1 ? null : parsed;
+  };
+
+  // Input validation schemas
+  const patchWardrobeItemSchema = z.object({
+    name: z.string().min(1).max(100).optional(),
+    category: z.string().min(1).max(50).optional(),
+    color: z.string().min(1).max(50).optional(),
+    brand: z.string().max(100).optional(),
+    size: z.string().max(20).optional(),
+    image: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    favorite: z.boolean().optional(),
+  }).strict();
 
   // Wardrobe routes
   app.get("/api/wardrobe", async (req: Request, res: Response) => {
@@ -82,7 +90,14 @@ export async function registerRoutes(app: Express): Promise<void> {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-      const id = parseInt(req.params.id);
+      const id = parseId(req.params.id);
+      if (!id) {
+        return res.status(400).json({ message: "Invalid item ID" });
+      }
+
+      // Validate input data
+      const validatedData = patchWardrobeItemSchema.parse(req.body);
+
       const item = await storage.getWardrobeItem(id);
 
       if (!item) {
@@ -93,9 +108,12 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(403).json({ message: "Forbidden" });
       }
 
-      const updatedItem = await storage.updateWardrobeItem(id, req.body);
+      const updatedItem = await storage.updateWardrobeItem(id, validatedData);
       res.json(updatedItem);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid input data", errors: error.format() });
+      }
       res.status(500).json({ message: "Failed to update wardrobe item" });
     }
   });
@@ -224,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
     try {
       const { startDate, endDate } = req.query;
-      
+
       if (!startDate || !endDate) {
         return res.status(400).json({ message: "Start date and end date are required" });
       }
@@ -232,22 +250,22 @@ export async function registerRoutes(app: Express): Promise<void> {
       // In a real implementation, you would fetch outfits planned for specific dates
       // For now, we'll return the user's outfits with mock dates
       const outfits = await storage.getOutfits(req.user!.id);
-      
+
       // Simulate outfits being assigned to days in the requested range
       const start = new Date(startDate as string);
       const end = new Date(endDate as string);
-      
+
       const calendarOutfits = outfits.map((outfit, index) => {
         // Distribute outfits across the requested date range
         const date = new Date(start);
         date.setDate(date.getDate() + (index % Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))));
-        
+
         return {
           ...outfit,
           plannedDate: date.toISOString().split('T')[0]
         };
       });
-      
+
       res.json(calendarOutfits);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch calendar outfits" });
@@ -259,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
     try {
       const { outfitId, date } = req.body;
-      
+
       if (!outfitId || !date) {
         return res.status(400).json({ message: "Outfit ID and date are required" });
       }
@@ -276,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       // In a real implementation, you would store the outfit planning for this date
       // For now, just return a success message
-      res.status(201).json({ 
+      res.status(201).json({
         message: "Outfit scheduled successfully",
         plannedOutfit: {
           ...outfit,
@@ -303,17 +321,17 @@ export async function registerRoutes(app: Express): Promise<void> {
       if (outfit.userId !== req.user!.id) {
         return res.status(403).json({ message: "Forbidden" });
       }
-      
-      // Generate a sharing token/ID
-      const shareId = Buffer.from(`${outfit.id}-${Date.now()}`).toString('base64');
-      
+
+      // Generate a cryptographically secure sharing token
+      const shareId = crypto.randomBytes(32).toString('hex');
+
       // In a real implementation, store this sharing information in the database
       // await storage.createOutfitShare(outfit.id, shareId);
-      
+
       // Generate a shareable link
       const shareableLink = `${req.protocol}://${req.get('host')}/shared-outfit/${shareId}`;
-      
-      res.status(200).json({ 
+
+      res.status(200).json({
         message: "Outfit shared successfully",
         shareableLink
       });
@@ -326,13 +344,13 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/shared-outfit/:shareId", async (req: Request, res: Response) => {
     try {
       const { shareId } = req.params;
-      
+
       // In a real implementation, get the outfit ID from the share record
       // const share = await storage.getOutfitShareByShareId(shareId);
       // if (!share) {
       //   return res.status(404).json({ message: "Shared outfit not found" });
       // }
-      
+
       // For demo purposes, parse the outfit ID from the share ID
       let outfitId: number;
       try {
@@ -341,22 +359,22 @@ export async function registerRoutes(app: Express): Promise<void> {
       } catch (e) {
         return res.status(400).json({ message: "Invalid share ID" });
       }
-      
+
       const outfit = await storage.getOutfit(outfitId);
       if (!outfit) {
         return res.status(404).json({ message: "Shared outfit not found" });
       }
-      
+
       // For shared outfits, we'll need to include item details
       const outfitItems = await Promise.all(
         outfit.items.map(async (itemId) => {
           return await storage.getWardrobeItem(itemId);
         })
       );
-      
+
       // Filter out any null items (in case some items were deleted)
       const validItems = outfitItems.filter(Boolean);
-      
+
       // Return a sanitized version for public sharing
       const publicOutfit = {
         id: outfit.id,
@@ -377,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         mood: outfit.mood || "neutral",
         shared: true
       };
-      
+
       res.json(publicOutfit);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch shared outfit" });
@@ -477,18 +495,18 @@ export async function registerRoutes(app: Express): Promise<void> {
 
     try {
       const { mood, weather, occasion } = req.body;
-      
+
       if (!mood || !weather) {
         return res.status(400).json({ message: "Mood and weather are required" });
       }
 
       // Get wardrobe items for the user
       const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
-      
+
       if (wardrobeItems.length === 0) {
-        return res.json({ 
+        return res.json({
           message: "No wardrobe items available",
-          recommendations: [] 
+          recommendations: []
         });
       }
 
@@ -500,7 +518,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           weatherCondition: weather,
           occasion: occasion || "everyday"
         });
-        
+
         if (recommendations && recommendations.length > 0) {
           return res.json({
             recommendations,
@@ -514,24 +532,24 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       } catch (aiError: any) {
         console.log("AI recommendation failed, using fallback algorithm:", aiError.message);
-        
+
         // Import the outfit engine
         const outfitEngine = await import("../client/src/lib/outfit-engine");
-        
-        // Convert weather string to WeatherType 
+
+        // Convert weather string to WeatherType
         const weatherType = (() => {
           const w = weather.toLowerCase();
           if (w.includes("rain")) return "rainy";
           if (w.includes("snow")) return "snowy";
           if (w.includes("cloud")) return "cloudy";
-          if (w.includes("wind")) return "windy"; 
+          if (w.includes("wind")) return "windy";
           if (w.includes("sun") || w.includes("clear")) return "sunny";
           return "cloudy"; // Default
         })();
-        
+
         // Convert mood string to MoodType
         const moodType = mood.toLowerCase() as any;
-        
+
         // Generate algorithm-based recommendations
         const algorithmRecommendations = outfitEngine.generateOutfitRecommendations(
           wardrobeItems,
@@ -539,7 +557,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           moodType,
           3 // Generate 3 outfits
         );
-        
+
         // Convert to AI format for frontend compatibility
         const convertedRecommendations = algorithmRecommendations.map((rec, index) => {
           // Create descriptive names based on mood and weather
@@ -549,21 +567,21 @@ export async function registerRoutes(app: Express): Promise<void> {
             `Perfect for ${occasionText.charAt(0).toUpperCase() + occasionText.slice(1)}`,
             `${mood.charAt(0).toUpperCase() + mood.slice(1)} Day Look`
           ];
-          
+
           // Create descriptions
           const descriptions = [
             `A coordinated outfit designed for ${weather} conditions when you're feeling ${mood}.`,
             `This combination works well for ${occasionText} occasions and matches your current mood.`,
             `A comfortable and stylish outfit that reflects your ${mood} mood while being appropriate for the weather.`
           ];
-          
+
           // Create styling advice
           const stylingAdvice = [
             "Try accessorizing with jewelry that complements the main colors in this outfit.",
             "You can layer these pieces differently depending on temperature changes throughout the day.",
             "This outfit can be dressed up with the right accessories or dressed down for more casual settings."
           ];
-          
+
           return {
             outfitName: outfitNames[index % outfitNames.length],
             description: descriptions[index % descriptions.length],
@@ -577,7 +595,7 @@ export async function registerRoutes(app: Express): Promise<void> {
             confidence: Math.round(rec.score * 100)
           };
         });
-        
+
         return res.json({
           recommendations: convertedRecommendations,
           count: convertedRecommendations.length,
@@ -586,11 +604,11 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
     } catch (error) {
       console.error("Error generating outfit recommendations:", error);
-      
+
       // Check if this is an OpenAI API error
       let statusCode = 500;
       let errorMessage = "Failed to generate outfit recommendations";
-      
+
       if (error instanceof Error) {
         // Check for OpenAI quota errors
         if (error.message.includes("quota") || error.message.includes("rate limit")) {
@@ -601,8 +619,8 @@ export async function registerRoutes(app: Express): Promise<void> {
           errorMessage = "OpenAI API authentication failed. Please check your API key.";
         }
       }
-      
-      res.status(statusCode).json({ 
+
+      res.status(statusCode).json({
         message: errorMessage,
         error: error instanceof Error ? error.message : "Unknown error",
         recommendations: [] // Return empty recommendations array to prevent client-side errors
@@ -617,9 +635,9 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       // Get wardrobe items for the user
       const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
-      
+
       if (wardrobeItems.length === 0) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Not enough wardrobe items to create a style profile",
           minimumRequired: 5
         });
@@ -627,22 +645,22 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       // Generate style profile
       const styleProfile = await aiService.createUserStyleProfile(wardrobeItems);
-      
+
       res.json(styleProfile);
     } catch (error) {
       console.error("Error creating style profile:", error);
-      
+
       let statusCode = 500;
       let errorMessage = "Failed to create style profile";
-      
+
       if (error instanceof Error) {
         if (error.message.includes("quota") || error.message.includes("rate limit")) {
           statusCode = 429;
           errorMessage = "OpenAI API quota exceeded. Please try again later.";
         }
       }
-      
-      res.status(statusCode).json({ 
+
+      res.status(statusCode).json({
         message: errorMessage,
         error: error instanceof Error ? error.message : "Unknown error"
       });
@@ -656,9 +674,9 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       // Get wardrobe items for the user
       const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
-      
+
       if (wardrobeItems.length < 3) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Not enough wardrobe items for style analysis",
           minimumRequired: 3
         });
@@ -666,34 +684,34 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       // Generate style analysis
       const analysis = await aiService.analyzeStyle(wardrobeItems);
-      
+
       res.json({
         analysis,
         itemCount: wardrobeItems.length
       });
     } catch (error) {
       console.error("Error analyzing style:", error);
-      
+
       let statusCode = 500;
       let errorMessage = "Failed to analyze style";
       let errorCode = "unknown_error";
-      
+
       if (error instanceof Error) {
         // Check for rate limit or quota-related errors
-        if (error.message.includes("quota") || 
-            error.message.includes("rate limit") || 
+        if (error.message.includes("quota") ||
+            error.message.includes("rate limit") ||
             error.message.includes("API rate limit") ||
-            error.message.includes("capacity") || 
+            error.message.includes("capacity") ||
             error.message.includes("insufficient_quota") ||
             (error as any).code === 'insufficient_quota') {
-          
+
           statusCode = 429;
           errorMessage = "AI service quota exceeded. Please try again later.";
           errorCode = "api_limit_exceeded";
         }
       }
-      
-      res.status(statusCode).json({ 
+
+      res.status(statusCode).json({
         message: errorMessage,
         error: error instanceof Error ? error.message : "Unknown error",
         code: errorCode,
@@ -708,16 +726,16 @@ export async function registerRoutes(app: Express): Promise<void> {
 
     try {
       const { occasion, weather } = req.body;
-      
+
       if (!occasion) {
         return res.status(400).json({ message: "Occasion is required" });
       }
 
       // Get wardrobe items for the user
       const wardrobeItems = await storage.getWardrobeItems(req.user!.id);
-      
+
       if (wardrobeItems.length === 0) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "No wardrobe items available",
           recommendation: null
         });
@@ -730,7 +748,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           occasion,
           weatherCondition: weather
         });
-        
+
         if (recommendation) {
           return res.json({
             recommendation,
@@ -743,21 +761,21 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       } catch (aiError: any) {
         console.log("AI occasion recommendation failed, using fallback algorithm:", aiError.message);
-        
+
         // Import the outfit engine for fallback
         const outfitEngine = await import("../client/src/lib/outfit-engine");
-        
+
         // Convert weather string to WeatherType if provided
         const weatherType = weather ? (() => {
           const w = weather.toLowerCase();
           if (w.includes("rain")) return "rainy";
           if (w.includes("snow")) return "snowy";
           if (w.includes("cloud")) return "cloudy";
-          if (w.includes("wind")) return "windy"; 
+          if (w.includes("wind")) return "windy";
           if (w.includes("sun") || w.includes("clear")) return "sunny";
           return "cloudy"; // Default
         })() : "cloudy";
-        
+
         // Map occasion to a suitable mood
         const moodType = (() => {
           const o = occasion.toLowerCase();
@@ -770,7 +788,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           if (o.includes("creative") || o.includes("art")) return "creative";
           return "confident"; // Default to confident for any other occasion
         })() as any;
-        
+
         // Generate algorithm-based recommendations and pick the best one
         const algorithmRecommendations = outfitEngine.generateOutfitRecommendations(
           wardrobeItems,
@@ -778,17 +796,17 @@ export async function registerRoutes(app: Express): Promise<void> {
           moodType,
           3 // Generate 3 outfits
         );
-        
+
         if (algorithmRecommendations.length === 0) {
-          return res.status(404).json({ 
+          return res.status(404).json({
             message: "Could not generate a suitable outfit for this occasion",
             recommendation: null
           });
         }
-        
+
         // Take the highest scored outfit recommendation
         const bestOutfit = algorithmRecommendations[0];
-        
+
         // Convert to AI format for frontend compatibility
         const occasionName = occasion.charAt(0).toUpperCase() + occasion.slice(1);
         const fallbackRecommendation = {
@@ -803,7 +821,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           occasion: occasionName,
           confidence: Math.round(bestOutfit.score * 100)
         };
-        
+
         return res.json({
           recommendation: fallbackRecommendation,
           occasion,
@@ -812,18 +830,18 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
     } catch (error) {
       console.error("Error generating occasion outfit:", error);
-      
+
       let statusCode = 500;
       let errorMessage = "Failed to generate occasion outfit";
-      
+
       if (error instanceof Error) {
         if (error.message.includes("quota") || error.message.includes("rate limit")) {
           statusCode = 429;
           errorMessage = "OpenAI API quota exceeded. Please try again later.";
         }
       }
-      
-      res.status(statusCode).json({ 
+
+      res.status(statusCode).json({
         message: errorMessage,
         error: error instanceof Error ? error.message : "Unknown error",
         recommendation: null
@@ -834,7 +852,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Weather API route - enhanced mock implementation
   app.get("/api/weather", (req: Request, res: Response) => {
     console.log("Fetching weather for location:", req.query.location);
-    
+
     // Get location from query parameter, defaulting to New York City
     const location = req.query.location as string || "New York City";
 
@@ -843,8 +861,8 @@ export async function registerRoutes(app: Express): Promise<void> {
       getWeatherForLocation(location).then(weatherData => {
         // Map the weather data to the expected response format
         const response = {
-          location: weatherData.type === 'snowy' || weatherData.type === 'cold' 
-            ? location + " ❄️" 
+          location: weatherData.type === 'snowy' || weatherData.type === 'cold'
+            ? location + " ❄️"
             : weatherData.type === 'hot' || weatherData.type === 'sunny'
               ? location + " ☀️"
               : weatherData.type === 'rainy'
@@ -868,17 +886,17 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Weather suggestions API endpoint
   app.get("/api/weather-suggestions", async (req: Request, res: Response) => {
     const query = (req.query.q as string || "").toLowerCase();
-    
+
     if (!query || query.length < 2) {
       return res.json([]);
     }
-    
+
     // Filter the valid locations from weather.ts
     import("./weather").then(({ validLocations }) => {
       const suggestions = validLocations
         .filter(location => location.toLowerCase().includes(query))
         .slice(0, 10);
-      
+
       res.json(suggestions);
     }).catch(error => {
       console.error("Error fetching location suggestions:", error);

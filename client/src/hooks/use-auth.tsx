@@ -41,28 +41,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      console.log("Attempting login with:", { username: credentials.username });
       const result = await apiRequest<SelectUser>({
         path: "/api/login",
         method: "POST",
         body: credentials
       });
-      console.log("Login successful, user:", result);
       return result;
     },
     onSuccess: async (user: SelectUser) => {
-      console.log("onSuccess called with user:", user);
       queryClient.setQueryData(["/api/user"], user);
-      // Invalidate to trigger re-render
       await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
     },
     onError: (error: Error) => {
-      console.error("Login error details:", error);
-      console.error("Error message:", error.message);
-      console.error("Error name:", error.name);
       toast({
         title: "Login failed",
-        description: error.message || "An unknown error occurred",
+        description: error.message || "Invalid username or password",
         variant: "destructive",
       });
     },
@@ -70,32 +63,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
-      console.log("Attempting registration with:", { username: credentials.username });
       const result = await apiRequest<SelectUser>({
         path: "/api/register",
         method: "POST",
         body: credentials
       });
-      console.log("Registration successful, user:", result);
       return result;
     },
     onSuccess: async (user: SelectUser) => {
-      console.log("onSuccess called with user:", user);
       queryClient.setQueryData(["/api/user"], user);
-      // Invalidate to trigger re-render
       await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       toast({
-        title: "Registration successful",
-        description: `Welcome to Celura, ${user.username}!`,
+        title: "Welcome to Celura!",
+        description: "Your account has been created successfully.",
       });
     },
     onError: (error: Error) => {
-      console.error("Registration error details:", error);
-      console.error("Error message:", error.message);
-      console.error("Error name:", error.name);
       toast({
         title: "Registration failed",
-        description: error.message || "An unknown error occurred",
+        description: error.message || "Could not create account. Please try again.",
         variant: "destructive",
       });
     },

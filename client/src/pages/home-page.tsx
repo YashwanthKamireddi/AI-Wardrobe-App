@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { queryClient } from "@/lib/queryClient";
 import {
   Shirt,
   Plus,
@@ -38,6 +39,8 @@ import {
   BarChart3,
   Palette,
   ShoppingBag,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 // Brand colors
@@ -114,6 +117,14 @@ export function HomePage() {
   const weeklyGoal = { current: outfits?.length || 0, target: 5 };
   const goalProgress = Math.min(100, (weeklyGoal.current / weeklyGoal.target) * 100);
 
+  // Error state handler
+  const hasErrors = wardrobeError || outfitsError;
+  const handleRetry = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/outfits"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/weather"] });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -127,6 +138,30 @@ export function HomePage() {
             <Skeleton className="h-48 w-full rounded-2xl" />
             <Skeleton className="h-48 w-full rounded-2xl lg:col-span-2" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasErrors) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <NavigationBar />
+        <div className="max-w-md mx-auto px-6 py-24 text-center">
+          <div
+            className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center"
+            style={{ background: `hsl(0, 70%, 95%)` }}
+          >
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="font-serif text-2xl text-slate-900 mb-2">Something went wrong</h2>
+          <p className="text-slate-500 mb-6">
+            We couldn't load your data. Please check your connection and try again.
+          </p>
+          <Button onClick={handleRetry} className="rounded-full gap-2" style={{ background: burgundy }}>
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </Button>
         </div>
       </div>
     );
