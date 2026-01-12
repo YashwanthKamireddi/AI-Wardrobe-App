@@ -222,7 +222,6 @@ export default function FileUpload({
           {error}
         </p>
       )}
-      </label>
 
       {/* Action buttons */}
       <div className="flex gap-2">
