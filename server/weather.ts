@@ -67,7 +67,7 @@ function mapWeatherCondition(conditionCode: number, temp: number): WeatherData['
   }
   // Clouds (80x)
   if (conditionCode > 800) return 'cloudy';
-  
+
   return 'cloudy';
 }
 
@@ -76,7 +76,7 @@ function mapWeatherCondition(conditionCode: number, temp: number): WeatherData['
  */
 export async function getWeatherFromAPI(location: string): Promise<WeatherData | null> {
   const apiKey = process.env.OPENWEATHER_API_KEY;
-  
+
   if (!apiKey) {
     console.log('[Weather] No OpenWeatherMap API key found, using mock data');
     return null;
@@ -85,18 +85,18 @@ export async function getWeatherFromAPI(location: string): Promise<WeatherData |
   try {
     const encodedLocation = encodeURIComponent(location);
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodedLocation}&appid=${apiKey}&units=metric`;
-    
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       console.log(`[Weather] API returned ${response.status} for ${location}`);
       return null;
     }
 
     const data = await response.json();
-    
+
     const weatherType = mapWeatherCondition(data.weather[0].id, data.main.temp);
-    
+
     return {
       type: weatherType,
       temperature: Math.round(data.main.temp),
@@ -117,21 +117,21 @@ export async function getWeatherFromAPI(location: string): Promise<WeatherData |
 export function getMockWeatherForLocation(location: string): WeatherData {
   // Generate semi-realistic mock data based on location name
   const hash = location.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  
+
   // More realistic temperature range (5-35°C)
   const baseTemp = 15;
   const tempVariation = (hash % 30) - 10;
   const temp = baseTemp + tempVariation;
-  
+
   const weatherTypes: WeatherData['type'][] = ['sunny', 'rainy', 'cloudy', 'snowy', 'windy'];
   const typeIndex = hash % weatherTypes.length;
   let type = weatherTypes[typeIndex];
-  
+
   // Adjust type based on temperature
   if (temp > 28) type = 'hot';
   if (temp < 5) type = 'cold';
   if (temp < 0 && type === 'rainy') type = 'snowy';
-  
+
   const descriptions: Record<WeatherData['type'], string> = {
     sunny: 'Clear skies',
     rainy: 'Light rain expected',
@@ -141,7 +141,7 @@ export function getMockWeatherForLocation(location: string): WeatherData {
     hot: 'Hot and sunny',
     cold: 'Cold and crisp'
   };
-  
+
   return {
     type,
     temperature: temp,
@@ -158,14 +158,13 @@ export function getMockWeatherForLocation(location: string): WeatherData {
 export async function getWeatherForLocation(location: string): Promise<WeatherData> {
   // Try real API first
   const apiWeather = await getWeatherFromAPI(location);
-  
+
   if (apiWeather) {
     console.log(`[Weather] Got real data for ${location}: ${apiWeather.temperature}°C, ${apiWeather.description}`);
     return apiWeather;
   }
-  
+
   // Fall back to mock data
   console.log(`[Weather] Using mock data for ${location}`);
   return getMockWeatherForLocation(location);
 }
-

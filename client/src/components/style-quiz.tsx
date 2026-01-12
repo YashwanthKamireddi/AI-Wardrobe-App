@@ -4,12 +4,14 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { AnimatedCard } from './ui/animated-card';
+import { Palette, Sun, Heart, Leaf, Shirt, Zap, Sparkles, Crown } from 'lucide-react';
 
 type StyleOption = {
   id: string;
   name: string;
   description: string;
-  imageUrl: string;
+  color: string;
+  icon: React.ElementType;
 };
 
 type Question = {
@@ -27,25 +29,29 @@ const QUIZ_QUESTIONS: Question[] = [
         id: 'q1o1',
         name: 'Neutrals',
         description: 'Beige, white, black, gray',
-        imageUrl: 'https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#64748b',
+        icon: Palette
       },
       {
         id: 'q1o2',
         name: 'Vibrant',
         description: 'Bold reds, blues, yellows',
-        imageUrl: 'https://images.unsplash.com/photo-1577401239170-897942555fb3?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#ef4444',
+        icon: Zap
       },
       {
         id: 'q1o3',
         name: 'Pastels',
         description: 'Soft pinks, blues, and lavenders',
-        imageUrl: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#f472b6',
+        icon: Heart
       },
       {
         id: 'q1o4',
         name: 'Earth tones',
         description: 'Browns, greens, and terracotta',
-        imageUrl: 'https://images.unsplash.com/photo-1579547945413-497e1b99dac0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#84cc16',
+        icon: Leaf
       }
     ]
   },
@@ -57,25 +63,29 @@ const QUIZ_QUESTIONS: Question[] = [
         id: 'q2o1',
         name: 'Casual chic',
         description: 'Jeans and a nice top',
-        imageUrl: 'https://images.unsplash.com/photo-1591657668071-ac5dc2ac8ee1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#3b82f6',
+        icon: Shirt
       },
       {
         id: 'q2o2',
         name: 'Athleisure',
         description: 'Leggings and a comfortable hoodie',
-        imageUrl: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#10b981',
+        icon: Sun
       },
       {
         id: 'q2o3',
         name: 'Dress up',
         description: 'A cute dress or button-up shirt',
-        imageUrl: 'https://images.unsplash.com/photo-1566174053879-31528523f8c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#8b5cf6',
+        icon: Sparkles
       },
       {
         id: 'q2o4',
         name: 'Vintage inspired',
         description: 'Thrifted finds with character',
-        imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#f59e0b',
+        icon: Crown
       }
     ]
   },
@@ -87,25 +97,29 @@ const QUIZ_QUESTIONS: Question[] = [
         id: 'q3o1',
         name: 'Minimal',
         description: 'Simple, delicate pieces',
-        imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#94a3b8',
+        icon: Sparkles
       },
       {
         id: 'q3o2',
         name: 'Statement',
         description: 'Bold, eye-catching pieces',
-        imageUrl: 'https://images.unsplash.com/photo-1576053139778-7e32f2ae3e84?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#ec4899',
+        icon: Crown
       },
       {
         id: 'q3o3',
         name: 'Practical',
         description: 'Functional bags and watches',
-        imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#0891b2',
+        icon: Shirt
       },
       {
         id: 'q3o4',
         name: 'Layered',
         description: 'Multiple necklaces, rings, or bracelets',
-        imageUrl: 'https://images.unsplash.com/photo-1617891861644-1305fdabedba?ixlib=rb-1.2.1&auto=format&fit=crop&w=500'
+        color: '#eab308',
+        icon: Heart
       }
     ]
   }
@@ -147,7 +161,7 @@ export const StyleQuiz = () => {
       ...prev,
       [questionId]: optionId
     }));
-    
+
     if (currentQuestion < QUIZ_QUESTIONS.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else {
@@ -160,12 +174,12 @@ export const StyleQuiz = () => {
         'Trendy': 0,
         'Sporty': 0
       };
-      
+
       // Simple matching algorithm (in a real app this would be more complex)
       Object.values(answers).forEach(answer => {
         if (answer.includes('q1o1') || answer.includes('q2o1') || answer.includes('q3o1')) {
           resultsMap['Minimalist'] += 1;
-        } 
+        }
         if (answer.includes('q1o4') || answer.includes('q2o4') || answer.includes('q3o4')) {
           resultsMap['Bohemian'] += 1;
         }
@@ -179,13 +193,13 @@ export const StyleQuiz = () => {
           resultsMap['Sporty'] += 1;
         }
       });
-      
+
       // Find style with highest score
-      const maxStyle = Object.entries(resultsMap).reduce((max, [style, score]) => 
-        score > max.score ? { style: style as StyleResultsType, score } : max, 
+      const maxStyle = Object.entries(resultsMap).reduce((max, [style, score]) =>
+        score > max.score ? { style: style as StyleResultsType, score } : max,
         { style: 'Minimalist' as StyleResultsType, score: 0 }
       );
-      
+
       setResult(maxStyle.style);
       setShowResults(true);
     }
@@ -218,26 +232,25 @@ export const StyleQuiz = () => {
             </div>
           )}
         </CardHeader>
-        
+
         <CardContent>
           {!showResults ? (
             <div className="animate-fade-in">
               <h3 className="text-xl font-medium mb-6">{currentQ.question}</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQ.options.map((option, index) => (
-                  <AnimatedCard 
+                  <AnimatedCard
                     key={option.id}
                     hoverEffect="lift"
                     className="cursor-pointer border-2 hover:border-primary transition-all overflow-hidden"
                     onClick={() => handleAnswer(currentQ.id, option.id)}
                     style={{ transitionDelay: `${index * 100}ms` }}
                   >
-                    <div className="h-40 overflow-hidden">
-                      <img 
-                        src={option.imageUrl} 
-                        alt={option.name}
-                        className="w-full h-full object-cover transition-transform hover:scale-105" 
+                    <div className="h-32 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${option.color}20 0%, ${option.color}40 100%)` }}>
+                      <option.icon
+                        className="w-14 h-14 transition-transform hover:scale-110"
+                        style={{ color: option.color }}
                       />
                     </div>
                     <div className="p-4">
@@ -252,7 +265,7 @@ export const StyleQuiz = () => {
             <div className="animate-slide-up">
               <h3 className="text-2xl font-semibold mb-4 gradient-text">Your Style: {result}</h3>
               <p className="mb-6">{styleResults[result].description}</p>
-              
+
               <h4 className="font-medium mb-2">Recommendations:</h4>
               <ul className="space-y-2 mb-6">
                 {styleResults[result].recommendations.map((rec, i) => (
@@ -262,19 +275,19 @@ export const StyleQuiz = () => {
                   </li>
                 ))}
               </ul>
-              
+
               <div className="rounded-lg p-4 bg-primary/10 border border-primary/20 mt-6">
                 <p className="text-sm">Based on your style, we'll customize your fashion recommendations and suggest items that match your personal aesthetic.</p>
               </div>
             </div>
           )}
         </CardContent>
-        
+
         <CardFooter className="flex justify-between">
           {showResults ? (
             <>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={restartQuiz}
               >
                 Restart Quiz
@@ -284,8 +297,8 @@ export const StyleQuiz = () => {
               </Button>
             </>
           ) : (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => currentQuestion > 0 && setCurrentQuestion(prev => prev - 1)}
               disabled={currentQuestion === 0}
               className="ml-auto"

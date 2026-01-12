@@ -381,34 +381,31 @@ export function OutfitPage() {
                       name: 'Business Casual',
                       occasion: 'Work',
                       items: 4,
-                      img: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=300&fit=crop',
+                      color: '#4f46e5',
                       description: 'Professional yet relaxed'
                     },
                     {
                       name: 'Weekend Brunch',
                       occasion: 'Casual',
                       items: 3,
-                      img: 'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=400&h=300&fit=crop',
+                      color: '#f59e0b',
                       description: 'Effortlessly chic'
                     },
                     {
                       name: 'Evening Elegance',
                       occasion: 'Formal',
                       items: 5,
-                      img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=300&fit=crop',
+                      color: 'hsl(337, 73%, 26%)',
                       description: 'Sophisticated glamour'
                     },
                   ].map((outfit, idx) => (
-                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group">
-                      <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
-                        <img src={outfit.img} alt={outfit.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                          <h4 className="font-serif text-lg">{outfit.name}</h4>
-                          <p className="text-sm text-white/80">{outfit.description}</p>
-                        </div>
+                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => setIsCreateDialogOpen(true)}>
+                      <div className="aspect-[4/3] flex items-center justify-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${outfit.color}15 0%, ${outfit.color}30 100%)` }}>
+                        <Layers className="w-20 h-20 transition-transform group-hover:scale-110" style={{ color: outfit.color }} />
                       </div>
                       <CardContent className="p-4">
+                        <h4 className="font-semibold text-slate-900 mb-1">{outfit.name}</h4>
+                        <p className="text-sm text-slate-500 mb-3">{outfit.description}</p>
                         <div className="flex items-center justify-between">
                           <Badge className="bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] text-xs hover:bg-[hsl(337,73%,26%)]/15">{outfit.occasion}</Badge>
                           <span className="text-xs text-slate-400">{outfit.items} pieces</span>

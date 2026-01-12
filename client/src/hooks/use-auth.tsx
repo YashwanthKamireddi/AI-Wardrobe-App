@@ -55,10 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(["/api/user"], user);
       // Invalidate to trigger re-render
       await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.username}!`,
-      });
     },
     onError: (error: Error) => {
       console.error("Login error details:", error);

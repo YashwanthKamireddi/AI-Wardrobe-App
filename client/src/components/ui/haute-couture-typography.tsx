@@ -132,7 +132,7 @@ export function PullQuote({
   }[position];
 
   return (
-    <div 
+    <div
       className={cn(
         'my-8 max-w-lg relative p-6',
         position === 'center' ? 'w-full flex flex-col items-center justify-center' : 'w-fit',
@@ -148,19 +148,19 @@ export function PullQuote({
       <div className="absolute top-2 opacity-20 text-6xl font-serif text-amber-500 leading-none pointer-events-none">
         {position === 'right' ? '"' : '"'}
       </div>
-      
+
       {/* Main quote text */}
       <p className="relative font-luxury-body text-lg italic text-amber-900/80 mb-4 z-10">
         {children}
       </p>
-      
+
       {/* Quote source/attribution if provided */}
       {source && (
         <footer className="font-luxury-heading text-amber-600 text-sm font-medium not-italic">
           — {source}
         </footer>
       )}
-      
+
       {/* Decorative elements for luxury style */}
       {luxury && (
         <>
@@ -197,7 +197,7 @@ export function EditorialCallout({
   }[variant];
 
   return (
-    <div 
+    <div
       className={cn(
         'p-4 sm:p-6 my-6 rounded-md relative overflow-hidden',
         bordered && 'border border-amber-200/50',
@@ -212,7 +212,7 @@ export function EditorialCallout({
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMCAwaDIwdjIwSDB6IiBmaWxsPSJub25lIi8+PHBhdGggZD0iTTAgMGg0djRIMHptOCAwaDR2NEg4em04IDBoNHY0aC00ek00IDRoNHY0SDR6bTggMGg0djRoLTR6TTAgOGg0djRIMHptOCAwaDR2NEg4em04IDBoNHY0aC00ek00IDEyaDR2NEg0em04IDBoNHY0aC00eiIgZmlsbD0iY3VycmVudENvbG9yIiBvcGFjaXR5PSIwLjIiLz48L3N2Zz4=')]"></div>
         </div>
       )}
-      
+
       {/* Title block if provided */}
       {title && (
         <div className="mb-4 pb-3 border-b border-amber-200/40 flex items-center">
@@ -226,12 +226,12 @@ export function EditorialCallout({
           </h4>
         </div>
       )}
-      
+
       {/* Content */}
       <div className="font-luxury-body text-amber-800/90 relative z-10">
         {children}
       </div>
-      
+
       {/* Additional decorative elements for luxury variant */}
       {variant === 'luxury' && (
         <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-radial from-amber-200/20 to-transparent blur-md"></div>
@@ -280,7 +280,7 @@ export function MagazineTextBlock({
     if (index === 0 && dropcap && typeof child === 'string') {
       const firstLetter = child.charAt(0);
       const restOfText = child.slice(1);
-      
+
       return (
         <p>
           <span className="float-left text-5xl font-luxury-heading font-bold text-amber-600 mr-2 mt-1 leading-none">
@@ -290,12 +290,12 @@ export function MagazineTextBlock({
         </p>
       );
     }
-    
+
     return child;
   });
 
   return (
-    <div 
+    <div
       className={cn(
         'font-luxury-body text-amber-900 my-6',
         alignmentStyles,

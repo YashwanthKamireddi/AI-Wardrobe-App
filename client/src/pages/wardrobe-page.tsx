@@ -417,15 +417,14 @@ export function WardrobePage() {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { name: 'Classic Blazer', category: 'Tops', color: 'Navy', img: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=300&h=300&fit=crop' },
-                    { name: 'White Silk Blouse', category: 'Tops', color: 'White', img: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=300&h=300&fit=crop' },
-                    { name: 'Tailored Trousers', category: 'Bottoms', color: 'Black', img: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=300&h=300&fit=crop' },
-                    { name: 'Cashmere Sweater', category: 'Tops', color: 'Camel', img: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=300&h=300&fit=crop' },
+                    { name: 'Classic Blazer', category: 'Tops', color: 'Navy', bgColor: '#1e40af' },
+                    { name: 'White Silk Blouse', category: 'Tops', color: 'White', bgColor: '#f1f5f9' },
+                    { name: 'Tailored Trousers', category: 'Bottoms', color: 'Black', bgColor: '#1e293b' },
+                    { name: 'Cashmere Sweater', category: 'Tops', color: 'Camel', bgColor: '#d97706' },
                   ].map((item, idx) => (
-                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group">
-                      <div className="aspect-square bg-slate-100 relative overflow-hidden">
-                        <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => setIsAddDialogOpen(true)}>
+                      <div className="aspect-square flex items-center justify-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${item.bgColor}20 0%, ${item.bgColor}40 100%)` }}>
+                        <Shirt className="w-16 h-16 transition-transform group-hover:scale-110" style={{ color: item.bgColor }} />
                       </div>
                       <CardContent className="p-3">
                         <h4 className="font-medium text-sm text-slate-900 truncate">{item.name}</h4>

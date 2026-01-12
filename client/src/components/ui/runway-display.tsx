@@ -26,13 +26,13 @@ export function RunwayDisplay({
 
   useEffect(() => {
     if (!autoScroll) return;
-    
+
     const intervalId = setInterval(() => {
       if (!isPaused) {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
       }
     }, autoScrollSpeed);
-    
+
     return () => clearInterval(intervalId);
   }, [items.length, autoScroll, autoScrollSpeed, isPaused]);
 
@@ -45,7 +45,7 @@ export function RunwayDisplay({
   };
 
   return (
-    <div 
+    <div
       className={`relative w-full overflow-hidden ${className}`}
       ref={containerRef}
       onMouseEnter={() => setIsPaused(true)}
@@ -53,15 +53,15 @@ export function RunwayDisplay({
     >
       {/* Virtual catwalk with spotlight effect */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-100/5 to-amber-200/10 pointer-events-none z-0"></div>
-      
+
       {/* Spotlights */}
       <div className="absolute top-0 left-1/2 w-[300px] h-[120px] -translate-x-1/2 bg-gradient-radial from-amber-200/20 to-transparent blur-xl pointer-events-none"></div>
-      
+
       {/* Runway "floor" */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-200 to-transparent z-0"></div>
 
       {/* Control buttons */}
-      <button 
+      <button
         className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center text-amber-800 border border-amber-200/30 hover:bg-amber-50 transition-all"
         onClick={handlePrevious}
         aria-label="Previous item"
@@ -70,8 +70,8 @@ export function RunwayDisplay({
           <path d="M15 18l-6-6 6-6" />
         </svg>
       </button>
-      
-      <button 
+
+      <button
         className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center text-amber-800 border border-amber-200/30 hover:bg-amber-50 transition-all"
         onClick={handleNext}
         aria-label="Next item"
@@ -82,7 +82,7 @@ export function RunwayDisplay({
       </button>
 
       {/* Items display */}
-      <div 
+      <div
         className="flex justify-center items-center min-h-[300px] py-8 relative"
         style={{ perspective: '1000px' }}
       >
@@ -91,13 +91,13 @@ export function RunwayDisplay({
             // Calculate position relative to current index
             const position = (index - currentIndex + items.length) % items.length;
             const isActive = position === 0;
-            
+
             // Calculate transform values for 3D runway effect
             let translateX = 0;
             let translateZ = 0;
             let opacity = 1;
             let scale = 1;
-            
+
             if (position !== 0) {
               // Items to the right
               if (position > 0 && position <= Math.ceil(items.length / 2)) {
@@ -105,7 +105,7 @@ export function RunwayDisplay({
                 translateZ = -position * 100;
                 opacity = Math.max(0.3, 1 - (position * 0.2));
                 scale = Math.max(0.7, 1 - (position * 0.1));
-              } 
+              }
               // Items to the left
               else {
                 const adjustedPosition = position < 0 ? position : position - items.length;
@@ -121,21 +121,21 @@ export function RunwayDisplay({
                 key={`runway-item-${index}`}
                 className={`absolute transition-shadow ${isActive ? 'z-10 shadow-xl' : 'z-[5]'}`}
                 initial={{ opacity: 0, x: 0, y: 20 }}
-                animate={{ 
-                  opacity, 
-                  x: translateX, 
+                animate={{
+                  opacity,
+                  x: translateX,
                   y: isActive ? -10 : 0,
                   z: translateZ,
                   scale
                 }}
                 exit={{ opacity: 0, y: 20 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 300, 
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
                   damping: 30,
                   opacity: { duration: 0.2 }
                 }}
-                style={{ 
+                style={{
                   width: itemWidth,
                   height: itemHeight,
                   filter: isActive ? 'none' : 'brightness(0.9)',
@@ -143,7 +143,7 @@ export function RunwayDisplay({
                 }}
               >
                 {/* Item wrapper with spotlight effect */}
-                <div 
+                <div
                   className={`w-full h-full relative ${isActive ? 'after:opacity-100' : 'after:opacity-0'} after:absolute after:inset-0 after:bg-gradient-to-b after:from-amber-200/20 after:via-transparent after:to-transparent after:pointer-events-none after:transition-opacity after:duration-300`}
                 >
                   {item}
@@ -160,8 +160,8 @@ export function RunwayDisplay({
           <button
             key={`runway-indicator-${index}`}
             className={`w-1.5 h-1.5 rounded-full transition-all ${
-              index === currentIndex 
-                ? 'bg-amber-500 w-4' 
+              index === currentIndex
+                ? 'bg-amber-500 w-4'
                 : 'bg-amber-200/50 hover:bg-amber-300/70'
             }`}
             onClick={() => setCurrentIndex(index)}
@@ -186,7 +186,7 @@ export function CatwalkScroller({
       <div className="relative w-full">
         {/* Virtual catwalk background effect */}
         <div className="absolute inset-x-0 h-[1px] bottom-6 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
-        
+
         {/* Subtle spotlights */}
         <div className="absolute -top-10 left-1/4 w-44 h-24 bg-gradient-radial from-amber-200/20 to-transparent blur-xl"></div>
         <div className="absolute -top-10 right-1/4 w-44 h-24 bg-gradient-radial from-amber-200/20 to-transparent blur-xl"></div>
@@ -196,24 +196,24 @@ export function CatwalkScroller({
           <div className="flex gap-6 pb-2">
             {/* Each child will animate up slightly on hover to simulate a catwalk stride */}
             {React.Children.map(children, (child, index) => (
-              <div 
+              <div
                 className="group relative"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <motion.div
-                  whileHover={{ 
-                    y: -8, 
-                    transition: { 
-                      type: "spring", 
-                      stiffness: 400, 
-                      damping: 10 
-                    } 
+                  whileHover={{
+                    y: -8,
+                    transition: {
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 10
+                    }
                   }}
                   className="transition-shadow duration-300 hover:shadow-xl"
                 >
                   {child}
                 </motion.div>
-                
+
                 {/* Spotlight effect on hover */}
                 <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 bg-gradient-to-b from-amber-200/10 via-transparent to-transparent transition-opacity duration-300"></div>
               </div>

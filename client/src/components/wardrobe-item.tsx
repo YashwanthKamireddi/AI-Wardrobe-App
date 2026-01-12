@@ -72,14 +72,14 @@ export default function WardrobeItem({ item, onEdit }: WardrobeItemProps) {
             No Image
           </div>
         )}
-        
+
         {/* Favorite badge */}
         {item.favorite && (
           <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">
             <Heart className="h-3 w-3 fill-current" />
           </Badge>
         )}
-        
+
         {/* Hover actions */}
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           <Button
@@ -103,7 +103,7 @@ export default function WardrobeItem({ item, onEdit }: WardrobeItemProps) {
           </Button>
         </div>
       </div>
-      
+
       <CardContent className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
@@ -147,7 +147,7 @@ export default function WardrobeItem({ item, onEdit }: WardrobeItemProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
+
         <div className="flex flex-wrap gap-1 mt-2">
           {item.color && (
             <Badge variant="outline" className="text-xs">
