@@ -50,7 +50,11 @@ export function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isRegister, setIsRegister] = useState(false);
+  
+  // Read mode from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialMode = urlParams.get('mode') === 'signup';
+  const [isRegister, setIsRegister] = useState(initialMode);
 
   useEffect(() => {
     if (user) {

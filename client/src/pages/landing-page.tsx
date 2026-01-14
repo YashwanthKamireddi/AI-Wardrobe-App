@@ -19,7 +19,6 @@ import {
   Camera,
   Wand2,
   CheckCircle,
-  Play,
   ChevronRight,
   Instagram,
   Twitter,
@@ -179,10 +178,10 @@ export function LandingPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/auth">
+            <Link href="/auth?mode=signin">
               <Button variant="ghost" className="text-slate-600 hover:text-slate-900 font-medium">Sign In</Button>
             </Link>
-            <Link href="/auth">
+            <Link href="/auth?mode=signup">
               <Button className="rounded-full px-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5" style={{ background: `linear-gradient(135deg, ${burgundy} 0%, ${burgundyDark} 100%)` }}>
                 Get Started
               </Button>
@@ -227,23 +226,24 @@ export function LandingPage() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-10">
-                <Link href="/auth">
+                <Link href="/auth?mode=signup">
                   <Button
                     size="lg"
-                    className="text-lg px-8 py-6 h-auto rounded-full shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 group"
+                    className="text-lg px-8 py-6 h-auto rounded-full shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 group text-white"
                     style={{ background: `linear-gradient(135deg, ${burgundy} 0%, ${burgundyDark} 100%)` }}
                   >
                     Start Your Style Journey
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link href="/auth">
+                <Link href="/auth?mode=signup">
                   <Button
                     variant="outline"
                     size="lg"
-                    className="text-lg px-8 py-6 h-auto rounded-full border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 group"
+                    className="text-lg px-8 py-6 h-auto rounded-full border-2 bg-white hover:bg-slate-50 group"
+                    style={{ borderColor: burgundy, color: burgundy }}
                   >
-                    <Play className="mr-2 w-5 h-5" style={{ color: burgundy }} />
+                    <Sparkles className="mr-2 w-5 h-5" style={{ color: gold }} />
                     Try Now Free
                   </Button>
                 </Link>
@@ -551,7 +551,7 @@ export function LandingPage() {
                     ))}
                   </ul>
 
-                  <Link href="/auth">
+                  <Link href="/auth?mode=signup">
                     <Button
                       className="w-full rounded-full h-12"
                       variant={plan.popular ? "default" : "outline"}
@@ -587,7 +587,7 @@ export function LandingPage() {
                   Join over 50,000 fashion enthusiasts who have discovered their perfect style with Celura
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link href="/auth">
+                  <Link href="/auth?mode=signup">
                     <Button
                       size="lg"
                       className="text-lg px-10 py-6 h-auto rounded-full shadow-xl hover:shadow-2xl transition-all bg-white hover:bg-slate-50"
