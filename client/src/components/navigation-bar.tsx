@@ -13,7 +13,9 @@ const navItems = [
   { path: "/home", label: "Home" },
   { path: "/wardrobe", label: "Wardrobe" },
   { path: "/outfits", label: "Outfits" },
-  { path: "/inspirations", label: "Inspiration" },
+  { path: "/style-essence", label: "Style" },
+  { path: "/calendar", label: "Calendar" },
+  { path: "/statistics", label: "Analytics" },
   { path: "/profile", label: "Profile" },
 ];
 

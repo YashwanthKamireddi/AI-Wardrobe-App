@@ -121,7 +121,7 @@ export function InspirationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 pb-24 md:pb-8">
+    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
       {/* Decorative background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-20 right-10 w-64 h-64 rounded-full opacity-20" style={{ background: `radial-gradient(circle, ${burgundy}10 0%, transparent 70%)` }} />
@@ -133,27 +133,24 @@ export function InspirationPage() {
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 md:py-12">
         {/* Header */}
         <header className="mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
+            <Sparkles className="w-4 h-4" style={{ color: gold }} />
+            <span className="text-sm font-medium text-slate-600">Curated Looks</span>
+          </div>
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm" style={{ background: `linear-gradient(135deg, ${burgundy} 0%, ${burgundyDark} 100%)` }}>
-                  <Sparkles className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="font-serif text-3xl md:text-4xl text-slate-900">Style Inspiration</h1>
-                  <p className="text-slate-400 text-sm">Discover trends and curated looks</p>
-                </div>
-              </div>
+              <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">Style Inspiration</h1>
+              <p className="text-slate-500 text-lg">Discover trends and curated looks</p>
             </div>
 
             {/* Quick Stats */}
             <div className="flex items-center gap-4">
-              <div className="text-center px-4 py-2 rounded-xl bg-white border border-slate-100 shadow-sm">
-                <p className="text-xl font-bold" style={{ color: burgundy }}>{inspirations?.length || 0}</p>
+              <div className="text-center px-5 py-3 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <p className="text-2xl font-bold" style={{ color: burgundy }}>{inspirations?.length || 0}</p>
                 <p className="text-xs text-slate-400">Inspirations</p>
               </div>
-              <div className="text-center px-4 py-2 rounded-xl bg-white border border-slate-100 shadow-sm">
-                <p className="text-xl font-bold" style={{ color: burgundy }}>{categories.length}</p>
+              <div className="text-center px-5 py-3 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <p className="text-2xl font-bold" style={{ color: burgundy }}>{categories.length}</p>
                 <p className="text-xs text-slate-400">Categories</p>
               </div>
             </div>
@@ -165,16 +162,16 @@ export function InspirationPage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Crown className="w-5 h-5" style={{ color: gold }} />
-              <h2 className="font-serif text-xl text-slate-900">Featured Collections</h2>
+              <h2 className="font-serif text-2xl text-slate-900">Featured Collections</h2>
             </div>
-            <Button variant="ghost" size="sm" className="text-sm gap-1" style={{ color: burgundy }}>
+            <Button variant="ghost" size="sm" className="text-sm gap-1 rounded-full" style={{ color: burgundy }}>
               View All <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {featuredCollections.map((collection) => (
-              <Card key={collection.id} className="group overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-lg transition-all cursor-pointer hover:-translate-y-1">
+              <Card key={collection.id} className="group overflow-hidden border-0 shadow-lg rounded-[24px] bg-white hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1">
                 <div className="relative aspect-[4/3] flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${collection.color}15 0%, ${collection.color}05 100%)` }}>
                   <collection.icon className="w-16 h-16 transition-transform group-hover:scale-110" style={{ color: collection.color }} />
                   <Badge
@@ -184,9 +181,9 @@ export function InspirationPage() {
                     Featured
                   </Badge>
                 </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-slate-900 mb-1">{collection.title}</h3>
-                  <p className="text-xs text-slate-400">{collection.count} looks</p>
+                <CardContent className="p-5">
+                  <h3 className="font-semibold text-slate-900 text-lg mb-1">{collection.title}</h3>
+                  <p className="text-sm text-slate-400">{collection.count} looks</p>
                 </CardContent>
               </Card>
             ))}
@@ -197,23 +194,23 @@ export function InspirationPage() {
         <section className="mb-10">
           <div className="flex items-center gap-3 mb-6">
             <TrendingUp className="w-5 h-5" style={{ color: burgundy }} />
-            <h2 className="font-serif text-xl text-slate-900">Trending Now</h2>
+            <h2 className="font-serif text-2xl text-slate-900">Trending Now</h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {trendingStyles.map((style, idx) => (
-              <Card key={idx} className="border-slate-100 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer group">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${burgundy}10` }}>
-                      <style.icon className="w-5 h-5" style={{ color: burgundy }} />
+              <Card key={idx} className="border-0 shadow-lg rounded-[24px] bg-white hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${burgundy}10` }}>
+                      <style.icon className="w-6 h-6" style={{ color: burgundy }} />
                     </div>
-                    <Badge variant="outline" className="text-[10px] border-slate-200">
+                    <Badge variant="outline" className="rounded-full text-xs border-slate-200">
                       Trending
                     </Badge>
                   </div>
-                  <h3 className="font-semibold text-slate-900 mb-1 group-hover:text-slate-700 transition-colors">{style.name}</h3>
-                  <p className="text-xs text-slate-400">{style.desc}</p>
+                  <h3 className="font-semibold text-slate-900 text-lg mb-1 group-hover:text-slate-700 transition-colors">{style.name}</h3>
+                  <p className="text-sm text-slate-400">{style.desc}</p>
                 </CardContent>
               </Card>
             ))}
@@ -222,8 +219,8 @@ export function InspirationPage() {
 
         {/* Search & Filters */}
         <section className="mb-8">
-          <Card className="border-slate-100 bg-white shadow-sm">
-            <CardContent className="p-4">
+          <Card className="border-0 shadow-xl rounded-[24px] bg-white">
+            <CardContent className="p-5">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Search */}
                 <div className="relative flex-1">
@@ -232,7 +229,7 @@ export function InspirationPage() {
                     placeholder="Search styles, trends, looks..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-11 rounded-full border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 transition-all"
+                    className="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 focus:shadow-md transition-all"
                   />
                   {searchQuery && (
                     <button
@@ -247,15 +244,15 @@ export function InspirationPage() {
                 {/* Category Tabs */}
                 {categories.length > 0 && (
                   <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <TabsList className="bg-slate-50 border border-slate-200">
-                      <TabsTrigger value="all" className="text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                    <TabsList className="bg-slate-50 border border-slate-200 rounded-full h-12 p-1">
+                      <TabsTrigger value="all" className="text-sm rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">
                         All
                       </TabsTrigger>
                       {categories.slice(0, 4).map(category => (
                         <TabsTrigger
                           key={category}
                           value={category}
-                          className="text-xs capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                          className="text-sm rounded-full capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm"
                         >
                           {category}
                         </TabsTrigger>
@@ -270,7 +267,7 @@ export function InspirationPage() {
                     variant={viewMode === 'grid' ? 'default' : 'outline'}
                     size="icon"
                     onClick={() => setViewMode('grid')}
-                    className={viewMode === 'grid' ? '' : 'border-slate-200'}
+                    className={`rounded-xl h-12 w-12 ${viewMode === 'grid' ? '' : 'border-slate-200'}`}
                     style={viewMode === 'grid' ? { background: burgundy } : {}}
                   >
                     <Grid3x3 className="h-4 w-4" />
@@ -279,7 +276,7 @@ export function InspirationPage() {
                     variant={viewMode === 'masonry' ? 'default' : 'outline'}
                     size="icon"
                     onClick={() => setViewMode('masonry')}
-                    className={viewMode === 'masonry' ? '' : 'border-slate-200'}
+                    className={`rounded-xl h-12 w-12 ${viewMode === 'masonry' ? '' : 'border-slate-200'}`}
                     style={viewMode === 'masonry' ? { background: burgundy } : {}}
                   >
                     <LayoutGrid className="h-4 w-4" />
@@ -294,7 +291,7 @@ export function InspirationPage() {
         {filteredInspirations.length > 0 && (
           <div className="flex items-center justify-between mb-6">
             <div className="flex gap-3">
-              <Badge variant="outline" className="border-slate-200 text-slate-600">
+              <Badge variant="outline" className="border-slate-200 text-slate-600 rounded-full px-4 py-1">
                 Showing {filteredInspirations.length} of {inspirations?.length || 0}
               </Badge>
               {selectedCategory !== 'all' && (
@@ -317,31 +314,31 @@ export function InspirationPage() {
         {isLoading ? (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {[...Array(8)].map((_, i) => (
-              <Card key={i} className="overflow-hidden border-slate-100 bg-white">
-                <Skeleton className="aspect-[4/3] w-full" />
-                <CardContent className="p-4">
-                  <Skeleton className="h-5 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full" />
+              <Card key={i} className="overflow-hidden border-0 shadow-lg rounded-[24px] bg-white">
+                <Skeleton className="aspect-[4/3] w-full rounded-t-[24px]" />
+                <CardContent className="p-5">
+                  <Skeleton className="h-5 w-3/4 mb-2 rounded-lg" />
+                  <Skeleton className="h-4 w-full rounded-lg" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : filteredInspirations.length === 0 ? (
           <div className="text-center py-16">
-            <Card className="max-w-md mx-auto border-slate-100 bg-white shadow-sm">
-              <CardHeader>
+            <Card className="max-w-md mx-auto border-0 shadow-xl rounded-[24px] bg-white">
+              <CardHeader className="pt-8">
                 <div
-                  className="w-20 h-20 mx-auto mb-4 rounded-3xl flex items-center justify-center"
+                  className="w-24 h-24 mx-auto mb-4 rounded-3xl flex items-center justify-center"
                   style={{ background: `${burgundy}10` }}
                 >
-                  <Sparkles className="h-10 w-10" style={{ color: burgundy }} />
+                  <Sparkles className="h-12 w-12" style={{ color: burgundy }} />
                 </div>
-                <CardTitle className="font-serif text-2xl text-slate-900">
+                <CardTitle className="font-serif text-3xl text-slate-900">
                   {inspirations?.length ? 'No Results Found' : 'Coming Soon'}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-slate-500 mb-6">
+              <CardContent className="pb-8">
+                <p className="text-slate-500 text-lg mb-6">
                   {inspirations?.length
                     ? 'Try adjusting your search or explore different categories.'
                     : 'Our curated style inspirations will be available soon. Stay tuned!'}
@@ -350,12 +347,12 @@ export function InspirationPage() {
                   <Button
                     variant="outline"
                     onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
-                    className="rounded-full"
+                    className="rounded-full h-12 px-6"
                   >
                     Clear Filters
                   </Button>
                 ) : (
-                  <Button className="rounded-full" style={{ background: burgundy }}>
+                  <Button className="rounded-full h-12 px-6 shadow-lg hover:shadow-xl transition-all" style={{ background: `linear-gradient(135deg, ${burgundy} 0%, hsl(337, 73%, 32%) 100%)` }}>
                     <Bookmark className="w-4 h-4 mr-2" />
                     Get Notified
                   </Button>
@@ -366,23 +363,23 @@ export function InspirationPage() {
             {/* Suggestions */}
             {!inspirations?.length && (
               <div className="mt-12 max-w-2xl mx-auto">
-                <h3 className="font-serif text-xl text-slate-900 mb-6">While You Wait</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h3 className="font-serif text-2xl text-slate-900 mb-6">While You Wait</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {[
                     { icon: Shirt, title: "Build Your Wardrobe", desc: "Add items to get started" },
                     { icon: Star, title: "Complete Your Profile", desc: "Set your style preferences" },
                     { icon: Palette, title: "Take Style Quiz", desc: "Discover your aesthetic" },
                   ].map((item, idx) => (
-                    <Card key={idx} className="border-slate-100 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer group">
-                      <CardContent className="p-4 text-center">
+                    <Card key={idx} className="border-0 shadow-lg rounded-[24px] bg-white hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1">
+                      <CardContent className="p-6 text-center">
                         <div
-                          className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
+                          className="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform"
                           style={{ background: `${burgundy}10` }}
                         >
-                          <item.icon className="w-6 h-6" style={{ color: burgundy }} />
+                          <item.icon className="w-7 h-7" style={{ color: burgundy }} />
                         </div>
-                        <h4 className="font-semibold text-slate-900 mb-1">{item.title}</h4>
-                        <p className="text-xs text-slate-400">{item.desc}</p>
+                        <h4 className="font-semibold text-slate-900 text-lg mb-1">{item.title}</h4>
+                        <p className="text-sm text-slate-400">{item.desc}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -411,7 +408,7 @@ export function InspirationPage() {
         {/* Load More */}
         {filteredInspirations.length > 0 && filteredInspirations.length >= 8 && (
           <div className="text-center mt-12">
-            <Button variant="outline" className="rounded-full px-8 border-slate-200 hover:border-slate-300">
+            <Button variant="outline" className="rounded-full h-12 px-8 border-slate-200 hover:border-slate-300 hover:shadow-md transition-all">
               Load More Inspiration
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>

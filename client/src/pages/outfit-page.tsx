@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, X, Layers, Heart, Trash2, Check, Loader2 } from "lucide-react";
+import { Plus, Search, X, Layers, Heart, Trash2, Check, Loader2, Shuffle, Sparkles } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,11 +60,29 @@ export function OutfitPage() {
   const [outfitToDelete, setOutfitToDelete] = useState<{ id: number; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState<string>('all');
+  const [shuffledOutfit, setShuffledOutfit] = useState<any>(null);
 
   const { data: outfits, isLoading: outfitsLoading } = useOutfits();
   const { data: wardrobeItems } = useWardrobeItems();
   const createOutfit = useCreateOutfit();
   const deleteOutfit = useDeleteOutfit();
+
+  // Fetch shuffled outfit
+  const { refetch: fetchShuffle, isFetching: isShuffling } = useQuery({
+    queryKey: ['outfit-shuffle'],
+    queryFn: async () => {
+      const response = await fetch('/api/outfit-shuffle', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to shuffle');
+      const data = await response.json();
+      setShuffledOutfit(data);
+      return data;
+    },
+    enabled: false
+  });
+
+  const handleShuffle = () => {
+    fetchShuffle();
+  };
 
   const form = useForm<OutfitFormData>({
     resolver: zodResolver(outfitSchema),
@@ -129,35 +148,50 @@ export function OutfitPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24 md:pb-8">
+    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
       <NavigationBar />
 
       <main className="max-w-6xl mx-auto px-6 py-8 md:py-12">
         {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-[hsl(38,75%,55%)]" />
-              <span className="text-sm tracking-widest uppercase text-slate-400">Style</span>
-            </div>
-            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-1">Your Outfits</h1>
-            <p className="text-slate-500">{outfits?.length || 0} saved combinations</p>
+        <header className="mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
+            <Layers className="w-4 h-4" style={{ color: 'hsl(38, 75%, 55%)' }} />
+            <span className="text-sm font-medium text-slate-600">Style</span>
           </div>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">Your Outfits</h1>
+              <p className="text-slate-500 text-lg">{outfits?.length || 0} saved combinations</p>
+            </div>
+            <div className="flex items-center gap-3">
               <Button
-                className="rounded-full px-6"
-                style={{ background: "hsl(337, 73%, 26%)" }}
+                variant="outline"
+                className="rounded-full px-5 h-12 shadow-sm hover:shadow-md transition-all"
+                onClick={handleShuffle}
+                disabled={isShuffling}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Outfit
+                {isShuffling ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Shuffle className="h-4 w-4 mr-2" />
+                )}
+                Shuffle
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
-              <DialogHeader>
-                <DialogTitle className="font-serif text-xl text-slate-900">Create New Outfit</DialogTitle>
-                <DialogDescription className="text-slate-500">Combine your wardrobe items into a complete look.</DialogDescription>
-              </DialogHeader>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="rounded-full px-6 h-12 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                    style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 32%) 100%)" }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Outfit
+                  </Button>
+                </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl rounded-[24px]">
+                <DialogHeader>
+                  <DialogTitle className="font-serif text-2xl text-slate-900">Create New Outfit</DialogTitle>
+                  <DialogDescription className="text-slate-500 text-base">Combine your wardrobe items into a complete look.</DialogDescription>
+                </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
@@ -282,8 +316,8 @@ export function OutfitPage() {
                   <DialogFooter>
                     <Button
                       type="submit"
-                      className="w-full rounded-full"
-                      style={{ background: "hsl(337, 73%, 26%)" }}
+                      className="w-full rounded-full h-12 shadow-lg hover:shadow-xl transition-all"
+                      style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 32%) 100%)" }}
                     >
                       Create Outfit
                     </Button>
@@ -292,31 +326,74 @@ export function OutfitPage() {
               </Form>
             </DialogContent>
           </Dialog>
+            </div>
+          </div>
         </header>
+
+        {/* Shuffled Outfit Card */}
+        {shuffledOutfit && shuffledOutfit.items && (
+          <Card className="mb-8 border-0 shadow-xl overflow-hidden rounded-[24px] bg-gradient-to-r from-amber-50 to-rose-50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  <span className="font-serif text-xl font-semibold text-slate-900">Today's Shuffle</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShuffledOutfit(null)}
+                  className="rounded-full"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {shuffledOutfit.items.map((item: any, index: number) => (
+                  <div key={index} className="flex-shrink-0 w-20">
+                    <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <Layers className="h-6 w-6" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-center mt-1 text-slate-600 truncate">{item.name}</p>
+                  </div>
+                ))}
+              </div>
+              {shuffledOutfit.message && (
+                <p className="text-sm text-slate-600 mt-3 italic">{shuffledOutfit.message}</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search outfits..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-slate-200 bg-white focus:border-[hsl(337,73%,26%)]"
+              className="pl-11 h-12 rounded-2xl border-slate-200 bg-white shadow-sm focus:border-[hsl(337,73%,26%)] focus:shadow-md transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2"
               >
                 <X className="h-4 w-4 text-slate-400 hover:text-slate-600 transition-colors" />
               </button>
             )}
           </div>
           <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="bg-white border border-slate-200">
-              <TabsTrigger value="all" className="data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">All</TabsTrigger>
-              <TabsTrigger value="favorites" className="data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">
+            <TabsList className="bg-white border border-slate-200 rounded-full h-12 p-1">
+              <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">All</TabsTrigger>
+              <TabsTrigger value="favorites" className="rounded-full data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">
                 <Heart className="h-4 w-4 mr-1" />
                 Favorites
               </TabsTrigger>
@@ -327,7 +404,7 @@ export function OutfitPage() {
         {/* Results Count */}
         {filteredOutfits.length > 0 && (
           <div className="flex gap-3 mb-6">
-            <Badge variant="outline" className="border-slate-200 text-slate-600">Showing: {filteredOutfits.length}</Badge>
+            <Badge variant="outline" className="border-slate-200 text-slate-600 rounded-full px-4 py-1">Showing: {filteredOutfits.length}</Badge>
           </div>
         )}
 
@@ -335,31 +412,31 @@ export function OutfitPage() {
         {outfitsLoading ? (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="border-slate-100 bg-white">
-                <Skeleton className="aspect-[4/3]" />
-                <CardContent className="p-4">
-                  <Skeleton className="h-5 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full" />
+              <Card key={i} className="border-0 shadow-lg rounded-[24px] bg-white">
+                <Skeleton className="aspect-[4/3] rounded-t-[24px]" />
+                <CardContent className="p-5">
+                  <Skeleton className="h-5 w-3/4 mb-2 rounded-lg" />
+                  <Skeleton className="h-4 w-full rounded-lg" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : filteredOutfits.length === 0 ? (
           <div className="space-y-8">
-            <Card className="max-w-md mx-auto border-slate-100 bg-white shadow-sm">
-              <CardHeader className="text-center pb-2">
+            <Card className="max-w-md mx-auto border-0 shadow-xl rounded-[24px] bg-white">
+              <CardHeader className="text-center pb-2 pt-8">
                 <div
-                  className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                  className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-4"
                   style={{ background: "hsl(337, 73%, 26%)10" }}
                 >
-                  <Layers className="h-7 w-7" style={{ color: "hsl(337, 73%, 26%)" }} />
+                  <Layers className="h-8 w-8" style={{ color: "hsl(337, 73%, 26%)" }} />
                 </div>
                 <CardTitle className="font-serif text-2xl text-slate-900">
                   {outfits?.length ? 'No Matches Found' : 'Create Your First Outfit'}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <p className="text-slate-500">
+              <CardContent className="text-center space-y-4 pb-8">
+                <p className="text-slate-500 text-lg">
                   {outfits?.length
                     ? 'Try adjusting your search.'
                     : 'Combine your wardrobe pieces into stunning outfits. Celura will help you style them perfectly.'}
@@ -367,8 +444,8 @@ export function OutfitPage() {
                 {!outfits?.length && (
                   <Button
                     onClick={() => setIsCreateDialogOpen(true)}
-                    className="rounded-full px-6"
-                    style={{ background: "hsl(337, 73%, 26%)" }}
+                    className="rounded-full px-6 h-12 shadow-lg hover:shadow-xl transition-all"
+                    style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 32%) 100%)" }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Your First Outfit
@@ -381,8 +458,8 @@ export function OutfitPage() {
             {!outfits?.length && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h3 className="font-serif text-xl text-slate-900 mb-1">Outfit Inspiration</h3>
-                  <p className="text-slate-400 text-sm">Curated looks to inspire your style</p>
+                  <h3 className="font-serif text-2xl text-slate-900 mb-2">Outfit Inspiration</h3>
+                  <p className="text-slate-400 text-base">Curated looks to inspire your style</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[
@@ -408,15 +485,15 @@ export function OutfitPage() {
                       description: 'Sophisticated glamour'
                     },
                   ].map((outfit, idx) => (
-                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Card key={idx} className="overflow-hidden border-0 shadow-lg rounded-[24px] bg-white hover:shadow-xl transition-all group cursor-pointer hover:-translate-y-1" onClick={() => setIsCreateDialogOpen(true)}>
                       <div className="aspect-[4/3] flex items-center justify-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${outfit.color}15 0%, ${outfit.color}30 100%)` }}>
                         <Layers className="w-20 h-20 transition-transform group-hover:scale-110" style={{ color: outfit.color }} />
                       </div>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold text-slate-900 mb-1">{outfit.name}</h4>
+                      <CardContent className="p-5">
+                        <h4 className="font-semibold text-slate-900 text-lg mb-1">{outfit.name}</h4>
                         <p className="text-sm text-slate-500 mb-3">{outfit.description}</p>
                         <div className="flex items-center justify-between">
-                          <Badge className="bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] text-xs hover:bg-[hsl(337,73%,26%)]/15">{outfit.occasion}</Badge>
+                          <Badge className="rounded-full bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] text-xs hover:bg-[hsl(337,73%,26%)]/15">{outfit.occasion}</Badge>
                           <span className="text-xs text-slate-400">{outfit.items} pieces</span>
                         </div>
                       </CardContent>
@@ -431,12 +508,12 @@ export function OutfitPage() {
             {filteredOutfits.map((outfit) => {
               const outfitItems = getOutfitItems(outfit.items || []);
               return (
-                <Card key={outfit.id} className="group overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all">
+                <Card key={outfit.id} className="group overflow-hidden border-0 shadow-lg rounded-[24px] bg-white hover:shadow-xl transition-all hover:-translate-y-1">
                   {/* Outfit Preview */}
-                  <div className="relative aspect-[4/3] bg-slate-100">
+                  <div className="relative aspect-[4/3] bg-slate-100 rounded-t-[24px] overflow-hidden">
                     <div className="grid grid-cols-2 gap-1 h-full p-2">
                       {outfitItems.slice(0, 4).map((item, idx) => (
-                        <div key={item.id} className="bg-white rounded overflow-hidden">
+                        <div key={item.id} className="bg-white rounded-lg overflow-hidden">
                           {item.imageUrl ? (
                             <img
                               src={item.imageUrl}
@@ -452,7 +529,7 @@ export function OutfitPage() {
                       ))}
                     </div>
                     {outfit.favorite && (
-                      <div className="absolute top-2 right-2 rounded-full p-1.5 shadow-md" style={{ background: "hsl(337, 73%, 26%)" }}>
+                      <div className="absolute top-3 right-3 rounded-full p-2 shadow-md" style={{ background: "hsl(337, 73%, 26%)" }}>
                         <Heart className="h-4 w-4 fill-white text-white" />
                       </div>
                     )}
@@ -460,6 +537,7 @@ export function OutfitPage() {
                       <Button
                         size="sm"
                         variant="destructive"
+                        className="rounded-full"
                         onClick={(e) => {
                           e.stopPropagation();
                           openDeleteDialog({ id: outfit.id, name: outfit.name });
@@ -470,7 +548,7 @@ export function OutfitPage() {
                       </Button>
                     </div>
                   </div>
-                  <CardContent className="p-4">
+                  <CardContent className="p-5">
                     <h3 className="font-medium text-slate-900 mb-1">{outfit.name}</h3>
                     {outfit.description && (
                       <p className="text-sm text-slate-500 line-clamp-2 mb-2">{outfit.description}</p>

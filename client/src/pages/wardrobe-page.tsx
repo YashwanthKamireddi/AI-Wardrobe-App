@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Search, Grid3x3, List, X, Edit, Trash2, Shirt } from "lucide-react";
+import { Plus, Search, Grid3x3, List, X, Edit, Trash2, Shirt, Sparkles, Loader2, Wand2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -39,6 +39,8 @@ import NavigationBar from "@/components/navigation-bar";
 import FileUpload from "@/components/file-upload";
 import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem, useUpdateWardrobeItem } from "@/hooks/use-wardrobe";
 import { clothingCategories, seasons, WardrobeItem as WardrobeItemType } from "@shared/schema";
+import { processWardrobeImage, AIProcessingResult } from "@/lib/image-ai";
+import { Progress } from "@/components/ui/progress";
 
 const itemSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -60,10 +62,66 @@ export function WardrobePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
+  // AI Processing states
+  const [isAIProcessing, setIsAIProcessing] = useState(false);
+  const [aiProgress, setAiProgress] = useState(0);
+  const [aiStage, setAiStage] = useState('');
+  const [aiResult, setAiResult] = useState<AIProcessingResult | null>(null);
+
   const { data: wardrobeItems, isLoading } = useWardrobeItems();
   const addItem = useAddWardrobeItem();
   const updateItem = useUpdateWardrobeItem();
   const deleteItem = useDeleteWardrobeItem();
+
+  // Handle AI image processing
+  const handleAIProcess = async (file: File) => {
+    setIsAIProcessing(true);
+    setAiProgress(0);
+    setAiStage('Starting AI analysis...');
+
+    try {
+      const result = await processWardrobeImage(file, (stage, progress) => {
+        setAiStage(stage);
+        setAiProgress(progress);
+      });
+
+      setAiResult(result);
+
+      // Auto-fill form fields with AI results
+      form.setValue('imageUrl', result.processedImageUrl);
+      form.setValue('color', result.colors.colorName);
+      form.setValue('category', result.category.category);
+      if (result.category.subcategory) {
+        form.setValue('subcategory', result.category.subcategory);
+      }
+
+      // Generate a suggested name
+      const suggestedName = `${result.colors.colorName} ${result.category.category.slice(0, -1)}`;
+      form.setValue('name', suggestedName.charAt(0).toUpperCase() + suggestedName.slice(1));
+
+      // Convert blob to base64 for storage
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        form.setValue('imageUrl', base64);
+      };
+      reader.readAsDataURL(result.processedImageBlob);
+
+    } catch (error) {
+      console.error('AI processing failed:', error);
+      // Fallback: just use the original image as base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        form.setValue('imageUrl', base64);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsAIProcessing(false);
+      setAiProgress(0);
+      setAiStage('');
+    }
+  };
 
   const form = useForm<ItemFormData>({
     resolver: zodResolver(itemSchema),
@@ -116,6 +174,7 @@ export function WardrobePage() {
         tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
       });
       form.reset();
+      setAiResult(null); // Reset AI result
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error('Failed to add item:', error);
@@ -144,19 +203,68 @@ export function WardrobePage() {
     }
   };
 
-  const ItemForm = ({ formInstance, onSubmit, submitLabel }: { formInstance: any; onSubmit: (data: ItemFormData) => void; submitLabel: string }) => (
+  const ItemForm = ({ formInstance, onSubmit, submitLabel, enableAI = false }: { formInstance: any; onSubmit: (data: ItemFormData) => void; submitLabel: string; enableAI?: boolean }) => (
     <Form {...formInstance}>
       <form onSubmit={formInstance.handleSubmit(onSubmit)} className="space-y-4">
+        {/* AI Processing Status */}
+        {enableAI && isAIProcessing && (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Wand2 className="w-4 h-4 text-purple-500 animate-pulse" />
+              <span className="text-sm font-medium text-purple-700">{aiStage}</span>
+            </div>
+            <Progress value={aiProgress} className="h-2" />
+            <p className="text-xs text-purple-500 mt-2">
+              AI is removing background, detecting colors & categorizing...
+            </p>
+          </div>
+        )}
+
+        {/* AI Results Summary */}
+        {enableAI && aiResult && !isAIProcessing && (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-emerald-500" />
+              <span className="text-sm font-medium text-emerald-700">AI Analysis Complete</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2 bg-white rounded-lg text-center">
+                <div
+                  className="w-6 h-6 rounded-full mx-auto mb-1 border-2 border-white shadow-sm"
+                  style={{ backgroundColor: aiResult.colors.dominant }}
+                />
+                <span className="text-slate-600">{aiResult.colors.colorName}</span>
+              </div>
+              <div className="p-2 bg-white rounded-lg text-center">
+                <Shirt className="w-5 h-5 mx-auto mb-1 text-slate-400" />
+                <span className="text-slate-600 capitalize">{aiResult.category.category}</span>
+              </div>
+              <div className="p-2 bg-white rounded-lg text-center">
+                <span className="text-lg mb-1 block">✨</span>
+                <span className="text-slate-600">BG Removed</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <FormField
           control={formInstance.control}
           name="imageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                Image
+                {enableAI && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                    AI Enhanced
+                  </span>
+                )}
+              </FormLabel>
               <FormControl>
                 <FileUpload
                   value={field.value}
                   onChange={field.onChange}
+                  onFileSelect={enableAI ? handleAIProcess : undefined}
                   accept="image/*"
                 />
               </FormControl>
@@ -261,36 +369,44 @@ export function WardrobePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24 md:pb-8">
+    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
       <NavigationBar />
 
       <main className="max-w-6xl mx-auto px-6 py-8 md:py-12">
         {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-[hsl(38,75%,55%)]" />
-              <span className="text-sm tracking-widest uppercase text-slate-400">Collection</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
+              <Shirt className="w-4 h-4" style={{ color: "hsl(38, 75%, 55%)" }} />
+              <span className="text-sm font-medium text-slate-600">Your Collection</span>
             </div>
-            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-1">Your Wardrobe</h1>
-            <p className="text-slate-500">{wardrobeItems?.length || 0} items in your collection</p>
+            <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">Wardrobe</h1>
+            <p className="text-slate-500 text-lg">{wardrobeItems?.length || 0} items curated with care</p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                className="rounded-full px-6"
-                style={{ background: "hsl(337, 73%, 26%)" }}
+                className="rounded-full px-8 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 18%) 100%)" }}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-5 w-5 mr-2" />
                 Add Item
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl rounded-[24px]">
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl text-slate-900">Add New Item</DialogTitle>
-                <DialogDescription className="text-slate-500">Add a new piece to your wardrobe collection.</DialogDescription>
+                <DialogTitle className="font-serif text-2xl text-slate-900 flex items-center gap-3">
+                  Add New Item
+                  <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 font-medium">
+                    <Sparkles className="w-3 h-3 inline mr-1" />
+                    AI Powered
+                  </span>
+                </DialogTitle>
+                <DialogDescription className="text-slate-500 text-base">
+                  Upload an image and AI will automatically remove the background, detect colors, and suggest a category.
+                </DialogDescription>
               </DialogHeader>
-              <ItemForm formInstance={form} onSubmit={onSubmitAdd} submitLabel="Add Item" />
+              <ItemForm formInstance={form} onSubmit={onSubmitAdd} submitLabel="Add Item" enableAI={true} />
             </DialogContent>
           </Dialog>
         </header>
@@ -298,27 +414,27 @@ export function WardrobePage() {
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
             <Input
               placeholder="Search wardrobe..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-slate-200 bg-white focus:border-[hsl(337,73%,26%)] focus:ring-[hsl(337,73%,26%)]/20"
+              className="pl-12 h-12 rounded-2xl border-slate-200 bg-white focus:border-[hsl(337,73%,26%)] focus:ring-[hsl(337,73%,26%)]/20 text-base"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2"
               >
-                <X className="h-4 w-4 text-slate-400 hover:text-slate-600 transition-colors" />
+                <X className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
               </button>
             )}
           </div>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full md:w-[180px] border-slate-200 bg-white">
+            <SelectTrigger className="w-full md:w-[180px] h-12 border-slate-200 bg-white rounded-2xl">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
-            <SelectContent className="border-slate-200 bg-white">
+            <SelectContent className="border-slate-200 bg-white rounded-xl">
               <SelectItem value="all">All Categories</SelectItem>
               {clothingCategories.map(cat => (
                 <SelectItem key={cat.value} value={cat.value}>

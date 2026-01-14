@@ -7,13 +7,16 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "@/lib/protected-route";
 
-import { LandingPage } from "@/pages/landing-page";
+import { LandingPage } from "@/pages/landing-page-new";
 import { HomePage } from "@/pages/home-page";
 import { AuthPage } from "@/pages/auth-page";
 import { WardrobePage } from "@/pages/wardrobe-page";
 import { OutfitPage } from "@/pages/outfit-page";
 import { InspirationPage } from "@/pages/inspiration-page";
 import { ProfilePage } from "@/pages/profile-page";
+import { CalendarPage } from "@/pages/calendar-page";
+import { StatisticsPage } from "@/pages/statistics-page";
+import { StyleEssencePage } from "@/pages/style-essence-page";
 import { NotFound } from "@/pages/not-found";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
@@ -30,6 +33,9 @@ function Router() {
       <ProtectedRoute path="/outfits" component={OutfitPage} />
       <ProtectedRoute path="/inspirations" component={InspirationPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
+      <ProtectedRoute path="/calendar" component={CalendarPage} />
+      <ProtectedRoute path="/statistics" component={StatisticsPage} />
+      <ProtectedRoute path="/style-essence" component={StyleEssencePage} />
 
       {/* 404 */}
       <Route component={NotFound} />

@@ -903,4 +903,352 @@ export async function registerRoutes(app: Express): Promise<void> {
       res.status(500).json({ error: "Failed to fetch location suggestions" });
     });
   });
+
+  // ==================== STATISTICS & ANALYTICS ====================
+
+  // Get wardrobe statistics
+  app.get("/api/statistics", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const items = await storage.getWardrobeItems(req.user!.id);
+      const outfits = await storage.getOutfits(req.user!.id);
+
+      // Calculate statistics
+      const totalItems = items.length;
+      const totalOutfits = outfits.length;
+      const favoriteItems = items.filter(i => i.favorite).length;
+      const favoriteOutfits = outfits.filter(o => o.favorite).length;
+
+      // Calculate total wardrobe value
+      const totalValue = items.reduce((sum, item) => sum + (item.purchasePrice || 0), 0);
+
+      // Category breakdown
+      const categoryBreakdown = items.reduce((acc: Record<string, number>, item) => {
+        acc[item.category] = (acc[item.category] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Color breakdown
+      const colorBreakdown = items.reduce((acc: Record<string, number>, item) => {
+        if (item.color) {
+          acc[item.color] = (acc[item.color] || 0) + 1;
+        }
+        return acc;
+      }, {});
+
+      // Most worn items (top 5)
+      const mostWorn = [...items]
+        .filter(i => (i.wearCount || 0) > 0)
+        .sort((a, b) => (b.wearCount || 0) - (a.wearCount || 0))
+        .slice(0, 5)
+        .map(i => ({ id: i.id, name: i.name, wearCount: i.wearCount || 0 }));
+
+      // Least worn items (items never worn or rarely worn)
+      const leastWorn = [...items]
+        .sort((a, b) => (a.wearCount || 0) - (b.wearCount || 0))
+        .slice(0, 5)
+        .map(i => ({ id: i.id, name: i.name, wearCount: i.wearCount || 0 }));
+
+      // Items not worn in 30+ days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const unwornItems = items.filter(i => {
+        if (!i.lastWorn) return true;
+        return new Date(i.lastWorn) < thirtyDaysAgo;
+      }).length;
+
+      // Cost per wear analysis (items with both price and wear count)
+      const costPerWearItems = items
+        .filter(i => i.purchasePrice && (i.wearCount || 0) > 0)
+        .map(i => ({
+          id: i.id,
+          name: i.name,
+          costPerWear: Math.round((i.purchasePrice || 0) / (i.wearCount || 1)),
+          totalCost: i.purchasePrice || 0,
+          wearCount: i.wearCount || 0
+        }))
+        .sort((a, b) => a.costPerWear - b.costPerWear);
+
+      // Season breakdown
+      const seasonBreakdown = items.reduce((acc: Record<string, number>, item) => {
+        const season = item.season || 'all';
+        acc[season] = (acc[season] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Recent additions (last 7 days)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const recentAdditions = items.filter(i => {
+        if (!i.createdAt) return false;
+        return new Date(i.createdAt) > weekAgo;
+      }).length;
+
+      res.json({
+        overview: {
+          totalItems,
+          totalOutfits,
+          favoriteItems,
+          favoriteOutfits,
+          totalValue: totalValue / 100, // Convert cents to dollars
+          recentAdditions,
+          unwornItems
+        },
+        breakdown: {
+          byCategory: categoryBreakdown,
+          byColor: colorBreakdown,
+          bySeason: seasonBreakdown
+        },
+        wearAnalysis: {
+          mostWorn,
+          leastWorn,
+          costPerWear: costPerWearItems.slice(0, 10)
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  // Log wear for an item
+  app.post("/api/wardrobe/:id/log-wear", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const id = parseId(req.params.id);
+      if (!id) {
+        return res.status(400).json({ message: "Invalid item ID" });
+      }
+
+      const item = await storage.getWardrobeItem(id);
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      if (item.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      // Update wear count and last worn date
+      const updatedItem = await storage.updateWardrobeItem(id, {
+        wearCount: (item.wearCount || 0) + 1,
+        lastWorn: new Date()
+      });
+
+      res.json({
+        message: "Wear logged successfully",
+        item: updatedItem
+      });
+    } catch (error) {
+      console.error("Error logging wear:", error);
+      res.status(500).json({ message: "Failed to log wear" });
+    }
+  });
+
+  // Get smart suggestions (items not worn recently, seasonal recommendations)
+  app.get("/api/smart-suggestions", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const items = await storage.getWardrobeItems(req.user!.id);
+
+      // Get current season
+      const month = new Date().getMonth();
+      const currentSeason = month >= 2 && month <= 4 ? 'spring'
+        : month >= 5 && month <= 7 ? 'summer'
+        : month >= 8 && month <= 10 ? 'fall'
+        : 'winter';
+
+      // Items not worn in 14+ days
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+      const forgottenItems = items
+        .filter(i => {
+          if (!i.lastWorn) return true;
+          return new Date(i.lastWorn) < twoWeeksAgo;
+        })
+        .slice(0, 5)
+        .map(i => ({
+          id: i.id,
+          name: i.name,
+          imageUrl: i.imageUrl,
+          category: i.category,
+          lastWorn: i.lastWorn,
+          reason: i.lastWorn
+            ? `Not worn in ${Math.floor((Date.now() - new Date(i.lastWorn).getTime()) / (1000 * 60 * 60 * 24))} days`
+            : "Never worn"
+        }));
+
+      // Seasonal suggestions
+      const seasonalItems = items
+        .filter(i => i.season === currentSeason || i.season === 'all')
+        .filter(i => (i.wearCount || 0) < 3) // Less worn items for the season
+        .slice(0, 5)
+        .map(i => ({
+          id: i.id,
+          name: i.name,
+          imageUrl: i.imageUrl,
+          category: i.category,
+          reason: `Perfect for ${currentSeason}`
+        }));
+
+      // Favorites that haven't been worn recently
+      const forgottenFavorites = items
+        .filter(i => i.favorite)
+        .filter(i => {
+          if (!i.lastWorn) return true;
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return new Date(i.lastWorn) < sevenDaysAgo;
+        })
+        .slice(0, 3)
+        .map(i => ({
+          id: i.id,
+          name: i.name,
+          imageUrl: i.imageUrl,
+          reason: "One of your favorites!"
+        }));
+
+      res.json({
+        forgottenItems,
+        seasonalItems,
+        forgottenFavorites,
+        currentSeason
+      });
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      res.status(500).json({ message: "Failed to fetch suggestions" });
+    }
+  });
+
+  // Get wardrobe gaps analysis
+  app.get("/api/wardrobe-gaps", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const items = await storage.getWardrobeItems(req.user!.id);
+
+      // Essential categories everyone should have
+      const essentialCategories = {
+        tops: { min: 5, description: "Basic tops (t-shirts, blouses)" },
+        bottoms: { min: 3, description: "Pants, jeans, skirts" },
+        outerwear: { min: 2, description: "Jackets, coats" },
+        shoes: { min: 3, description: "Everyday, formal, casual" },
+        dresses: { min: 1, description: "Versatile dress" },
+        accessories: { min: 2, description: "Belts, bags, etc." }
+      };
+
+      // Count items by category
+      const categoryCount = items.reduce((acc: Record<string, number>, item) => {
+        acc[item.category] = (acc[item.category] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Identify gaps
+      const gaps: Array<{ category: string; have: number; recommended: number; description: string }> = [];
+
+      for (const [category, config] of Object.entries(essentialCategories)) {
+        const have = categoryCount[category] || 0;
+        if (have < config.min) {
+          gaps.push({
+            category,
+            have,
+            recommended: config.min,
+            description: config.description
+          });
+        }
+      }
+
+      // Color variety check
+      const uniqueColors = new Set(items.map(i => i.color).filter(Boolean)).size;
+      const colorSuggestion = uniqueColors < 5
+        ? "Consider adding more color variety to your wardrobe"
+        : null;
+
+      // Season coverage
+      const seasonCount = items.reduce((acc: Record<string, number>, item) => {
+        const season = item.season || 'all';
+        acc[season] = (acc[season] || 0) + 1;
+        return acc;
+      }, {});
+
+      const seasonGaps = ['spring', 'summer', 'fall', 'winter']
+        .filter(season => (seasonCount[season] || 0) < 3)
+        .map(season => ({ season, count: seasonCount[season] || 0 }));
+
+      res.json({
+        categoryGaps: gaps,
+        colorSuggestion,
+        seasonGaps,
+        overallScore: Math.round((1 - gaps.length / Object.keys(essentialCategories).length) * 100)
+      });
+    } catch (error) {
+      console.error("Error analyzing wardrobe gaps:", error);
+      res.status(500).json({ message: "Failed to analyze wardrobe gaps" });
+    }
+  });
+
+  // Outfit shuffle/randomizer
+  app.get("/api/outfit-shuffle", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const items = await storage.getWardrobeItems(req.user!.id);
+      const { occasion, season } = req.query;
+
+      if (items.length < 3) {
+        return res.status(400).json({
+          message: "Need at least 3 items to generate an outfit",
+          suggestion: "Add more items to your wardrobe first"
+        });
+      }
+
+      // Filter by season if provided
+      let filteredItems = items;
+      if (season) {
+        filteredItems = items.filter(i => i.season === season || i.season === 'all');
+      }
+
+      // Group by category
+      const byCategory: Record<string, typeof items> = {};
+      filteredItems.forEach(item => {
+        if (!byCategory[item.category]) byCategory[item.category] = [];
+        byCategory[item.category].push(item);
+      });
+
+      // Generate random outfit
+      const outfit: typeof items = [];
+
+      // Try to pick one item from essential categories
+      const essentialOrder = ['tops', 'bottoms', 'shoes', 'outerwear', 'accessories'];
+
+      for (const category of essentialOrder) {
+        if (byCategory[category] && byCategory[category].length > 0) {
+          const randomIndex = Math.floor(Math.random() * byCategory[category].length);
+          outfit.push(byCategory[category][randomIndex]);
+        }
+      }
+
+      // If we couldn't form a basic outfit, just pick random items
+      if (outfit.length < 2) {
+        const shuffled = [...filteredItems].sort(() => Math.random() - 0.5);
+        return res.json({
+          items: shuffled.slice(0, Math.min(4, shuffled.length)),
+          message: "Random selection - add more categorized items for better outfits"
+        });
+      }
+
+      res.json({
+        items: outfit,
+        occasion: occasion || "casual",
+        message: "Here's a random outfit for you!"
+      });
+    } catch (error) {
+      console.error("Error shuffling outfit:", error);
+      res.status(500).json({ message: "Failed to generate random outfit" });
+    }
+  });
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useWeather } from "@/hooks/use-weather";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
@@ -41,6 +42,9 @@ import {
   ShoppingBag,
   AlertCircle,
   RefreshCw,
+  Lightbulb,
+  Eye,
+  Snowflake,
 } from "lucide-react";
 
 // Brand colors
@@ -69,6 +73,16 @@ export function HomePage() {
   const [selectedMood, setSelectedMood] = useState("happy");
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Fetch smart suggestions
+  const { data: smartSuggestions } = useQuery({
+    queryKey: ['smart-suggestions'],
+    queryFn: async () => {
+      const response = await fetch('/api/smart-suggestions', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch suggestions');
+      return response.json();
+    }
+  });
 
   // Update time every minute
   useEffect(() => {
@@ -127,16 +141,16 @@ export function HomePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="min-h-screen bg-[#fafaf9]">
         <NavigationBar />
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="space-y-4 mb-12">
-            <Skeleton className="h-10 w-64" />
-            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-10 w-64 rounded-2xl" />
+            <Skeleton className="h-5 w-40 rounded-xl" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Skeleton className="h-48 w-full rounded-2xl" />
-            <Skeleton className="h-48 w-full rounded-2xl lg:col-span-2" />
+            <Skeleton className="h-48 w-full rounded-[24px]" />
+            <Skeleton className="h-48 w-full rounded-[24px] lg:col-span-2" />
           </div>
         </div>
       </div>
@@ -145,20 +159,17 @@ export function HomePage() {
 
   if (hasErrors) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="min-h-screen bg-[#fafaf9]">
         <NavigationBar />
         <div className="max-w-md mx-auto px-6 py-24 text-center">
-          <div
-            className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center"
-            style={{ background: `hsl(0, 70%, 95%)` }}
-          >
-            <AlertCircle className="w-8 h-8 text-red-500" />
+          <div className="w-20 h-20 rounded-[24px] mx-auto mb-6 flex items-center justify-center bg-red-50">
+            <AlertCircle className="w-10 h-10 text-red-500" />
           </div>
-          <h2 className="font-serif text-2xl text-slate-900 mb-2">Something went wrong</h2>
-          <p className="text-slate-500 mb-6">
+          <h2 className="font-serif text-3xl text-slate-900 mb-3">Something went wrong</h2>
+          <p className="text-slate-500 mb-8 leading-relaxed">
             We couldn't load your data. Please check your connection and try again.
           </p>
-          <Button onClick={handleRetry} className="rounded-full gap-2" style={{ background: burgundy }}>
+          <Button onClick={handleRetry} className="rounded-full gap-2 h-12 px-8" style={{ background: burgundy }}>
             <RefreshCw className="w-4 h-4" />
             Try Again
           </Button>
@@ -168,39 +179,29 @@ export function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 pb-24 md:pb-8">
-      {/* Decorative Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-20 right-10 w-64 h-64 rounded-full opacity-20" style={{ background: `radial-gradient(circle, ${burgundy}10 0%, transparent 70%)` }} />
-        <div className="absolute bottom-40 left-10 w-48 h-48 rounded-full opacity-15" style={{ background: `radial-gradient(circle, ${gold}15 0%, transparent 70%)` }} />
-      </div>
-
+    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
       <NavigationBar />
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 md:py-12">
-        {/* Header Section with Time */}
+        {/* Header Section */}
         <header className="mb-10">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${burgundy}10` }}>
-                  <greeting.icon className="w-5 h-5" style={{ color: burgundy }} />
-                </div>
-                <div>
-                  <span className="text-sm tracking-wider uppercase text-slate-400">{greeting.text}</span>
-                  <p className="text-xs text-slate-300">{formatTime}</p>
-                </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
+                <greeting.icon className="w-4 h-4" style={{ color: gold }} />
+                <span className="text-sm font-medium text-slate-600">{greeting.text}</span>
+                <span className="text-xs text-slate-400">• {formatTime}</span>
               </div>
-              <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-1">
+              <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">
                 {user?.name || user?.username}
               </h1>
-              <p className="text-slate-500">{formatDate}</p>
+              <p className="text-slate-500 text-lg">{formatDate}</p>
             </div>
 
             {/* Quick Actions */}
             <div className="flex items-center gap-3">
               <Link href="/profile">
-                <Button variant="outline" size="sm" className="rounded-full gap-2 border-slate-200 hover:border-slate-300">
+                <Button variant="outline" size="sm" className="rounded-full gap-2 border-slate-200 hover:bg-white hover:shadow-sm transition-all">
                   <Bell className="w-4 h-4" />
                   <span className="hidden sm:inline">Profile</span>
                 </Button>
@@ -236,20 +237,20 @@ export function HomePage() {
               { label: "Favorites", value: stats.favoriteOutfits, icon: Heart, color: "#e11d48", trend: "Most loved" },
               { label: "Style Score", value: `${stats.totalItems && stats.totalOutfits ? Math.min(100, Math.round((stats.totalOutfits / Math.max(stats.totalItems / 3, 1)) * 100)) : 0}%`, icon: Crown, color: gold, trend: "Keep growing!" },
             ].map((stat, idx) => (
-              <Card key={idx} className="group overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
+              <Card key={idx} className="group overflow-hidden border-0 bg-white shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 rounded-[20px]">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-4">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
                       style={{ background: `${stat.color}10` }}
                     >
-                      <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+                      <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                     </div>
-                    <TrendingUp className="w-4 h-4 text-green-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <TrendingUp className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-900 mb-0.5">{stat.value}</p>
-                  <p className="text-xs text-slate-400 mb-1">{stat.label}</p>
-                  <p className="text-[10px] text-slate-300">{stat.trend}</p>
+                  <p className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</p>
+                  <p className="text-sm text-slate-500 mb-1">{stat.label}</p>
+                  <p className="text-xs text-slate-400">{stat.trend}</p>
                 </CardContent>
               </Card>
             ))}
@@ -261,19 +262,19 @@ export function HomePage() {
           {/* Left Column - Weather, Mood & Goals */}
           <div className="space-y-6">
             {/* Weather Card */}
-            <Card className="overflow-hidden border-slate-100 bg-white shadow-sm">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-slate-400">
+            <Card className="overflow-hidden border-0 bg-white shadow-sm rounded-[24px]">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2 text-slate-500">
                     <CloudSun className="h-4 w-4" />
-                    <span className="text-xs tracking-widest uppercase">Today&apos;s Weather</span>
+                    <span className="text-sm font-medium">Today&apos;s Weather</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] border-slate-200">Live</Badge>
+                  <Badge variant="outline" className="text-xs border-slate-200 rounded-full">Live</Badge>
                 </div>
                 {weatherError ? (
-                  <div className="text-center py-4">
-                    <CloudSun className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                    <p className="text-slate-400 text-sm">Weather unavailable</p>
+                  <div className="text-center py-6">
+                    <CloudSun className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+                    <p className="text-slate-400">Weather unavailable</p>
                   </div>
                 ) : weather ? (
                   <WeatherDisplay weather={weather} />
@@ -284,69 +285,163 @@ export function HomePage() {
             </Card>
 
             {/* Mood Card */}
-            <Card className="overflow-hidden border-slate-100 bg-white shadow-sm">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="w-4 h-4" style={{ color: gold }} />
-                  <h3 className="font-serif text-lg text-slate-900">How are you feeling?</h3>
+            <Card className="overflow-hidden border-0 bg-white shadow-sm rounded-[24px]">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Sparkles className="w-5 h-5" style={{ color: gold }} />
+                  <h3 className="font-serif text-xl text-slate-900">How are you feeling?</h3>
                 </div>
-                <p className="text-sm text-slate-400 mb-4">Select your mood for better recommendations</p>
+                <p className="text-slate-500 mb-5">Select your mood for better recommendations</p>
                 <MoodSelector selectedMood={selectedMood} setSelectedMood={setSelectedMood} />
               </CardContent>
             </Card>
 
             {/* Weekly Goal Card */}
-            <Card className="overflow-hidden border-slate-100 bg-white shadow-sm">
-              <CardContent className="p-5">
+            <Card className="overflow-hidden border-0 bg-white shadow-sm rounded-[24px]">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4" style={{ color: burgundy }} />
-                    <h3 className="font-semibold text-slate-900">Weekly Goal</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${burgundy}10` }}>
+                      <Target className="w-5 h-5" style={{ color: burgundy }} />
+                    </div>
+                    <h3 className="font-semibold text-lg text-slate-900">Weekly Goal</h3>
                   </div>
-                  <Badge className="rounded-full text-[10px]" style={{ background: `${burgundy}10`, color: burgundy }}>
-                    {weeklyGoal.current}/{weeklyGoal.target}
-                  </Badge>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: `${burgundy}10` }}>
+                    <span className="text-sm font-bold" style={{ color: burgundy }}>{weeklyGoal.current}</span>
+                    <span className="text-sm text-slate-400">/</span>
+                    <span className="text-sm font-medium text-slate-600">{weeklyGoal.target}</span>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-500 mb-3">Create {weeklyGoal.target} outfits this week</p>
-                <Progress value={goalProgress} className="h-2 mb-2" />
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>{Math.round(goalProgress)}% complete</span>
-                  <span>{weeklyGoal.target - weeklyGoal.current} remaining</span>
+                <p className="text-slate-600 mb-4">Create {weeklyGoal.target} outfits this week</p>
+                <div className="h-4 bg-slate-200 rounded-full overflow-hidden mb-3">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.max(goalProgress, 5)}%`,
+                      background: `linear-gradient(90deg, ${burgundy}, ${gold})`
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600 font-medium">{Math.round(goalProgress)}% complete</span>
+                  <span className="text-slate-500">{Math.max(0, weeklyGoal.target - weeklyGoal.current)} remaining</span>
                 </div>
                 {goalProgress >= 100 && (
-                  <div className="mt-3 p-2 rounded-lg flex items-center gap-2" style={{ background: `${gold}10` }}>
-                    <Award className="w-4 h-4" style={{ color: gold }} />
-                    <span className="text-xs font-medium" style={{ color: burgundy }}>Goal achieved! 🎉</span>
+                  <div className="mt-4 p-3 rounded-2xl flex items-center gap-3" style={{ background: `${gold}10` }}>
+                    <Award className="w-5 h-5" style={{ color: gold }} />
+                    <span className="text-sm font-medium" style={{ color: burgundy }}>Goal achieved!</span>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Wardrobe Insights */}
-            <Card className="overflow-hidden border-slate-100 bg-white shadow-sm">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-4 h-4" style={{ color: burgundy }} />
-                  <h3 className="font-semibold text-slate-900">Wardrobe Insights</h3>
+            <Card className="overflow-hidden border-0 bg-white shadow-sm rounded-[24px]">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <BarChart3 className="w-5 h-5" style={{ color: burgundy }} />
+                  <h3 className="font-semibold text-lg text-slate-900">Wardrobe Insights</h3>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
-                    <span className="text-sm text-slate-600">Top Category</span>
-                    <Badge variant="outline" className="capitalize">{wardrobeInsights.topCategory}</Badge>
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
+                    <span className="text-slate-600">Top Category</span>
+                    <Badge variant="outline" className="capitalize rounded-full">{wardrobeInsights.topCategory}</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
-                    <span className="text-sm text-slate-600">Recently Added</span>
-                    <span className="text-sm font-semibold text-slate-900">{wardrobeInsights.recentlyAdded} items</span>
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
+                    <span className="text-slate-600">Recently Added</span>
+                    <span className="font-semibold text-slate-900">{wardrobeInsights.recentlyAdded} items</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
-                    <span className="text-sm text-slate-600">Categories</span>
-                    <span className="text-sm font-semibold text-slate-900">
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
+                    <span className="text-slate-600">Categories</span>
+                    <span className="font-semibold text-slate-900">
                       {wardrobeItems ? new Set(wardrobeItems.map(i => i.category)).size : 0} types
                     </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Smart Suggestions */}
+            {smartSuggestions && (
+              <Card className="overflow-hidden border-0 shadow-sm bg-gradient-to-br from-amber-50 to-orange-50 rounded-[24px]">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-5">
+                    <Lightbulb className="w-5 h-5" style={{ color: gold }} />
+                    <h3 className="font-semibold text-lg text-slate-900">Smart Suggestions</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {/* Forgotten Items */}
+                    {smartSuggestions.forgottenItems?.length > 0 && (
+                      <div className="p-3 rounded-xl bg-white/70 border border-amber-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Eye className="w-4 h-4 text-amber-500" />
+                          <span className="text-sm font-medium text-slate-700">Forgotten Items</span>
+                        </div>
+                        <div className="flex -space-x-2">
+                          {smartSuggestions.forgottenItems.slice(0, 4).map((item: any) => (
+                            <div
+                              key={item.id}
+                              className="w-10 h-10 rounded-lg border-2 border-white overflow-hidden bg-slate-100"
+                            >
+                              {item.imageUrl && (
+                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2">Haven't worn in 30+ days</p>
+                      </div>
+                    )}
+
+                    {/* Seasonal Items */}
+                    {smartSuggestions.seasonalItems?.length > 0 && (
+                      <div className="p-3 rounded-xl bg-white/70 border border-blue-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Snowflake className="w-4 h-4 text-blue-500" />
+                          <span className="text-sm font-medium text-slate-700">Perfect for Today</span>
+                        </div>
+                        <div className="flex -space-x-2">
+                          {smartSuggestions.seasonalItems.slice(0, 4).map((item: any) => (
+                            <div
+                              key={item.id}
+                              className="w-10 h-10 rounded-lg border-2 border-white overflow-hidden bg-slate-100"
+                            >
+                              {item.imageUrl && (
+                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2">Seasonal picks for the weather</p>
+                      </div>
+                    )}
+
+                    {/* Favorite Items Not Worn Recently */}
+                    {smartSuggestions.forgottenFavorites?.length > 0 && (
+                      <div className="p-3 rounded-xl bg-white/70 border border-rose-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Heart className="w-4 h-4 text-rose-500" />
+                          <span className="text-sm font-medium text-slate-700">Miss Your Favorites?</span>
+                        </div>
+                        <div className="flex -space-x-2">
+                          {smartSuggestions.forgottenFavorites.slice(0, 4).map((item: any) => (
+                            <div
+                              key={item.id}
+                              className="w-10 h-10 rounded-lg border-2 border-white overflow-hidden bg-slate-100"
+                            >
+                              {item.imageUrl && (
+                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2">Your favorites need some love!</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* AI Recommendations - Wider Column */}
@@ -426,10 +521,12 @@ export function HomePage() {
             <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { href: "/wardrobe", icon: Shirt, title: "Wardrobe", desc: "Manage your collection", count: stats?.totalItems || 0 },
               { href: "/outfits", icon: Layers, title: "Outfits", desc: "Create combinations", count: stats?.totalOutfits || 0 },
+              { href: "/calendar", icon: Calendar, title: "Calendar", desc: "Plan your outfits", count: null },
+              { href: "/statistics", icon: BarChart3, title: "Analytics", desc: "Track your style", count: null },
               { href: "/inspirations", icon: Sparkles, title: "Inspiration", desc: "Discover new styles", count: null },
               { href: "/profile", icon: Crown, title: "Profile", desc: "Your style journey", count: null },
             ].map((item) => (

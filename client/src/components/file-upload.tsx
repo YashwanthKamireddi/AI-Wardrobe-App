@@ -13,15 +13,19 @@ const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 interface FileUploadProps {
   value?: string;
   onChange: (url: string) => void;
+  onFileSelect?: (file: File) => void; // New: expose raw file for AI processing
   accept?: string;
   maxSize?: number;
+  showAIBadge?: boolean; // Show AI processing badge
 }
 
 export default function FileUpload({
   value,
   onChange,
+  onFileSelect,
   accept = "image/*",
-  maxSize = MAX_FILE_SIZE
+  maxSize = MAX_FILE_SIZE,
+  showAIBadge = false
 }: FileUploadProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -61,6 +65,12 @@ export default function FileUpload({
       return;
     }
 
+    // If onFileSelect is provided, call it with the raw file for AI processing
+    if (onFileSelect) {
+      onFileSelect(file);
+      return; // Let the parent handle the rest
+    }
+
     setIsLoading(true);
     try {
       // Convert to base64 for demo (in production, upload to storage)
@@ -86,7 +96,7 @@ export default function FileUpload({
       setError("Upload failed");
       setIsLoading(false);
     }
-  }, [onChange, maxSize, toast]);
+  }, [onChange, onFileSelect, maxSize, toast]);
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

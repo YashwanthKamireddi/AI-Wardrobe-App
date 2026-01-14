@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Heart, HeartOff, Edit, Trash2, MoreHorizontal } from "lucide-react";
+import { Heart, HeartOff, Edit, Trash2, MoreHorizontal, Check, Clock } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,8 +27,29 @@ export default function WardrobeItem({ item, onEdit }: WardrobeItemProps) {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const queryClient = useQueryClient();
   const updateItem = useUpdateWardrobeItem();
   const deleteItem = useDeleteWardrobeItem();
+
+  // Log wear mutation
+  const logWearMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/wardrobe/${item.id}/log-wear`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to log wear');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wardrobe'] });
+      queryClient.invalidateQueries({ queryKey: ['statistics'] });
+    }
+  });
+
+  const handleLogWear = () => {
+    logWearMutation.mutate();
+  };
 
   const toggleFavorite = async () => {
     try {
@@ -129,6 +151,10 @@ export default function WardrobeItem({ item, onEdit }: WardrobeItemProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleLogWear} disabled={logWearMutation.isPending}>
+                  <Check className="h-4 w-4 mr-2" />
+                  {logWearMutation.isPending ? 'Logging...' : 'Log Wear Today'}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={toggleFavorite}>
                   {item.favorite ? (
                     <>
@@ -166,6 +192,12 @@ export default function WardrobeItem({ item, onEdit }: WardrobeItemProps) {
             {item.season && item.season !== "all" && (
               <Badge variant="secondary" className="text-xs capitalize">
                 {item.season}
+              </Badge>
+            )}
+            {item.wearCount && item.wearCount > 0 && (
+              <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
+                <Clock className="h-3 w-3 mr-1" />
+                {item.wearCount}x worn
               </Badge>
             )}
           </div>

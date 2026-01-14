@@ -50,7 +50,7 @@ export function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // Read mode from URL params
   const urlParams = new URLSearchParams(window.location.search);
   const initialMode = urlParams.get('mode') === 'signup';
