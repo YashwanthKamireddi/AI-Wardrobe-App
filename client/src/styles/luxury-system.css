@@ -1,0 +1,420 @@
+/**
+ * LUXURY DESIGN SYSTEM - Precision Engineered for Fashion Apps
+ *
+ * Based on the 2025 Luxury UI/UX Standards:
+ * - SSENSE brutalist precision
+ * - Farfetch skeleton loading patterns
+ * - Gucci immersive narrative
+ *
+ * Color Philosophy: "Warm Luxury" - away from sterile whites
+ * Typography: Neo-grotesque with humanist readability
+ */
+
+/* ============================================
+   1. LUXURY TYPOGRAPHY SYSTEM
+   ============================================ */
+
+/* Import Satoshi - The Neo-Grotesque Luxury Font */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+/* Luxury Font Stack - with system fallbacks for FCP optimization */
+:root {
+  /* Primary Sans - Neo-grotesque for modern luxury */
+  --font-sans: 'Inter', 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Display Serif - Editorial elegance */
+  --font-serif: 'Playfair Display', 'Didot', 'Bodoni MT', Georgia, serif;
+
+  /* Monospace - Technical precision */
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+}
+
+/* Typography Scale - 8px baseline with luxury spacing */
+.luxury-h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+.luxury-h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.luxury-h3 {
+  font-family: var(--font-sans);
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.luxury-body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+.luxury-caption {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.luxury-label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   2. WARM LUXURY COLOR PALETTE
+   ============================================ */
+
+:root {
+  /* Background Tones - Never pure white */
+  --luxury-bg-primary: #FAFAFA;      /* Off-White */
+  --luxury-bg-secondary: #F9F8F6;    /* Alabaster */
+  --luxury-bg-elevated: #FFFFFF;      /* Cards only */
+  --luxury-bg-subtle: #F5F4F2;       /* Subtle separation */
+
+  /* Text Hierarchy - Never pure black */
+  --luxury-text-primary: #1A1A1A;    /* Soft Black - Primary */
+  --luxury-text-secondary: #4A4A4A;  /* Medium Gray - Secondary */
+  --luxury-text-tertiary: #8A8A8A;   /* Light Gray - Tertiary */
+  --luxury-text-muted: #B8B8B8;      /* Muted - Placeholders */
+
+  /* Brand Colors - Warm Luxury Palette */
+  --luxury-burgundy: #80163A;        /* Primary Brand */
+  --luxury-burgundy-light: #9B1B4A;  /* Hover state */
+  --luxury-burgundy-dark: #5C1029;   /* Active state */
+
+  --luxury-gold: #D4A54A;            /* Accent Gold */
+  --luxury-gold-light: #E8C067;      /* Light Gold */
+  --luxury-gold-muted: #B8965C;      /* Muted Gold */
+
+  /* 2025 Trending Accents */
+  --luxury-mocha: #A47764;           /* Mocha Mousse - Pantone 2025 */
+  --luxury-teal: #557373;            /* Deep Teal */
+  --luxury-sage: #8B9B7A;            /* Sage Green */
+  --luxury-clay: #C4A484;            /* Warm Clay */
+
+  /* Semantic Colors */
+  --luxury-success: #2D7D5F;         /* Forest Green */
+  --luxury-warning: #C78B3C;         /* Amber */
+  --luxury-error: #B44141;           /* Muted Red */
+  --luxury-info: #4A7B9D;            /* Steel Blue */
+
+  /* Surface & Border */
+  --luxury-border-light: rgba(0, 0, 0, 0.06);
+  --luxury-border-medium: rgba(0, 0, 0, 0.12);
+  --luxury-border-dark: rgba(0, 0, 0, 0.2);
+
+  /* Shadows - Layered depth */
+  --luxury-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --luxury-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --luxury-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --luxury-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --luxury-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12);
+
+  /* Gold Glow Effects */
+  --luxury-glow-gold: 0 0 20px rgba(212, 165, 74, 0.3);
+  --luxury-glow-burgundy: 0 0 20px rgba(128, 22, 58, 0.2);
+}
+
+/* ============================================
+   3. SPACING SYSTEM - Luxury Breathing Room
+   ============================================ */
+
+:root {
+  /* Luxury uses wider gutters (24px/32px base) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+
+  /* Content Width Limits */
+  --content-max-width: 1440px;
+  --content-narrow: 800px;
+  --content-reading: 680px;
+}
+
+/* ============================================
+   4. SKELETON LOADING SYSTEM
+   ============================================ */
+
+@keyframes luxury-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-luxury {
+  background: linear-gradient(
+    90deg,
+    var(--luxury-bg-subtle) 0%,
+    var(--luxury-bg-elevated) 20%,
+    var(--luxury-bg-subtle) 40%,
+    var(--luxury-bg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: luxury-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeleton-gold {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 165, 74, 0.1) 0%,
+    rgba(212, 165, 74, 0.2) 20%,
+    rgba(212, 165, 74, 0.1) 40%,
+    rgba(212, 165, 74, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: luxury-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* Processing State - Gold Border Shimmer */
+@keyframes processing-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(212, 165, 74, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(212, 165, 74, 0.6);
+  }
+}
+
+.processing-state {
+  animation: processing-glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   5. GLASSMORPHISM SYSTEM
+   ============================================ */
+
+.glass-luxury {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  /* The "Edge" Trick - Light source simulation */
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-dark {
+  background: rgba(26, 26, 26, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.glass-gold {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 165, 74, 0.15) 0%,
+    rgba(212, 165, 74, 0.05) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 165, 74, 0.2);
+}
+
+/* ============================================
+   6. INTERACTION STATES
+   ============================================ */
+
+/* Luxury Press Effect - Scale down slightly */
+.press-effect {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.press-effect:active {
+  transform: scale(0.98);
+}
+
+/* Luxury Hover - Subtle elevation */
+.hover-elevate {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-elevate:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--luxury-shadow-lg);
+}
+
+/* Gold Accent on Hover */
+.hover-gold {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-gold:hover {
+  box-shadow: var(--luxury-glow-gold);
+}
+
+/* ============================================
+   7. MASONRY GRID SYSTEM
+   ============================================ */
+
+.masonry-grid {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+/* Mobile: 2 columns */
+@media (max-width: 639px) {
+  .masonry-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+  }
+}
+
+/* Tablet: 3 columns */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .masonry-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop: 4 columns */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .masonry-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Large Desktop: 5-6 columns */
+@media (min-width: 1280px) {
+  .masonry-grid {
+    grid-template-columns: repeat(5, 1fr);
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+  }
+}
+
+/* ============================================
+   8. OPTIMISTIC UI STATES
+   ============================================ */
+
+/* Upload Processing State */
+.upload-optimistic {
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-optimistic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 165, 74, 0.3) 50%,
+    transparent 100%
+  );
+  animation: optimistic-sweep 2s ease-in-out infinite;
+}
+
+@keyframes optimistic-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Success State Transition */
+.success-reveal {
+  animation: success-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes success-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================
+   9. GRADIENT ANTI-BANDING (Dithering Effect)
+   ============================================ */
+
+/* Noise overlay to prevent color banding on gradients */
+.gradient-smooth::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* ============================================
+   10. UTILITY CLASSES
+   ============================================ */
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Luxury text selection */
+::selection {
+  background: rgba(128, 22, 58, 0.2);
+  color: var(--luxury-text-primary);
+}
+
+/* Focus ring - Gold accent */
+.focus-luxury:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--luxury-bg-primary),
+              0 0 0 4px var(--luxury-gold);
+}
+
+/* Truncate with fade */
+.truncate-fade {
+  position: relative;
+  overflow: hidden;
+}
+.truncate-fade::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, var(--luxury-bg-primary));
+}

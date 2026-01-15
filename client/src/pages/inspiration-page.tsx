@@ -15,7 +15,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
 import NavigationBar from "@/components/navigation-bar";
-import MobileBottomNav from "@/components/mobile-bottom-nav";
 import InspirationCard from "@/components/inspiration-card";
 import { Inspiration } from "@shared/schema";
 
@@ -415,8 +414,6 @@ export function InspirationPage() {
           </div>
         )}
       </main>
-
-      <MobileBottomNav />
     </div>
   );
 }

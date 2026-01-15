@@ -1,0 +1,534 @@
+/**
+ * ETHEREAL STRUCTURE DESIGN SYSTEM
+ * "Vogue meets Apple" - Invisible Utility
+ *
+ * Philosophy: High-resolution imagery, massive whitespace,
+ * Glassmorphism 2.0, and editorial typography.
+ */
+
+/* ===========================================
+   CUSTOM FONTS - Load Satoshi for Neo-Grotesque
+   =========================================== */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
+  font-display: swap;
+}
+
+/* ===========================================
+   ROOT DESIGN TOKENS - THE ATELIER (LIGHT)
+   =========================================== */
+:root {
+  /* Primary Palette - Warm Alabaster Base */
+  --ethereal-bg: #F9F9F7;
+  --ethereal-bg-elevated: #FFFFFF;
+  --ethereal-bg-subtle: #F4F4F2;
+
+  /* Text Hierarchy */
+  --ethereal-text: #1A1A1A;
+  --ethereal-text-muted: #6B6B6B;
+  --ethereal-text-subtle: #9A9A9A;
+
+  /* Accent - Muted Gold */
+  --ethereal-gold: #D4AF37;
+  --ethereal-gold-soft: rgba(212, 175, 55, 0.15);
+  --ethereal-gold-glow: rgba(212, 175, 55, 0.4);
+
+  /* Editorial Accent - Deep Burgundy */
+  --ethereal-burgundy: #80163A;
+  --ethereal-burgundy-soft: rgba(128, 22, 58, 0.08);
+
+  /* Borders & Dividers */
+  --ethereal-border: rgba(0, 0, 0, 0.06);
+  --ethereal-border-strong: rgba(0, 0, 0, 0.12);
+
+  /* Glassmorphism 2.0 */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-blur: 24px;
+
+  /* Shadows - Subtle & Layered */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-editorial: 0 20px 60px rgba(0, 0, 0, 0.1);
+
+  /* Animation Timing */
+  --ease-luxe: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-dramatic: 800ms;
+}
+
+/* ===========================================
+   DARK MODE - THE SOIRÉE
+   =========================================== */
+.dark, [data-theme="dark"] {
+  --ethereal-bg: #0A0A0A;
+  --ethereal-bg-elevated: #141414;
+  --ethereal-bg-subtle: #1A1A1A;
+
+  --ethereal-text: #F5F5F5;
+  --ethereal-text-muted: #A0A0A0;
+  --ethereal-text-subtle: #6B6B6B;
+
+  --ethereal-border: rgba(255, 255, 255, 0.06);
+  --ethereal-border-strong: rgba(255, 255, 255, 0.12);
+
+  --glass-bg: rgba(20, 20, 20, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+/* ===========================================
+   TYPOGRAPHY SYSTEM - EDITORIAL HIERARCHY
+   =========================================== */
+
+/* Display - Hero Headlines */
+.type-display {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--ethereal-text);
+}
+
+/* H1 - Page Titles */
+.type-h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ethereal-text);
+}
+
+/* H2 - Section Headers */
+.type-h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--ethereal-text);
+}
+
+/* H3 - Card Titles */
+.type-h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ethereal-text);
+}
+
+/* Subheading - Editorial Labels */
+.type-subhead {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ethereal-burgundy);
+}
+
+/* Body - Primary Content */
+.type-body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  color: var(--ethereal-text);
+}
+
+/* Body Large - Featured Content */
+.type-body-lg {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 400;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+  color: var(--ethereal-text-muted);
+}
+
+/* Caption - Small UI Text */
+.type-caption {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--ethereal-text-subtle);
+}
+
+/* Mono - Data Display */
+.type-mono {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ===========================================
+   GLASSMORPHISM 2.0 COMPONENTS
+   =========================================== */
+
+/* Frosted Glass Card */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+}
+
+/* Elevated Glass */
+.glass-elevated {
+  background: var(--ethereal-bg-elevated);
+  border: 1px solid var(--ethereal-border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+/* Editorial Card - Magazine Style */
+.editorial-card {
+  background: var(--ethereal-bg-elevated);
+  border-radius: 0;
+  overflow: hidden;
+  transition: transform var(--duration-normal) var(--ease-luxe),
+              box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.editorial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-editorial);
+}
+
+/* ===========================================
+   BUTTON SYSTEM - MINIMAL AUTHORITY
+   =========================================== */
+
+/* Primary - Solid Black/White */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: var(--ethereal-text);
+  color: var(--ethereal-bg);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-smooth);
+}
+
+.btn-primary:hover {
+  background: var(--ethereal-burgundy);
+  transform: translateY(-1px);
+}
+
+/* Secondary - Outlined */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 27px;
+  background: transparent;
+  color: var(--ethereal-text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--ethereal-border-strong);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-smooth);
+}
+
+.btn-secondary:hover {
+  border-color: var(--ethereal-text);
+  background: var(--ethereal-bg-subtle);
+}
+
+/* Ghost - Text Only */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  color: var(--ethereal-text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.btn-ghost:hover {
+  color: var(--ethereal-burgundy);
+}
+
+/* ===========================================
+   LAYOUT UTILITIES
+   =========================================== */
+
+/* Container - Editorial Width */
+.container-editorial {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (min-width: 768px) {
+  .container-editorial {
+    padding: 0 48px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container-editorial {
+    padding: 0 80px;
+  }
+}
+
+/* Massive Whitespace Sections */
+.section-hero {
+  padding: 160px 0 120px;
+}
+
+.section-content {
+  padding: 120px 0;
+}
+
+.section-compact {
+  padding: 80px 0;
+}
+
+/* ===========================================
+   MASONRY GRID - PINTEREST EDITORIAL
+   =========================================== */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .masonry-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Masonry Item */
+.masonry-item {
+  break-inside: avoid;
+  position: relative;
+  overflow: hidden;
+  background: var(--ethereal-bg-subtle);
+}
+
+.masonry-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform var(--duration-slow) var(--ease-luxe);
+}
+
+.masonry-item:hover img {
+  transform: scale(1.03);
+}
+
+/* ===========================================
+   ANIMATIONS - EDITORIAL MOTION
+   =========================================== */
+
+/* Fade In Up - Primary Entrance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--duration-dramatic) var(--ease-luxe) forwards;
+}
+
+/* Stagger Children */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp var(--duration-slow) var(--ease-luxe) forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 500ms; }
+
+/* Scale In - Hero Elements */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-dramatic) var(--ease-luxe) forwards;
+}
+
+/* Line Reveal - Decorative */
+@keyframes lineReveal {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.line-reveal {
+  transform-origin: left center;
+  animation: lineReveal var(--duration-slow) var(--ease-luxe) forwards;
+}
+
+/* Parallax Scroll Effect */
+.parallax-slow {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* ===========================================
+   SPECIAL EFFECTS
+   =========================================== */
+
+/* Gold Shimmer */
+.shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    var(--ethereal-text) 0%,
+    var(--ethereal-gold) 50%,
+    var(--ethereal-text) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 200% center; }
+  50% { background-position: 0% center; }
+}
+
+/* Decorative Line */
+.line-accent {
+  width: 60px;
+  height: 1px;
+  background: var(--ethereal-gold);
+}
+
+/* Editorial Divider */
+.divider-editorial {
+  width: 100%;
+  height: 1px;
+  background: var(--ethereal-border);
+  margin: 80px 0;
+}
+
+/* Image Overlay Gradient */
+.overlay-editorial {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ===========================================
+   SCROLLBAR - INVISIBLE UTILITY
+   =========================================== */
+.scrollbar-minimal::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-thumb {
+  background: var(--ethereal-border-strong);
+  border-radius: 3px;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-thumb:hover {
+  background: var(--ethereal-text-subtle);
+}
+
+/* Hide scrollbar completely */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===========================================
+   RESPONSIVE TYPOGRAPHY SCALING
+   =========================================== */
+@media (max-width: 640px) {
+  .section-hero {
+    padding: 120px 0 80px;
+  }
+
+  .section-content {
+    padding: 80px 0;
+  }
+
+  .section-compact {
+    padding: 60px 0;
+  }
+}

@@ -1,10 +1,13 @@
 
 /* Import Google Fonts - Premium Typography */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-/* Import Design System */
+/* Import Design Systems */
+@import './styles/ethereal-system.css';
 @import './styles/design-system.css';
+@import './styles/luxury-system.css';
 
 /* Global styles */
 /* Custom scrollbar styles */

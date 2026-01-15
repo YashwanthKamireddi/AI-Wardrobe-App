@@ -3,13 +3,17 @@ import { Plus, Search, Grid3x3, List, X, Edit, Trash2, Shirt, Sparkles, Loader2,
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { LuxuryButton } from "@/components/ui/luxury-button";
+import { LuxuryInput, SearchInput } from "@/components/ui/luxury-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { WardrobeItemSkeleton, ProcessingOverlay } from "@/components/ui/luxury-skeleton";
+import { MasonryGrid, LuxuryCard, LazyImage } from "@/components/ui/masonry-grid";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlinthButton } from "@/components/ui/plinth-button";
+import { GlassCard } from "@/components/ui/glass-card";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 import NavigationBar from "@/components/navigation-bar";
 import FileUpload from "@/components/file-upload";
@@ -41,6 +46,7 @@ import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem, useUpdateW
 import { clothingCategories, seasons, WardrobeItem as WardrobeItemType } from "@shared/schema";
 import { processWardrobeImage, AIProcessingResult } from "@/lib/image-ai";
 import { Progress } from "@/components/ui/progress";
+import { HapticFeedback } from "@/lib/haptics";
 
 const itemSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -362,42 +368,54 @@ export function WardrobePage() {
           )}
         />
         <DialogFooter>
-          <Button type="submit" className="w-full">{submitLabel}</Button>
+          <LuxuryButton type="submit" className="w-full">{submitLabel}</LuxuryButton>
         </DialogFooter>
       </form>
     </Form>
   );
 
-  return (
-    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
-      <NavigationBar />
+  // Brand colors
+  const burgundy = "#80163a";
+  const gold = "#D4A54A";
 
-      <main className="max-w-6xl mx-auto px-6 py-8 md:py-12">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+  return (
+    <div className="min-h-screen pb-24 md:pb-8 bg-[#faf9f7]">
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <NavigationBar />
+      </div>
+
+      {/* Mobile Header - Light Theme */}
+      <header
+        className="md:hidden sticky top-0 z-40 px-4 py-4"
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(0,0,0,0.06)',
+        }}
+      >
+        <div className="flex items-center justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
-              <Shirt className="w-4 h-4" style={{ color: "hsl(38, 75%, 55%)" }} />
-              <span className="text-sm font-medium text-slate-600">Your Collection</span>
-            </div>
-            <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">Wardrobe</h1>
-            <p className="text-slate-500 text-lg">{wardrobeItems?.length || 0} items curated with care</p>
+            <p className="text-[11px] font-semibold tracking-[0.15em] uppercase mb-1" style={{ color: burgundy }}>
+              The Archive
+            </p>
+            <h1 className="font-serif text-2xl font-medium text-slate-900">
+              Closet
+            </h1>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button
-                className="rounded-full px-8 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 18%) 100%)" }}
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Add Item
-              </Button>
+              <LuxuryButton size="sm" className="rounded-full gap-2">
+                <Plus className="h-4 w-4" />
+                Add
+              </LuxuryButton>
             </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl rounded-[24px]">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white border border-slate-200">
               <DialogHeader>
                 <DialogTitle className="font-serif text-2xl text-slate-900 flex items-center gap-3">
                   Add New Item
-                  <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 font-medium">
+                  <span className="text-[10px] px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold border border-purple-200">
                     <Sparkles className="w-3 h-3 inline mr-1" />
                     AI Powered
                   </span>
@@ -409,189 +427,227 @@ export function WardrobePage() {
               <ItemForm formInstance={form} onSubmit={onSubmitAdd} submitLabel="Add Item" enableAI={true} />
             </DialogContent>
           </Dialog>
-        </header>
+        </div>
+      </header>
 
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <Input
-              placeholder="Search wardrobe..."
+      {/* Desktop Hero Header */}
+      <div className="hidden md:block px-6 py-8 max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between"
+        >
+          <div>
+            <p className="text-xs font-semibold tracking-[0.2em] uppercase mb-3" style={{ color: burgundy }}>
+              The Archive
+            </p>
+            <h1 className="font-serif text-4xl font-medium text-slate-900">
+              Your Closet
+            </h1>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <LuxuryButton className="rounded-full gap-2 h-12 px-6">
+                <Plus className="h-5 w-5" />
+                Add Item
+              </LuxuryButton>
+            </DialogTrigger>
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white border border-slate-200">
+              <DialogHeader>
+                <DialogTitle className="font-serif text-2xl text-slate-900 flex items-center gap-3">
+                  Add New Item
+                  <span className="text-[10px] px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold border border-purple-200">
+                    <Sparkles className="w-3 h-3 inline mr-1" />
+                    AI Powered
+                  </span>
+                </DialogTitle>
+                <DialogDescription className="text-slate-500 text-base">
+                  Upload an image and AI will automatically remove the background, detect colors, and suggest a category.
+                </DialogDescription>
+              </DialogHeader>
+              <ItemForm formInstance={form} onSubmit={onSubmitAdd} submitLabel="Add Item" enableAI={true} />
+            </DialogContent>
+          </Dialog>
+        </motion.div>
+      </div>
+
+      <main className="px-4 py-4 md:px-6 md:max-w-6xl md:mx-auto">
+        {/* Search & Filter */}
+        <section className="mb-4">
+          <div className="mb-3">
+            <SearchInput
+              placeholder="Search your archive..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 rounded-2xl border-slate-200 bg-white focus:border-[hsl(337,73%,26%)] focus:ring-[hsl(337,73%,26%)]/20 text-base"
+              onClear={() => setSearchQuery('')}
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2"
-              >
-                <X className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
-              </button>
-            )}
           </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full md:w-[180px] h-12 border-slate-200 bg-white rounded-2xl">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent className="border-slate-200 bg-white rounded-xl">
-              <SelectItem value="all">All Categories</SelectItem>
-              {clothingCategories.map(cat => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => setViewMode('grid')}
-              className={viewMode === 'grid' ? 'bg-[hsl(337,73%,26%)]' : 'border-slate-200 hover:bg-slate-50'}
+
+          {/* Category Tabs - Light Theme */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            <button
+              onClick={() => setCategoryFilter('all')}
+              className={`px-4 py-2.5 rounded-xl text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-all ${
+                categoryFilter === 'all'
+                  ? 'text-white shadow-md'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              }`}
+              style={categoryFilter === 'all' ? { background: gold } : {}}
             >
-              <Grid3x3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? 'bg-[hsl(337,73%,26%)]' : 'border-slate-200 hover:bg-slate-50'}
-            >
-              <List className="h-4 w-4" />
-            </Button>
+              All ({wardrobeItems?.length || 0})
+            </button>
+            {clothingCategories.map(cat => {
+              const count = wardrobeItems?.filter(item => item.category === cat.value).length || 0;
+              return (
+                <button
+                  key={cat.value}
+                  onClick={() => setCategoryFilter(cat.value)}
+                  className={`px-4 py-2.5 rounded-xl text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-all ${
+                    categoryFilter === cat.value
+                      ? 'text-white shadow-md'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                  }`}
+                  style={categoryFilter === cat.value ? { background: gold } : {}}
+                >
+                  {cat.label} ({count})
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </section>
 
         {/* Results Count */}
         {filteredItems.length > 0 && (
-          <div className="flex gap-3 mb-6">
-            <Badge variant="outline" className="border-slate-200 text-slate-600">Showing: {filteredItems.length}</Badge>
-            {categoryFilter !== 'all' && (
-              <Badge className="bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] hover:bg-[hsl(337,73%,26%)]/15">
-                {categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)}
-              </Badge>
-            )}
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-medium text-slate-500">
+              {filteredItems.length} items
+            </span>
+            <div className="flex gap-1 p-1 rounded-lg bg-slate-100">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
 
         {/* Content */}
         {isLoading ? (
-          <div className={viewMode === 'grid'
-            ? "grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-            : "space-y-4"
-          }>
-            {[...Array(10)].map((_, i) => (
-              <Card key={i} className="border-slate-100 bg-white">
-                <Skeleton className={viewMode === 'grid' ? "aspect-square" : "h-24"} />
-                <CardContent className="p-3">
-                  <Skeleton className="h-4 w-3/4 mb-2" />
-                  <Skeleton className="h-3 w-1/2" />
-                </CardContent>
-              </Card>
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+              <WardrobeItemSkeleton key={i} />
             ))}
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="space-y-8">
-            <Card className="max-w-md mx-auto border-slate-100 bg-white shadow-sm">
-              <CardHeader className="text-center pb-2">
-                <div
-                  className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                  style={{ background: "hsl(337, 73%, 26%)10" }}
-                >
-                  <Shirt className="h-7 w-7" style={{ color: "hsl(337, 73%, 26%)" }} />
-                </div>
-                <CardTitle className="font-serif text-2xl text-slate-900">
-                  {wardrobeItems?.length ? 'No Matches Found' : 'Start Your Collection'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <p className="text-slate-500">
-                  {wardrobeItems?.length
-                    ? 'Try adjusting your search or filters.'
-                    : 'Build your wardrobe by adding your first piece. Celura will help you create perfect outfits.'}
-                </p>
-                {!wardrobeItems?.length && (
-                  <Button
-                    onClick={() => setIsAddDialogOpen(true)}
-                    className="rounded-full px-6"
-                    style={{ background: "hsl(337, 73%, 26%)" }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Item
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Inspiration Section */}
-            {!wardrobeItems?.length && (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h3 className="font-serif text-xl text-slate-900 mb-1">Get Inspired</h3>
-                  <p className="text-slate-400 text-sm">Ideas for building your wardrobe</p>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { name: 'Classic Blazer', category: 'Tops', color: 'Navy', bgColor: '#1e40af' },
-                    { name: 'White Silk Blouse', category: 'Tops', color: 'White', bgColor: '#f1f5f9' },
-                    { name: 'Tailored Trousers', category: 'Bottoms', color: 'Black', bgColor: '#1e293b' },
-                    { name: 'Cashmere Sweater', category: 'Tops', color: 'Camel', bgColor: '#d97706' },
-                  ].map((item, idx) => (
-                    <Card key={idx} className="overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => setIsAddDialogOpen(true)}>
-                      <div className="aspect-square flex items-center justify-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${item.bgColor}20 0%, ${item.bgColor}40 100%)` }}>
-                        <Shirt className="w-16 h-16 transition-transform group-hover:scale-110" style={{ color: item.bgColor }} />
-                      </div>
-                      <CardContent className="p-3">
-                        <h4 className="font-medium text-sm text-slate-900 truncate">{item.name}</h4>
-                        <p className="text-xs text-slate-400">{item.category} • {item.color}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+          <GlassCard className="text-center py-16">
+            <div className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center" style={{ background: `${gold}20`, border: `1px solid ${gold}40` }}>
+              <Shirt className="h-9 w-9" style={{ color: gold }} />
+            </div>
+            <h3 className="font-serif text-2xl font-medium mb-3 text-slate-900">
+              {searchQuery ? 'No matches found' : 'Your archive is empty'}
+            </h3>
+            <p className="text-sm mb-8 max-w-xs mx-auto text-slate-500">
+              {searchQuery
+                ? 'Try adjusting your search or filters'
+                : 'Start building your digital wardrobe by adding your first piece'}
+            </p>
+            {!searchQuery && (
+              <LuxuryButton
+                onClick={() => setIsAddDialogOpen(true)}
+                className="rounded-full gap-2 h-12 px-6"
+              >
+                <Plus className="h-4 w-4" />
+                Add Your First Item
+              </LuxuryButton>
             )}
-          </div>
+          </GlassCard>
         ) : viewMode === 'grid' ? (
-          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {filteredItems.map((item) => (
-              <Card key={item.id} className="group overflow-hidden border-slate-100 bg-white shadow-sm hover:shadow-md transition-all">
-                <div className="relative aspect-square bg-slate-100">
+          <MasonryGrid columns={{ sm: 2, md: 3, lg: 4 }} gap={16}>
+            {filteredItems.map((item, index) => (
+              <LuxuryCard
+                key={item.id}
+                className="group"
+                delay={index * 0.05}
+              >
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  className="relative aspect-[3/4] bg-slate-50 rounded-t-xl overflow-hidden"
+                >
                   {item.imageUrl ? (
-                    <img
+                    <LazyImage
                       src={item.imageUrl}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      No Image
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Shirt className="h-8 w-8 text-slate-300" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => setEditingItem(item)} className="bg-white hover:bg-slate-50">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 bg-black/40">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        HapticFeedback.selection();
+                        setEditingItem(item);
+                      }}
+                      className="h-10 w-10 rounded-xl bg-white/90 flex items-center justify-center hover:bg-white transition-colors"
+                    >
+                      <Edit className="h-4 w-4 text-slate-700" />
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        HapticFeedback.heavy();
+                        handleDelete(item.id);
+                      }}
+                      className="h-10 w-10 rounded-xl bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4 text-white" />
+                    </motion.button>
                   </div>
-                </div>
-                <CardContent className="p-3">
-                  <h3 className="font-medium text-slate-900 truncate">{item.name}</h3>
-                  <p className="text-sm text-slate-400 capitalize">{item.category}</p>
+                </motion.div>
+                <div className="p-3">
+                  <h3 className="font-medium text-sm truncate mb-0.5 text-slate-900">
+                    {item.name}
+                  </h3>
+                  <p className="text-xs capitalize text-slate-500">
+                    {item.category}
+                  </p>
                   {item.color && (
-                    <Badge variant="outline" className="mt-2 text-xs border-slate-200 text-slate-500">{item.color}</Badge>
+                    <span className="inline-block mt-2 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 text-slate-700">
+                      {item.color}
+                    </span>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </LuxuryCard>
             ))}
-          </div>
+          </MasonryGrid>
         ) : (
           <div className="space-y-3">
             {filteredItems.map((item) => (
-              <Card key={item.id} className="flex overflow-hidden border-primary/10 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all">
-                <div className="w-24 h-24 flex-shrink-0 bg-muted">
+              <GlassCard
+                key={item.id}
+                className="flex overflow-hidden p-0"
+                hoverEffect
+              >
+                <div className="w-20 h-20 flex-shrink-0 bg-slate-50">
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
@@ -599,43 +655,61 @@ export function WardrobePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                      No Image
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Shirt className="h-6 w-6 text-slate-300" />
                     </div>
                   )}
                 </div>
-                <CardContent className="flex-1 p-4 flex items-center justify-between">
+                <div className="flex-1 p-3 flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize">{item.category}</p>
-                    <div className="flex gap-2 mt-2">
-                      {item.color && <Badge variant="outline" className="text-xs border-primary/20">{item.color}</Badge>}
+                    <h3 className="font-medium text-sm mb-0.5 text-slate-900">
+                      {item.name}
+                    </h3>
+                    <p className="text-xs capitalize text-slate-500">
+                      {item.category}
+                    </p>
+                    <div className="flex gap-1 mt-1">
+                      {item.color && (
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-white/10 text-[#D4AF37]">
+                          {item.color}
+                        </span>
+                      )}
                       {item.season && item.season !== 'all' && (
-                        <Badge variant="secondary" className="text-xs capitalize bg-primary/10 text-primary">{item.season}</Badge>
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold capitalize bg-[#39FF14]/10 text-[#39FF14]">
+                          {item.season}
+                        </span>
                       )}
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setEditingItem(item)} className="border-primary/20 hover:bg-primary/10">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setEditingItem(item)}
+                      className="h-9 w-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+                    >
+                      <Edit className="h-4 w-4 text-[#A0A3BD]" />
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleDelete(item.id)}
+                      className="h-9 w-9 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center hover:bg-red-500/30 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </motion.button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </GlassCard>
             ))}
           </div>
         )}
       </main>
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog - NeoPOP Dark */}
       <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto border-primary/20 bg-card/95 backdrop-blur-sm">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto rounded-[24px]" style={{ background: '#1E1F2E', border: '1px solid rgba(255,255,255,0.1)' }}>
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">Edit Item</DialogTitle>
-            <DialogDescription>Update the details of this wardrobe item.</DialogDescription>
+            <DialogTitle className="font-serif text-2xl text-[#F5F0E6]">Edit Item</DialogTitle>
+            <DialogDescription className="text-[#A0A3BD]">Update the details of this wardrobe item.</DialogDescription>
           </DialogHeader>
           <ItemForm formInstance={editForm} onSubmit={onSubmitEdit} submitLabel="Save Changes" />
         </DialogContent>

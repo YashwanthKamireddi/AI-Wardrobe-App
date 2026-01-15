@@ -6,7 +6,7 @@ import {
   Star, Target, Zap, BarChart3
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { LuxuryButton } from "@/components/ui/luxury-button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -14,25 +14,21 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { ProfileCardSkeleton } from "@/components/ui/luxury-skeleton";
+import { HapticFeedback } from "@/lib/haptics";
 
 import NavigationBar from "@/components/navigation-bar";
-import MobileBottomNav from "@/components/mobile-bottom-nav";
 import StyleProfileAnalysis from "@/components/style-profile-analysis";
 import { useAuth } from "@/hooks/use-auth";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 
-// Brand colors
-const gold = "hsl(38, 75%, 55%)";
-const burgundy = "hsl(337, 73%, 26%)";
-const burgundyDark = "hsl(337, 73%, 18%)";
-
 // Achievement badges - computed dynamically
 const getAchievements = (wardrobeCount: number, outfitsCount: number, favoriteCount: number) => [
   { id: 1, name: "First Steps", desc: "Add your first wardrobe item", icon: Shirt, unlocked: wardrobeCount >= 1, color: "#10b981" },
   { id: 2, name: "Outfit Creator", desc: "Create 5 outfits", icon: Layers, unlocked: outfitsCount >= 5, color: "#8b5cf6" },
-  { id: 3, name: "Favorite Finder", desc: "Mark 3 favorites", icon: Heart, unlocked: favoriteCount >= 3, color: "#f59e0b" },
-  { id: 4, name: "Fashion Forward", desc: "Build a 50-item wardrobe", icon: Crown, unlocked: wardrobeCount >= 50, color: burgundy },
+  { id: 3, name: "Favorite Finder", desc: "Mark 3 favorites", icon: Heart, unlocked: favoriteCount >= 3, color: "#D4AF37" },
+  { id: 4, name: "Fashion Forward", desc: "Build a 50-item wardrobe", icon: Crown, unlocked: wardrobeCount >= 50, color: "#0F0F0F" },
 ];
 
 export function ProfilePage() {
@@ -110,399 +106,331 @@ export function ProfilePage() {
     : 'Recently';
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
-      {/* Decorative background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-20 right-10 w-64 h-64 rounded-full opacity-20" style={{ background: `radial-gradient(circle, ${burgundy}10 0%, transparent 70%)` }} />
-        <div className="absolute bottom-40 left-10 w-48 h-48 rounded-full opacity-15" style={{ background: `radial-gradient(circle, ${gold}15 0%, transparent 70%)` }} />
+    <div className="min-h-screen pb-24 md:pb-8" style={{ background: '#faf9f7' }}>
+      {/* Desktop Navigation Bar */}
+      <div className="hidden md:block">
+        <NavigationBar />
       </div>
 
-      <NavigationBar />
-
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 md:py-12">
-        {/* Header */}
-        <header className="mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
-            <User className="w-4 h-4" style={{ color: gold }} />
-            <span className="text-sm font-medium text-slate-600">Account</span>
-          </div>
-          <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">Your Profile</h1>
-          <p className="text-slate-500 text-lg">Manage your account and style journey</p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Info Card */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Main Profile Card */}
-            <Card className="border-0 shadow-xl rounded-[24px] bg-white overflow-hidden">
-              <CardHeader className="text-center relative pb-4">
-                {/* Header Background */}
-                <div
-                  className="absolute top-0 left-0 right-0 h-32"
-                  style={{ background: `linear-gradient(135deg, ${burgundy} 0%, ${burgundyDark} 100%)` }}
-                />
-
-                {/* Avatar */}
-                <div className="relative flex justify-center mb-4 pt-10">
-                  <div
-                    className="h-28 w-28 rounded-full flex items-center justify-center text-4xl font-serif shadow-xl border-4 border-white relative"
-                    style={{ background: `linear-gradient(135deg, ${burgundy} 0%, ${burgundyDark} 100%)`, color: gold }}
-                  >
-                    {getUserInitials()}
-                    {/* Level Badge */}
-                    <div
-                      className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"
-                      style={{ background: gold }}
-                    >
-                      {xpData.level}
-                    </div>
-                  </div>
-                </div>
-
-                <CardTitle className="font-serif text-2xl text-slate-900">
-                  {user?.name || user?.username}
-                </CardTitle>
-                <CardDescription className="text-slate-500 text-base">
-                  @{user?.username}
-                </CardDescription>
-
-                {/* Member Badge */}
-                <Badge className="mt-3 rounded-full px-4 py-1" style={{ background: `${gold}20`, color: burgundy }}>
-                  <Star className="w-3 h-3 mr-1" />
-                  Style Member
-                </Badge>
-              </CardHeader>
-
-              <CardContent className="space-y-5 p-6">
-                {/* Level Progress */}
-                <div className="p-5 rounded-2xl" style={{ background: `${burgundy}05` }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-slate-700">Level {xpData.level}</span>
-                    <span className="text-xs text-slate-400">{xpData.currentXP}/{xpData.nextLevelXP} XP</span>
-                  </div>
-                  <Progress value={(xpData.currentXP / xpData.nextLevelXP) * 100} className="h-2" />
-                  <p className="text-xs text-slate-400 mt-2">
-                    <Zap className="w-3 h-3 inline mr-1" style={{ color: gold }} />
-                    Earn XP by adding items and creating outfits
-                  </p>
-                </div>
-
-                <Separator className="bg-slate-100" />
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Items", value: wardrobeItems?.length || 0, icon: Shirt },
-                    { label: "Outfits", value: outfits?.length || 0, icon: Layers },
-                    { label: "Favorites", value: styleInsights.favoriteCount, icon: Heart },
-                    { label: "Score", value: `${styleInsights.completionScore}%`, icon: Target },
-                  ].map((stat, idx) => (
-                    <div key={idx} className="text-center p-4 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                      <stat.icon className="w-5 h-5 mx-auto mb-2 text-slate-400" />
-                      <div className="text-2xl font-bold text-slate-900">{stat.value}</div>
-                      <div className="text-xs text-slate-400 uppercase tracking-wider">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <Separator className="bg-slate-100" />
-
-                {/* Account Info */}
-                <div className="space-y-3">
-                  {user?.email && (
-                    <div className="flex items-center gap-3 text-sm p-4 rounded-2xl bg-slate-50">
-                      <Mail className="h-4 w-4 text-slate-400" />
-                      <span className="text-slate-600 truncate">{user.email}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3 text-sm p-4 rounded-2xl bg-slate-50">
-                    <Calendar className="h-4 w-4 text-slate-400" />
-                    <span className="text-slate-600">Member since {memberSince}</span>
-                  </div>
-                </div>
-
-                <Separator className="bg-slate-100" />
-
-                {/* Logout Button */}
-                <Button
-                  variant="outline"
-                  className="w-full rounded-full h-12 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all"
-                  onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  {logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Achievements Card */}
-            {(() => {
-              const achievements = getAchievements(
-                wardrobeItems?.length || 0,
-                outfits?.length || 0,
-                styleInsights.favoriteCount
-              );
-              return (
-                <Card className="border-0 shadow-xl rounded-[24px] bg-white">
-                  <CardHeader className="pb-3 px-6 pt-6">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="font-serif text-xl text-slate-900">Achievements</CardTitle>
-                      <Badge variant="outline" className="rounded-full border-slate-200">
-                        {achievements.filter(a => a.unlocked).length}/{achievements.length}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3 px-6 pb-6">
-                    {achievements.map((achievement) => (
-                      <div
-                        key={achievement.id}
-                        className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${
-                          achievement.unlocked ? 'bg-slate-50' : 'bg-slate-50/50 opacity-60'
-                        }`}
-                      >
-                        <div
-                          className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                            achievement.unlocked ? '' : 'grayscale'
-                          }`}
-                          style={{ background: `${achievement.color}15` }}
-                        >
-                          <achievement.icon className="w-6 h-6" style={{ color: achievement.color }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900 truncate">{achievement.name}</p>
-                          <p className="text-sm text-slate-400 truncate">{achievement.desc}</p>
-                        </div>
-                        {achievement.unlocked && (
-                          <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                        )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              );
-            })()}
-          </div>
-
-          {/* Settings and Style Profile */}
-          <div className="lg:col-span-2 space-y-6">
-            <Tabs defaultValue="style" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6 bg-white border border-slate-200 p-1.5 rounded-2xl h-14">
-                <TabsTrigger
-                  value="style"
-                  className="rounded-xl data-[state=active]:shadow-sm transition-all h-10"
-                  style={{
-                    backgroundColor: 'transparent',
-                  }}
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Style
-                </TabsTrigger>
-                <TabsTrigger
-                  value="insights"
-                  className="rounded-xl data-[state=active]:shadow-sm transition-all h-10"
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Insights
-                </TabsTrigger>
-                <TabsTrigger
-                  value="settings"
-                  className="rounded-xl data-[state=active]:shadow-sm transition-all h-10"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Style Profile Tab */}
-              <TabsContent value="style">
-                <Card className="border-0 shadow-xl rounded-[24px] bg-white">
-                  <CardHeader className="p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${burgundy}10` }}>
-                        <Palette className="w-6 h-6" style={{ color: burgundy }} />
-                      </div>
-                      <div>
-                        <CardTitle className="font-serif text-2xl text-slate-900">Style Profile</CardTitle>
-                        <CardDescription className="text-base">Your unique fashion identity</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6 pt-0">
-                    <StyleProfileAnalysis
-                      wardrobeCount={wardrobeItems?.length || 0}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Insights Tab */}
-              <TabsContent value="insights">
-                <div className="space-y-6">
-                  {/* Wardrobe Analysis */}
-                  <Card className="border-0 shadow-xl rounded-[24px] bg-white">
-                    <CardHeader className="p-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${gold}15` }}>
-                          <TrendingUp className="w-6 h-6" style={{ color: burgundy }} />
-                        </div>
-                        <div>
-                          <CardTitle className="font-serif text-2xl text-slate-900">Wardrobe Analysis</CardTitle>
-                          <CardDescription className="text-base">Insights about your collection</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-6 pt-0">
-                      <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="p-5 rounded-2xl border border-slate-100">
-                          <p className="text-sm text-slate-500 mb-2">Top Category</p>
-                          <p className="text-xl font-semibold text-slate-900 capitalize">{styleInsights.topCategory}</p>
-                        </div>
-                        <div className="p-5 rounded-2xl border border-slate-100">
-                          <p className="text-sm text-slate-500 mb-2">Favorite Color</p>
-                          <p className="text-xl font-semibold text-slate-900 capitalize">{styleInsights.topColor}</p>
-                        </div>
-                      </div>
-
-                      {/* Progress Bars */}
-                      <div className="space-y-5">
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-slate-600">Wardrobe Completion</span>
-                            <span className="text-sm font-medium" style={{ color: burgundy }}>{styleInsights.completionScore}%</span>
-                          </div>
-                          <Progress value={styleInsights.completionScore} className="h-2" />
-                          <p className="text-xs text-slate-400 mt-1">Based on essential categories</p>
-                        </div>
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-slate-600">Style Diversity</span>
-                            <span className="text-sm font-medium" style={{ color: burgundy }}>{styleInsights.diversityScore}%</span>
-                          </div>
-                          <Progress value={styleInsights.diversityScore} className="h-2" />
-                          <p className="text-xs text-slate-400 mt-1">Variety across categories</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Recommendations */}
-                  <Card className="border-0 shadow-xl rounded-[24px] bg-white">
-                    <CardHeader className="p-6">
-                      <CardTitle className="font-serif text-xl text-slate-900">Personalized Recommendations</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-6 pt-0">
-                      <div className="space-y-3">
-                        {[
-                          { text: "Add more bottoms to balance your collection", icon: Shirt },
-                          { text: "Try creating outfits for different occasions", icon: Layers },
-                          { text: "Explore neutral colors for versatility", icon: Palette },
-                        ].map((rec, idx) => (
-                          <div key={idx} className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group">
-                            <rec.icon className="w-5 h-5 text-slate-400" />
-                            <span className="text-sm text-slate-600 flex-1">{rec.text}</span>
-                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              {/* Settings Tab */}
-              <TabsContent value="settings">
-                <Card className="border-0 shadow-xl rounded-[24px] bg-white">
-                  <CardHeader className="p-6">
-                    <CardTitle className="font-serif text-2xl text-slate-900">Preferences</CardTitle>
-                    <CardDescription className="text-base">Customize your Celura experience</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6 p-6 pt-0">
-                    {/* Notifications Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                        <Bell className="w-4 h-4" style={{ color: burgundy }} />
-                        Notifications
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-5 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                          <div className="space-y-1">
-                            <Label htmlFor="notifications-toggle" className="text-sm font-medium text-slate-700">
-                              Style Recommendations
-                            </Label>
-                            <p className="text-xs text-slate-400">
-                              Receive personalized outfit suggestions
-                            </p>
-                          </div>
-                          <Switch
-                            id="notifications-toggle"
-                            checked={notificationsEnabled}
-                            onCheckedChange={handleNotificationsChange}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between p-5 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                          <div className="space-y-1">
-                            <Label htmlFor="weather-alerts" className="text-sm font-medium text-slate-700">
-                              Weather Alerts
-                            </Label>
-                            <p className="text-xs text-slate-400">
-                              Get notified about weather-appropriate outfits
-                            </p>
-                          </div>
-                          <Switch id="weather-alerts" defaultChecked />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator className="bg-slate-100" />
-
-                    {/* Privacy Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                        <Lock className="w-4 h-4" style={{ color: burgundy }} />
-                        Privacy
-                      </h3>
-                      <div className="flex items-center justify-between p-5 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                        <div className="space-y-1">
-                          <Label htmlFor="private-profile" className="text-sm font-medium text-slate-700">
-                            Private Profile
-                          </Label>
-                          <p className="text-xs text-slate-400">
-                            Hide your profile from other users
-                          </p>
-                        </div>
-                        <Switch id="private-profile" defaultChecked />
-                      </div>
-                    </div>
-
-                    <Separator className="bg-slate-100" />
-
-                    {/* Support Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                        <HelpCircle className="w-4 h-4" style={{ color: burgundy }} />
-                        Support
-                      </h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        <Button variant="outline" className="justify-start rounded-2xl h-12 border-slate-200 hover:border-slate-300">
-                          <HelpCircle className="w-4 h-4 mr-2" />
-                          Help Center
-                        </Button>
-                        <Button variant="outline" className="justify-start rounded-2xl h-12 border-slate-200 hover:border-slate-300">
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Contact Us
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+      {/* Mobile Header */}
+      <header
+        className="md:hidden sticky top-0 z-40 px-4 py-4"
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(0,0,0,0.06)',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p
+              className="text-[11px] font-semibold tracking-[0.12em] uppercase mb-1"
+              style={{ color: '#80163a' }}
+            >
+              Settings
+            </p>
+            <h1
+              className="font-serif text-2xl font-medium text-slate-900"
+            >
+              Profile
+            </h1>
           </div>
         </div>
-      </main>
+      </header>
 
-      <MobileBottomNav />
+      <main className="px-4 py-4">
+        {/* Profile Card */}
+        <section
+          className="rounded-2xl p-5 mb-4 bg-white border border-slate-200"
+        >
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div
+              className="h-16 w-16 rounded-2xl flex items-center justify-center text-xl font-serif font-medium"
+              style={{
+                background: '#80163a',
+                color: '#D4A54A'
+              }}
+            >
+              {getUserInitials()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2
+                className="font-serif text-lg font-medium truncate text-slate-800"
+              >
+                {user?.name || user?.username}
+              </h2>
+              <p
+                className="text-sm truncate text-slate-500"
+              >
+                @{user?.username}
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  style={{
+                    background: 'rgba(212, 175, 55, 0.1)',
+                    color: '#D4A54A',
+                  }}
+                >
+                  Level {xpData.level}
+                </span>
+                <span
+                  className="text-xs text-slate-400"
+                >
+                  {xpData.currentXP}/{xpData.nextLevelXP} XP
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* XP Progress */}
+          <div className="mt-4">
+            <div
+              className="h-1.5 rounded-full overflow-hidden bg-slate-200"
+            >
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${(xpData.currentXP / xpData.nextLevelXP) * 100}%`,
+                  background: '#D4A54A',
+                }}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Quick Stats */}
+        <section className="grid grid-cols-4 gap-2 mb-4">
+          {[
+            { label: "Items", value: wardrobeItems?.length || 0, icon: Shirt },
+            { label: "Outfits", value: outfits?.length || 0, icon: Layers },
+            { label: "Favorites", value: styleInsights.favoriteCount, icon: Heart },
+            { label: "Score", value: `${styleInsights.completionScore}%`, icon: Target },
+          ].map((stat, idx) => (
+            <div
+              key={idx}
+              className="text-center p-3 rounded-xl bg-white border border-slate-200"
+            >
+              <stat.icon className="w-4 h-4 mx-auto mb-1.5 text-slate-400" />
+              <div className="text-lg font-semibold text-slate-800">{stat.value}</div>
+              <div className="text-[10px] uppercase tracking-wider text-slate-500">{stat.label}</div>
+            </div>
+          ))}
+        </section>
+
+        {/* Tabs */}
+        <section
+          className="rounded-2xl overflow-hidden mb-4 bg-white border border-slate-200"
+        >
+          <Tabs defaultValue="insights" className="w-full">
+            <TabsList
+              className="grid w-full grid-cols-3 p-1.5 rounded-none bg-slate-100"
+            >
+              <TabsTrigger
+                value="insights"
+                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all text-sm py-2.5"
+              >
+                <BarChart3 className="h-4 w-4 mr-1.5" />
+                Insights
+              </TabsTrigger>
+              <TabsTrigger
+                value="style"
+                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all text-sm py-2.5"
+              >
+                <Sparkles className="h-4 w-4 mr-1.5" />
+                Style
+              </TabsTrigger>
+              <TabsTrigger
+                value="settings"
+                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all text-sm py-2.5"
+              >
+                <Settings className="h-4 w-4 mr-1.5" />
+                Settings
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Insights Tab */}
+            <TabsContent value="insights" className="p-4 pt-3 m-0">
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div
+                  className="p-4 rounded-xl bg-slate-100"
+                >
+                  <p className="text-xs mb-1 text-slate-500">Top Category</p>
+                  <p className="text-base font-medium capitalize text-slate-800">{styleInsights.topCategory}</p>
+                </div>
+                <div
+                  className="p-4 rounded-xl bg-slate-100"
+                >
+                  <p className="text-xs mb-1 text-slate-500">Favorite Color</p>
+                  <p className="text-base font-medium capitalize text-slate-800">{styleInsights.topColor}</p>
+                </div>
+              </div>
+
+              {/* Progress Bars */}
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-slate-500">Wardrobe Completion</span>
+                    <span className="text-sm font-medium text-slate-800">{styleInsights.completionScore}%</span>
+                  </div>
+                  <div
+                    className="h-2 rounded-full overflow-hidden bg-slate-200"
+                  >
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${styleInsights.completionScore}%`,
+                        background: '#80163a',
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-slate-500">Style Diversity</span>
+                    <span className="text-sm font-medium text-slate-800">{styleInsights.diversityScore}%</span>
+                  </div>
+                  <div
+                    className="h-2 rounded-full overflow-hidden bg-slate-200"
+                  >
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${styleInsights.diversityScore}%`,
+                        background: '#D4A54A',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Style Tab */}
+            <TabsContent value="style" className="p-4 pt-3 m-0">
+              <StyleProfileAnalysis wardrobeCount={wardrobeItems?.length || 0} />
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="p-4 pt-3 m-0">
+              <div className="space-y-4">
+                {/* Notifications */}
+                <div>
+                  <h3
+                    className="text-xs font-semibold tracking-wider uppercase mb-3 flex items-center gap-2 text-slate-500"
+                  >
+                    <Bell className="w-3.5 h-3.5" />
+                    Notifications
+                  </h3>
+                  <div className="space-y-2">
+                    <div
+                      className="flex items-center justify-between p-4 rounded-xl bg-slate-100"
+                    >
+                      <div>
+                        <Label htmlFor="notifications-toggle" className="text-sm font-medium text-slate-800">
+                          Style Recommendations
+                        </Label>
+                        <p className="text-xs mt-0.5 text-slate-500">
+                          Receive personalized outfit suggestions
+                        </p>
+                      </div>
+                      <Switch
+                        id="notifications-toggle"
+                        checked={notificationsEnabled}
+                        onCheckedChange={handleNotificationsChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account Info */}
+                <div>
+                  <h3
+                    className="text-xs font-semibold tracking-wider uppercase mb-3 flex items-center gap-2 text-slate-500"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    Account
+                  </h3>
+                  {user?.email && (
+                    <div
+                      className="flex items-center gap-3 p-4 rounded-xl mb-2 bg-slate-100"
+                    >
+                      <Mail className="h-4 w-4 text-slate-400" />
+                      <span className="text-sm truncate text-slate-800">{user.email}</span>
+                    </div>
+                  )}
+                  <div
+                    className="flex items-center gap-3 p-4 rounded-xl bg-slate-100"
+                  >
+                    <Calendar className="h-4 w-4 text-slate-400" />
+                    <span className="text-sm text-slate-800">Member since {memberSince}</span>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </section>
+
+        {/* Achievements */}
+        {(() => {
+          const achievements = getAchievements(
+            wardrobeItems?.length || 0,
+            outfits?.length || 0,
+            styleInsights.favoriteCount
+          );
+          return (
+            <section
+              className="rounded-2xl overflow-hidden mb-4 bg-white border border-slate-200"
+            >
+              <div className="p-4 flex items-center justify-between border-b border-slate-200">
+                <h3 className="font-serif text-lg font-medium text-slate-800">Achievements</h3>
+                <span
+                  className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800"
+                >
+                  {achievements.filter(a => a.unlocked).length}/{achievements.length}
+                </span>
+              </div>
+              <div className="p-4 space-y-2">
+                {achievements.map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl transition-all bg-slate-100 ${achievement.unlocked ? '' : 'opacity-50'}`}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ background: `${achievement.color}15` }}
+                    >
+                      <achievement.icon className="w-5 h-5" style={{ color: achievement.color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate text-slate-800">{achievement.name}</p>
+                      <p className="text-xs truncate text-slate-500">{achievement.desc}</p>
+                    </div>
+                    {achievement.unlocked && (
+                      <Star className="w-4 h-4 fill-amber-400" style={{ color: '#D4A54A' }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
+
+        {/* Sign Out Button */}
+        <LuxuryButton
+          variant="destructive"
+          className="w-full rounded-xl h-12"
+          onClick={() => {
+            HapticFeedback.heavy();
+            handleLogout();
+          }}
+          disabled={logoutMutation.isPending}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          {logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}
+        </LuxuryButton>
+      </main>
     </div>
   );
 }

@@ -3,10 +3,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation, Link } from "wouter";
-import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
+import { LuxuryButton } from "@/components/ui/luxury-button";
+import { LuxuryInput } from "@/components/ui/luxury-input";
+import { PlinthButton } from "@/components/ui/plinth-button";
 import {
   Form,
   FormControl,
@@ -15,11 +18,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { HapticFeedback } from "@/lib/haptics";
 
-// Brand colors
-const burgundy = "hsl(337, 73%, 26%)";
-const burgundyDark = "hsl(337, 73%, 18%)";
-const gold = "hsl(38, 75%, 55%)";
+// Light Theme colors
+const burgundy = "#80163a";
+const gold = "#D4A54A";
 
 const loginSchema = z.object({
   username: z
@@ -97,67 +100,72 @@ export function AuthPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: burgundy }}>
-        <div className="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#faf9f7]">
+        <div className="w-10 h-10 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: burgundy }}>
+    <div className="min-h-screen relative overflow-hidden bg-[#faf9f7]">
       {/* Subtle gradient overlay */}
       <div
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse at 30% 20%, ${burgundyDark} 0%, transparent 50%),
-                       radial-gradient(ellipse at 70% 80%, hsl(337, 73%, 20%) 0%, transparent 50%)`
+          background: `radial-gradient(ellipse at 30% 20%, rgba(128, 22, 58, 0.05) 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, rgba(212, 165, 74, 0.05) 0%, transparent 50%)`
         }}
       />
 
-      {/* Decorative gold line */}
+      {/* Decorative line */}
       <div
         className="absolute left-1/2 top-0 h-32 w-px -translate-x-1/2"
-        style={{ background: `linear-gradient(180deg, ${gold}, transparent)` }}
+        style={{ background: `linear-gradient(180deg, ${burgundy}, transparent)` }}
       />
 
       {/* Back to home */}
       <Link href="/">
-        <button className="absolute top-6 left-6 z-20 flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm">
+        <motion.button
+          whileHover={{ x: -2 }}
+          className="absolute top-6 left-6 z-20 flex items-center gap-2 text-slate-500 hover:text-slate-700 transition-colors text-sm"
+        >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
-        </button>
+        </motion.button>
       </Link>
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-12">
         {/* Logo */}
-        <div className="mb-10 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10 text-center"
+        >
           <div className="inline-flex items-center gap-3 mb-3">
             <div
-              className="w-10 h-10 flex items-center justify-center"
-              style={{ background: gold, borderRadius: '8px' }}
+              className="w-12 h-12 flex items-center justify-center rounded-xl shadow-md"
+              style={{ background: `linear-gradient(135deg, ${burgundy} 0%, #9b1b4a 100%)` }}
             >
-              <span className="font-serif text-lg font-semibold" style={{ color: burgundyDark }}>C</span>
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <span className="font-serif text-2xl tracking-[0.2em] text-white">CELURA</span>
+            <span className="font-serif text-3xl tracking-[0.2em] text-slate-900">CELURA</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Glass card */}
-        <div
-          className="w-full max-w-[400px] backdrop-blur-xl rounded-2xl p-8 sm:p-10"
-          style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 32px 64px -16px rgba(0, 0, 0, 0.4)'
-          }}
+        {/* Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="w-full max-w-[420px] bg-white rounded-2xl p-8 sm:p-10 shadow-xl border border-slate-200"
         >
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="font-serif text-2xl sm:text-3xl text-white mb-2">
+            <h1 className="font-serif text-2xl sm:text-3xl text-slate-900 mb-2">
               {isRegister ? "Create Account" : "Welcome Back"}
             </h1>
-            <p className="text-white/40 text-sm">
+            <p className="text-slate-500 text-sm">
               {isRegister ? "Start your style journey" : "Sign in to continue"}
             </p>
           </div>
@@ -171,15 +179,11 @@ export function AuthPage() {
                     <FormControl>
                       <Input
                         placeholder="Username"
-                        className="h-12 px-4 rounded-xl border-0 text-white placeholder:text-white/30 focus:ring-1"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.06)',
-                          '--tw-ring-color': gold
-                        } as React.CSSProperties}
+                        className="h-12 px-4 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-1 focus:ring-slate-300 focus:border-slate-300"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-xs mt-1.5 text-red-300" />
+                    <FormMessage className="text-xs mt-1.5 text-red-500" />
                   </FormItem>
                 )} />
 
@@ -190,30 +194,25 @@ export function AuthPage() {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Password"
-                          className="h-12 px-4 pr-11 rounded-xl border-0 text-white placeholder:text-white/30 focus:ring-1"
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            '--tw-ring-color': gold
-                          } as React.CSSProperties}
+                          className="h-12 px-4 pr-11 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-1 focus:ring-slate-300 focus:border-slate-300"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </FormControl>
-                    <FormMessage className="text-xs mt-1.5 text-red-300" />
+                    <FormMessage className="text-xs mt-1.5 text-red-500" />
                   </FormItem>
                 )} />
 
-                <Button
+                <LuxuryButton
                   type="submit"
-                  className="w-full h-12 rounded-xl text-sm font-medium tracking-wide transition-all duration-300 hover:opacity-90 mt-6"
-                  style={{ background: gold, color: burgundyDark }}
+                  className="w-full h-12 rounded-xl text-sm font-medium tracking-wide mt-6"
                   disabled={loginMutation.isPending}
                 >
                   {loginMutation.isPending ? (
@@ -221,7 +220,7 @@ export function AuthPage() {
                   ) : (
                     "Sign In"
                   )}
-                </Button>
+                </LuxuryButton>
               </form>
             </Form>
           ) : (
@@ -232,15 +231,11 @@ export function AuthPage() {
                     <FormControl>
                       <Input
                         placeholder="Username"
-                        className="h-12 px-4 rounded-xl border-0 text-white placeholder:text-white/30 focus:ring-1"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.06)',
-                          '--tw-ring-color': gold
-                        } as React.CSSProperties}
+                        className="h-12 px-4 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-1 focus:ring-slate-300 focus:border-slate-300"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-xs mt-1 text-red-300" />
+                    <FormMessage className="text-xs mt-1 text-red-500" />
                   </FormItem>
                 )} />
 
@@ -250,15 +245,11 @@ export function AuthPage() {
                       <FormControl>
                         <Input
                           placeholder="Full name"
-                          className="h-12 px-4 rounded-xl border-0 text-white placeholder:text-white/30 focus:ring-1"
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            '--tw-ring-color': gold
-                          } as React.CSSProperties}
+                          className="h-12 px-4 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-1 focus:ring-slate-300 focus:border-slate-300"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage className="text-xs mt-1 text-red-300" />
+                      <FormMessage className="text-xs mt-1 text-red-500" />
                     </FormItem>
                   )} />
 
@@ -268,15 +259,11 @@ export function AuthPage() {
                         <Input
                           type="email"
                           placeholder="Email"
-                          className="h-12 px-4 rounded-xl border-0 text-white placeholder:text-white/30 focus:ring-1"
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            '--tw-ring-color': gold
-                          } as React.CSSProperties}
+                          className="h-12 px-4 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-1 focus:ring-slate-300 focus:border-slate-300"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage className="text-xs mt-1 text-red-300" />
+                      <FormMessage className="text-xs mt-1 text-red-500" />
                     </FormItem>
                   )} />
                 </div>
@@ -288,23 +275,19 @@ export function AuthPage() {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Password"
-                          className="h-12 px-4 pr-11 rounded-xl border-0 text-white placeholder:text-white/30 focus:ring-1"
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            '--tw-ring-color': gold
-                          } as React.CSSProperties}
+                          className="h-12 px-4 pr-11 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-1 focus:ring-slate-300 focus:border-slate-300"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </FormControl>
-                    <FormMessage className="text-xs mt-1 text-red-300" />
+                    <FormMessage className="text-xs mt-1 text-red-500" />
                   </FormItem>
                 )} />
 
@@ -315,30 +298,25 @@ export function AuthPage() {
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="Confirm password"
-                          className="h-12 px-4 pr-11 rounded-xl border-0 text-white placeholder:text-white/30 focus:ring-1"
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            '--tw-ring-color': gold
-                          } as React.CSSProperties}
+                          className="h-12 px-4 pr-11 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-1 focus:ring-slate-300 focus:border-slate-300"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                         >
                           {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </FormControl>
-                    <FormMessage className="text-xs mt-1 text-red-300" />
+                    <FormMessage className="text-xs mt-1 text-red-500" />
                   </FormItem>
                 )} />
 
-                <Button
+                <LuxuryButton
                   type="submit"
-                  className="w-full h-12 rounded-xl text-sm font-medium tracking-wide transition-all duration-300 hover:opacity-90 mt-4"
-                  style={{ background: gold, color: burgundyDark }}
+                  className="w-full h-12 rounded-xl text-sm font-medium tracking-wide mt-4"
                   disabled={registerMutation.isPending}
                 >
                   {registerMutation.isPending ? (
@@ -346,29 +324,29 @@ export function AuthPage() {
                   ) : (
                     "Create Account"
                   )}
-                </Button>
+                </LuxuryButton>
               </form>
             </Form>
           )}
 
           {/* Toggle */}
           <div className="mt-6 text-center">
-            <span className="text-white/40 text-sm">
+            <span className="text-slate-500 text-sm">
               {isRegister ? "Already have an account? " : "Don't have an account? "}
             </span>
             <button
               type="button"
               onClick={() => setIsRegister(!isRegister)}
               className="text-sm font-medium transition-colors hover:opacity-80"
-              style={{ color: gold }}
+              style={{ color: burgundy }}
             >
               {isRegister ? "Sign In" : "Sign Up"}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-xs text-white/30">
+        <p className="mt-8 text-center text-xs text-slate-400">
           By continuing, you agree to our Terms & Privacy Policy
         </p>
       </div>

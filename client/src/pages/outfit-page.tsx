@@ -5,13 +5,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { LuxuryButton } from "@/components/ui/luxury-button";
+import { LuxuryInput, SearchInput } from "@/components/ui/luxury-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { OutfitCardSkeleton } from "@/components/ui/luxury-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { HapticFeedback } from "@/lib/haptics";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 import NavigationBar from "@/components/navigation-bar";
 import { useOutfits, useCreateOutfit, useDeleteOutfit } from "@/hooks/use-outfits";
@@ -164,10 +166,13 @@ export function OutfitPage() {
               <p className="text-slate-500 text-lg">{outfits?.length || 0} saved combinations</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                className="rounded-full px-5 h-12 shadow-sm hover:shadow-md transition-all"
-                onClick={handleShuffle}
+              <LuxuryButton
+                variant="secondary"
+                className="rounded-full px-5 h-12"
+                onClick={() => {
+                  HapticFeedback.selection();
+                  handleShuffle();
+                }}
                 disabled={isShuffling}
               >
                 {isShuffling ? (
@@ -176,16 +181,15 @@ export function OutfitPage() {
                   <Shuffle className="h-4 w-4 mr-2" />
                 )}
                 Shuffle
-              </Button>
+              </LuxuryButton>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button
-                    className="rounded-full px-6 h-12 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                    style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 32%) 100%)" }}
+                  <LuxuryButton
+                    className="rounded-full px-6 h-12"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Outfit
-                  </Button>
+                  </LuxuryButton>
                 </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl rounded-[24px]">
                 <DialogHeader>
@@ -314,13 +318,12 @@ export function OutfitPage() {
                   />
 
                   <DialogFooter>
-                    <Button
+                    <LuxuryButton
                       type="submit"
-                      className="w-full rounded-full h-12 shadow-lg hover:shadow-xl transition-all"
-                      style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 32%) 100%)" }}
+                      className="w-full rounded-full h-12"
                     >
                       Create Outfit
-                    </Button>
+                    </LuxuryButton>
                   </DialogFooter>
                 </form>
               </Form>
@@ -339,14 +342,14 @@ export function OutfitPage() {
                   <Sparkles className="h-5 w-5 text-amber-500" />
                   <span className="font-serif text-xl font-semibold text-slate-900">Today's Shuffle</span>
                 </div>
-                <Button
+                <LuxuryButton
                   variant="ghost"
                   size="sm"
                   onClick={() => setShuffledOutfit(null)}
                   className="rounded-full"
                 >
                   <X className="h-4 w-4" />
-                </Button>
+                </LuxuryButton>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {shuffledOutfit.items.map((item: any, index: number) => (
@@ -412,13 +415,7 @@ export function OutfitPage() {
         {outfitsLoading ? (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="border-0 shadow-lg rounded-[24px] bg-white">
-                <Skeleton className="aspect-[4/3] rounded-t-[24px]" />
-                <CardContent className="p-5">
-                  <Skeleton className="h-5 w-3/4 mb-2 rounded-lg" />
-                  <Skeleton className="h-4 w-full rounded-lg" />
-                </CardContent>
-              </Card>
+              <OutfitCardSkeleton key={i} />
             ))}
           </div>
         ) : filteredOutfits.length === 0 ? (
@@ -442,14 +439,13 @@ export function OutfitPage() {
                     : 'Combine your wardrobe pieces into stunning outfits. Celura will help you style them perfectly.'}
                 </p>
                 {!outfits?.length && (
-                  <Button
+                  <LuxuryButton
                     onClick={() => setIsCreateDialogOpen(true)}
-                    className="rounded-full px-6 h-12 shadow-lg hover:shadow-xl transition-all"
-                    style={{ background: "linear-gradient(135deg, hsl(337, 73%, 26%) 0%, hsl(337, 73%, 32%) 100%)" }}
+                    className="rounded-full px-6 h-12"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Your First Outfit
-                  </Button>
+                  </LuxuryButton>
                 )}
               </CardContent>
             </Card>
@@ -534,18 +530,19 @@ export function OutfitPage() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button
+                      <LuxuryButton
                         size="sm"
                         variant="destructive"
                         className="rounded-full"
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
+                          HapticFeedback.heavy();
                           openDeleteDialog({ id: outfit.id, name: outfit.name });
                         }}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
-                      </Button>
+                      </LuxuryButton>
                     </div>
                   </div>
                   <CardContent className="p-5">

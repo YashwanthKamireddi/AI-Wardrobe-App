@@ -15,17 +15,21 @@ import {
   Palette,
   ShoppingBag,
   Heart,
-  AlertTriangle
+  AlertTriangle,
+  Trophy
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import NavigationBar from "@/components/navigation-bar";
-import MobileBottomNav from "@/components/mobile-bottom-nav";
+import CPWAnalytics from "@/components/cpw-analytics";
+import { GamificationBadges, getMockGamificationStats } from "@/components/gamification-badges";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
+import { useOutfits } from "@/hooks/use-outfits";
 
 // Brand colors
 const gold = "hsl(38, 75%, 55%)";
@@ -64,6 +68,10 @@ const categoryColors: Record<string, string> = {
 
 export function StatisticsPage() {
   const { data: wardrobeItems } = useWardrobeItems();
+  const { data: outfits } = useOutfits();
+
+  // Mock gamification stats (in production, this would come from API)
+  const gamificationStats = getMockGamificationStats();
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['statistics'],
@@ -359,50 +367,29 @@ export function StatisticsPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Cost Per Wear Insights */}
-          <Card className="border-0 shadow-xl rounded-[24px]">
-            <CardHeader className="pb-2">
-              <CardTitle className="font-serif text-xl flex items-center gap-2">
-                <DollarSign className="w-5 h-5" style={{ color: burgundy }} />
-                Investment Insights
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-50">
-                  <div>
-                    <p className="text-sm text-slate-600">Most Value</p>
-                    <p className="font-semibold text-slate-900">
-                      {stats?.wearAnalysis?.mostWorn?.[0]?.name || 'Add items to track'}
-                    </p>
-                  </div>
-                  <Heart className="w-5 h-5 text-emerald-500" />
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-amber-50">
-                  <div>
-                    <p className="text-sm text-slate-600">Underutilized</p>
-                    <p className="font-semibold text-slate-900">
-                      {stats?.wearAnalysis?.leastWorn?.[0]?.name || 'Track wear to see'}
-                    </p>
-                  </div>
-                  <Clock className="w-5 h-5 text-amber-500" />
-                </div>
-
-                <div className="p-4 rounded-2xl border border-slate-200 bg-white/50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-4 h-4" style={{ color: gold }} />
-                    <span className="text-sm font-medium text-slate-900">Pro Tip</span>
-                  </div>
-                  <p className="text-sm text-slate-600">
-                    Log when you wear items to track cost-per-wear and identify your best investments.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Full CPW Analytics Section */}
+        <section className="mt-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-6">
+            <DollarSign className="w-4 h-4" style={{ color: burgundy }} />
+            <span className="text-sm font-medium text-slate-600">Cost Per Wear Analysis</span>
+          </div>
+          <CPWAnalytics
+            wardrobeItems={wardrobeItems || []}
+            outfits={outfits || []}
+            compact={false}
+          />
+        </section>
+
+        {/* Gamification & Achievements */}
+        <section className="mt-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-6">
+            <Trophy className="w-4 h-4" style={{ color: gold }} />
+            <span className="text-sm font-medium text-slate-600">Style Achievements</span>
+          </div>
+          <GamificationBadges stats={gamificationStats} compact={false} />
+        </section>
 
         {/* Style Insights */}
         <Card className="border-0 shadow-xl rounded-[24px] mt-8">
@@ -442,8 +429,6 @@ export function StatisticsPage() {
           </CardContent>
         </Card>
       </main>
-
-      <MobileBottomNav />
     </div>
   );
 }

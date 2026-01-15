@@ -1,9 +1,11 @@
 import { useState, useCallback, useRef } from "react";
-import { Upload, X, Image as ImageIcon, Camera, Link, AlertCircle } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Camera, Link, AlertCircle, Loader2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { LuxuryButton } from "@/components/ui/luxury-button";
+import { LuxuryInput } from "@/components/ui/luxury-input";
 import { useToast } from "@/hooks/use-toast";
+import { HapticFeedback } from "@/lib/haptics";
+import { processImage, generatePlaceholder } from "@/lib/image-pipeline";
 
 // File validation constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -148,6 +150,7 @@ export default function FileUpload({
   const handleClear = () => {
     onChange("");
     setError(null);
+    HapticFeedback.light();
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -235,43 +238,49 @@ export default function FileUpload({
 
       {/* Action buttons */}
       <div className="flex gap-2">
-        <Button
+        <LuxuryButton
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           className="flex-1"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            HapticFeedback.selection();
+            fileInputRef.current?.click();
+          }}
           disabled={isLoading}
         >
           <Upload className="h-4 w-4 mr-2" />
           Browse
-        </Button>
-        <Button
+        </LuxuryButton>
+        <LuxuryButton
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           className="flex-1"
-          onClick={() => setShowUrlInput(!showUrlInput)}
+          onClick={() => {
+            HapticFeedback.selection();
+            setShowUrlInput(!showUrlInput);
+          }}
           disabled={isLoading}
         >
           <Link className="h-4 w-4 mr-2" />
           URL
-        </Button>
+        </LuxuryButton>
       </div>
 
       {/* URL input */}
       {showUrlInput && (
         <div className="flex gap-2">
-          <Input
+          <LuxuryInput
             type="url"
             placeholder="Paste image URL..."
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleUrlSubmit()}
           />
-          <Button type="button" size="sm" onClick={handleUrlSubmit}>
+          <LuxuryButton type="button" size="sm" onClick={handleUrlSubmit}>
             Add
-          </Button>
+          </LuxuryButton>
         </div>
       )}
     </div>

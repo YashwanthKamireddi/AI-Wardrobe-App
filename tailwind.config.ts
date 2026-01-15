@@ -4,9 +4,9 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     fontFamily: {
-      sans: ["ui-sans-serif", "system-ui", "sans-serif"],
-      poppins: ["Poppins", "sans-serif"],
-      montserrat: ["Montserrat", "sans-serif"],
+      sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+      serif: ["Playfair Display", "Georgia", "Times New Roman", "serif"],
+      display: ["Playfair Display", "Georgia", "serif"],
     },
     extend: {
       borderRadius: {
@@ -20,13 +20,33 @@ export default {
         'soft': '0 4px 15px rgba(0, 0, 0, 0.05)',
         'hover': '0 8px 20px rgba(0, 0, 0, 0.1)',
         'button': '0 2px 5px rgba(0, 0, 0, 0.08)',
-        'card': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
+        'float': 'var(--shadow-float)',
+        'gold': 'var(--shadow-gold)',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-soft': 'linear-gradient(to bottom right, var(--tw-gradient-stops))',
       },
       colors: {
+        // Luxe-Minimalist Color Palette
+        alabaster: "var(--color-alabaster)",
+        obsidian: "var(--color-obsidian)",
+        gold: {
+          DEFAULT: "var(--color-gold-muted)",
+          light: "var(--color-gold-light)",
+          muted: "var(--color-gold-muted)",
+        },
+        taupe: "var(--color-taupe)",
+        charcoal: "var(--color-charcoal)",
+        cashmere: "var(--color-cashmere)",
+        silk: "var(--color-silk)",
+        graphite: "var(--color-graphite)",
+        pearl: "var(--color-pearl)",
+        champagne: "var(--color-champagne)",
+
+        // Legacy/Framework Colors
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

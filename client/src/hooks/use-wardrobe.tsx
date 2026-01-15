@@ -27,7 +27,7 @@ export function useWardrobeItem(id: number) {
 
 export function useAddWardrobeItem() {
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: (item: Omit<InsertWardrobeItem, "userId">) => {
       return apiRequest({
@@ -55,7 +55,7 @@ export function useAddWardrobeItem() {
 
 export function useUpdateWardrobeItem() {
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: ({ id, ...data }: { id: number } & Partial<InsertWardrobeItem>) => {
       return apiRequest({
@@ -84,7 +84,7 @@ export function useUpdateWardrobeItem() {
 
 export function useDeleteWardrobeItem() {
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: (id: number) => {
       return apiRequest({
@@ -111,12 +111,43 @@ export function useDeleteWardrobeItem() {
 
 export function useWardrobeItemsByCategory(category: string) {
   const { data: allItems, isLoading, error } = useWardrobeItems();
-  
+
   const filteredItems = allItems?.filter(item => item.category === category) || [];
-  
+
   return {
     data: filteredItems,
     isLoading,
     error
   };
+}
+
+export function useSeedWardrobeItems() {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/wardrobe/seed", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to seed wardrobe items");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
+      toast({
+        title: "Demo items added!",
+        description: `Successfully added ${data.count} sample wardrobe items.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to add demo items",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 }

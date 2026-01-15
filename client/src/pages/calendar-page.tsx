@@ -13,13 +13,20 @@ import {
   Snowflake,
   Check,
   X,
-  CalendarDays
+  CalendarDays,
+  Repeat,
+  Trash2,
+  Eye,
+  TrendingUp,
+  Clock,
+  ThermometerSun
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +38,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import NavigationBar from "@/components/navigation-bar";
-import MobileBottomNav from "@/components/mobile-bottom-nav";
 import { useOutfits } from "@/hooks/use-outfits";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { queryClient } from "@/lib/queryClient";
@@ -227,12 +233,12 @@ export function CalendarPage() {
         </header>
 
         {/* Calendar Navigation */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={goToPreviousMonth}
-            className="rounded-full h-11 w-11 hover:bg-white hover:shadow-sm"
+            className="rounded-full h-11 w-11 hover:bg-white hover:shadow-sm active:scale-95 transition-all"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -245,10 +251,51 @@ export function CalendarPage() {
             variant="ghost"
             size="icon"
             onClick={goToNextMonth}
-            className="rounded-full h-11 w-11 hover:bg-white hover:shadow-sm"
+            className="rounded-full h-11 w-11 hover:bg-white hover:shadow-sm active:scale-95 transition-all"
           >
             <ChevronRight className="w-5 h-5" />
           </Button>
+        </div>
+
+        {/* Planning Insights Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <CalendarDays className="w-4 h-4" style={{ color: gold }} />
+              <span className="text-xs font-medium text-slate-500">Planned</span>
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{plannedOutfits.size}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <Check className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-medium text-slate-500">Worn</span>
+            </div>
+            <p className="text-2xl font-bold text-emerald-600">
+              {Array.from(plannedOutfits.values()).filter(p => p.isWorn).length}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <Repeat className="w-4 h-4 text-blue-500" />
+              <span className="text-xs font-medium text-slate-500">Streak</span>
+            </div>
+            <p className="text-2xl font-bold text-blue-600">
+              {Math.min(Array.from(plannedOutfits.values()).filter(p => p.isWorn).length, 7)}
+              <span className="text-sm font-normal text-slate-400 ml-1">days</span>
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="w-4 h-4" style={{ color: burgundy }} />
+              <span className="text-xs font-medium text-slate-500">Completion</span>
+            </div>
+            <p className="text-2xl font-bold" style={{ color: burgundy }}>
+              {plannedOutfits.size > 0
+                ? Math.round((Array.from(plannedOutfits.values()).filter(p => p.isWorn).length / plannedOutfits.size) * 100)
+                : 0}%
+            </p>
+          </div>
         </div>
 
         {/* Calendar Grid */}
@@ -273,33 +320,48 @@ export function CalendarPage() {
                 const plannedOutfit = getOutfitForDate(day.date);
                 const plan = plannedOutfits.get(dateKey);
                 const outfitItems = plannedOutfit ? getOutfitItemImages(plannedOutfit.items) : [];
+                const isPast = day.date < new Date(new Date().setHours(0,0,0,0));
 
                 return (
                   <div
                     key={index}
                     onClick={() => day.isCurrentMonth && handleDateClick(day.date)}
                     className={`
-                      min-h-[100px] md:min-h-[120px] p-2 border-b border-r border-slate-100
-                      transition-colors cursor-pointer hover:bg-slate-50
-                      ${!day.isCurrentMonth ? 'bg-slate-50/50 text-slate-300' : ''}
-                      ${isToday(day.date) ? 'bg-amber-50/50' : ''}
+                      group relative min-h-[100px] md:min-h-[120px] p-2 border-b border-r border-slate-100
+                      transition-all duration-200 cursor-pointer
+                      ${!day.isCurrentMonth ? 'bg-slate-50/50 text-slate-300 opacity-50' : 'hover:bg-gradient-to-br hover:from-amber-50/50 hover:to-transparent hover:shadow-inner'}
+                      ${isToday(day.date) ? 'bg-gradient-to-br from-amber-50 to-orange-50/30 ring-2 ring-inset ring-amber-200/50' : ''}
+                      ${plannedOutfit && !isPast ? 'bg-gradient-to-br from-emerald-50/30 to-teal-50/20' : ''}
+                      ${isPast && plan?.isWorn ? 'bg-gradient-to-br from-emerald-50/20 to-transparent' : ''}
+                      active:scale-[0.98]
                     `}
                   >
+                    {/* Add outfit overlay on hover */}
+                    {day.isCurrentMonth && !plannedOutfit && (
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 backdrop-blur-[1px]">
+                        <div className="flex items-center gap-1 text-xs font-medium text-slate-500">
+                          <Plus className="w-3.5 h-3.5" />
+                          Plan
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-start justify-between">
                       <span
                         className={`
-                          text-sm font-medium
+                          text-sm font-medium transition-transform
                           ${isToday(day.date)
-                            ? 'w-7 h-7 rounded-full flex items-center justify-center text-white'
+                            ? 'w-7 h-7 rounded-full flex items-center justify-center text-white shadow-lg'
                             : ''
                           }
+                          ${isPast && day.isCurrentMonth ? 'text-slate-400' : ''}
                         `}
-                        style={isToday(day.date) ? { background: burgundy } : {}}
+                        style={isToday(day.date) ? { background: `linear-gradient(135deg, ${burgundy}, ${burgundyDark})` } : {}}
                       >
                         {day.date.getDate()}
                       </span>
                       {plan?.isWorn && (
-                        <Badge className="text-[10px] px-1.5 py-0" style={{ background: '#10b981' }}>
+                        <Badge className="text-[10px] px-1.5 py-0 animate-in fade-in-0 zoom-in-95" style={{ background: '#10b981' }}>
                           Worn
                         </Badge>
                       )}
@@ -499,8 +561,6 @@ export function CalendarPage() {
           </div>
         </DialogContent>
       </Dialog>
-
-      <MobileBottomNav />
     </div>
   );
 }

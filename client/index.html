@@ -3,51 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, minimum-scale=1, user-scalable=yes" />
-    <meta name="theme-color" content="#4C82B8" />
-    <meta name="description" content="Your personal fashion assistant with style recommendations based on weather" />
+    <meta name="theme-color" content="#1A1A1A" />
+    <meta name="description" content="CELURA - Your AI-Powered Personal Wardrobe & Style Assistant" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
       body {
-        font-family: 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: #5c4a2c;
-        background-color: #fdf9f1;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #1A1A1A;
+        background-color: #F9F9F7;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
       h1, h2, h3, h4, h5, h6 {
-        font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-        font-weight: 500;
-        color: #5c4a2c;
+        font-family: 'Playfair Display', Georgia, serif;
+        font-weight: 400;
+        color: #1A1A1A;
       }
-      
-      /* Custom scrollbar for luxury feel */
+
+      /* Minimal scrollbar */
       ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
       }
-      
+
       ::-webkit-scrollbar-track {
-        background: rgba(251, 191, 36, 0.05);
+        background: transparent;
       }
-      
+
       ::-webkit-scrollbar-thumb {
-        background-color: rgba(251, 191, 36, 0.3);
-        border-radius: 20px;
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 3px;
       }
-      
+
       ::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(251, 191, 36, 0.5);
+        background-color: rgba(0, 0, 0, 0.25);
       }
-      
-      /* Prevent fouc while fonts load */
-      .font-luxury-heading {
-        font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-        letter-spacing: 0.03em;
-      }
-      
-      .font-luxury-body {
-        font-family: 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        letter-spacing: 0.02em;
+
+      /* Selection styling */
+      ::selection {
+        background-color: rgba(128, 22, 58, 0.15);
+        color: #1A1A1A;
       }
     </style>
   </head>
