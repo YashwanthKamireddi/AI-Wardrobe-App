@@ -641,30 +641,30 @@ export function WardrobePage() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmitAdd)} className="space-y-5">
-                            {/* AI Processing Status - Premium Animation */}
+                            {/* AI Processing Status - Celura Theme */}
                             <AnimatePresence>
                                 {isAIProcessing && (
                                     <motion.div
                                         initial={{ opacity: 0, y: -10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
-                                        className="p-5 rounded-2xl bg-gradient-to-br from-[#1A1A1A] to-[#2D2D2D] border border-[#333] shadow-xl"
+                                        className="p-5 rounded-2xl bg-gradient-to-br from-[#FAF9F6] to-[#F5F4F0] border border-gray-200 shadow-sm"
                                     >
                                         <div className="flex items-center gap-3 mb-3">
                                             <div className="relative">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#80163A] to-purple-500 flex items-center justify-center">
+                                                <div className="w-10 h-10 rounded-full bg-[#80163A] flex items-center justify-center">
                                                     <Wand2 className="w-5 h-5 text-white" />
                                                 </div>
-                                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#80163A] to-purple-500 animate-ping opacity-30" />
+                                                <div className="absolute inset-0 rounded-full bg-[#80163A] animate-ping opacity-20" />
                                             </div>
                                             <div>
-                                                <p className="text-white font-medium text-sm">{aiStage}</p>
-                                                <p className="text-white/50 text-xs">Auto background removal enabled</p>
+                                                <p className="text-[#1A1A1A] font-medium text-sm">{aiStage}</p>
+                                                <p className="text-gray-400 text-xs">Auto background removal enabled</p>
                                             </div>
                                         </div>
-                                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                             <motion.div
-                                                className="h-full bg-gradient-to-r from-[#80163A] to-purple-500 rounded-full"
+                                                className="h-full bg-[#80163A] rounded-full"
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${aiProgress}%` }}
                                                 transition={{ duration: 0.3 }}
@@ -674,12 +674,12 @@ export function WardrobePage() {
                                 )}
                             </AnimatePresence>
 
-                            {/* AI Results */}
+                            {/* AI Results - Celura Theme */}
                             {aiResult && !isAIProcessing && (
-                                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#F0F9F4] to-[#F0F5F9] border border-[#E0F0E5]">
+                                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FAF9F6] to-[#F5F4F0] border border-[#80163A]/20">
                                     <div className="flex items-center gap-2 mb-3">
-                                        <Sparkles className="w-4 h-4 text-[#2D8B5F]" />
-                                        <span className="text-sm font-medium text-[#2D8B5F]">AI Analysis Complete</span>
+                                        <Sparkles className="w-4 h-4 text-[#80163A]" />
+                                        <span className="text-sm font-medium text-[#80163A]">AI Analysis Complete</span>
                                     </div>
                                     <div className="flex gap-4 text-xs">
                                         <div className="flex items-center gap-2">
@@ -687,9 +687,9 @@ export function WardrobePage() {
                                                 className="w-4 h-4 rounded-full border border-white shadow"
                                                 style={{ backgroundColor: aiResult.colors.dominant }}
                                             />
-                                            <span className="text-[#6B6B6B]">{aiResult.colors.colorName}</span>
+                                            <span className="text-[#1A1A1A]">{aiResult.colors.colorName}</span>
                                         </div>
-                                        <div className="text-[#6B6B6B] capitalize">{aiResult.category.category}</div>
+                                        <div className="text-[#1A1A1A] capitalize">{aiResult.category.category}</div>
                                     </div>
                                 </div>
                             )}

@@ -227,8 +227,8 @@ export default function FileUpload({
             >
                 {isLoading ? (
                     <>
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent" />
-                        <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
+                        <div className="h-8 w-8 rounded-full border-2 border-[#80163A]/20 border-t-[#80163A] animate-spin" />
+                        <p className="text-xs font-medium text-[#80163A] mt-3 tracking-wide uppercase">Adding to Studio...</p>
                     </>
                 ) : (
                     <>

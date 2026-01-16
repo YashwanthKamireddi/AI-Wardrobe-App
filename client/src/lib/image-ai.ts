@@ -55,7 +55,7 @@ export async function processImageFromUrl(
     imageUrl: string,
     onProgress?: (stage: string, progress: number) => void
 ): Promise<{ processedUrl: string; processedBlob: Blob }> {
-    onProgress?.('Fetching image...', 5);
+    onProgress?.('Fetching item...', 5);
 
     try {
         // Fetch the image from URL
@@ -69,14 +69,14 @@ export async function processImageFromUrl(
         }
 
         const blob = await response.blob();
-        onProgress?.('Removing background...', 20);
+        onProgress?.('Refining silhouette...', 20);
 
         // Remove background
         const result = await removeImageBackground(blob, (p) => {
-            onProgress?.('Removing background...', 20 + (p * 0.7));
+            onProgress?.('Refining silhouette...', 20 + (p * 0.7));
         });
 
-        onProgress?.('Complete!', 100);
+        onProgress?.('Ready for studio', 100);
         return { processedUrl: result.url, processedBlob: result.blob };
 
     } catch (error) {
@@ -469,27 +469,27 @@ export async function processWardrobeImage(
 
     // Stage 1: Remove background (Optional)
     if (options.removeBg) {
-        onProgress?.('Removing background...', 10);
+        onProgress?.('Refining silhouette...', 10);
         const bgResult = await removeImageBackground(imageFile, (p) => {
-            onProgress?.('Removing background...', 10 + (p * 0.5));
+            onProgress?.('Refining silhouette...', 10 + (p * 0.5));
         });
         processedUrl = bgResult.url;
         processedBlob = bgResult.blob;
     } else {
         processedUrl = URL.createObjectURL(imageFile);
         processedBlob = imageFile;
-        onProgress?.('Skipping background removal...', 60);
+        onProgress?.('Skipping refinement...', 60);
     }
 
     // Stage 2: Detect colors from processed image
-    onProgress?.('Analyzing colors...', 65);
+    onProgress?.('Analyzing palette...', 65);
     const colors = await detectColors(processedUrl);
 
     // Stage 3: Detect category
-    onProgress?.('Categorizing item...', 85);
+    onProgress?.('Identifying style...', 85);
     const category = await detectCategory(processedUrl);
 
-    onProgress?.('Complete!', 100);
+    onProgress?.('Ready for studio', 100);
 
     return {
         processedImageUrl: processedUrl,
