@@ -146,26 +146,12 @@ export function HomePage() {
                     </div>
 
                     {/* Greeting */}
-                    <div className="flex items-end justify-between">
+                    <div>
                         <h1 className="text-3xl md:text-5xl text-[#1A1A1A] leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                             {currentTime.getHours() < 12 ? 'Good Morning' : currentTime.getHours() < 18 ? 'Good Afternoon' : 'Good Evening'},
                             <br />
                             <span className="italic text-gray-400">{user?.username || 'Style Icon'}</span>
                         </h1>
-
-                        <Link href="/profile">
-                            <div className="w-11 h-11 rounded-full border border-gray-200 p-0.5 cursor-pointer hover:border-[#1A1A1A] transition-colors shrink-0">
-                                <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-[#80163A] to-[#1A1A1A]">
-                                    {user?.profilePicture ? (
-                                        <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium">
-                                            {user?.username?.[0]?.toUpperCase() || 'U'}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </Link>
                     </div>
                 </motion.header>
 
