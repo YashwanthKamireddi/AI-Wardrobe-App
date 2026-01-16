@@ -10,27 +10,30 @@
    ============================================ */
 
 :root {
-  /* === ATELIER THEME (Day Mode) === */
-  /* Primary Surface Colors */
-  --color-alabaster: #F9F9F7;        /* Warm Alabaster - Primary BG */
-  --color-obsidian: #0F0F0F;         /* Obsidian - Primary Text */
-  --color-gold-muted: #D4AF37;       /* Muted Gold - Accent */
-  --color-gold-light: #E8D5A3;       /* Light Gold - Hover states */
-  --color-taupe: #B8A898;            /* Soft Taupe - Secondary */
-  --color-charcoal: #2C2C2C;         /* Charcoal - Headers */
+  /* === CELURA THEME (Digital Atelier) === */
+  /* Canvas Colors */
+  --color-alabaster: #FAF9F6;        /* Alabaster Paper - Primary BG */
+  --color-soft-white: #FFFFFF;       /* Soft White - Card Surfaces */
+  --color-border-subtle: #E5E5E5;    /* Subtle Border - Structural */
 
-  /* Functional Colors - Fashion Forward */
-  --color-cashmere: #F5F0EB;         /* Cashmere - Cards */
-  --color-silk: #FAFAF8;             /* Silk White - Input BG */
-  --color-graphite: #6B6B6B;         /* Graphite - Secondary Text */
-  --color-pearl: #E8E6E3;            /* Pearl - Borders */
-  --color-champagne: #F7F3ED;        /* Champagne - Hover BG */
+  /* Ink Colors */
+  --color-soft-black: #1A1A1A;       /* Soft Black - Primary Text (#1A1A1A) */
+  --color-charcoal: #666666;         /* Charcoal Gray - Secondary Text */
+  --color-burgundy: #80163A;         /* Deep Burgundy - Primary Accent */
 
-  /* Status Colors - Refined */
-  --color-success: #2E7D5A;          /* Forest Success */
-  --color-warning: #C4954A;          /* Amber Warning */
-  --color-error: #B44B4B;            /* Muted Crimson */
-  --color-info: #4A7DB4;             /* Steel Blue */
+  /* Jewelry Accents */
+  --color-gold-antique: #D4AF37;     /* Antique Gold */
+
+  /* Legacy Mappings for compatibility */
+  --color-obsidian: var(--color-soft-black);
+  --color-gold-muted: var(--color-gold-antique);
+  --color-taupe: #B8A898;            /* Keeping as tertiary */
+
+  /* Status Colors */
+  --color-success: #2E7D5A;
+  --color-warning: #C4954A;
+  --color-error: #B44B4B;
+  --color-info: #4A7DB4;
 
   /* Spacing Scale - 4px base unit, following Apple's HIG */
   --space-0: 0;

@@ -39,13 +39,13 @@ import { z } from "zod";
 
 // Session storage table for user authentication sessions with PostgreSQL
 export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
+    "sessions",
+    {
+        sid: varchar("sid").primaryKey(),
+        sess: jsonb("sess").notNull(),
+        expire: timestamp("expire").notNull(),
+    },
+    (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
 /**
@@ -66,36 +66,36 @@ export const sessions = pgTable(
  * - Authorization middleware to restrict access to personal data
  */
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  name: text("name"),
-  email: text("email"),
-  profilePicture: text("profile_picture"),
-  role: text("role").default("user"),
+    id: serial("id").primaryKey(),
+    username: text("username").notNull().unique(),
+    password: text("password").notNull(),
+    name: text("name"),
+    email: text("email"),
+    profilePicture: text("profile_picture"),
+    role: text("role").default("user"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  name: true,
-  email: true,
-  profilePicture: true,
-  role: true,
+    username: true,
+    password: true,
+    name: true,
+    email: true,
+    profilePicture: true,
+    role: true,
 });
 
 // Safe registration schema - excludes privileged fields (id, role)
 export const registerUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  name: true,
-  email: true,
-  profilePicture: true,
+    username: true,
+    password: true,
+    name: true,
+    email: true,
+    profilePicture: true,
 }).extend({
-  username: z.string().min(3, "Username must be at least 3 characters").max(20, "Username too long"),
-  password: z.string().min(6, "Password must be at least 6 characters").max(100, "Password too long"),
-  name: z.string().min(2, "Name too short").max(50, "Name too long").optional(),
-  email: z.string().email("Invalid email").max(100, "Email too long").optional(),
+    username: z.string().min(3, "Username must be at least 3 characters").max(20, "Username too long"),
+    password: z.string().min(6, "Password must be at least 6 characters").max(100, "Password too long"),
+    name: z.string().min(2, "Name too short").max(50, "Name too long").optional(),
+    email: z.string().email("Invalid email").max(100, "Email too long").optional(),
 });
 
 /**
@@ -120,47 +120,47 @@ export const registerUserSchema = createInsertSchema(users).pick({
  * - Style analysis and trends detection
  */
 export const wardrobeItems = pgTable("wardrobe_items", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  name: text("name").notNull(),
-  category: text("category").notNull(), // tops, bottoms, dresses, outerwear, accessories, shoes, etc.
-  subcategory: text("subcategory"), // t-shirt, jeans, sneakers, etc.
-  color: text("color"),
-  brand: text("brand"), // brand/designer name
-  size: text("size"), // S, M, L, XL, or specific sizes
-  season: text("season"), // winter, summer, spring, fall, all
-  imageUrl: text("image_url").notNull(),
-  tags: text("tags").array(), // casual, formal, sporty, etc.
-  favorite: boolean("favorite").default(false),
-  // Wear tracking
-  wearCount: integer("wear_count").default(0),
-  lastWorn: timestamp("last_worn"),
-  // Purchase info
-  purchasePrice: integer("purchase_price"), // in cents for precision
-  purchaseDate: timestamp("purchase_date"),
-  purchaseLocation: text("purchase_location"), // store name or website
-  // Timestamps
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    name: text("name").notNull(),
+    category: text("category").notNull(), // tops, bottoms, dresses, outerwear, accessories, shoes, etc.
+    subcategory: text("subcategory"), // t-shirt, jeans, sneakers, etc.
+    color: text("color"),
+    brand: text("brand"), // brand/designer name
+    size: text("size"), // S, M, L, XL, or specific sizes
+    season: text("season"), // winter, summer, spring, fall, all
+    imageUrl: text("image_url").notNull(),
+    tags: text("tags").array(), // casual, formal, sporty, etc.
+    favorite: boolean("favorite").default(false),
+    // Wear tracking
+    wearCount: integer("wear_count").default(0),
+    lastWorn: timestamp("last_worn"),
+    // Purchase info
+    purchasePrice: integer("purchase_price"), // in cents for precision
+    purchaseDate: timestamp("purchase_date"),
+    purchaseLocation: text("purchase_location"), // store name or website
+    // Timestamps
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
-  userId: true,
-  name: true,
-  category: true,
-  subcategory: true,
-  color: true,
-  brand: true,
-  size: true,
-  season: true,
-  imageUrl: true,
-  tags: true,
-  favorite: true,
-  wearCount: true,
-  lastWorn: true,
-  purchasePrice: true,
-  purchaseDate: true,
-  purchaseLocation: true,
+    userId: true,
+    name: true,
+    category: true,
+    subcategory: true,
+    color: true,
+    brand: true,
+    size: true,
+    season: true,
+    imageUrl: true,
+    tags: true,
+    favorite: true,
+    wearCount: true,
+    lastWorn: true,
+    purchasePrice: true,
+    purchaseDate: true,
+    purchaseLocation: true,
 });
 
 /**
@@ -185,37 +185,37 @@ export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
  * - Style analytics and usage statistics
  */
 export const outfits = pgTable("outfits", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  name: text("name").notNull(),
-  description: text("description"), // detailed description of the outfit
-  items: integer("items").array().notNull(), // IDs of wardrobe items in this outfit
-  occasion: text("occasion"), // casual, work, party, etc.
-  season: text("season"), // winter, summer, spring, fall, all
-  favorite: boolean("favorite").default(false),
-  weatherConditions: text("weather_conditions"), // sunny, rainy, cold, etc.
-  mood: text("mood"), // happy, confident, relaxed, etc.
-  // Wear tracking
-  wearCount: integer("wear_count").default(0),
-  lastWorn: timestamp("last_worn"),
-  // Timestamps
-  createdAt: timestamp("created_at").defaultNow(),
-  rating: integer("rating"), // 1-5 star rating
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description"), // detailed description of the outfit
+    items: integer("items").array().notNull(), // IDs of wardrobe items in this outfit
+    occasion: text("occasion"), // casual, work, party, etc.
+    season: text("season"), // winter, summer, spring, fall, all
+    favorite: boolean("favorite").default(false),
+    weatherConditions: text("weather_conditions"), // sunny, rainy, cold, etc.
+    mood: text("mood"), // happy, confident, relaxed, etc.
+    // Wear tracking
+    wearCount: integer("wear_count").default(0),
+    lastWorn: timestamp("last_worn"),
+    // Timestamps
+    createdAt: timestamp("created_at").defaultNow(),
+    rating: integer("rating"), // 1-5 star rating
 });
 
 export const insertOutfitSchema = createInsertSchema(outfits).pick({
-  userId: true,
-  name: true,
-  description: true,
-  items: true,
-  occasion: true,
-  season: true,
-  favorite: true,
-  weatherConditions: true,
-  mood: true,
-  wearCount: true,
-  lastWorn: true,
-  rating: true,
+    userId: true,
+    name: true,
+    description: true,
+    items: true,
+    occasion: true,
+    season: true,
+    favorite: true,
+    weatherConditions: true,
+    mood: true,
+    wearCount: true,
+    lastWorn: true,
+    rating: true,
 });
 
 /**
@@ -227,23 +227,23 @@ export const insertOutfitSchema = createInsertSchema(outfits).pick({
  * - Supports trip planning and packing lists
  */
 export const outfitCalendar = pgTable("outfit_calendar", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  outfitId: integer("outfit_id"), // Can be null for "open slot"
-  date: timestamp("date").notNull(),
-  eventName: text("event_name"), // "Work", "Date Night", "Wedding", etc.
-  notes: text("notes"),
-  isWorn: boolean("is_worn").default(false), // Did they actually wear this?
-  createdAt: timestamp("created_at").defaultNow(),
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    outfitId: integer("outfit_id"), // Can be null for "open slot"
+    date: timestamp("date").notNull(),
+    eventName: text("event_name"), // "Work", "Date Night", "Wedding", etc.
+    notes: text("notes"),
+    isWorn: boolean("is_worn").default(false), // Did they actually wear this?
+    createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertOutfitCalendarSchema = createInsertSchema(outfitCalendar).pick({
-  userId: true,
-  outfitId: true,
-  date: true,
-  eventName: true,
-  notes: true,
-  isWorn: true,
+    userId: true,
+    outfitId: true,
+    date: true,
+    eventName: true,
+    notes: true,
+    isWorn: true,
 });
 
 export type OutfitCalendar = typeof outfitCalendar.$inferSelect;
@@ -257,25 +257,25 @@ export type InsertOutfitCalendar = typeof outfitCalendar.$inferInsert;
  * - Enables statistics like "cost per wear" and "most worn items"
  */
 export const wearLog = pgTable("wear_log", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  wardrobeItemId: integer("wardrobe_item_id"),
-  outfitId: integer("outfit_id"),
-  wornDate: timestamp("worn_date").notNull(),
-  occasion: text("occasion"),
-  notes: text("notes"),
-  rating: integer("rating"), // How did they feel in this? 1-5
-  createdAt: timestamp("created_at").defaultNow(),
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    wardrobeItemId: integer("wardrobe_item_id"),
+    outfitId: integer("outfit_id"),
+    wornDate: timestamp("worn_date").notNull(),
+    occasion: text("occasion"),
+    notes: text("notes"),
+    rating: integer("rating"), // How did they feel in this? 1-5
+    createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertWearLogSchema = createInsertSchema(wearLog).pick({
-  userId: true,
-  wardrobeItemId: true,
-  outfitId: true,
-  wornDate: true,
-  occasion: true,
-  notes: true,
-  rating: true,
+    userId: true,
+    wardrobeItemId: true,
+    outfitId: true,
+    wornDate: true,
+    occasion: true,
+    notes: true,
+    rating: true,
 });
 
 export type WearLog = typeof wearLog.$inferSelect;
@@ -303,24 +303,24 @@ export type InsertWearLog = typeof wearLog.$inferInsert;
  * - Contextual suggestions alongside outfit creation
  */
 export const inspirations = pgTable("inspirations", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  imageUrl: text("image_url").notNull(),
-  tags: text("tags").array(), // tags for filtering
-  category: text("category"), // casual, formal, trends, etc.
-  source: text("source"), // source of the inspiration
-  content: text("content"), // detailed content/text of the inspiration
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    imageUrl: text("image_url").notNull(),
+    tags: text("tags").array(), // tags for filtering
+    category: text("category"), // casual, formal, trends, etc.
+    source: text("source"), // source of the inspiration
+    content: text("content"), // detailed content/text of the inspiration
 });
 
 export const insertInspirationSchema = createInsertSchema(inspirations).pick({
-  title: true,
-  description: true,
-  imageUrl: true,
-  tags: true,
-  category: true,
-  source: true,
-  content: true,
+    title: true,
+    description: true,
+    imageUrl: true,
+    tags: true,
+    category: true,
+    source: true,
+    content: true,
 });
 
 /**
@@ -343,16 +343,16 @@ export const insertInspirationSchema = createInsertSchema(inspirations).pick({
  * - Machine learning model training for personalized recommendations
  */
 export const weatherPreferences = pgTable("weather_preferences", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  weatherType: text("weather_type").notNull(), // sunny, rainy, cold, hot, etc.
-  preferredCategories: text("preferred_categories").array(), // categories preferred for this weather
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    weatherType: text("weather_type").notNull(), // sunny, rainy, cold, hot, etc.
+    preferredCategories: text("preferred_categories").array(), // categories preferred for this weather
 });
 
 export const insertWeatherPreferenceSchema = createInsertSchema(weatherPreferences).pick({
-  userId: true,
-  weatherType: true,
-  preferredCategories: true,
+    userId: true,
+    weatherType: true,
+    preferredCategories: true,
 });
 
 /**
@@ -376,18 +376,18 @@ export const insertWeatherPreferenceSchema = createInsertSchema(weatherPreferenc
  * - Color psychology applications in fashion recommendations
  */
 export const moodPreferences = pgTable("mood_preferences", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  mood: text("mood").notNull(), // happy, confident, relaxed, etc.
-  preferredCategories: text("preferred_categories").array(), // categories preferred for this mood
-  preferredColors: text("preferred_colors").array(), // colors preferred for this mood
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    mood: text("mood").notNull(), // happy, confident, relaxed, etc.
+    preferredCategories: text("preferred_categories").array(), // categories preferred for this mood
+    preferredColors: text("preferred_colors").array(), // colors preferred for this mood
 });
 
 export const insertMoodPreferenceSchema = createInsertSchema(moodPreferences).pick({
-  userId: true,
-  mood: true,
-  preferredCategories: true,
-  preferredColors: true,
+    userId: true,
+    mood: true,
+    preferredCategories: true,
+    preferredColors: true,
 });
 
 /**
@@ -421,13 +421,13 @@ export type InsertMoodPreference = z.infer<typeof insertMoodPreferenceSchema>;
  * Used for consistent categorization across the application
  */
 export const clothingCategories = [
-  { value: "tops", label: "Tops", subcategories: ["t-shirt", "blouse", "shirt", "sweater", "tank top", "crop top"] },
-  { value: "bottoms", label: "Bottoms", subcategories: ["jeans", "skirt", "shorts", "pants", "leggings"] },
-  { value: "dresses", label: "Dresses", subcategories: ["casual dress", "formal dress", "sundress", "maxi dress"] },
-  { value: "outerwear", label: "Outerwear", subcategories: ["jacket", "coat", "blazer", "cardigan", "hoodie"] },
-  { value: "shoes", label: "Shoes", subcategories: ["sneakers", "heels", "boots", "sandals", "flats", "loafers"] },
-  { value: "accessories", label: "Accessories", subcategories: ["hat", "scarf", "jewelry", "bag", "belt", "sunglasses"] },
-  { value: "makeup", label: "Makeup", subcategories: ["lipstick", "eyeshadow", "foundation", "blush", "mascara"] }
+    { value: "tops", label: "Tops", subcategories: ["t-shirt", "blouse", "shirt", "sweater", "tank top", "crop top"] },
+    { value: "bottoms", label: "Bottoms", subcategories: ["jeans", "skirt", "shorts", "pants", "leggings"] },
+    { value: "dresses", label: "Dresses", subcategories: ["casual dress", "formal dress", "sundress", "maxi dress"] },
+    { value: "outerwear", label: "Outerwear", subcategories: ["jacket", "coat", "blazer", "cardigan", "hoodie"] },
+    { value: "shoes", label: "Shoes", subcategories: ["sneakers", "heels", "boots", "sandals", "flats", "loafers"] },
+    { value: "accessories", label: "Accessories", subcategories: ["hat", "scarf", "jewelry", "bag", "belt", "sunglasses"] },
+    { value: "makeup", label: "Makeup", subcategories: ["lipstick", "eyeshadow", "foundation", "blush", "mascara"] }
 ];
 
 /**
@@ -436,13 +436,13 @@ export const clothingCategories = [
  * Standard weather condition classifications used for weather-based outfit recommendations
  */
 export const weatherTypes = [
-  { value: "sunny", label: "Sunny" },
-  { value: "rainy", label: "Rainy" },
-  { value: "cloudy", label: "Cloudy" },
-  { value: "snowy", label: "Snowy" },
-  { value: "windy", label: "Windy" },
-  { value: "hot", label: "Hot" },
-  { value: "cold", label: "Cold" }
+    { value: "sunny", label: "Sunny" },
+    { value: "rainy", label: "Rainy" },
+    { value: "cloudy", label: "Cloudy" },
+    { value: "snowy", label: "Snowy" },
+    { value: "windy", label: "Windy" },
+    { value: "hot", label: "Hot" },
+    { value: "cold", label: "Cold" }
 ];
 
 /**
@@ -452,13 +452,13 @@ export const weatherTypes = [
  * These influence color choices and style combinations
  */
 export const moodTypes = [
-  { value: "happy", label: "Happy" },
-  { value: "confident", label: "Confident" },
-  { value: "relaxed", label: "Relaxed" },
-  { value: "energetic", label: "Energetic" },
-  { value: "romantic", label: "Romantic" },
-  { value: "professional", label: "Professional" },
-  { value: "creative", label: "Creative" }
+    { value: "happy", label: "Happy" },
+    { value: "confident", label: "Confident" },
+    { value: "relaxed", label: "Relaxed" },
+    { value: "energetic", label: "Energetic" },
+    { value: "romantic", label: "Romantic" },
+    { value: "professional", label: "Professional" },
+    { value: "creative", label: "Creative" }
 ];
 
 /**
@@ -468,9 +468,47 @@ export const moodTypes = [
  * Used to associate items with appropriate weather conditions
  */
 export const seasons = [
-  { value: "winter", label: "Winter" },
-  { value: "spring", label: "Spring" },
-  { value: "summer", label: "Summer" },
-  { value: "fall", label: "Fall" },
-  { value: "all", label: "All Seasons" }
+    { value: "winter", label: "Winter" },
+    { value: "spring", label: "Spring" },
+    { value: "summer", label: "Summer" },
+    { value: "fall", label: "Fall" },
+    { value: "all", label: "All Seasons" }
 ];
+
+/**
+ * Trips Table
+ *
+ * Purpose:
+ * - Stores travel plans to organize packing lists
+ * - Allows different packing lists for different destinations/weather
+ */
+export const trips = pgTable("trips", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    name: text("name").notNull(),
+    destination: text("destination").notNull(),
+    startDate: timestamp("start_date").notNull(),
+    endDate: timestamp("end_date").notNull(),
+    type: text("type").notNull(), // business, vacation, adventure, city
+    packedItems: integer("packed_items").array(), // IDs of wardrobe items packed
+    status: text("status").default("upcoming"), // upcoming, past
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertTripSchema = createInsertSchema(trips).pick({
+    userId: true,
+    name: true,
+    destination: true,
+    startDate: true,
+    endDate: true,
+    type: true,
+    packedItems: true,
+    status: true,
+}).extend({
+    // Allow ISO strings to be coerced to Date objects
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+});
+
+export type Trip = typeof trips.$inferSelect;
+export type InsertTrip = z.infer<typeof insertTripSchema>;

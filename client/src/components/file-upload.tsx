@@ -13,276 +13,291 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
 interface FileUploadProps {
-  value?: string;
-  onChange: (url: string) => void;
-  onFileSelect?: (file: File) => void; // New: expose raw file for AI processing
-  accept?: string;
-  maxSize?: number;
-  showAIBadge?: boolean; // Show AI processing badge
+    value?: string;
+    onChange: (url: string) => void;
+    onFileSelect?: (file: File) => void; // New: expose raw file for AI processing
+    accept?: string;
+    maxSize?: number;
+    showAIBadge?: boolean; // Show AI processing badge
 }
 
 export default function FileUpload({
-  value,
-  onChange,
-  onFileSelect,
-  accept = "image/*",
-  maxSize = MAX_FILE_SIZE,
-  showAIBadge = false
+    value,
+    onChange,
+    onFileSelect,
+    accept = "image/*",
+    maxSize = MAX_FILE_SIZE,
+    showAIBadge = false
 }: FileUploadProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+    const [showUrlInput, setShowUrlInput] = useState(false);
+    const [urlInput, setUrlInput] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
-  const validateFile = (file: File): string | null => {
-    // Check file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return `Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`;
-    }
+    const validateFile = (file: File): string | null => {
+        // Check file type
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return `Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`;
+        }
 
-    // Check file size
-    if (file.size > maxSize) {
-      const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1);
-      return `File too large. Maximum size: ${maxSizeMB}MB`;
-    }
+        // Check file size
+        if (file.size > maxSize) {
+            const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1);
+            return `File too large. Maximum size: ${maxSizeMB}MB`;
+        }
 
-    return null;
-  };
+        return null;
+    };
 
-  const processFile = useCallback(async (file: File) => {
-    setError(null);
-
-    // Validate file
-    const validationError = validateFile(file);
-    if (validationError) {
-      setError(validationError);
-      toast({
-        title: "Upload failed",
-        description: validationError,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // If onFileSelect is provided, call it with the raw file for AI processing
-    if (onFileSelect) {
-      onFileSelect(file);
-      return; // Let the parent handle the rest
-    }
-
-    setIsLoading(true);
-    try {
-      // Convert to base64 for demo (in production, upload to storage)
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        onChange(result);
-        setIsLoading(false);
+    const processFile = useCallback(async (file: File) => {
         setError(null);
-      };
-      reader.onerror = () => {
-        setError("Failed to read file");
-        toast({
-          title: "Upload failed",
-          description: "Could not read the file. Please try again.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("Upload failed:", error);
-      setError("Upload failed");
-      setIsLoading(false);
-    }
-  }, [onChange, onFileSelect, maxSize, toast]);
 
-  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    await processFile(file);
-  }, [processFile]);
+        // Validate file
+        const validationError = validateFile(file);
+        if (validationError) {
+            setError(validationError);
+            toast({
+                title: "Upload failed",
+                description: validationError,
+                variant: "destructive",
+            });
+            return;
+        }
 
-  // Drag and drop handlers
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
+        // If onFileSelect is provided, call it with the raw file for AI processing
+        if (onFileSelect) {
+            onFileSelect(file);
+            return; // Let the parent handle the rest
+        }
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
+        setIsLoading(true);
+        try {
+            // Upload to server endpoint
+            const formData = new FormData();
+            formData.append('image', file);
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
+            const response = await fetch('/api/upload-image', {
+                method: 'POST',
+                credentials: 'include',
+                body: formData,
+            });
 
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      await processFile(file);
-    }
-  }, [processFile]);
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.message || 'Upload failed');
+            }
 
-  const handleUrlSubmit = () => {
-    if (urlInput.trim()) {
-      // Basic URL validation
-      try {
-        new URL(urlInput.trim());
-        onChange(urlInput.trim());
-        setUrlInput("");
-        setShowUrlInput(false);
+            const data = await response.json();
+
+            if (data.url) {
+                onChange(data.url);
+                setError(null);
+                toast({
+                    title: "Image uploaded",
+                    description: "Your image has been uploaded successfully.",
+                });
+            } else {
+                throw new Error('No URL returned from server');
+            }
+        } catch (error) {
+            console.error("Upload failed:", error);
+            const message = error instanceof Error ? error.message : "Upload failed";
+            setError(message);
+            toast({
+                title: "Upload failed",
+                description: message,
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [onChange, onFileSelect, maxSize, toast]);
+
+    const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await processFile(file);
+    }, [processFile]);
+
+    // Drag and drop handlers
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    }, []);
+
+    const handleDrop = useCallback(async (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+            await processFile(file);
+        }
+    }, [processFile]);
+
+    const handleUrlSubmit = () => {
+        if (urlInput.trim()) {
+            // Basic URL validation
+            try {
+                new URL(urlInput.trim());
+                onChange(urlInput.trim());
+                setUrlInput("");
+                setShowUrlInput(false);
+                setError(null);
+            } catch {
+                setError("Please enter a valid URL");
+                toast({
+                    title: "Invalid URL",
+                    description: "Please enter a valid image URL",
+                    variant: "destructive",
+                });
+            }
+        }
+    };
+
+    const handleClear = () => {
+        onChange("");
         setError(null);
-      } catch {
-        setError("Please enter a valid URL");
-        toast({
-          title: "Invalid URL",
-          description: "Please enter a valid image URL",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+        HapticFeedback.light();
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
 
-  const handleClear = () => {
-    onChange("");
-    setError(null);
-    HapticFeedback.light();
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  if (value) {
-    return (
-      <div className="relative rounded-md overflow-hidden border">
-        <img
-          src={value}
-          alt="Uploaded"
-          className="w-full aspect-square object-cover"
-        />
-        <button
-          type="button"
-          onClick={handleClear}
-          className="absolute top-2 right-2 p-1.5 bg-background/90 border rounded-full hover:bg-background transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={accept}
-        onChange={handleFileChange}
-        className="hidden"
-        id="file-upload"
-        aria-label="Upload image file"
-      />
-
-      {/* Upload area with drag and drop */}
-      <label
-        htmlFor="file-upload"
-        className={`border-2 border-dashed rounded-lg aspect-square flex flex-col items-center justify-center p-4 cursor-pointer transition-all ${
-          isDragging
-            ? 'border-primary bg-primary/5'
-            : error
-              ? 'border-destructive/50 bg-destructive/5'
-              : 'hover:bg-muted/50 hover:border-primary/50'
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        {isLoading ? (
-          <>
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent" />
-            <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
-          </>
-        ) : (
-          <>
-            <div className={`rounded-full p-3 mb-3 ${error ? 'bg-destructive/10' : 'bg-muted'}`}>
-              {error ? (
-                <AlertCircle className="h-6 w-6 text-destructive" />
-              ) : (
-                <ImageIcon className="h-6 w-6 text-muted-foreground" />
-              )}
+    if (value) {
+        return (
+            <div className="relative rounded-md overflow-hidden border">
+                <img
+                    src={value}
+                    alt="Uploaded"
+                    className="w-full aspect-square object-cover"
+                />
+                <button
+                    type="button"
+                    onClick={handleClear}
+                    className="absolute top-2 right-2 p-1.5 bg-background/90 border rounded-full hover:bg-background transition-colors"
+                >
+                    <X className="h-4 w-4" />
+                </button>
             </div>
-            <p className="text-sm font-medium">
-              {isDragging ? 'Drop image here' : 'Upload image'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Drag & drop or click to browse
-            </p>
-            <p className="text-xs text-muted-foreground">
-              JPG, PNG, WebP, GIF (max {(maxSize / (1024 * 1024)).toFixed(0)}MB)
-            </p>
-          </>
-        )}
-      </label>
+        );
+    }
 
-      {/* Error message */}
-      {error && (
-        <p className="text-xs text-destructive flex items-center gap-1">
-          <AlertCircle className="h-3 w-3" />
-          {error}
-        </p>
-      )}
+    return (
+        <div className="space-y-3">
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept={accept}
+                onChange={handleFileChange}
+                className="hidden"
+                id="file-upload"
+                aria-label="Upload image file"
+            />
 
-      {/* Action buttons */}
-      <div className="flex gap-2">
-        <LuxuryButton
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="flex-1"
-          onClick={() => {
-            HapticFeedback.selection();
-            fileInputRef.current?.click();
-          }}
-          disabled={isLoading}
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          Browse
-        </LuxuryButton>
-        <LuxuryButton
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="flex-1"
-          onClick={() => {
-            HapticFeedback.selection();
-            setShowUrlInput(!showUrlInput);
-          }}
-          disabled={isLoading}
-        >
-          <Link className="h-4 w-4 mr-2" />
-          URL
-        </LuxuryButton>
-      </div>
+            {/* Upload area with drag and drop */}
+            <label
+                htmlFor="file-upload"
+                className={`border-2 border-dashed rounded-lg aspect-square flex flex-col items-center justify-center p-4 cursor-pointer transition-all ${isDragging
+                        ? 'border-primary bg-primary/5'
+                        : error
+                            ? 'border-destructive/50 bg-destructive/5'
+                            : 'hover:bg-muted/50 hover:border-primary/50'
+                    }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                {isLoading ? (
+                    <>
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent" />
+                        <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
+                    </>
+                ) : (
+                    <>
+                        <div className={`rounded-full p-3 mb-3 ${error ? 'bg-destructive/10' : 'bg-muted'}`}>
+                            {error ? (
+                                <AlertCircle className="h-6 w-6 text-destructive" />
+                            ) : (
+                                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                            )}
+                        </div>
+                        <p className="text-sm font-medium">
+                            {isDragging ? 'Drop image here' : 'Upload image'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Drag & drop or click to browse
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                            JPG, PNG, WebP, GIF (max {(maxSize / (1024 * 1024)).toFixed(0)}MB)
+                        </p>
+                    </>
+                )}
+            </label>
 
-      {/* URL input */}
-      {showUrlInput && (
-        <div className="flex gap-2">
-          <LuxuryInput
-            type="url"
-            placeholder="Paste image URL..."
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleUrlSubmit()}
-          />
-          <LuxuryButton type="button" size="sm" onClick={handleUrlSubmit}>
-            Add
-          </LuxuryButton>
+            {/* Error message */}
+            {error && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {error}
+                </p>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex gap-2">
+                <LuxuryButton
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                        HapticFeedback.selection();
+                        fileInputRef.current?.click();
+                    }}
+                    disabled={isLoading}
+                >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Browse
+                </LuxuryButton>
+                <LuxuryButton
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                        HapticFeedback.selection();
+                        setShowUrlInput(!showUrlInput);
+                    }}
+                    disabled={isLoading}
+                >
+                    <Link className="h-4 w-4 mr-2" />
+                    URL
+                </LuxuryButton>
+            </div>
+
+            {/* URL input */}
+            {showUrlInput && (
+                <div className="flex gap-2">
+                    <LuxuryInput
+                        type="url"
+                        placeholder="Paste image URL..."
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleUrlSubmit()}
+                    />
+                    <LuxuryButton type="button" size="sm" onClick={handleUrlSubmit}>
+                        Add
+                    </LuxuryButton>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }

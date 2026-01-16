@@ -1,5 +1,5 @@
 -- ============================================
--- Cher's Closet - Supabase Database Schema
+-- Celura - Supabase Database Schema
 -- ============================================
 -- Run this SQL in your Supabase SQL Editor to create all tables
 -- Go to: Your Project -> SQL Editor -> New Query
@@ -35,14 +35,22 @@ CREATE TABLE IF NOT EXISTS wardrobe_items (
   category VARCHAR(50) NOT NULL,
   subcategory VARCHAR(50),
   color VARCHAR(50),
+  brand VARCHAR(100),
+  size VARCHAR(20),
   season VARCHAR(20),
   image_url TEXT NOT NULL,
   tags TEXT[],
   favorite BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  wear_count INTEGER DEFAULT 0,
+  last_worn TIMESTAMPTZ,
+  purchase_price NUMERIC(10,2),
+  purchase_date DATE,
+  purchase_location VARCHAR(200),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create index for faster user lookups
+-- Create indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_wardrobe_items_user_id ON wardrobe_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_wardrobe_items_category ON wardrobe_items(user_id, category);
 
@@ -60,11 +68,34 @@ CREATE TABLE IF NOT EXISTS outfits (
   favorite BOOLEAN DEFAULT FALSE,
   weather_conditions VARCHAR(50),
   mood VARCHAR(50),
+  wear_count INTEGER DEFAULT 0,
+  last_worn TIMESTAMPTZ,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create index for faster user lookups
 CREATE INDEX IF NOT EXISTS idx_outfits_user_id ON outfits(user_id);
+
+-- ============================================
+-- Wear Log Table (NEW)
+-- ============================================
+CREATE TABLE IF NOT EXISTS wear_log (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  wardrobe_item_id INTEGER REFERENCES wardrobe_items(id) ON DELETE CASCADE,
+  outfit_id INTEGER REFERENCES outfits(id) ON DELETE CASCADE,
+  worn_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  occasion VARCHAR(50),
+  notes TEXT,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for wear log lookups
+CREATE INDEX IF NOT EXISTS idx_wear_log_user_id ON wear_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_wear_log_item_id ON wear_log(wardrobe_item_id);
+CREATE INDEX IF NOT EXISTS idx_wear_log_outfit_id ON wear_log(outfit_id);
 
 -- ============================================
 -- Inspirations Table
@@ -123,40 +154,91 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);
 
 -- ============================================
+-- Helper Functions for Wear Tracking
+-- ============================================
+
+-- Function to increment wear count on wardrobe items
+CREATE OR REPLACE FUNCTION increment_wear_count(item_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE wardrobe_items
+  SET wear_count = COALESCE(wear_count, 0) + 1,
+      last_worn = NOW(),
+      updated_at = NOW()
+  WHERE id = item_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to increment wear count on outfits
+CREATE OR REPLACE FUNCTION increment_outfit_wear_count(outfit_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE outfits
+  SET wear_count = COALESCE(wear_count, 0) + 1,
+      last_worn = NOW()
+  WHERE id = outfit_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================
 -- Row Level Security (RLS) Policies
 -- ============================================
+-- NOTE: This app uses server-side authentication via Express sessions.
+-- The server connects using the service role key which bypasses RLS.
+-- These policies prevent direct client access to the database.
+
 -- Enable RLS on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wardrobe_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outfits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wear_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inspirations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE weather_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mood_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 
--- Allow public access for initial operations (server handles auth)
--- In production, you may want to tighten these policies
+-- Drop existing permissive policies
+DROP POLICY IF EXISTS "Allow all operations on users" ON users;
+DROP POLICY IF EXISTS "Allow all operations on wardrobe_items" ON wardrobe_items;
+DROP POLICY IF EXISTS "Allow all operations on outfits" ON outfits;
+DROP POLICY IF EXISTS "Allow all operations on inspirations" ON inspirations;
+DROP POLICY IF EXISTS "Allow all operations on weather_preferences" ON weather_preferences;
+DROP POLICY IF EXISTS "Allow all operations on mood_preferences" ON mood_preferences;
+DROP POLICY IF EXISTS "Allow all operations on sessions" ON sessions;
 
--- Users: Allow insert for registration, select all for server
-CREATE POLICY "Allow all operations on users" ON users FOR ALL USING (true);
+-- Users: Server manages auth, only allow service role
+CREATE POLICY "Service role access only" ON users
+  FOR ALL USING (auth.role() = 'service_role');
 
--- Wardrobe Items: Users can only access their own items
-CREATE POLICY "Allow all operations on wardrobe_items" ON wardrobe_items FOR ALL USING (true);
+-- Wardrobe Items: Service role only (server handles user scoping)
+CREATE POLICY "Service role access only" ON wardrobe_items
+  FOR ALL USING (auth.role() = 'service_role');
 
--- Outfits: Users can only access their own outfits
-CREATE POLICY "Allow all operations on outfits" ON outfits FOR ALL USING (true);
+-- Outfits: Service role only
+CREATE POLICY "Service role access only" ON outfits
+  FOR ALL USING (auth.role() = 'service_role');
 
--- Inspirations: Everyone can read, admin can write
-CREATE POLICY "Allow all operations on inspirations" ON inspirations FOR ALL USING (true);
+-- Wear Log: Service role only
+CREATE POLICY "Service role access only" ON wear_log
+  FOR ALL USING (auth.role() = 'service_role');
 
--- Weather Preferences: Users can only access their own
-CREATE POLICY "Allow all operations on weather_preferences" ON weather_preferences FOR ALL USING (true);
+-- Inspirations: Read for anon, full access for service role
+CREATE POLICY "Anon can read inspirations" ON inspirations
+  FOR SELECT USING (true);
+CREATE POLICY "Service role full access" ON inspirations
+  FOR ALL USING (auth.role() = 'service_role');
 
--- Mood Preferences: Users can only access their own
-CREATE POLICY "Allow all operations on mood_preferences" ON mood_preferences FOR ALL USING (true);
+-- Weather Preferences: Service role only
+CREATE POLICY "Service role access only" ON weather_preferences
+  FOR ALL USING (auth.role() = 'service_role');
 
--- Sessions: Allow all for server session management
-CREATE POLICY "Allow all operations on sessions" ON sessions FOR ALL USING (true);
+-- Mood Preferences: Service role only
+CREATE POLICY "Service role access only" ON mood_preferences
+  FOR ALL USING (auth.role() = 'service_role');
+
+-- Sessions: Service role only
+CREATE POLICY "Service role access only" ON sessions
+  FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================
 -- Sample Inspirations Data
@@ -173,5 +255,4 @@ ON CONFLICT DO NOTHING;
 -- ============================================
 -- Success Message
 -- ============================================
--- If you see this, all tables were created successfully!
 SELECT 'Database schema created successfully!' as message;

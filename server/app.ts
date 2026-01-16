@@ -12,7 +12,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { setupAuth } from './auth';
 import { registerRoutes } from './routes';
-import { errorHandler, requestLogger } from './middleware';
+import { errorHandler, requestLogger, generalRateLimiter, authRateLimiter, aiRateLimiter } from './middleware';
 import { logger } from './utils';
 import appConfig from './config/app-config';
 import storage from './storage';
@@ -21,81 +21,100 @@ import storage from './storage';
  * Creates and configures the Express application
  */
 export async function createApp(): Promise<Express> {
-  const timestamp = () => new Date().toISOString();
-  console.log(`[${timestamp()}] [createApp] Initializing Express application...`);
+    const timestamp = () => new Date().toISOString();
+    console.log(`[${timestamp()}] [createApp] Initializing Express application...`);
 
-  // Initialize the Express application
-  const app = express();
-  console.log(`[${timestamp()}] [createApp] Express app created`);
+    // Initialize the Express application
+    const app = express();
+    console.log(`[${timestamp()}] [createApp] Express app created`);
 
-  // Set application variables
-  app.set('isLocal', appConfig.environment.isLocal);
-  app.set('env', appConfig.environment.nodeEnv);
-  console.log(`[${timestamp()}] [createApp] Application variables set`);
+    // Set application variables
+    app.set('isLocal', appConfig.environment.isLocal);
+    app.set('env', appConfig.environment.nodeEnv);
+    app.set('trust proxy', 1);
+    console.log(`[${timestamp()}] [createApp] Application variables set`);
 
-  // Apply basic middleware
-  app.use(cors({
-    origin: appConfig.server.corsOrigins,
-    credentials: true
-  }));
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: false }));
-  console.log(`[${timestamp()}] [createApp] Basic middleware applied`);
+    // Apply basic middleware
+    app.use(cors({
+        origin: appConfig.server.corsOrigins,
+        credentials: true
+    }));
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: false }));
+    console.log(`[${timestamp()}] [createApp] Basic middleware applied`);
 
-  // Set up request logging
-  app.use(requestLogger);
-  console.log(`[${timestamp()}] [createApp] Request logging configured`);
+    // Set up request logging
+    app.use(requestLogger);
+    console.log(`[${timestamp()}] [createApp] Request logging configured`);
 
-  // Set up authentication (includes session handling)
-  console.log(`[${timestamp()}] [createApp] Setting up authentication...`);
-  setupAuth(app);
-  console.log(`[${timestamp()}] [createApp] Authentication configured`);
+    // Set up authentication (includes session handling)
+    console.log(`[${timestamp()}] [createApp] Setting up authentication...`);
+    setupAuth(app);
+    console.log(`[${timestamp()}] [createApp] Authentication configured`);
 
-  // Health check endpoint that doesn't require authentication
-  console.log(`[${timestamp()}] [createApp] Registering health check endpoint...`);
-  app.get('/api/health', async (req, res) => {
-    try {
-      // Check memory usage
-      const memoryUsage = process.memoryUsage();
+    // Apply rate limiting
+    console.log(`[${timestamp()}] [createApp] Setting up rate limiting...`);
 
-      return res.status(200).json({
-        status: 'OK',
-        environment: app.get('env'),
-        platform: 'Local',
-        storage: {
-          type: 'in-memory',
-          status: 'ready'
-        },
-        memory: {
-          rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',
-          heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',
-          heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB',
-        },
-        uptime: Math.round(process.uptime()) + 's'
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'Failed to check system health',
-        error: errorMessage
-      });
-    }
-  });
-  console.log(`[${timestamp()}] [createApp] Health check endpoint registered`);
+    // Auth endpoints - strict rate limiting (5 req/min per IP)
+    app.use('/api/login', authRateLimiter);
+    app.use('/api/register', authRateLimiter);
 
-  // Register application routes
-  console.log(`[${timestamp()}] [createApp] About to register application routes...`);
-  await registerRoutes(app);
-  console.log(`[${timestamp()}] [createApp] Application routes registered successfully`);
+    // AI endpoints - moderate rate limiting (10 req/min per user)
+    app.use('/api/ai-outfit-recommendations', aiRateLimiter);
+    app.use('/api/style-profile', aiRateLimiter);
+    app.use('/api/style-analysis', aiRateLimiter);
+    app.use('/api/occasion-outfit', aiRateLimiter);
 
-  // Apply global error handler (must be after routes)
-  console.log(`[${timestamp()}] [createApp] Applying error handler...`);
-  app.use(errorHandler);
-  console.log(`[${timestamp()}] [createApp] Error handler applied`);
+    // General API - relaxed rate limiting (100 req/min per user)
+    app.use('/api', generalRateLimiter);
 
-  console.log(`[${timestamp()}] [createApp] Application initialization complete`);
-  return app;
+    console.log(`[${timestamp()}] [createApp] Rate limiting configured`);
+
+    // Health check endpoint that doesn't require authentication
+    console.log(`[${timestamp()}] [createApp] Registering health check endpoint...`);
+    app.get('/api/health', async (req, res) => {
+        try {
+            // Check memory usage
+            const memoryUsage = process.memoryUsage();
+
+            return res.status(200).json({
+                status: 'OK',
+                environment: app.get('env'),
+                platform: 'Local',
+                storage: {
+                    type: 'in-memory',
+                    status: 'ready'
+                },
+                memory: {
+                    rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',
+                    heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',
+                    heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB',
+                },
+                uptime: Math.round(process.uptime()) + 's'
+            });
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            return res.status(500).json({
+                status: 'ERROR',
+                message: 'Failed to check system health',
+                error: errorMessage
+            });
+        }
+    });
+    console.log(`[${timestamp()}] [createApp] Health check endpoint registered`);
+
+    // Register application routes
+    console.log(`[${timestamp()}] [createApp] About to register application routes...`);
+    await registerRoutes(app);
+    console.log(`[${timestamp()}] [createApp] Application routes registered successfully`);
+
+    // Apply global error handler (must be after routes)
+    console.log(`[${timestamp()}] [createApp] Applying error handler...`);
+    app.use(errorHandler);
+    console.log(`[${timestamp()}] [createApp] Error handler applied`);
+
+    console.log(`[${timestamp()}] [createApp] Application initialization complete`);
+    return app;
 }
 
 export default createApp;

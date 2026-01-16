@@ -1,477 +1,363 @@
 import { useState, useMemo } from "react";
-import { useWardrobeItems } from "@/hooks/use-wardrobe";
-import { useOutfits } from "@/hooks/use-outfits";
-import NavigationBar from "@/components/navigation-bar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Palette,
-  Sparkles,
-  TrendingUp,
-  Star,
-  Heart,
-  Crown,
-  Eye,
-  Layers,
-  Shirt,
-  ArrowRight,
-  Zap,
-  Target,
-  RefreshCw,
-  CheckCircle,
-  Gem,
-  Sun,
-  Moon,
-} from "lucide-react";
 import { Link } from "wouter";
+import { AppLayout } from "@/components/layout/app-layout";
+import { motion } from "framer-motion";
+import {
+    Palette,
+    Sparkles,
+    Crown,
+    Grid3X3,
+    Layers,
+    Heart,
+    User,
+    Star,
+    Gem,
+    Feather,
+    CircleDot,
+    Minimize2,
+    Maximize2,
+    Circle,
+    RefreshCw,
+} from "lucide-react";
 
-const burgundy = "hsl(337, 73%, 26%)";
-const burgundyDark = "hsl(337, 73%, 18%)";
-const gold = "hsl(38, 75%, 55%)";
+import { useWardrobeItems } from "@/hooks/use-wardrobe";
 
-// Style personalities (original naming)
-const stylePersonalities = [
-  { name: "The Curator", description: "You collect timeless, elegant pieces with intention", icon: Crown, color: "#8b5cf6" },
-  { name: "The Purist", description: "Clean lines, neutral tones, understated elegance", icon: Target, color: "#64748b" },
-  { name: "The Visionary", description: "Fashion-forward, always ahead of the curve", icon: TrendingUp, color: "#ec4899" },
-  { name: "The Free Spirit", description: "Natural fabrics, earthy tones, effortless flow", icon: Sun, color: "#f59e0b" },
-  { name: "The Maverick", description: "Bold choices that challenge conventions", icon: Zap, color: "#ef4444" },
-  { name: "The Dreamer", description: "Soft textures, delicate details, romantic silhouettes", icon: Heart, color: "#f472b6" },
+/**
+ * STYLE ESSENCE PAGE - EDITORIAL STYLE ANALYSIS
+ *
+ * Design: Clean personality assessment with visual harmony
+ * Focus: Style DNA discovery and color harmony analysis
+ */
+
+interface StylePersonality {
+    id: string;
+    name: string;
+    description: string;
+    icon: React.ElementType;
+    traits: string[];
+    colorPalette: string[];
+}
+
+const STYLE_PERSONALITIES: StylePersonality[] = [
+    {
+        id: 'curator',
+        name: 'The Curator',
+        description: 'You collect pieces with intention, building a wardrobe of timeless investment items.',
+        icon: Crown,
+        traits: ['Quality-focused', 'Timeless choices', 'Investment mindset'],
+        colorPalette: ['#1A1A1A', '#F9F9F7', '#8B7355', '#4A4A4A']
+    },
+    {
+        id: 'minimalist',
+        name: 'The Minimalist',
+        description: 'Less is more. You believe in the power of simplicity and clean lines.',
+        icon: Minimize2,
+        traits: ['Capsule wardrobe', 'Neutral tones', 'Clean silhouettes'],
+        colorPalette: ['#1A1A1A', '#FFFFFF', '#9A9A9A', '#E5E5E5']
+    },
+    {
+        id: 'expressionist',
+        name: 'The Expressionist',
+        description: 'Fashion is your canvas. You use clothing to express your unique creative vision.',
+        icon: Sparkles,
+        traits: ['Bold choices', 'Color lover', 'Trend-aware'],
+        colorPalette: ['#80163A', '#D4AF37', '#1A4D2E', '#2A4B8F']
+    },
+    {
+        id: 'classicist',
+        name: 'The Classicist',
+        description: 'You honor tradition and find beauty in proven elegance.',
+        icon: Gem,
+        traits: ['Traditional styling', 'Polished looks', 'Heritage brands'],
+        colorPalette: ['#1e3a5f', '#8B0000', '#2F4F4F', '#DAA520']
+    },
+    {
+        id: 'naturalist',
+        name: 'The Naturalist',
+        description: 'Comfort meets consciousness. You gravitate toward organic and sustainable choices.',
+        icon: Feather,
+        traits: ['Eco-conscious', 'Natural fibers', 'Earth tones'],
+        colorPalette: ['#606C38', '#8B5E3C', '#E5DDD3', '#588157']
+    },
 ];
 
-function analyzeColorHarmony(colors: string[]): { harmony: string; score: number; description: string } {
-  const uniqueColors = [...new Set(colors.filter(Boolean))];
+export function StyleEssencePage() {
+    const { data: wardrobeItems, isLoading } = useWardrobeItems();
+    const [selectedPersonality, setSelectedPersonality] = useState<StylePersonality | null>(null);
 
-  if (uniqueColors.length <= 3) {
-    return { harmony: "Focused", score: 95, description: "A refined palette creating cohesive, sophisticated looks." };
-  } else if (uniqueColors.length <= 6) {
-    return { harmony: "Balanced", score: 85, description: "Colors flow naturally together with intentional harmony." };
-  } else if (uniqueColors.length <= 10) {
-    return { harmony: "Diverse", score: 75, description: "You embrace color variety while maintaining balance." };
-  }
-  return { harmony: "Expressive", score: 65, description: "A colorful wardrobe showing creativity and experimentation." };
-}
+    // Analyze wardrobe to determine style personality
+    const analysis = useMemo(() => {
+        if (!wardrobeItems || wardrobeItems.length === 0) return null;
 
-function calculateStyleScore(items: any[], outfits: any[]): number {
-  if (!items.length) return 0;
+        // Count colors
+        const colorCounts: Record<string, number> = {};
+        wardrobeItems.forEach(item => {
+            const color = item.color?.toLowerCase() || 'unknown';
+            colorCounts[color] = (colorCounts[color] || 0) + 1;
+        });
 
-  const categoryVariety = new Set(items.map(i => i.category)).size;
-  const colorVariety = new Set(items.filter(i => i.color).map(i => i.color)).size;
-  const outfitRatio = outfits.length / Math.max(items.length / 3, 1);
-  const favoriteRatio = items.filter(i => i.favorite).length / items.length;
+        // Calculate dominant colors
+        const sortedColors = Object.entries(colorCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([color]) => color);
 
-  return Math.round(
-    Math.min(categoryVariety / 6, 1) * 30 +
-    Math.min(colorVariety / 8, 1) * 25 +
-    Math.min(outfitRatio, 1) * 25 +
-    favoriteRatio * 20
-  );
-}
+        // Simple style score based on wardrobe diversity
+        const uniqueColors = Object.keys(colorCounts).length;
+        const colorHarmonyScore = Math.min(Math.round((uniqueColors / wardrobeItems.length) * 100 + 30), 95);
 
-function determineStylePersonality(items: any[]): typeof stylePersonalities[0] {
-  const colors = items.map(i => i.color?.toLowerCase()).filter(Boolean);
-  const categories = items.map(i => i.category);
+        // Determine personality based on wardrobe characteristics
+        const neutralCount = wardrobeItems.filter(item => {
+            const color = item.color?.toLowerCase() || '';
+            return ['black', 'white', 'gray', 'grey', 'beige', 'cream', 'navy'].some(n => color.includes(n));
+        }).length;
 
-  const neutralCount = colors.filter(c =>
-    c?.includes('white') || c?.includes('black') || c?.includes('gray') || c?.includes('beige') || c?.includes('cream')
-  ).length;
+        const neutralRatio = neutralCount / wardrobeItems.length;
 
-  const boldCount = colors.filter(c =>
-    c?.includes('red') || c?.includes('yellow') || c?.includes('orange') || c?.includes('pink')
-  ).length;
+        let personalityMatch: StylePersonality;
+        if (neutralRatio > 0.7) {
+            personalityMatch = STYLE_PERSONALITIES.find(p => p.id === 'minimalist')!;
+        } else if (neutralRatio > 0.5) {
+            personalityMatch = STYLE_PERSONALITIES.find(p => p.id === 'curator')!;
+        } else if (neutralRatio > 0.3) {
+            personalityMatch = STYLE_PERSONALITIES.find(p => p.id === 'classicist')!;
+        } else {
+            personalityMatch = STYLE_PERSONALITIES.find(p => p.id === 'expressionist')!;
+        }
 
-  const neutralRatio = neutralCount / Math.max(colors.length, 1);
-  const boldRatio = boldCount / Math.max(colors.length, 1);
+        return {
+            dominantColors: sortedColors,
+            colorHarmonyScore,
+            personalityMatch,
+            totalItems: wardrobeItems.length,
+            styleScore: Math.min(Math.round(wardrobeItems.length * 3 + colorHarmonyScore / 2), 100),
+        };
+    }, [wardrobeItems]);
 
-  if (neutralRatio > 0.7) return stylePersonalities[1]; // The Purist
-  if (boldRatio > 0.4) return stylePersonalities[4]; // The Maverick
-  if (categories.filter(c => c === 'dresses').length > items.length * 0.3) return stylePersonalities[5]; // The Dreamer
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-[#F9F9F7] flex items-center justify-center">
+                <div className="w-10 h-10 border-2 border-[#E5E5E5] border-t-[#1A1A1A] rounded-full animate-spin" />
+            </div>
+        );
+    }
 
-  return stylePersonalities[0]; // The Curator (default)
+    return (
+        <AppLayout>
+            {/* Navigation */}
+
+            <div className="max-w-6xl mx-auto px-6 py-8 md:py-12">
+                {/* Header */}
+                <motion.header className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                    <p className="text-xs tracking-[0.2em] uppercase text-[#6B6B6B] mb-2">Discover</p>
+                    <h1 className="text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2rem, 5vw, 3rem)" }}>
+                        Your Style DNA
+                    </h1>
+                    <p className="text-[#6B6B6B] text-lg">Understand your unique fashion identity</p>
+                </motion.header>
+
+                {analysis ? (
+                    <>
+                        {/* Score Cards */}
+                        <motion.div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                            {/* Style Score */}
+                            <motion.div
+                                className="p-6 rounded-3xl bg-[#1A1A1A] text-white col-span-2 md:col-span-1"
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Star className="w-6 h-6 mb-4 opacity-60" />
+                                <div className="text-5xl mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                                    {analysis.styleScore}
+                                </div>
+                                <p className="text-xs uppercase tracking-wider opacity-60">Style Score</p>
+                            </motion.div>
+
+                            {/* Color Harmony */}
+                            <motion.div
+                                className="p-6 rounded-3xl bg-white border border-[#E5E5E5]/50"
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Palette className="w-6 h-6 mb-4 text-[#9A9A9A]" />
+                                <div className="text-4xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                                    {analysis.colorHarmonyScore}%
+                                </div>
+                                <p className="text-xs text-[#9A9A9A] uppercase tracking-wider">Color Harmony</p>
+                            </motion.div>
+
+                            {/* Total Items */}
+                            <motion.div
+                                className="p-6 rounded-3xl bg-white border border-[#E5E5E5]/50"
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Layers className="w-6 h-6 mb-4 text-[#9A9A9A]" />
+                                <div className="text-4xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                                    {analysis.totalItems}
+                                </div>
+                                <p className="text-xs text-[#9A9A9A] uppercase tracking-wider">Pieces Analyzed</p>
+                            </motion.div>
+                        </motion.div>
+
+                        {/* Style Personality Match */}
+                        <motion.section className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                            <h2 className="text-xl text-[#1A1A1A] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                Your Style Personality
+                            </h2>
+                            <motion.div
+                                className="rounded-3xl bg-white border border-[#E5E5E5]/50 p-8"
+                                whileHover={{ boxShadow: "0 20px 40px rgba(0,0,0,0.05)" }}
+                            >
+                                <div className="flex flex-col md:flex-row gap-8">
+                                    {/* Icon */}
+                                    <div className="w-20 h-20 rounded-2xl bg-[#1A1A1A] flex items-center justify-center flex-shrink-0">
+                                        {analysis.personalityMatch && <analysis.personalityMatch.icon className="w-10 h-10 text-white" />}
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1">
+                                        <h3 className="text-2xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                            {analysis.personalityMatch?.name}
+                                        </h3>
+                                        <p className="text-[#6B6B6B] mb-4">{analysis.personalityMatch?.description}</p>
+
+                                        {/* Traits */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {analysis.personalityMatch?.traits.map((trait) => (
+                                                <span
+                                                    key={trait}
+                                                    className="px-4 py-2 rounded-full bg-[#F5F5F5] text-[#6B6B6B] text-sm"
+                                                >
+                                                    {trait}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Color Palette */}
+                                    <div className="flex md:flex-col gap-2">
+                                        {analysis.personalityMatch?.colorPalette.map((color) => (
+                                            <div
+                                                key={color}
+                                                className="w-10 h-10 rounded-lg border border-[#E5E5E5]"
+                                                style={{ backgroundColor: color }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.section>
+
+                        {/* Your Color Palette */}
+                        <motion.section className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                            <h2 className="text-xl text-[#1A1A1A] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                Your Dominant Colors
+                            </h2>
+                            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                                {analysis.dominantColors.map((color, i) => (
+                                    <motion.div
+                                        key={color}
+                                        className="flex-shrink-0 text-center"
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: i * 0.1 }}
+                                    >
+                                        <div
+                                            className="w-24 h-24 rounded-2xl mb-2 border border-[#E5E5E5]"
+                                            style={{ backgroundColor: getColorHex(color) }}
+                                        />
+                                        <p className="text-sm font-medium text-[#1A1A1A] capitalize">{color}</p>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.section>
+
+                        {/* All Personalities */}
+                        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                            <h2 className="text-xl text-[#1A1A1A] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                Style Archetypes
+                            </h2>
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {STYLE_PERSONALITIES.map((personality, i) => (
+                                    <motion.div
+                                        key={personality.id}
+                                        className={`p-6 rounded-2xl border-2 cursor-pointer transition-all ${analysis.personalityMatch?.id === personality.id
+                                                ? 'border-[#1A1A1A] bg-white'
+                                                : 'border-[#E5E5E5] bg-white hover:border-[#9A9A9A]'
+                                            }`}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.05 }}
+                                        whileHover={{ scale: 1.01 }}
+                                        onClick={() => setSelectedPersonality(personality)}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${analysis.personalityMatch?.id === personality.id ? 'bg-[#1A1A1A]' : 'bg-[#F5F5F5]'
+                                                }`}>
+                                                <personality.icon className={`w-6 h-6 ${analysis.personalityMatch?.id === personality.id ? 'text-white' : 'text-[#6B6B6B]'
+                                                    }`} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-[#1A1A1A] font-medium mb-1">{personality.name}</h3>
+                                                <p className="text-sm text-[#9A9A9A] line-clamp-2">{personality.description}</p>
+                                            </div>
+                                        </div>
+                                        {analysis.personalityMatch?.id === personality.id && (
+                                            <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
+                                                <span className="text-xs text-[#80163A] uppercase tracking-wider">Your Match</span>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.section>
+                    </>
+                ) : (
+                    /* Empty State */
+                    <motion.div
+                        className="text-center py-20"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="w-20 h-20 rounded-full bg-[#F5F5F5] flex items-center justify-center mx-auto mb-6">
+                            <RefreshCw className="w-8 h-8 text-[#9A9A9A]" />
+                        </div>
+                        <h2 className="text-2xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            Add Items to Discover
+                        </h2>
+                        <p className="text-[#6B6B6B] mb-8 max-w-md mx-auto">
+                            Start building your wardrobe to unlock your style DNA analysis
+                        </p>
+                        <Link href="/wardrobe">
+                            <motion.button
+                                className="px-8 py-4 rounded-full bg-[#1A1A1A] text-white text-sm tracking-wider"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                GO TO WARDROBE
+                            </motion.button>
+                        </Link>
+                    </motion.div>
+                )}
+            </div>
+
+            {/* Mobile Bottom Nav */}
+        </AppLayout>
+    );
 }
 
 function getColorHex(colorName: string): string {
-  const colorMap: Record<string, string> = {
-    'black': '#1f2937', 'white': '#f8fafc', 'gray': '#6b7280', 'grey': '#6b7280',
-    'navy': '#1e3a5f', 'blue': '#3b82f6', 'red': '#ef4444', 'burgundy': '#722f37',
-    'pink': '#ec4899', 'coral': '#f87171', 'orange': '#f97316', 'yellow': '#eab308',
-    'gold': '#d4af37', 'beige': '#d4c5b0', 'cream': '#fffdd0', 'tan': '#d2b48c',
-    'brown': '#92400e', 'olive': '#6b7f4c', 'green': '#22c55e', 'teal': '#14b8a6',
-    'purple': '#a855f7', 'lavender': '#e9d5ff',
-  };
-
-  const lowerColor = colorName.toLowerCase();
-  for (const [key, value] of Object.entries(colorMap)) {
-    if (lowerColor.includes(key)) return value;
-  }
-  return '#94a3b8';
-}
-
-export function StyleEssencePage() {
-  const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
-  const { data: outfits, isLoading: outfitsLoading } = useOutfits();
-  const [refreshing, setRefreshing] = useState(false);
-
-  const isLoading = wardrobeLoading || outfitsLoading;
-
-  const analysis = useMemo(() => {
-    if (!wardrobeItems || !outfits) return null;
-
-    const colors = wardrobeItems.map(item => item.color).filter(Boolean) as string[];
-    const colorHarmony = analyzeColorHarmony(colors);
-    const styleScore = calculateStyleScore(wardrobeItems, outfits);
-    const personality = determineStylePersonality(wardrobeItems);
-
-    const colorCounts = colors.reduce((acc: Record<string, number>, color) => {
-      acc[color] = (acc[color] || 0) + 1;
-      return acc;
-    }, {});
-
-    const topColors = Object.entries(colorCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([color, count]) => ({ color, count, percentage: Math.round((count / colors.length) * 100) }));
-
-    const categoryCounts = wardrobeItems.reduce((acc: Record<string, number>, item) => {
-      acc[item.category] = (acc[item.category] || 0) + 1;
-      return acc;
-    }, {});
-
-    const topCategories = Object.entries(categoryCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 4)
-      .map(([category, count]) => ({ category, count, percentage: Math.round((count / wardrobeItems.length) * 100) }));
-
-    const tips = [];
-    if (topColors.length > 0 && topColors[0].percentage > 40) {
-      tips.push(`You gravitate towards ${topColors[0].color}. Consider exploring complementary shades.`);
-    }
-    if (categoryCounts['bottoms'] > categoryCounts['tops']) {
-      tips.push("Your collection has more bottoms than tops. Versatile tops could expand your options.");
-    }
-    if (wardrobeItems.filter(i => i.favorite).length < 5) {
-      tips.push("Mark your favorites to help us understand your preferences better.");
-    }
-
-    return {
-      colorHarmony,
-      styleScore,
-      personality,
-      topColors,
-      topCategories,
-      tips,
-      totalItems: wardrobeItems.length,
-      totalOutfits: outfits.length,
-      favoriteCount: wardrobeItems.filter(i => i.favorite).length,
+    const colorMap: Record<string, string> = {
+        'black': '#1A1A1A', 'white': '#F9F9F7', 'gray': '#6B6B6B', 'grey': '#6B6B6B',
+        'navy': '#1e3a5f', 'blue': '#4A90D9', 'red': '#C44536', 'burgundy': '#80163A',
+        'pink': '#E8A4B8', 'coral': '#E07A5F', 'orange': '#E07A5F', 'yellow': '#E9C46A',
+        'gold': '#D4AF37', 'beige': '#E5DDD3', 'cream': '#FAF3E0', 'tan': '#C9B99A',
+        'brown': '#8B5E3C', 'olive': '#606C38', 'green': '#588157', 'teal': '#2A9D8F',
+        'purple': '#7B68EE', 'lavender': '#E6E6FA',
     };
-  }, [wardrobeItems, outfits]);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setRefreshing(false);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#fafaf9]">
-        <NavigationBar />
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <Skeleton className="h-12 w-64 mb-6" />
-          <div className="grid gap-6">
-            <Skeleton className="h-48 rounded-3xl" />
-            <Skeleton className="h-32 rounded-3xl" />
-            <Skeleton className="h-32 rounded-3xl" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!wardrobeItems?.length) {
-    return (
-      <div className="min-h-screen bg-[#fafaf9] pb-24">
-        <NavigationBar />
-        <div className="max-w-md mx-auto px-6 py-24 text-center">
-          <div className="w-24 h-24 rounded-[32px] mx-auto mb-8 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-50 shadow-lg">
-            <Gem className="w-12 h-12 text-slate-400" />
-          </div>
-          <h1 className="font-serif text-4xl text-slate-900 mb-4">Discover Your Style</h1>
-          <p className="text-slate-500 text-lg mb-10 leading-relaxed">
-            Add items to your wardrobe to unlock personalized insights about your unique fashion identity.
-          </p>
-          <Link href="/wardrobe">
-            <Button
-              size="lg"
-              className="rounded-full px-10 h-14 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-              style={{ background: `linear-gradient(135deg, ${burgundy} 0%, ${burgundyDark} 100%)` }}
-            >
-              Build Your Wardrobe
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
-      <NavigationBar />
-
-      <main className="max-w-4xl mx-auto px-6 py-8 md:py-12">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
-              <Sparkles className="w-4 h-4" style={{ color: gold }} />
-              <span className="text-sm font-medium text-slate-600">AI Analysis</span>
-            </div>
-            <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">Your Style Essence</h1>
-            <p className="text-slate-500 text-lg">Insights into your unique fashion identity</p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full gap-2 border-slate-200 hover:bg-white"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-
-        {analysis && (
-          <div className="space-y-6">
-            {/* Style Score Hero */}
-            <div className="relative overflow-hidden rounded-[32px] shadow-xl">
-              <div
-                className="p-8 md:p-12"
-                style={{ background: `linear-gradient(135deg, ${burgundy} 0%, ${burgundyDark} 100%)` }}
-              >
-                {/* Decorative circles */}
-                <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
-
-                <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                  {/* Score Circle */}
-                  <div className="relative flex-shrink-0">
-                    <svg className="w-44 h-44" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
-                      <circle
-                        cx="50" cy="50" r="45" fill="none" stroke={gold} strokeWidth="8"
-                        strokeLinecap="round" strokeDasharray={`${analysis.styleScore * 2.83} 283`}
-                        transform="rotate(-90 50 50)"
-                        className="transition-all duration-1000"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-5xl font-bold text-white">{analysis.styleScore}</span>
-                      <span className="text-white/60 text-sm">Style Score</span>
-                    </div>
-                  </div>
-
-                  {/* Personality Info */}
-                  <div className="flex-1 text-center md:text-left">
-                    <Badge className="mb-4 bg-white/10 text-white hover:bg-white/20 rounded-full px-4 py-1">
-                      <analysis.personality.icon className="w-3.5 h-3.5 mr-1.5" />
-                      Your Style Personality
-                    </Badge>
-                    <h2 className="font-serif text-4xl text-white mb-3">{analysis.personality.name}</h2>
-                    <p className="text-white/70 text-lg leading-relaxed max-w-md">{analysis.personality.description}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Color Palette */}
-            <Card className="border-0 shadow-lg rounded-[24px] overflow-hidden">
-              <CardContent className="p-8">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
-                    <Palette className="w-6 h-6 text-purple-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-slate-900">Color Palette</h3>
-                    <p className="text-slate-500">Your wardrobe's color identity</p>
-                  </div>
-                  <Badge className="ml-auto rounded-full px-4" style={{ background: `${burgundy}10`, color: burgundy }}>
-                    {analysis.colorHarmony.harmony}
-                  </Badge>
-                </div>
-
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-slate-600">Harmony Score</span>
-                    <span className="text-sm font-semibold" style={{ color: burgundy }}>{analysis.colorHarmony.score}%</span>
-                  </div>
-                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-1000"
-                      style={{
-                        width: `${analysis.colorHarmony.score}%`,
-                        background: `linear-gradient(90deg, ${burgundy}, ${gold})`
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <p className="text-slate-600 leading-relaxed mb-8">{analysis.colorHarmony.description}</p>
-
-                {/* Color swatches */}
-                <div className="flex flex-wrap gap-3">
-                  {analysis.topColors.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100"
-                    >
-                      <div
-                        className="w-8 h-8 rounded-xl shadow-inner border border-white/50"
-                        style={{ background: getColorHex(item.color) }}
-                      />
-                      <div>
-                        <span className="text-sm font-medium text-slate-700 capitalize block">{item.color}</span>
-                        <span className="text-xs text-slate-400">{item.percentage}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Wardrobe Breakdown */}
-            <Card className="border-0 shadow-lg rounded-[24px] overflow-hidden">
-              <CardContent className="p-8">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
-                    <Layers className="w-6 h-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-slate-900">Wardrobe Breakdown</h3>
-                    <p className="text-slate-500">How your collection is distributed</p>
-                  </div>
-                </div>
-
-                <div className="space-y-5 mb-8">
-                  {analysis.topCategories.map((cat, i) => (
-                    <div key={i}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-slate-700 capitalize">{cat.category}</span>
-                        <span className="text-sm text-slate-400">{cat.count} items</span>
-                      </div>
-                      <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-700"
-                          style={{
-                            width: `${cat.percentage}%`,
-                            background: `linear-gradient(90deg, ${burgundy}, ${gold})`,
-                            transitionDelay: `${i * 100}ms`
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-100">
-                  {[
-                    { label: "Total Items", value: analysis.totalItems, icon: Shirt },
-                    { label: "Outfits", value: analysis.totalOutfits, icon: Layers },
-                    { label: "Favorites", value: analysis.favoriteCount, icon: Heart },
-                  ].map((stat, i) => (
-                    <div key={i} className="text-center">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center mx-auto mb-2">
-                        <stat.icon className="w-5 h-5 text-slate-400" />
-                      </div>
-                      <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                      <p className="text-xs text-slate-500">{stat.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Style Tips */}
-            {analysis.tips.length > 0 && (
-              <Card className="border-0 shadow-lg rounded-[24px] overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white shadow-sm">
-                      <Eye className="w-6 h-6" style={{ color: gold }} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-slate-900">Style Insights</h3>
-                      <p className="text-slate-500">Personalized recommendations for you</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {analysis.tips.map((tip, i) => (
-                      <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/80 backdrop-blur-sm">
-                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <CheckCircle className="w-4 h-4 text-emerald-600" />
-                        </div>
-                        <p className="text-slate-700 leading-relaxed">{tip}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* All Personalities */}
-            <Card className="border-0 shadow-lg rounded-[24px] overflow-hidden">
-              <CardContent className="p-8">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-50 to-purple-50">
-                    <Star className="w-6 h-6 text-violet-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-slate-900">Style Personalities</h3>
-                    <p className="text-slate-500">Discover different fashion identities</p>
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {stylePersonalities.map((p, i) => (
-                    <div
-                      key={i}
-                      className={`p-5 rounded-2xl border-2 transition-all ${
-                        p.name === analysis.personality.name
-                          ? 'bg-slate-50 shadow-sm'
-                          : 'bg-white border-transparent hover:border-slate-200'
-                      }`}
-                      style={p.name === analysis.personality.name ? { borderColor: burgundy } : {}}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                          style={{ background: `${p.color}15` }}
-                        >
-                          <p.icon className="w-6 h-6" style={{ color: p.color }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-slate-900">{p.name}</p>
-                            {p.name === analysis.personality.name && (
-                              <Badge className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: burgundy }}>You</Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-slate-500 truncate">{p.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </main>
-    </div>
-  );
+    const lowerColor = colorName.toLowerCase();
+    for (const [key, value] of Object.entries(colorMap)) {
+        if (lowerColor.includes(key)) return value;
+    }
+    return '#9A9A9A';
 }
+
+export default StyleEssencePage;

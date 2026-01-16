@@ -1,126 +1,127 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
-  theme: {
-    fontFamily: {
-      sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
-      serif: ["Playfair Display", "Georgia", "Times New Roman", "serif"],
-      display: ["Playfair Display", "Georgia", "serif"],
-    },
-    extend: {
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "calc(var(--radius) + 2px)",
-        "2xl": "calc(var(--radius) + 4px)",
-      },
-      boxShadow: {
-        'soft': '0 4px 15px rgba(0, 0, 0, 0.05)',
-        'hover': '0 8px 20px rgba(0, 0, 0, 0.1)',
-        'button': '0 2px 5px rgba(0, 0, 0, 0.08)',
-        'card': 'var(--shadow-card)',
-        'card-hover': 'var(--shadow-card-hover)',
-        'float': 'var(--shadow-float)',
-        'gold': 'var(--shadow-gold)',
-      },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-soft': 'linear-gradient(to bottom right, var(--tw-gradient-stops))',
-      },
-      colors: {
-        // Luxe-Minimalist Color Palette
-        alabaster: "var(--color-alabaster)",
-        obsidian: "var(--color-obsidian)",
-        gold: {
-          DEFAULT: "var(--color-gold-muted)",
-          light: "var(--color-gold-light)",
-          muted: "var(--color-gold-muted)",
+    content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+    theme: {
+        fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+            serif: ["Playfair Display", "Georgia", "Times New Roman", "serif"],
+            display: ["Playfair Display", "Georgia", "serif"],
+            playfair: ["Playfair Display", "serif"],
         },
-        taupe: "var(--color-taupe)",
-        charcoal: "var(--color-charcoal)",
-        cashmere: "var(--color-cashmere)",
-        silk: "var(--color-silk)",
-        graphite: "var(--color-graphite)",
-        pearl: "var(--color-pearl)",
-        champagne: "var(--color-champagne)",
+        extend: {
+            borderRadius: {
+                lg: "var(--radius)",
+                md: "calc(var(--radius) - 2px)",
+                sm: "calc(var(--radius) - 4px)",
+                xl: "calc(var(--radius) + 2px)",
+                "2xl": "calc(var(--radius) + 4px)",
+            },
+            boxShadow: {
+                'soft': '0 4px 15px rgba(0, 0, 0, 0.05)',
+                'hover': '0 8px 20px rgba(0, 0, 0, 0.1)',
+                'button': '0 2px 5px rgba(0, 0, 0, 0.08)',
+                'card': 'var(--shadow-card)',
+                'card-hover': 'var(--shadow-card-hover)',
+                'float': 'var(--shadow-float)',
+                'gold': 'var(--shadow-gold)',
+            },
+            backgroundImage: {
+                'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                'gradient-soft': 'linear-gradient(to bottom right, var(--tw-gradient-stops))',
+            },
+            colors: {
+                // Luxe-Minimalist Color Palette
+                alabaster: "var(--color-alabaster)",
+                obsidian: "var(--color-obsidian)",
+                gold: {
+                    DEFAULT: "var(--color-gold-muted)",
+                    light: "var(--color-gold-light)",
+                    muted: "var(--color-gold-muted)",
+                },
+                taupe: "var(--color-taupe)",
+                charcoal: "var(--color-charcoal)",
+                cashmere: "var(--color-cashmere)",
+                silk: "var(--color-silk)",
+                graphite: "var(--color-graphite)",
+                pearl: "var(--color-pearl)",
+                champagne: "var(--color-champagne)",
 
-        // Legacy/Framework Colors
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+                // Legacy/Framework Colors
+                background: "hsl(var(--background))",
+                foreground: "hsl(var(--foreground))",
+                card: {
+                    DEFAULT: "hsl(var(--card))",
+                    foreground: "hsl(var(--card-foreground))",
+                },
+                popover: {
+                    DEFAULT: "hsl(var(--popover))",
+                    foreground: "hsl(var(--popover-foreground))",
+                },
+                primary: {
+                    DEFAULT: "hsl(var(--primary))",
+                    foreground: "hsl(var(--primary-foreground))",
+                },
+                secondary: {
+                    DEFAULT: "hsl(var(--secondary))",
+                    foreground: "hsl(var(--secondary-foreground))",
+                },
+                muted: {
+                    DEFAULT: "hsl(var(--muted))",
+                    foreground: "hsl(var(--muted-foreground))",
+                },
+                accent: {
+                    DEFAULT: "hsl(var(--accent))",
+                    foreground: "hsl(var(--accent-foreground))",
+                },
+                destructive: {
+                    DEFAULT: "hsl(var(--destructive))",
+                    foreground: "hsl(var(--destructive-foreground))",
+                },
+                border: "hsl(var(--border))",
+                input: "hsl(var(--input))",
+                ring: "hsl(var(--ring))",
+                chart: {
+                    "1": "hsl(var(--chart-1))",
+                    "2": "hsl(var(--chart-2))",
+                    "3": "hsl(var(--chart-3))",
+                    "4": "hsl(var(--chart-4))",
+                    "5": "hsl(var(--chart-5))",
+                },
+                sidebar: {
+                    DEFAULT: "hsl(var(--sidebar-background))",
+                    foreground: "hsl(var(--sidebar-foreground))",
+                    primary: "hsl(var(--sidebar-primary))",
+                    "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+                    accent: "hsl(var(--sidebar-accent))",
+                    "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+                    border: "hsl(var(--sidebar-border))",
+                    ring: "hsl(var(--sidebar-ring))",
+                },
+            },
+            keyframes: {
+                "accordion-down": {
+                    from: {
+                        height: "0",
+                    },
+                    to: {
+                        height: "var(--radix-accordion-content-height)",
+                    },
+                },
+                "accordion-up": {
+                    from: {
+                        height: "var(--radix-accordion-content-height)",
+                    },
+                    to: {
+                        height: "0",
+                    },
+                },
+            },
+            animation: {
+                "accordion-down": "accordion-down 0.2s ease-out",
+                "accordion-up": "accordion-up 0.2s ease-out",
+            },
         },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
-        },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
-        },
-      },
-      keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-      },
     },
-  },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+    plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;

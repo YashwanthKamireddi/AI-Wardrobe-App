@@ -1,589 +1,250 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, X, Layers, Heart, Trash2, Check, Loader2, Shuffle, Sparkles } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
+import { AppLayout } from "@/components/layout/app-layout";
+import { Plus, Search, X, Layers, Heart, Trash2, Grid3X3, ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 
-import { LuxuryButton } from "@/components/ui/luxury-button";
-import { LuxuryInput, SearchInput } from "@/components/ui/luxury-input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OutfitCardSkeleton } from "@/components/ui/luxury-skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { HapticFeedback } from "@/lib/haptics";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-
-import NavigationBar from "@/components/navigation-bar";
-import { useOutfits, useCreateOutfit, useDeleteOutfit } from "@/hooks/use-outfits";
+import { useOutfits, useDeleteOutfit } from "@/hooks/use-outfits";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
-import { seasons, moodTypes } from "@shared/schema";
+import { cn } from "@/lib/utils";
 
-const outfitSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().optional(),
-  items: z.array(z.number()).min(1, "Select at least one item"),
-  occasion: z.string().optional(),
-  season: z.string().optional(),
-  mood: z.string().optional(),
-  favorite: z.boolean().optional(),
-});
-
-type OutfitFormData = z.infer<typeof outfitSchema>;
+/**
+ * OUTFITS PAGE - EDITORIAL GALLERY
+ *
+ * Design: Magazine-style outfit presentation
+ * Focus: Visual storytelling through outfit combinations
+ */
 
 export function OutfitPage() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [outfitToDelete, setOutfitToDelete] = useState<{ id: number; name: string } | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTab, setSelectedTab] = useState<string>('all');
-  const [shuffledOutfit, setShuffledOutfit] = useState<any>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTab, setSelectedTab] = useState<string>('all');
 
-  const { data: outfits, isLoading: outfitsLoading } = useOutfits();
-  const { data: wardrobeItems } = useWardrobeItems();
-  const createOutfit = useCreateOutfit();
-  const deleteOutfit = useDeleteOutfit();
+    const { data: outfits, isLoading: outfitsLoading } = useOutfits();
+    const { data: wardrobeItems } = useWardrobeItems();
+    const deleteOutfit = useDeleteOutfit();
 
-  // Fetch shuffled outfit
-  const { refetch: fetchShuffle, isFetching: isShuffling } = useQuery({
-    queryKey: ['outfit-shuffle'],
-    queryFn: async () => {
-      const response = await fetch('/api/outfit-shuffle', { credentials: 'include' });
-      if (!response.ok) throw new Error('Failed to shuffle');
-      const data = await response.json();
-      setShuffledOutfit(data);
-      return data;
-    },
-    enabled: false
-  });
+    const filteredOutfits = useMemo(() => {
+        if (!outfits) return [];
+        return outfits.filter(outfit => {
+            const matchesSearch =
+                outfit.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                outfit.description?.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesTab =
+                selectedTab === 'all' ||
+                (selectedTab === 'favorites' && outfit.favorite);
+            return matchesSearch && matchesTab;
+        });
+    }, [outfits, searchQuery, selectedTab]);
 
-  const handleShuffle = () => {
-    fetchShuffle();
-  };
+    const handleDelete = async (id: number) => {
+        try {
+            await deleteOutfit.mutateAsync(id);
+        } catch (error) {
+            console.error('Failed to delete outfit:', error);
+        }
+    };
 
-  const form = useForm<OutfitFormData>({
-    resolver: zodResolver(outfitSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      items: [],
-      occasion: "",
-      season: "",
-      mood: "",
-      favorite: false,
-    },
-  });
+    const getItemImage = (itemId: number) => {
+        const item = wardrobeItems?.find(i => i.id === itemId);
+        return item?.imageUrl;
+    };
 
-  const selectedItems = form.watch('items') || [];
-
-  const filteredOutfits = useMemo(() => {
-    if (!outfits) return [];
-    return outfits.filter(outfit => {
-      const matchesSearch = outfit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        outfit.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      if (selectedTab === 'all') return matchesSearch;
-      if (selectedTab === 'favorites') return matchesSearch && outfit.favorite;
-      return matchesSearch;
-    });
-  }, [outfits, searchQuery, selectedTab]);
-
-  const getOutfitItems = (itemIds: number[]) => {
-    if (!wardrobeItems) return [];
-    return wardrobeItems.filter(item => itemIds.includes(item.id));
-  };
-
-  const toggleItem = (itemId: number) => {
-    const current = form.getValues('items') || [];
-    const updated = current.includes(itemId)
-      ? current.filter(id => id !== itemId)
-      : [...current, itemId];
-    form.setValue('items', updated, { shouldValidate: true });
-  };
-
-  const onSubmit = async (data: OutfitFormData) => {
-    try {
-      await createOutfit.mutateAsync(data);
-      form.reset();
-      setIsCreateDialogOpen(false);
-    } catch (error) {
-      console.error('Failed to create outfit:', error);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    try {
-      await deleteOutfit.mutateAsync(id);
-      setOutfitToDelete(null);
-    } catch (error) {
-      console.error('Failed to delete outfit:', error);
-    }
-  };
-
-  const openDeleteDialog = (outfit: { id: number; name: string }) => {
-    setOutfitToDelete(outfit);
-    setDeleteDialogOpen(true);
-  };
-
-  return (
-    <div className="min-h-screen bg-[#fafaf9] pb-24 md:pb-8">
-      <NavigationBar />
-
-      <main className="max-w-6xl mx-auto px-6 py-8 md:py-12">
-        {/* Header */}
-        <header className="mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
-            <Layers className="w-4 h-4" style={{ color: 'hsl(38, 75%, 55%)' }} />
-            <span className="text-sm font-medium text-slate-600">Style</span>
-          </div>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="font-serif text-4xl md:text-5xl text-slate-900 mb-2">Your Outfits</h1>
-              <p className="text-slate-500 text-lg">{outfits?.length || 0} saved combinations</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <LuxuryButton
-                variant="secondary"
-                className="rounded-full px-5 h-12"
-                onClick={() => {
-                  HapticFeedback.selection();
-                  handleShuffle();
-                }}
-                disabled={isShuffling}
-              >
-                {isShuffling ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Shuffle className="h-4 w-4 mr-2" />
-                )}
-                Shuffle
-              </LuxuryButton>
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <LuxuryButton
-                    className="rounded-full px-6 h-12"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Outfit
-                  </LuxuryButton>
-                </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl rounded-[24px]">
-                <DialogHeader>
-                  <DialogTitle className="font-serif text-2xl text-slate-900">Create New Outfit</DialogTitle>
-                  <DialogDescription className="text-slate-500 text-base">Combine your wardrobe items into a complete look.</DialogDescription>
-                </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700">Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Casual Friday" className="border-slate-200 focus:border-[hsl(337,73%,26%)]" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700">Description</FormLabel>
-                        <FormControl>
-                          <Input placeholder="A relaxed look for the office..." className="border-slate-200 focus:border-[hsl(337,73%,26%)]" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="occasion"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700">Occasion</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="border-slate-200">
-                                <SelectValue placeholder="Select occasion" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-white border-slate-200">
-                              {['casual', 'work', 'formal', 'date', 'party', 'sport'].map(o => (
-                                <SelectItem key={o} value={o}>
-                                  {o.charAt(0).toUpperCase() + o.slice(1)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="season"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700">Season</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="border-slate-200">
-                                <SelectValue placeholder="Select season" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-white border-slate-200">
-                              {seasons.map(s => (
-                                <SelectItem key={s.value} value={s.value}>
-                                  {s.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Item Selection */}
-                  <FormField
-                    control={form.control}
-                    name="items"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel className="text-slate-700">Select Items ({selectedItems.length} selected)</FormLabel>
-                        <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50">
-                          {wardrobeItems?.map(item => (
-                            <div
-                              key={item.id}
-                              onClick={() => toggleItem(item.id)}
-                              className={`cursor-pointer rounded-lg border-2 overflow-hidden transition-all ${
-                                selectedItems.includes(item.id)
-                                  ? 'border-[hsl(337,73%,26%)] ring-2 ring-[hsl(337,73%,26%)]/20 shadow-md'
-                                  : 'border-slate-200 hover:border-slate-300'
-                              }`}
-                            >
-                              <div className="relative aspect-square bg-white">
-                                {item.imageUrl ? (
-                                  <img
-                                    src={item.imageUrl}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">
-                                    {item.name}
-                                  </div>
-                                )}
-                                {selectedItems.includes(item.id) && (
-                                  <div className="absolute top-1 right-1 rounded-full p-0.5 shadow-md" style={{ background: "hsl(337, 73%, 26%)" }}>
-                                    <Check className="h-3 w-3 text-white" />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <DialogFooter>
-                    <LuxuryButton
-                      type="submit"
-                      className="w-full rounded-full h-12"
-                    >
-                      Create Outfit
-                    </LuxuryButton>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-            </div>
-          </div>
-        </header>
-
-        {/* Shuffled Outfit Card */}
-        {shuffledOutfit && shuffledOutfit.items && (
-          <Card className="mb-8 border-0 shadow-xl overflow-hidden rounded-[24px] bg-gradient-to-r from-amber-50 to-rose-50">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-amber-500" />
-                  <span className="font-serif text-xl font-semibold text-slate-900">Today's Shuffle</span>
-                </div>
-                <LuxuryButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShuffledOutfit(null)}
-                  className="rounded-full"
-                >
-                  <X className="h-4 w-4" />
-                </LuxuryButton>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {shuffledOutfit.items.map((item: any, index: number) => (
-                  <div key={index} className="flex-shrink-0 w-20">
-                    <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100">
-                      {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-300">
-                          <Layers className="h-6 w-6" />
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-xs text-center mt-1 text-slate-600 truncate">{item.name}</p>
-                  </div>
-                ))}
-              </div>
-              {shuffledOutfit.message && (
-                <p className="text-sm text-slate-600 mt-3 italic">{shuffledOutfit.message}</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search outfits..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-11 h-12 rounded-2xl border-slate-200 bg-white shadow-sm focus:border-[hsl(337,73%,26%)] focus:shadow-md transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2"
-              >
-                <X className="h-4 w-4 text-slate-400 hover:text-slate-600 transition-colors" />
-              </button>
-            )}
-          </div>
-          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="bg-white border border-slate-200 rounded-full h-12 p-1">
-              <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">All</TabsTrigger>
-              <TabsTrigger value="favorites" className="rounded-full data-[state=active]:bg-[hsl(337,73%,26%)] data-[state=active]:text-white">
-                <Heart className="h-4 w-4 mr-1" />
-                Favorites
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Results Count */}
-        {filteredOutfits.length > 0 && (
-          <div className="flex gap-3 mb-6">
-            <Badge variant="outline" className="border-slate-200 text-slate-600 rounded-full px-4 py-1">Showing: {filteredOutfits.length}</Badge>
-          </div>
-        )}
-
-        {/* Content */}
-        {outfitsLoading ? (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <OutfitCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : filteredOutfits.length === 0 ? (
-          <div className="space-y-8">
-            <Card className="max-w-md mx-auto border-0 shadow-xl rounded-[24px] bg-white">
-              <CardHeader className="text-center pb-2 pt-8">
-                <div
-                  className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-4"
-                  style={{ background: "hsl(337, 73%, 26%)10" }}
-                >
-                  <Layers className="h-8 w-8" style={{ color: "hsl(337, 73%, 26%)" }} />
-                </div>
-                <CardTitle className="font-serif text-2xl text-slate-900">
-                  {outfits?.length ? 'No Matches Found' : 'Create Your First Outfit'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4 pb-8">
-                <p className="text-slate-500 text-lg">
-                  {outfits?.length
-                    ? 'Try adjusting your search.'
-                    : 'Combine your wardrobe pieces into stunning outfits. Celura will help you style them perfectly.'}
-                </p>
-                {!outfits?.length && (
-                  <LuxuryButton
-                    onClick={() => setIsCreateDialogOpen(true)}
-                    className="rounded-full px-6 h-12"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Outfit
-                  </LuxuryButton>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Outfit Inspiration */}
-            {!outfits?.length && (
-              <div className="space-y-6">
+    // Loading State
+    if (outfitsLoading) {
+        return (
+            <div className="min-h-screen bg-[#F9F9F7] flex items-center justify-center">
                 <div className="text-center">
-                  <h3 className="font-serif text-2xl text-slate-900 mb-2">Outfit Inspiration</h3>
-                  <p className="text-slate-400 text-base">Curated looks to inspire your style</p>
+                    <div className="w-10 h-10 border-2 border-[#E5E5E5] border-t-[#1A1A1A] rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-sm text-[#6B6B6B]">Loading your outfits...</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {[
-                    {
-                      name: 'Business Casual',
-                      occasion: 'Work',
-                      items: 4,
-                      color: '#4f46e5',
-                      description: 'Professional yet relaxed'
-                    },
-                    {
-                      name: 'Weekend Brunch',
-                      occasion: 'Casual',
-                      items: 3,
-                      color: '#f59e0b',
-                      description: 'Effortlessly chic'
-                    },
-                    {
-                      name: 'Evening Elegance',
-                      occasion: 'Formal',
-                      items: 5,
-                      color: 'hsl(337, 73%, 26%)',
-                      description: 'Sophisticated glamour'
-                    },
-                  ].map((outfit, idx) => (
-                    <Card key={idx} className="overflow-hidden border-0 shadow-lg rounded-[24px] bg-white hover:shadow-xl transition-all group cursor-pointer hover:-translate-y-1" onClick={() => setIsCreateDialogOpen(true)}>
-                      <div className="aspect-[4/3] flex items-center justify-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${outfit.color}15 0%, ${outfit.color}30 100%)` }}>
-                        <Layers className="w-20 h-20 transition-transform group-hover:scale-110" style={{ color: outfit.color }} />
-                      </div>
-                      <CardContent className="p-5">
-                        <h4 className="font-semibold text-slate-900 text-lg mb-1">{outfit.name}</h4>
-                        <p className="text-sm text-slate-500 mb-3">{outfit.description}</p>
-                        <div className="flex items-center justify-between">
-                          <Badge className="rounded-full bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] text-xs hover:bg-[hsl(337,73%,26%)]/15">{outfit.occasion}</Badge>
-                          <span className="text-xs text-slate-400">{outfit.items} pieces</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredOutfits.map((outfit) => {
-              const outfitItems = getOutfitItems(outfit.items || []);
-              return (
-                <Card key={outfit.id} className="group overflow-hidden border-0 shadow-lg rounded-[24px] bg-white hover:shadow-xl transition-all hover:-translate-y-1">
-                  {/* Outfit Preview */}
-                  <div className="relative aspect-[4/3] bg-slate-100 rounded-t-[24px] overflow-hidden">
-                    <div className="grid grid-cols-2 gap-1 h-full p-2">
-                      {outfitItems.slice(0, 4).map((item, idx) => (
-                        <div key={item.id} className="bg-white rounded-lg overflow-hidden">
-                          {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs p-1 text-center">
-                              {item.name}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {outfit.favorite && (
-                      <div className="absolute top-3 right-3 rounded-full p-2 shadow-md" style={{ background: "hsl(337, 73%, 26%)" }}>
-                        <Heart className="h-4 w-4 fill-white text-white" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <LuxuryButton
-                        size="sm"
-                        variant="destructive"
-                        className="rounded-full"
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          HapticFeedback.heavy();
-                          openDeleteDialog({ id: outfit.id, name: outfit.name });
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </LuxuryButton>
-                    </div>
-                  </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-medium text-slate-900 mb-1">{outfit.name}</h3>
-                    {outfit.description && (
-                      <p className="text-sm text-slate-500 line-clamp-2 mb-2">{outfit.description}</p>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {outfit.occasion && (
-                        <Badge className="text-xs capitalize bg-[hsl(337,73%,26%)]/10 text-[hsl(337,73%,26%)] hover:bg-[hsl(337,73%,26%)]/15">{outfit.occasion}</Badge>
-                      )}
-                      {outfit.season && outfit.season !== 'all' && (
-                        <Badge variant="outline" className="text-xs capitalize border-slate-200 text-slate-500">{outfit.season}</Badge>
-                      )}
-                      <Badge variant="outline" className="text-xs border-slate-200 text-slate-500">
-                        {outfitItems.length} items
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </main>
+            </div>
+        );
+    }
 
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Delete Outfit"
-        description={`Are you sure you want to delete "${outfitToDelete?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        variant="danger"
-        onConfirm={async () => {
-          if (outfitToDelete) {
-            await handleDelete(outfitToDelete.id);
-          }
-        }}
-        isLoading={deleteOutfit.isPending}
-      />
-    </div>
-  );
+    return (
+        <AppLayout>
+
+            <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 lg:py-24">
+                {/* Header */}
+                <motion.header
+                    className="mb-16"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <div className="flex items-end justify-between">
+                        <div>
+                            <p className="text-xs tracking-[0.2em] uppercase text-[#6B6B6B] mb-4">
+                                Collection
+                            </p>
+                            <h1
+                                className="text-[#1A1A1A] text-5xl lg:text-7xl font-light leading-[0.9]"
+                                style={{
+                                    fontFamily: "'Playfair Display', serif",
+                                }}
+                            >
+                                Your <span className="italic text-[#80163A]">Lookbook</span>.
+                            </h1>
+                        </div>
+                        <Link href="/compose">
+                            <motion.button
+                                className="h-14 px-8 bg-[#1A1A1A] text-[#F9F9F7] text-sm tracking-wider uppercase font-medium rounded-full flex items-center gap-2 hover:bg-[#80163A] transition-colors shadow-lg"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span className="hidden sm:inline">Create New Look</span>
+                            </motion.button>
+                        </Link>
+                    </div>
+                </motion.header>
+
+                {/* Search & Filters */}
+                <motion.div
+                    className="mb-12 flex flex-col md:flex-row gap-6 justify-between items-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 }}
+                >
+                    <div className="relative w-full md:w-96">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A9A9A]" />
+                        <input
+                            type="text"
+                            placeholder="Search looks..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full h-12 pl-12 pr-4 bg-white border border-[#E5E5E5] rounded-full text-sm text-[#1A1A1A] placeholder:text-[#9A9A9A] focus:outline-none focus:border-[#1A1A1A] transition-colors"
+                        />
+                    </div>
+
+                    <div className="flex gap-2">
+                        {['all', 'favorites'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setSelectedTab(tab)}
+                                className={cn(
+                                    "px-6 py-3 rounded-full text-xs uppercase tracking-wider transition-all",
+                                    selectedTab === tab
+                                        ? "bg-[#1A1A1A] text-white"
+                                        : "bg-white border border-[#E5E5E5] text-[#6B6B6B] hover:border-[#1A1A1A]"
+                                )}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Outfits Grid - Masonry-ish Feel */}
+                {filteredOutfits.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {filteredOutfits.map((outfit, index) => (
+                            <motion.div
+                                key={outfit.id}
+                                initial={{ opacity: 0, y: 40 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: index * 0.1 }}
+                                className="group"
+                            >
+                                <div className="relative bg-[#FAF9F6] p-4 rounded-[2rem] transition-all duration-500 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] group-hover:-translate-y-2">
+                                    {/* Collage Grid */}
+                                    <div className="aspect-[3/4] grid grid-cols-2 gap-2 mb-6 overflow-hidden rounded-2xl bg-white">
+                                        {(Array.isArray(outfit.items) ? outfit.items : []).slice(0, 4).map((itemId: number, idx: number, arr: number[]) => {
+                                            const imageUrl = getItemImage(itemId);
+                                            const isSingle = arr.length === 1;
+                                            const isTriple = arr.length === 3;
+
+                                            // Dynamic grid logic for visual interest
+                                            let className = "relative overflow-hidden bg-gray-50";
+                                            if (isSingle) className += " col-span-2 row-span-2";
+                                            else if (isTriple && idx === 0) className += " col-span-2";
+
+                                            return (
+                                                <div key={idx} className={className}>
+                                                    {imageUrl ? (
+                                                        <img
+                                                            src={imageUrl}
+                                                            alt=""
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Grid3X3 className="w-6 h-6 text-[#D5D5D5]" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Info Card */}
+                                    <div className="px-2">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h3 className="text-xl text-[#1A1A1A] font-serif italic mb-1">
+                                                    {outfit.name}
+                                                </h3>
+                                                <p className="text-xs text-[#9A9A9A] uppercase tracking-wider">
+                                                    {(Array.isArray(outfit.items) ? outfit.items : []).length} Items
+                                                    {outfit.occasion && ` • ${outfit.occasion}`}
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {outfit.favorite && <Heart className="w-4 h-4 text-[#80163A] fill-[#80163A]" />}
+                                                <button
+                                                    onClick={() => handleDelete(outfit.id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Hover Action */}
+                                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-[#1A1A1A] hover:text-white transition-colors">
+                                            <ArrowUpRight className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                ) : (
+                    <motion.div
+                        className="py-32 text-center border border-dashed border-[#E5E5E5] rounded-[3rem]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        <div className="w-24 h-24 rounded-full bg-[#FAF9F6] flex items-center justify-center mx-auto mb-8">
+                            <Layers className="w-10 h-10 text-[#D5D5D5]" />
+                        </div>
+                        <h3 className="text-3xl text-[#1A1A1A] mb-4 font-serif italic">
+                            {searchQuery ? 'No looks found' : 'The Canvas is Empty'}
+                        </h3>
+                        <p className="text-[#6B6B6B] mb-10 max-w-md mx-auto">
+                            {searchQuery
+                                ? 'Try adjusting your search terms.'
+                                : 'Start curating your personal collection in the Studio.'}
+                        </p>
+                        {!searchQuery && (
+                            <Link href="/compose">
+                                <motion.button
+                                    className="h-14 px-10 bg-[#1A1A1A] text-[#F9F9F7] text-sm tracking-widest uppercase font-medium rounded-full inline-flex items-center gap-3 hover:bg-[#80163A] transition-colors"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Enter Studio
+                                </motion.button>
+                            </Link>
+                        )}
+                    </motion.div>
+                )}
+            </div>
+        </AppLayout >
+    );
 }
+
+export default OutfitPage;
