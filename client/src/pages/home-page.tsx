@@ -187,7 +187,6 @@ export function HomePage() {
 
                     {/* DAILY LOOK (Right) */}
                     <motion.div
-                        <motion.div
                         className="lg:col-span-7 relative flex flex-col justify-between min-h-[450px] lg:min-h-[380px] h-full rounded-[24px] bg-white border border-gray-100 p-6 md:p-8 shadow-xl shadow-gray-100/50 overflow-hidden"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
