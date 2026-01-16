@@ -214,44 +214,69 @@ export function HomePage() {
                                     </div>
                                 </div>
 
-                                {/* Refined Layout: 1 Main + Vertical Stack */}
-                                <div className="flex-1 grid grid-cols-12 gap-3 mb-5 relative min-h-0 overflow-hidden">
-                                    {(Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3).map((itemId: number, idx: number, arr: any[]) => {
-                                        const img = getItemImage(itemId);
+                                {/* 3. PREMIUM OUTFIT GRID (Robust Layout) */}
+                                <div className="flex-1 w-full min-h-0 mb-4 relative">
+                                    {(() => {
+                                        const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
+                                        const count = items.length;
 
-                                        if (arr.length === 3) {
-                                            if (idx === 0) {
-                                                return (
-                                                    <div key={idx} className="col-span-7 h-full rounded-xl overflow-hidden bg-[#FAF9F6] relative group/img flex items-center justify-center p-2">
-                                                        {img ? (
-                                                            <img src={img} className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover/img:scale-105" />
-                                                        ) : <div className="w-full h-full flex items-center justify-center"><Shirt className="text-gray-200" /></div>}
-                                                    </div>
-                                                );
-                                            } else {
-                                                if (idx === 1) return (
-                                                    <div key="stack" className="col-span-5 grid grid-rows-2 gap-3 h-full">
-                                                        {[arr[1], arr[2]].map((sId, sIdx) => (
-                                                            <div key={sIdx} className="rounded-xl overflow-hidden bg-[#FAF9F6] relative group/simg flex items-center justify-center p-2">
-                                                                {getItemImage(sId) ? (
-                                                                    <img src={getItemImage(sId)} className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover/simg:scale-105" />
-                                                                ) : <div className="w-full h-full flex items-center justify-center"><Shirt className="text-gray-200" /></div>}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                );
-                                                return null;
-                                            }
+                                        // Helper: The "Gallery Card" Component
+                                        const GalleryCard = ({ itemId, className = "" }: { itemId: number, className?: string }) => {
+                                            const img = getItemImage(itemId);
+                                            return (
+                                                <div className={`relative overflow-hidden rounded-xl bg-[#F6F6F6] border border-gray-100 flex items-center justify-center p-4 group/card ${className}`}>
+                                                    {img ? (
+                                                        <img
+                                                            src={img}
+                                                            className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-sm transition-transform duration-700 group-hover/card:scale-105"
+                                                            alt="Outfit item"
+                                                        />
+                                                    ) : (
+                                                        <Shirt className="w-6 h-6 text-gray-300" />
+                                                    )}
+                                                </div>
+                                            );
+                                        };
+
+                                        // LAYOUT 1: SINGLE HERO (1 Item)
+                                        if (count === 1) {
+                                            return (
+                                                <div className="w-full h-full p-2">
+                                                    <GalleryCard itemId={items[0]} className="w-full h-full" />
+                                                </div>
+                                            );
                                         }
 
-                                        return (
-                                            <div key={idx} className={`${arr.length === 1 ? 'col-span-12' : 'col-span-6'} h-full rounded-xl overflow-hidden bg-[#FAF9F6] relative group/img flex items-center justify-center p-2`}>
-                                                {img ? (
-                                                    <img src={img} className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover/img:scale-105" />
-                                                ) : <div className="w-full h-full flex items-center justify-center"><Shirt className="text-gray-200" /></div>}
-                                            </div>
-                                        );
-                                    })}
+                                        // LAYOUT 2: SPLIT (2 Items)
+                                        if (count === 2) {
+                                            return (
+                                                <div className="w-full h-full grid grid-cols-2 gap-3">
+                                                    <GalleryCard itemId={items[0]} className="h-full" />
+                                                    <GalleryCard itemId={items[1]} className="h-full" />
+                                                </div>
+                                            );
+                                        }
+
+                                        // LAYOUT 3: COLLAGE (3 Items - 1 Main, 2 Stacked)
+                                        if (count >= 3) {
+                                            return (
+                                                <div className="w-full h-full grid grid-cols-12 gap-3">
+                                                    {/* Main Hero (Left) */}
+                                                    <div className="col-span-7 h-full">
+                                                        <GalleryCard itemId={items[0]} className="w-full h-full" />
+                                                    </div>
+
+                                                    {/* Stack (Right) */}
+                                                    <div className="col-span-5 grid grid-rows-2 gap-3 h-full">
+                                                        <GalleryCard itemId={items[1]} className="h-full" />
+                                                        <GalleryCard itemId={items[2]} className="h-full" />
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        return <div className="w-full h-full" />;
+                                    })()}
                                 </div>
 
                                 <div className="mt-auto">
