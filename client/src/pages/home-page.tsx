@@ -271,30 +271,33 @@ export function HomePage() {
 
 
                 {/* ========================================== */}
-                {/* 3. QUICK ACTIONS - HORIZONTAL GRID */}
+                {/* 3. QUICK ACTIONS - MINIMAL TEXT STYLE */}
                 {/* ========================================== */}
                 <motion.section
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                    className="py-6 border-y border-gray-100"
                 >
-                    {[
-                        { icon: Plus, label: "Add Item", href: "/wardrobe", color: "bg-[#80163A]" },
-                        { icon: Layers, label: "Create Look", href: "/compose", color: "bg-[#1A1A1A]" },
-                        { icon: Camera, label: "Log Outfit", href: "/wardrobe", color: "bg-emerald-600" },
-                        { icon: Plane, label: "Trip Packer", href: "/trips", color: "bg-indigo-600" },
-                    ].map((action, i) => (
-                        <Link key={i} href={action.href}>
-                            <div className="relative h-20 rounded-2xl bg-white border border-gray-100 p-4 flex items-center gap-3 cursor-pointer hover:border-[#1A1A1A] hover:shadow-lg transition-all group overflow-hidden">
-                                <div className={`w-10 h-10 rounded-xl ${action.color} flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform`}>
-                                    <action.icon className="w-4 h-4" />
+                    <div className="flex items-center justify-between gap-4 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+                        {[
+                            { label: "Add to Wardrobe", href: "/wardrobe" },
+                            { label: "Create Look", href: "/compose" },
+                            { label: "Plan a Trip", href: "/trips" },
+                            { label: "View Calendar", href: "/calendar" },
+                        ].map((action, i) => (
+                            <Link key={i} href={action.href}>
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#F5F4F0] transition-colors cursor-pointer group whitespace-nowrap">
+                                    <span className="text-[10px] font-mono text-gray-300 group-hover:text-[#80163A] transition-colors">
+                                        0{i + 1}
+                                    </span>
+                                    <span className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#80163A] transition-colors">
+                                        {action.label}
+                                    </span>
                                 </div>
-                                <span className="text-sm font-semibold text-[#1A1A1A]">{action.label}</span>
-                                <ArrowRight className="w-4 h-4 text-gray-300 absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        ))}
+                    </div>
                 </motion.section>
 
 
