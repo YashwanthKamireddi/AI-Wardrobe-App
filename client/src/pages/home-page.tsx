@@ -7,17 +7,7 @@ import { useOutfits } from "@/hooks/use-outfits";
 import WeatherLocationModal from "@/components/weather-location-modal";
 import { motion } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import {
-    MapPin,
-    Sparkles,
-    ArrowRight,
-    Shirt,
-    Plus,
-    Camera,
-    Layers,
-    Shuffle,
-    Plane
-} from "lucide-react";
+import { Plus, Search, Sparkles, MapPin, Zap, X, ArrowRight, Shirt, RefreshCw, Calendar as CalendarIcon, LogOut, Info, Settings, User, Shuffle, Layers, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Outfit } from "@shared/schema";
 
 /**
@@ -241,30 +231,30 @@ export function HomePage() {
                                     </div>
                                 </div>
 
-                                {/* RIGHT: IMAGE GALLERY (65%) - PREMIUM RACK */}
+                                {/* RIGHT: IMAGE GALLERY (65%) - SPOTLIGHT CAROUSEL */}
                                 <div className="relative w-full lg:w-[65%] h-full bg-[#FAFAFA] group/gallery overflow-hidden">
-                                    {/* Ambient Light/Gradient Hints */}
-                                    <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#FAFAFA] to-transparent z-10 pointer-events-none" />
-                                    <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#FAFAFA] to-transparent z-10 pointer-events-none" />
-
-                                    {/* Desktop Refresh Button (Floating Glass) */}
+                                    {/* Desktop Refresh Button (Top Right - Glass) */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="hidden lg:flex absolute top-5 right-5 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-white/50 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:scale-105 transition-all duration-300 group/refresh"
+                                        className="hidden lg:flex absolute top-5 right-5 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/60 backdrop-blur-md border border-white/50 shadow-sm hover:scale-105 transition-all duration-300 group/refresh"
                                     >
                                         <Shuffle className={`w-4 h-4 text-[#1A1A1A] transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
 
-                                    {/* Scrollable Item Rack */}
-                                    <div className="w-full h-full flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 gap-4 pb-2">
+                                    {/* Spotlight Carousel (Snap Scroll) */}
+                                    <div
+                                        id="daily-look-carousel"
+                                        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
+                                    >
                                         {(() => {
                                             const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []);
 
+                                            // Empty State
                                             if (items.length === 0) return (
                                                 <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-2">
-                                                    <Shirt className="w-8 h-8 opacity-20" />
-                                                    <span className="text-[10px] uppercase tracking-widest opacity-40">Empty Rack</span>
+                                                    <Shirt className="w-12 h-12 opacity-10" />
+                                                    <span className="text-[10px] uppercase tracking-widest opacity-30 font-medium">No Items</span>
                                                 </div>
                                             );
 
@@ -273,30 +263,54 @@ export function HomePage() {
                                                 return (
                                                     <div
                                                         key={itemId}
-                                                        className="relative h-[80%] w-[220px] shrink-0 snap-center rounded-[20px] bg-white flex items-center justify-center shadow-[0_2px_16px_rgba(0,0,0,0.03)] border border-white group/item transition-all duration-500 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                                                        className="relative min-w-full h-full snap-center flex items-center justify-center bg-[#FAFAFA] p-8"
                                                     >
-                                                        {/* Item Number Badge (Subtle) */}
-                                                        <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-[#FAFAFA] flex items-center justify-center text-[10px] font-medium text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                                            {idx + 1}
-                                                        </div>
-
                                                         {img ? (
-                                                            <img
+                                                            <motion.img
+                                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                                whileInView={{ opacity: 1, scale: 1 }}
+                                                                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                                                                 src={img}
                                                                 alt={`Item ${idx + 1}`}
-                                                                className="w-full h-full object-contain p-5 mix-blend-multiply opacity-90 group-hover/item:opacity-100 group-hover/item:scale-105 transition-all duration-500"
+                                                                className="w-full h-full object-contain filter drop-shadow-xl"
                                                             />
                                                         ) : (
-                                                            <Shirt className="w-8 h-8 text-gray-100" />
+                                                            <Shirt className="w-16 h-16 text-gray-200/50" />
                                                         )}
+
+                                                        {/* Caption/Counter (Bottom Center) */}
+                                                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-white/50 text-[10px] uppercase tracking-widest font-bold text-[#1A1A1A]/60 shadow-sm">
+                                                            {idx + 1} / {items.length}
+                                                        </div>
                                                     </div>
                                                 );
                                             });
                                         })()}
-
-                                        {/* Spacer for right padding/snap */}
-                                        <div className="w-2 shrink-0" />
                                     </div>
+
+                                    {/* Navigation Arrows (Desktop Only - Show on Hover) */}
+                                    {dailyLook.items.length > 1 && (
+                                        <>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    document.getElementById('daily-look-carousel')?.scrollBy({ left: -300, behavior: 'smooth' });
+                                                }}
+                                                className="hidden lg:flex absolute top-1/2 left-4 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white/40 backdrop-blur-md border border-white/50 opacity-0 group-hover/gallery:opacity-100 hover:bg-white/80 transition-all text-[#1A1A1A]"
+                                            >
+                                                <ChevronLeft className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    document.getElementById('daily-look-carousel')?.scrollBy({ left: 300, behavior: 'smooth' });
+                                                }}
+                                                className="hidden lg:flex absolute top-1/2 right-4 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white/40 backdrop-blur-md border border-white/50 opacity-0 group-hover/gallery:opacity-100 hover:bg-white/80 transition-all text-[#1A1A1A]"
+                                            >
+                                                <ChevronRight className="w-5 h-5" />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </>
                         ) : (
