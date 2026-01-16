@@ -175,26 +175,29 @@ export function HomePage() {
                         </div>
                     </motion.div>
 
-                    {/* DAILY LOOK (Right) */}
+                    {/* DAILY LOOK (Unified Canvas) */}
                     <motion.div
-                        className="lg:col-span-7 relative h-[500px] lg:h-[380px] rounded-[24px] bg-white border border-gray-100 p-0 overflow-hidden shadow-xl shadow-gray-100/50 flex flex-col lg:flex-row"
+                        className="lg:col-span-7 relative h-[500px] lg:h-[380px] rounded-[24px] bg-[#FAF9F6] border border-gray-100/50 p-0 overflow-hidden shadow-xl shadow-gray-100/50 flex flex-col lg:flex-row group/widget"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
                     >
+                        {/* UNIFIED BACKGROUND TEXTURE */}
+                        <div className="absolute inset-0 opacity-[0.5] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+
                         {dailyLook ? (
                             <>
-                                {/* LEFT: ACTIONS & INFO (35%) */}
-                                <div className="p-6 md:p-8 lg:p-10 flex flex-col justify-between items-start w-full lg:w-[35%] h-full z-10 bg-white relative">
+                                {/* LEFT: ACTIONS & INFO (35%) - Transparent on Canvas */}
+                                <div className="p-6 md:p-8 lg:p-10 flex flex-col justify-between items-start w-full lg:w-[35%] h-full z-10 relative">
                                     <div className="w-full">
                                         <div className="flex justify-between items-center mb-6">
                                             <div className="flex flex-col gap-1">
-                                                <p className="text-[9px] font-bold text-[#80163A] uppercase tracking-[0.3em]">
+                                                <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.3em]">
                                                     Daily Edit
                                                 </p>
-                                                {/* Match Badge - Minimal */}
+                                                {/* Match Badge - Integrated */}
                                                 <div className="flex items-center gap-1.5 opacity-60">
-                                                    <Sparkles className="w-3 h-3 text-green-600" />
+                                                    <Sparkles className="w-3 h-3 text-[#1A1A1A]" />
                                                     <span className="text-[10px] font-medium text-[#1A1A1A]">98% Match</span>
                                                 </div>
                                             </div>
@@ -202,7 +205,7 @@ export function HomePage() {
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                                 disabled={isGenerating}
-                                                className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full border border-gray-100"
+                                                className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full border border-gray-200"
                                             >
                                                 <Shuffle className={`w-3 h-3 text-gray-400 ${isGenerating ? 'animate-spin' : ''}`} />
                                             </button>
@@ -211,8 +214,9 @@ export function HomePage() {
                                         <h3 className="text-3xl lg:text-4xl text-[#1A1A1A] leading-tight mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                                             {dailyLook.name}
                                         </h3>
-                                        <p className="text-sm text-gray-500 font-light leading-relaxed line-clamp-3">
-                                            Curated for {weather?.condition?.toLowerCase() || "today"}. A perfect balance of style and comfort.
+                                        <p className="text-sm text-gray-500 font-medium leading-relaxed line-clamp-3">
+                                            Curated for {weather?.condition?.toLowerCase() || "today"}. <br />
+                                            <span className="opacity-50 font-normal">Effortless style for the modern day.</span>
                                         </p>
                                     </div>
 
@@ -223,34 +227,34 @@ export function HomePage() {
                                             </button>
                                         </Link>
                                         <Link href={`/compose`}>
-                                            <button className="w-full h-12 bg-transparent text-[#1A1A1A] border border-gray-200 rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-gray-50 transition-colors">
+                                            <button className="w-full h-12 bg-transparent text-[#1A1A1A] border border-[#1A1A1A]/10 rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-[#1A1A1A]/5 transition-colors">
                                                 Customize
                                             </button>
                                         </Link>
                                     </div>
                                 </div>
 
-                                {/* RIGHT: IMAGE GALLERY (65%) - MAGAZINE COLLAGE */}
-                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAF9F6] p-4 lg:p-6">
-                                    {/* Background Texture (Subtle Paper) */}
-                                    <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+                                {/* RIGHT: IMAGE COLLAGE (65%) - Pure Collage, No Boards */}
+                                <div className="relative w-full lg:w-[65%] h-full p-6 z-10">
+                                    {/* Simple Divider Line for visual anchors */}
+                                    <div className="absolute left-0 top-10 bottom-10 w-px bg-[#1A1A1A]/5 hidden lg:block" />
 
-                                    {/* Desktop Refresh Button (Minimal floating) */}
+                                    {/* Desktop Refresh Button */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="hidden lg:flex absolute top-6 right-6 z-20 w-8 h-8 items-center justify-center rounded-full bg-white/40 backdrop-blur-md hover:bg-[#1A1A1A] hover:text-white transition-all duration-300 group/refresh"
+                                        className="hidden lg:flex absolute top-6 right-6 z-20 w-8 h-8 items-center justify-center rounded-full bg-transparent border border-[#1A1A1A]/10 hover:border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-all duration-300 group/refresh"
                                     >
                                         <Shuffle className={`w-3 h-3 transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
 
-                                    {/* Magazine Grid (Responsive: Flex Col Mobile -> Grid Desktop) */}
-                                    <div className="w-full h-full flex flex-col lg:grid lg:grid-cols-12 gap-3 relative z-10">
+                                    {/* Collage Grid */}
+                                    <div className="w-full h-full flex flex-col lg:grid lg:grid-cols-12 gap-0 relative">
                                         {(() => {
                                             const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
 
                                             if (items.length === 0) return (
-                                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-gray-200 rounded-xl">
+                                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-gray-200/50 rounded-xl">
                                                     <Shirt className="w-8 h-8 opacity-20" />
                                                     <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium">Atelier Empty</span>
                                                 </div>
@@ -259,7 +263,7 @@ export function HomePage() {
                                             return (
                                                 <>
                                                     {/* MAIN HERO ITEM (Left - Large) */}
-                                                    <div className={`relative w-full lg:w-auto ${items.length === 1 ? 'lg:col-span-12' : 'lg:col-span-8'} flex-1 lg:h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden`}>
+                                                    <div className={`relative w-full lg:w-auto ${items.length === 1 ? 'lg:col-span-12' : 'lg:col-span-7'} flex-1 lg:h-full flex items-center justify-center overflow-hidden`}>
                                                         {getItemImage(items[0]) ? (
                                                             <motion.img
                                                                 initial={{ opacity: 0, scale: 0.95 }}
@@ -267,23 +271,18 @@ export function HomePage() {
                                                                 transition={{ duration: 0.5 }}
                                                                 src={getItemImage(items[0])!}
                                                                 alt="Main Piece"
-                                                                className="w-full h-full object-contain p-6 mix-blend-multiply"
+                                                                className="w-full h-full object-contain p-2 mix-blend-multiply drop-shadow-xl"
                                                             />
                                                         ) : <Shirt className="w-10 h-10 text-gray-100" />}
-
-                                                        {/* Label */}
-                                                        <div className="absolute bottom-4 left-4 px-2 py-1 bg-[#FAFAFA]/90 backdrop-blur text-[9px] font-bold tracking-widest uppercase text-gray-500 rounded-sm">
-                                                            01 • Main
-                                                        </div>
                                                     </div>
 
-                                                    {/* SECONDARY STACK (Right - Vertical on Desktop, Horizontal Row on Mobile) */}
+                                                    {/* SECONDARY STACK (Right) */}
                                                     {items.length > 1 && (
-                                                        <div className="w-full h-32 lg:h-full lg:col-span-4 flex flex-row lg:flex-col gap-3">
+                                                        <div className="w-full h-32 lg:h-full lg:col-span-5 flex flex-row lg:flex-col justify-center gap-4 lg:pl-6">
                                                             {items.slice(1).map((itemId, idx) => (
                                                                 <div
                                                                     key={itemId}
-                                                                    className="relative flex-1 rounded-2xl bg-white flex items-center justify-center overflow-hidden"
+                                                                    className="relative flex-1 lg:flex-initial lg:h-[45%] flex items-center justify-center overflow-hidden"
                                                                 >
                                                                     {getItemImage(itemId) ? (
                                                                         <motion.img
@@ -292,14 +291,9 @@ export function HomePage() {
                                                                             transition={{ delay: 0.1 * (idx + 1) }}
                                                                             src={getItemImage(itemId)!}
                                                                             alt={`Accessory ${idx + 1}`}
-                                                                            className="w-full h-full object-contain p-4 mix-blend-multiply"
+                                                                            className="w-full h-full object-contain p-2 mix-blend-multiply drop-shadow-lg"
                                                                         />
                                                                     ) : <Shirt className="w-6 h-6 text-gray-100" />}
-
-                                                                    {/* Label */}
-                                                                    <div className="absolute bottom-3 right-3 px-1.5 py-0.5 bg-[#FAFAFA]/90 backdrop-blur text-[8px] font-bold tracking-widest uppercase text-gray-400 rounded-sm">
-                                                                        0{idx + 2}
-                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -312,15 +306,18 @@ export function HomePage() {
                             </>
                         ) : (
                             // Empty State
-                            <div className="w-full h-full flex flex-col items-center justify-center text-center p-8">
-                                <div className="w-16 h-16 rounded-full bg-[#FAF9F6] flex items-center justify-center mb-4 ring-1 ring-gray-100">
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 z-10 relative">
+                                <div className="w-16 h-16 rounded-full bg-[#FAFAFA] flex items-center justify-center mb-4 ring-1 ring-gray-100/50">
                                     <Layers className="w-6 h-6 text-gray-300" />
                                 </div>
                                 <h3 className="text-xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                                     Your Digital Atelier
                                 </h3>
+                                <p className="text-gray-400 text-xs mb-6 max-w-[200px] leading-relaxed">
+                                    Start by adding items to your wardrobe. Your personal stylist is waiting.
+                                </p>
                                 <Link href="/compose">
-                                    <button className="mt-4 px-6 py-3 bg-[#1A1A1A] text-white rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#80163A] transition-colors">
+                                    <button className="px-6 py-3 bg-[#1A1A1A] text-white rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#80163A] transition-colors">
                                         Enter Studio
                                     </button>
                                 </Link>
