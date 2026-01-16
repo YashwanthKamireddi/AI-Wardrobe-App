@@ -21,6 +21,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     app.post("/api/upload-image", uploadRateLimiter, upload.single('image'), servicesController.uploadImageHandler);
     app.post("/api/scrape-product", servicesController.scrapeProduct);
     app.get("/api/analytics/wardrobe", servicesController.getAnalytics);
+    app.get("/api/weather", servicesController.getWeather);
 
     // ============================================
     // WARDROBE

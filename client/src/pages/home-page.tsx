@@ -24,8 +24,22 @@ export function HomePage() {
     const [currentTime, setCurrentTime] = useState(new Date());
 
     // Data Hooks
-    const weatherLocation = typeof window !== 'undefined' ? localStorage.getItem("weatherLocation") || undefined : undefined;
-    const { data: weather, isLoading: weatherLoading } = useWeather(weatherLocation);
+    // Data Hooks
+    const savedLocation = typeof window !== 'undefined' ? localStorage.getItem("weatherLocation") || undefined : undefined;
+    const [coords, setCoords] = useState<string | undefined>(undefined);
+
+    // Auto-detect location if not saved
+    useEffect(() => {
+        if (!savedLocation && "geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setCoords(`${position.coords.latitude},${position.coords.longitude}`);
+            });
+        }
+    }, [savedLocation]);
+
+    // Use saved location OR coordinates
+    const { data: weather, isLoading: weatherLoading } = useWeather(savedLocation || coords);
+
     const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
     const { data: outfits, isLoading: outfitsLoading } = useOutfits();
     const [showWeatherModal, setShowWeatherModal] = useState(false);
@@ -197,8 +211,13 @@ export function HomePage() {
                                                 </p>
                                                 {/* Match Badge - Integrated */}
                                                 <div className="flex items-center gap-1.5 opacity-80">
-                                                    <Sparkles className="w-3 h-3 text-[#1A1A1A]" />
-                                                    <span className="text-[10px] font-medium text-[#1A1A1A]">98% Match</span>
+                                                    <MapPin className="w-3 h-3 text-[#1A1A1A]" />
+                                                    <span
+                                                        className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#1A1A1A] cursor-pointer hover:underline underline-offset-4 decoration-1"
+                                                        onClick={() => setShowWeatherModal(true)}
+                                                    >
+                                                        {savedLocation || weather?.location || "Auto Sensing..."}
+                                                    </span>
                                                 </div>
                                             </div>
 

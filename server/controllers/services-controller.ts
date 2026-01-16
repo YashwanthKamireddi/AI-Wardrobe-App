@@ -148,6 +148,79 @@ export const scrapeProduct = async (req: Request, res: Response) => {
     }
 };
 
+export const getWeather = async (req: Request, res: Response) => {
+    try {
+        const { location } = req.query;
+
+        if (!location || typeof location !== "string") {
+            // Default to London if no location provided (or handle as error)
+            return res.status(400).json({ message: "Location is required" });
+        }
+
+        let lat: number, lon: number;
+        let locationName = location;
+
+        // Check if location is "lat,long" format
+        if (location.includes(",")) {
+            const [latStr, lonStr] = location.split(",");
+            lat = parseFloat(latStr);
+            lon = parseFloat(lonStr);
+
+            // Optional: Reverse geocode to get city name (for display),
+            // but for now we can just use "Current Location" or the coordinates
+            locationName = "Current Location";
+        } else {
+            // Geocode the city name using Open-Meteo Geocoding API
+            const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
+            const geoRes = await axios.get(geoUrl);
+
+            if (!geoRes.data.results || geoRes.data.results.length === 0) {
+                return res.status(404).json({ message: "Location not found" });
+            }
+
+            lat = geoRes.data.results[0].latitude;
+            lon = geoRes.data.results[0].longitude;
+            locationName = geoRes.data.results[0].name;
+        }
+
+        // Fetch Weather Data
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&temperature_unit=celsius&wind_speed_unit=kmh`;
+        const weatherRes = await axios.get(weatherUrl);
+        const data = weatherRes.data.current;
+
+        // Map WMO Weather Codes to readable conditions
+        // https://open-meteo.com/en/docs
+        const wmoCode = data.weather_code;
+        let condition = "Clear";
+        let icon = "sun";
+
+        if (wmoCode === 0) { condition = "Clear Sky"; icon = "sun"; }
+        else if (wmoCode >= 1 && wmoCode <= 3) { condition = "Cloudy"; icon = "cloud"; }
+        else if (wmoCode >= 45 && wmoCode <= 48) { condition = "Foggy"; icon = "cloud-fog"; }
+        else if (wmoCode >= 51 && wmoCode <= 55) { condition = "Drizzle"; icon = "cloud-drizzle"; }
+        else if (wmoCode >= 56 && wmoCode <= 57) { condition = "Freezing Drizzle"; icon = "cloud-drizzle"; }
+        else if (wmoCode >= 61 && wmoCode <= 65) { condition = "Rain"; icon = "cloud-rain"; }
+        else if (wmoCode >= 66 && wmoCode <= 67) { condition = "Freezing Rain"; icon = "cloud-rain"; }
+        else if (wmoCode >= 71 && wmoCode <= 77) { condition = "Snow"; icon = "cloud-snow"; }
+        else if (wmoCode >= 80 && wmoCode <= 82) { condition = "Heavy Rain"; icon = "cloud-lightning"; }
+        else if (wmoCode >= 85 && wmoCode <= 86) { condition = "Snow Showers"; icon = "cloud-snow"; }
+        else if (wmoCode >= 95 && wmoCode <= 99) { condition = "Thunderstorm"; icon = "cloud-lightning"; }
+
+        res.json({
+            location: locationName,
+            temperature: Math.round(data.temperature_2m),
+            condition: condition,
+            humidity: data.relative_humidity_2m,
+            windSpeed: data.wind_speed_10m,
+            icon: icon
+        });
+
+    } catch (error) {
+        console.error("Weather API error:", error);
+        res.status(500).json({ message: "Failed to fetch weather data" });
+    }
+};
+
 export const getAnalytics = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
     try {
