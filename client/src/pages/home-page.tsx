@@ -198,9 +198,16 @@ export function HomePage() {
                                 <div className="p-6 md:p-8 flex flex-col justify-between items-start w-full lg:w-[35%] h-full z-10 bg-white relative">
                                     <div className="w-full">
                                         <div className="flex justify-between items-start mb-2">
-                                            <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.25em]">
-                                                Daily Edit
-                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.25em]">
+                                                    Daily Edit
+                                                </p>
+                                                <div className="px-1.5 py-0.5 rounded-full bg-green-50 border border-green-100 flex items-center gap-1">
+                                                    <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+                                                    <span className="text-[8px] font-bold text-green-700 uppercase tracking-wider">98% Match</span>
+                                                </div>
+                                            </div>
+
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                                 disabled={isGenerating}
@@ -212,15 +219,23 @@ export function HomePage() {
                                         <h3 className="text-2xl lg:text-3xl text-[#1A1A1A] leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                                             {dailyLook.name}
                                         </h3>
-                                        <p className="text-xs text-gray-400 font-medium line-clamp-2">
-                                            Curated for {weather?.condition?.toLowerCase() || "today"}.
+                                        <p className="text-xs text-gray-400 font-medium line-clamp-2 mb-4">
+                                            Perfectly curated for {weather?.condition?.toLowerCase() || "today"}. average temperature.
                                         </p>
                                     </div>
 
-                                    <div className="w-full mt-4">
+                                    <div className="w-full flex flex-col gap-2">
                                         <Link href={`/outfits`}>
-                                            <button className="w-full h-12 bg-[#1A1A1A] text-white rounded-xl font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-[#80163A] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-black/5">
-                                                Wear Look
+                                            <button className="w-full h-11 bg-[#1A1A1A] text-white rounded-xl font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-[#80163A] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-black/5">
+                                                Wear This Look
+                                            </button>
+                                        </Link>
+                                        <Link href={`/compose`}>
+                                            <button className="w-full h-11 bg-white text-[#1A1A1A] border border-gray-200 rounded-xl font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                                                <div className="w-3 h-3 rounded-full border border-[#1A1A1A]/30 flex items-center justify-center">
+                                                    <div className="w-1 h-1 bg-[#1A1A1A] rounded-full" />
+                                                </div>
+                                                Customize
                                             </button>
                                         </Link>
                                     </div>
@@ -232,34 +247,63 @@ export function HomePage() {
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="hidden lg:flex absolute top-4 right-4 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm border border-white/50 hover:bg-white transition-all shadow-sm"
+                                        className="hidden lg:flex absolute top-4 right-4 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm border border-white/50 hover:bg-white transition-all shadow-sm group"
                                     >
-                                        <Shuffle className={`w-4 h-4 text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
+                                        <Shuffle className={`w-4 h-4 text-[#1A1A1A] transition-transform duration-500 group-hover:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
 
                                     {/* Images Grid */}
-                                    <div className="w-full h-full p-2 grid grid-cols-2 gap-2">
+                                    <div className="w-full h-full p-3">
                                         {(() => {
-                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 2);
-                                            return items.map((itemId, idx) => {
-                                                const img = getItemImage(itemId);
-                                                return (
-                                                    <div
-                                                        key={itemId}
-                                                        className={`relative overflow-hidden rounded-xl bg-white flex items-center justify-center ${items.length === 1 ? 'col-span-2' : ''}`}
-                                                    >
-                                                        {img ? (
-                                                            <img
-                                                                src={img}
-                                                                alt="Item"
-                                                                className="w-full h-full object-contain p-4 hover:scale-105 transition-transform duration-700"
-                                                            />
-                                                        ) : (
-                                                            <Shirt className="w-8 h-8 text-gray-200" />
-                                                        )}
-                                                    </div>
-                                                )
-                                            });
+                                            // Show up to 3 items for the best layout (1 big, 2 small stacked)
+                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
+
+                                            // Layout Logic:
+                                            // 1 Item: Full width
+                                            // 2 Items: Split 50/50 vertically
+                                            // 3 Items: Left (Big), Right (Stacked)
+
+                                            if (items.length === 0) return null;
+
+                                            return (
+                                                <div className={`w-full h-full grid gap-3 ${items.length === 3 ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                                                    {items.map((itemId, idx) => {
+                                                        const img = getItemImage(itemId);
+                                                        // Grid spanning logic
+                                                        const isMain = idx === 0;
+                                                        const isThreeItemMain = items.length === 3 && isMain;
+
+                                                        // If 3 items: Loop 0 is col-span-1 row-span-2 (Left Big). Loops 1 & 2 are normal.
+                                                        // If 2 items: Both are col-span-1 row-span-2 (Full height split).
+                                                        // If 1 item: col-span-2 row-span-2.
+
+                                                        let gridClass = "";
+                                                        if (items.length === 1) gridClass = "col-span-2 row-span-2";
+                                                        else if (items.length === 2) gridClass = "col-span-1 row-span-2";
+                                                        else if (items.length === 3) {
+                                                            if (idx === 0) gridClass = "col-span-1 row-span-2"; // Main Left
+                                                            else gridClass = "col-span-1 row-span-1"; // Stacked Right
+                                                        }
+
+                                                        return (
+                                                            <div
+                                                                key={itemId}
+                                                                className={`relative overflow-hidden rounded-xl bg-white flex items-center justify-center shadow-sm border border-gray-100/50 ${gridClass}`}
+                                                            >
+                                                                {img ? (
+                                                                    <img
+                                                                        src={img}
+                                                                        alt="Item"
+                                                                        className="w-full h-full object-contain p-4 hover:scale-105 transition-transform duration-700 mixture-blend-multiply"
+                                                                    />
+                                                                ) : (
+                                                                    <Shirt className="w-6 h-6 text-gray-200" />
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            );
                                         })()}
                                     </div>
                                 </div>
