@@ -47,6 +47,108 @@ export async function removeImageBackground(
     }
 }
 
+/**
+ * Process an image from a URL - fetches and removes background
+ * For use when user pastes/imports a URL instead of uploading a file
+ */
+export async function processImageFromUrl(
+    imageUrl: string,
+    onProgress?: (stage: string, progress: number) => void
+): Promise<{ processedUrl: string; processedBlob: Blob }> {
+    onProgress?.('Fetching image...', 5);
+
+    try {
+        // Fetch the image from URL
+        const response = await fetch(imageUrl, {
+            mode: 'cors',
+            credentials: 'omit'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        onProgress?.('Removing background...', 20);
+
+        // Remove background
+        const result = await removeImageBackground(blob, (p) => {
+            onProgress?.('Removing background...', 20 + (p * 0.7));
+        });
+
+        onProgress?.('Complete!', 100);
+        return { processedUrl: result.url, processedBlob: result.blob };
+
+    } catch (error) {
+        console.error('URL processing failed:', error);
+        // If fetch fails (CORS), try using a proxy approach via canvas
+        return await processImageViaCanvas(imageUrl, onProgress);
+    }
+}
+
+/**
+ * Fallback: Process image via canvas when direct fetch fails (CORS issues)
+ */
+async function processImageViaCanvas(
+    imageUrl: string,
+    onProgress?: (stage: string, progress: number) => void
+): Promise<{ processedUrl: string; processedBlob: Blob }> {
+    return new Promise((resolve, reject) => {
+        onProgress?.('Loading image...', 10);
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = async () => {
+            try {
+                // Draw to canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+
+                if (!ctx) {
+                    reject(new Error('Canvas not supported'));
+                    return;
+                }
+
+                ctx.drawImage(img, 0, 0);
+                onProgress?.('Processing image...', 30);
+
+                // Convert canvas to blob
+                canvas.toBlob(async (canvasBlob) => {
+                    if (!canvasBlob) {
+                        reject(new Error('Failed to convert canvas to blob'));
+                        return;
+                    }
+
+                    onProgress?.('Removing background...', 40);
+
+                    // Remove background
+                    const result = await removeImageBackground(canvasBlob, (p) => {
+                        onProgress?.('Removing background...', 40 + (p * 0.5));
+                    });
+
+                    onProgress?.('Complete!', 100);
+                    resolve({ processedUrl: result.url, processedBlob: result.blob });
+
+                }, 'image/png', 0.9);
+
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        img.onerror = () => {
+            // Final fallback: just return original URL without processing
+            onProgress?.('Could not process - using original', 100);
+            reject(new Error('Failed to load image for background removal'));
+        };
+
+        img.src = imageUrl;
+    });
+}
+
 // ============================================
 // COLOR DETECTION
 // ============================================

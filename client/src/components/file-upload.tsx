@@ -16,6 +16,7 @@ interface FileUploadProps {
     value?: string;
     onChange: (url: string) => void;
     onFileSelect?: (file: File) => void; // New: expose raw file for AI processing
+    onUrlProcess?: (url: string) => void; // New: process URL with background removal
     accept?: string;
     maxSize?: number;
     showAIBadge?: boolean; // Show AI processing badge
@@ -25,6 +26,7 @@ export default function FileUpload({
     value,
     onChange,
     onFileSelect,
+    onUrlProcess,
     accept = "image/*",
     maxSize = MAX_FILE_SIZE,
     showAIBadge = false
@@ -148,7 +150,14 @@ export default function FileUpload({
             // Basic URL validation
             try {
                 new URL(urlInput.trim());
-                onChange(urlInput.trim());
+
+                // If onUrlProcess is provided, use it for background removal
+                if (onUrlProcess) {
+                    onUrlProcess(urlInput.trim());
+                } else {
+                    onChange(urlInput.trim());
+                }
+
                 setUrlInput("");
                 setShowUrlInput(false);
                 setError(null);
@@ -207,10 +216,10 @@ export default function FileUpload({
             <label
                 htmlFor="file-upload"
                 className={`border-2 border-dashed rounded-lg aspect-square flex flex-col items-center justify-center p-4 cursor-pointer transition-all ${isDragging
-                        ? 'border-primary bg-primary/5'
-                        : error
-                            ? 'border-destructive/50 bg-destructive/5'
-                            : 'hover:bg-muted/50 hover:border-primary/50'
+                    ? 'border-primary bg-primary/5'
+                    : error
+                        ? 'border-destructive/50 bg-destructive/5'
+                        : 'hover:bg-muted/50 hover:border-primary/50'
                     }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}

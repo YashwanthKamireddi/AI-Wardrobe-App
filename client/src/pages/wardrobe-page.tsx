@@ -35,7 +35,7 @@ import { Label } from "@/components/ui/label";
 import FileUpload from "@/components/file-upload";
 import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem, useUpdateWardrobeItem, useSeedWardrobeItems } from "@/hooks/use-wardrobe";
 import { clothingCategories, seasons, WardrobeItem as WardrobeItemType } from "@shared/schema";
-import { processWardrobeImage, AIProcessingResult } from "@/lib/image-ai";
+import { processWardrobeImage, AIProcessingResult, processImageFromUrl } from "@/lib/image-ai";
 import { Progress } from "@/components/ui/progress";
 
 /**
@@ -169,9 +169,56 @@ export function WardrobePage() {
 
         } catch (error) {
             console.error('Import failed:', error);
-            // Optionally set error state here
         } finally {
             setIsImporting(false);
+        }
+    };
+
+    // Handle processing a URL (paste direct image URL with background removal)
+    const handleProcessUrl = async (url: string) => {
+        if (!url || !url.startsWith('http')) return;
+
+        setIsAIProcessing(true);
+        setAiProgress(0);
+        setAiStage('Processing URL...');
+
+        try {
+            const result = await processImageFromUrl(url, (stage, progress) => {
+                setAiStage(stage);
+                setAiProgress(progress);
+            });
+
+            // Convert blob to base64 for storage
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64 = reader.result as string;
+                form.setValue('imageUrl', base64);
+            };
+            reader.readAsDataURL(result.processedBlob);
+
+            // Also run color/category detection
+            const { detectColors, detectCategory } = await import('@/lib/image-ai');
+            const colors = await detectColors(result.processedUrl);
+            const category = await detectCategory(result.processedUrl);
+
+            form.setValue('color', colors.colorName);
+            form.setValue('category', category.category);
+
+            setAiResult({
+                processedImageUrl: result.processedUrl,
+                processedImageBlob: result.processedBlob,
+                colors,
+                category
+            } as AIProcessingResult);
+
+        } catch (error) {
+            console.error('URL processing failed:', error);
+            // Fallback: just use the original URL
+            form.setValue('imageUrl', url);
+        } finally {
+            setIsAIProcessing(false);
+            setAiProgress(0);
+            setAiStage('');
         }
     };
 
@@ -686,6 +733,7 @@ export function WardrobePage() {
                                                         value={field.value}
                                                         onChange={field.onChange}
                                                         onFileSelect={handleAIProcess}
+                                                        onUrlProcess={handleProcessUrl}
                                                         accept="image/*"
                                                     />
                                                 </TabsContent>
