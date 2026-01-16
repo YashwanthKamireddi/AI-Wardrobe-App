@@ -241,70 +241,61 @@ export function HomePage() {
                                     </div>
                                 </div>
 
-                                {/* RIGHT: IMAGE GALLERY (65%) */}
-                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAFAFA]">
-                                    {/* Desktop Refresh Button (Absolute Top Right) */}
+                                {/* RIGHT: IMAGE GALLERY (65%) - PREMIUM RACK */}
+                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAFAFA] group/gallery overflow-hidden">
+                                    {/* Ambient Light/Gradient Hints */}
+                                    <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#FAFAFA] to-transparent z-10 pointer-events-none" />
+                                    <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#FAFAFA] to-transparent z-10 pointer-events-none" />
+
+                                    {/* Desktop Refresh Button (Floating Glass) */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="hidden lg:flex absolute top-4 right-4 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm border border-white/50 hover:bg-white transition-all shadow-sm group"
+                                        className="hidden lg:flex absolute top-5 right-5 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-white/50 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:scale-105 transition-all duration-300 group/refresh"
                                     >
-                                        <Shuffle className={`w-4 h-4 text-[#1A1A1A] transition-transform duration-500 group-hover:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
+                                        <Shuffle className={`w-4 h-4 text-[#1A1A1A] transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
 
-                                    {/* Images Grid */}
-                                    <div className="w-full h-full p-3">
+                                    {/* Scrollable Item Rack */}
+                                    <div className="w-full h-full flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 gap-4 pb-2">
                                         {(() => {
-                                            // Show up to 3 items for the best layout (1 big, 2 small stacked)
-                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
+                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []);
 
-                                            // Layout Logic:
-                                            // 1 Item: Full width
-                                            // 2 Items: Split 50/50 vertically
-                                            // 3 Items: Left (Big), Right (Stacked)
-
-                                            if (items.length === 0) return null;
-
-                                            return (
-                                                <div className={`w-full h-full grid gap-3 ${items.length === 3 ? 'grid-cols-2' : 'grid-cols-2'}`}>
-                                                    {items.map((itemId, idx) => {
-                                                        const img = getItemImage(itemId);
-                                                        // Grid spanning logic
-                                                        const isMain = idx === 0;
-                                                        const isThreeItemMain = items.length === 3 && isMain;
-
-                                                        // If 3 items: Loop 0 is col-span-1 row-span-2 (Left Big). Loops 1 & 2 are normal.
-                                                        // If 2 items: Both are col-span-1 row-span-2 (Full height split).
-                                                        // If 1 item: col-span-2 row-span-2.
-
-                                                        let gridClass = "";
-                                                        if (items.length === 1) gridClass = "col-span-2 row-span-2";
-                                                        else if (items.length === 2) gridClass = "col-span-1 row-span-2";
-                                                        else if (items.length === 3) {
-                                                            if (idx === 0) gridClass = "col-span-1 row-span-2"; // Main Left
-                                                            else gridClass = "col-span-1 row-span-1"; // Stacked Right
-                                                        }
-
-                                                        return (
-                                                            <div
-                                                                key={itemId}
-                                                                className={`relative overflow-hidden rounded-xl bg-white flex items-center justify-center shadow-sm border border-gray-100/50 ${gridClass}`}
-                                                            >
-                                                                {img ? (
-                                                                    <img
-                                                                        src={img}
-                                                                        alt="Item"
-                                                                        className="w-full h-full object-contain p-4 hover:scale-105 transition-transform duration-700 mixture-blend-multiply"
-                                                                    />
-                                                                ) : (
-                                                                    <Shirt className="w-6 h-6 text-gray-200" />
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
+                                            if (items.length === 0) return (
+                                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-2">
+                                                    <Shirt className="w-8 h-8 opacity-20" />
+                                                    <span className="text-[10px] uppercase tracking-widest opacity-40">Empty Rack</span>
                                                 </div>
                                             );
+
+                                            return items.map((itemId, idx) => {
+                                                const img = getItemImage(itemId);
+                                                return (
+                                                    <div
+                                                        key={itemId}
+                                                        className="relative h-[80%] w-[220px] shrink-0 snap-center rounded-[20px] bg-white flex items-center justify-center shadow-[0_2px_16px_rgba(0,0,0,0.03)] border border-white group/item transition-all duration-500 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                                                    >
+                                                        {/* Item Number Badge (Subtle) */}
+                                                        <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-[#FAFAFA] flex items-center justify-center text-[10px] font-medium text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                                            {idx + 1}
+                                                        </div>
+
+                                                        {img ? (
+                                                            <img
+                                                                src={img}
+                                                                alt={`Item ${idx + 1}`}
+                                                                className="w-full h-full object-contain p-5 mix-blend-multiply opacity-90 group-hover/item:opacity-100 group-hover/item:scale-105 transition-all duration-500"
+                                                            />
+                                                        ) : (
+                                                            <Shirt className="w-8 h-8 text-gray-100" />
+                                                        )}
+                                                    </div>
+                                                );
+                                            });
                                         })()}
+
+                                        {/* Spacer for right padding/snap */}
+                                        <div className="w-2 shrink-0" />
                                     </div>
                                 </div>
                             </>
