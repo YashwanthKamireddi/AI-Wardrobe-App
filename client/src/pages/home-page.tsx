@@ -224,7 +224,7 @@ export function HomePage() {
                                                 return (
                                                     <div key={idx} className="col-span-7 h-full rounded-xl overflow-hidden bg-[#FAF9F6] relative group/img flex items-center justify-center p-2">
                                                         {img ? (
-                                                            <img src={img} className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover/img:scale-105" />
+                                                            <img src={img} className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover/img:scale-105" />
                                                         ) : <div className="w-full h-full flex items-center justify-center"><Shirt className="text-gray-200" /></div>}
                                                     </div>
                                                 );
