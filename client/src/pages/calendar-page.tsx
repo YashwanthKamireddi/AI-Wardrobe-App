@@ -4,15 +4,12 @@ import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 import { AppLayout } from "@/components/layout/app-layout";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, X, Shirt, Clock, ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Calendar as CalendarIcon, Plus, X, Shirt, ArrowLeft, ArrowRight, Grid3X3, Rows3, Flame, Sparkles, Repeat } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "../components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, parseISO } from "date-fns";
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, addWeeks, subWeeks, differenceInDays } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { OutfitCalendar, Outfit } from "@shared/schema";
@@ -23,6 +20,7 @@ export function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [showOutfitPicker, setShowOutfitPicker] = useState(false);
     const [eventName, setEventName] = useState("");
+    const [viewMode, setViewMode] = useState<"month" | "week">("month");
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [, setLocation] = useLocation();
@@ -43,8 +41,22 @@ export function CalendarPage() {
         queryKey: ["/api/calendar-outfits"],
     });
 
-    const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-    const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+    const nextPeriod = () => {
+        if (viewMode === "month") {
+            setCurrentDate(addMonths(currentDate, 1));
+        } else {
+            setCurrentDate(addWeeks(currentDate, 1));
+        }
+    };
+
+    const prevPeriod = () => {
+        if (viewMode === "month") {
+            setCurrentDate(subMonths(currentDate, 1));
+        } else {
+            setCurrentDate(subWeeks(currentDate, 1));
+        }
+    };
+
     const goToToday = () => {
         const today = new Date();
         setCurrentDate(today);
@@ -57,12 +69,30 @@ export function CalendarPage() {
         if (!calendarEvents) return map;
 
         calendarEvents.forEach(event => {
-            // Store date as YYYY-MM-DD
             const dateStr = new Date(event.date).toISOString().split('T')[0];
             map.set(dateStr, event);
         });
         return map;
     }, [calendarEvents]);
+
+    // Calculate streak (consecutive days with planned outfits)
+    const currentStreak = useMemo(() => {
+        if (!calendarEvents || calendarEvents.length === 0) return 0;
+
+        let streak = 0;
+        let checkDate = new Date();
+
+        while (true) {
+            const dateStr = checkDate.toISOString().split('T')[0];
+            if (eventsByDate.has(dateStr)) {
+                streak++;
+                checkDate = new Date(checkDate.getTime() - 24 * 60 * 60 * 1000);
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }, [calendarEvents, eventsByDate]);
 
     // Create Event Mutation
     const createEventMutation = useMutation({
@@ -126,18 +156,20 @@ export function CalendarPage() {
         deleteEventMutation.mutate(eventId);
     };
 
-    // Generate calendar days
+    // Generate calendar days based on view mode
     const calendarDays = useMemo(() => {
-        const monthStart = startOfMonth(currentDate);
-        const monthEnd = endOfMonth(monthStart);
-        const startDate = startOfWeek(monthStart);
-        const endDate = endOfWeek(monthEnd);
-
-        return eachDayOfInterval({
-            start: startDate,
-            end: endDate,
-        });
-    }, [currentDate]);
+        if (viewMode === "month") {
+            const monthStart = startOfMonth(currentDate);
+            const monthEnd = endOfMonth(monthStart);
+            const startDate = startOfWeek(monthStart);
+            const endDate = endOfWeek(monthEnd);
+            return eachDayOfInterval({ start: startDate, end: endDate });
+        } else {
+            const weekStart = startOfWeek(currentDate);
+            const weekEnd = endOfWeek(currentDate);
+            return eachDayOfInterval({ start: weekStart, end: weekEnd });
+        }
+    }, [currentDate, viewMode]);
 
     const getDateKey = (date: Date) => date.toISOString().split('T')[0];
 
@@ -150,191 +182,243 @@ export function CalendarPage() {
         return outfit ? { ...event, outfit } : null;
     };
 
+    // Check if outfit was worn recently (within 2 weeks)
+    const isRecentlyWorn = (outfitId: number) => {
+        if (!calendarEvents) return false;
+        const twoWeeksAgo = new Date();
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+        return calendarEvents.some(event =>
+            event.outfitId === outfitId &&
+            new Date(event.date) > twoWeeksAgo &&
+            (!selectedDate || !isSameDay(new Date(event.date), selectedDate))
+        );
+    };
+
     // Date formatting for header
     const monthName = format(currentDate, 'MMMM');
     const year = format(currentDate, 'yyyy');
+    const weekRange = viewMode === "week"
+        ? `${format(startOfWeek(currentDate), 'MMM d')} - ${format(endOfWeek(currentDate), 'MMM d')}`
+        : null;
 
     return (
         <AppLayout>
             <div className="min-h-screen bg-[#FAF9F6] flex flex-col">
                 <div className="flex-1 flex flex-col md:px-6 md:pb-6 max-w-7xl mx-auto w-full">
                     {/* Header */}
-                    <div className="pt-12 pb-8 px-6 md:px-0 flex flex-col md:flex-row justify-between items-end border-b border-[#1a1a1a] mb-6">
-                        <div className="relative">
-                            <span className="text-[#80163a] text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Planner</span>
+                    <motion.div
+                        className="pt-10 pb-6 px-6 md:px-0 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-200 mb-6"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div>
+                            <span className="text-[#80163a] text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block">Style Planner</span>
                             <div className="flex items-baseline gap-4">
-                                <h1 className="text-5xl md:text-7xl font-playfair text-[#1a1a1a] leading-[0.9]">
-                                    {monthName}
+                                <h1 className="text-4xl md:text-6xl font-playfair text-[#1a1a1a] leading-[0.9]">
+                                    {viewMode === "month" ? monthName : weekRange}
                                 </h1>
-                                <span className="text-xl md:text-3xl font-playfair italic text-gray-300">{year}</span>
+                                {viewMode === "month" && (
+                                    <span className="text-xl md:text-2xl font-playfair italic text-gray-300">{year}</span>
+                                )}
                             </div>
+
+                            {/* Streak Badge */}
+                            {currentStreak > 0 && (
+                                <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 rounded-full border border-orange-100">
+                                    <Flame className="w-4 h-4 text-orange-500" />
+                                    <span className="text-xs font-medium text-orange-600">
+                                        {currentStreak} day planning streak!
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="flex items-center gap-4 mt-6 md:mt-0">
+                        <div className="flex items-center gap-3 mt-6 md:mt-0">
+                            {/* View Toggle */}
+                            <div className="flex items-center border border-gray-200 rounded-full p-1 bg-white">
+                                <button
+                                    onClick={() => setViewMode("month")}
+                                    className={cn(
+                                        "w-9 h-9 rounded-full flex items-center justify-center transition-all",
+                                        viewMode === "month" ? "bg-[#1a1a1a] text-white" : "text-gray-400 hover:text-gray-600"
+                                    )}
+                                >
+                                    <Grid3X3 className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode("week")}
+                                    className={cn(
+                                        "w-9 h-9 rounded-full flex items-center justify-center transition-all",
+                                        viewMode === "week" ? "bg-[#1a1a1a] text-white" : "text-gray-400 hover:text-gray-600"
+                                    )}
+                                >
+                                    <Rows3 className="w-4 h-4" />
+                                </button>
+                            </div>
+
                             <button
                                 onClick={goToToday}
-                                className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#1a1a1a] hover:text-[#80163a] mr-4 transition-colors"
+                                className="text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500 hover:text-[#80163a] transition-colors px-3 py-2"
                             >
                                 Today
                             </button>
-                            <div className="flex items-center gap-1 border border-[#e5e5e5] rounded-full p-1 bg-white">
-                                <button onClick={prevMonth} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#FAF9F6] transition-colors">
+
+                            <div className="flex items-center gap-1 border border-gray-200 rounded-full p-1 bg-white">
+                                <button onClick={prevPeriod} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
                                     <ArrowLeft className="w-4 h-4 text-[#1a1a1a]" />
                                 </button>
-                                <div className="w-[1px] h-4 bg-[#e5e5e5]" />
-                                <button onClick={nextMonth} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#FAF9F6] transition-colors">
+                                <div className="w-[1px] h-4 bg-gray-200" />
+                                <button onClick={nextPeriod} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
                                     <ArrowRight className="w-4 h-4 text-[#1a1a1a]" />
                                 </button>
                             </div>
                         </div>
+                    </motion.div>
+
+                    {/* Stats Bar */}
+                    <div className="px-6 md:px-0 mb-4 flex items-center gap-4 overflow-x-auto pb-2">
+                        <div className="bg-white border border-gray-100 rounded-xl px-4 py-2.5 flex items-center gap-3 shrink-0">
+                            <CalendarIcon className="w-4 h-4 text-[#80163a]" />
+                            <div>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-400">This Month</p>
+                                <p className="text-sm font-medium text-[#1a1a1a]">
+                                    {calendarEvents?.filter(e => isSameMonth(new Date(e.date), currentDate)).length || 0} looks planned
+                                </p>
+                            </div>
+                        </div>
+                        <div className="bg-white border border-gray-100 rounded-xl px-4 py-2.5 flex items-center gap-3 shrink-0">
+                            <Sparkles className="w-4 h-4 text-purple-500" />
+                            <div>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-400">Outfits</p>
+                                <p className="text-sm font-medium text-[#1a1a1a]">{outfits?.length || 0} created</p>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Calendar Container - Responsive Layout */}
-                    <div className="flex-1 flex flex-col overflow-hidden">
-
-                        {/* MOBILE: Horizontal Day Scroller */}
-                        <div className="md:hidden mb-6">
-                            <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-6 px-6">
+                    {/* Calendar Container */}
+                    <div className="flex-1 flex flex-col overflow-hidden px-6 md:px-0">
+                        {/* Week View */}
+                        {viewMode === "week" && (
+                            <div className="grid grid-cols-7 gap-2 flex-1">
                                 {calendarDays.map((day) => {
                                     const eventData = getOutfitForDate(day);
-                                    const isSelected = selectedDate && isSameDay(day, selectedDate);
                                     const isTodayDate = isToday(day);
 
                                     return (
-                                        <div
+                                        <motion.div
                                             key={day.toISOString()}
-                                            className={`shrink-0 snap-center w-[16vw] flex flex-col items-center gap-2 cursor-pointer transition-all ${isSelected ? "opacity-100" : "opacity-50"
-                                                }`}
-                                            onClick={() => {
-                                                setSelectedDate(day);
-                                                if (!eventData) setShowOutfitPicker(true);
-                                            }}
-                                        >
-                                            <span className="text-[10px] uppercase tracking-wider text-[#9A9A9A]">
-                                                {format(day, 'EEE')}
-                                            </span>
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${isSelected ? "bg-[#1A1A1A] text-white scale-110 shadow-lg" :
-                                                    isTodayDate ? "bg-[#E5E5E5] text-[#1A1A1A]" : "bg-transparent text-[#1A1A1A]"
-                                                }`}>
-                                                {format(day, 'd')}
-                                            </div>
-                                            {/* Event Dot Indicator */}
-                                            <div className={`w-1 h-1 rounded-full ${eventData ? "bg-[#80163A]" : "bg-transparent"}`} />
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Mobile Event Card (Active Day) */}
-                            <AnimatePresence mode="wait">
-                                {selectedDate && (
-                                    <motion.div
-                                        key={selectedDate.toISOString()}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        className="mt-2"
-                                    >
-                                        {getOutfitForDate(selectedDate)?.outfit ? (
-                                            <div className="bg-white p-4 rounded-xl border border-[#E5E5E5] shadow-sm">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <p className="text-xs uppercase tracking-widest text-[#9A9A9A]">Scheduled Look</p>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={(e) => handleRemoveEvent(e, getOutfitForDate(selectedDate)!.id)}>
-                                                            <X className="w-4 h-4 text-[#9A9A9A]" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    {getOutfitPreviewImage(getOutfitForDate(selectedDate)!.outfit) && (
-                                                        <div className="w-20 h-24 rounded-lg bg-[#FAF9F6] overflow-hidden shrink-0">
-                                                            <img
-                                                                src={getOutfitPreviewImage(getOutfitForDate(selectedDate)!.outfit)!}
-                                                                alt="Look"
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    <div>
-                                                        <h3 className="font-serif text-xl italic text-[#1A1A1A] mb-1">
-                                                            {getOutfitForDate(selectedDate)?.outfit.name}
-                                                        </h3>
-                                                        <p className="text-sm text-[#666666]">
-                                                            {getOutfitForDate(selectedDate)?.eventName || "No event name"}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div
-                                                className="bg-[#FAFAFA] border border-dashed border-[#E5E5E5] rounded-xl p-8 flex flex-col items-center justify-center text-center"
-                                                onClick={() => setShowOutfitPicker(true)}
-                                            >
-                                                <Plus className="w-8 h-8 text-[#E5E5E5] mb-2" />
-                                                <p className="text-sm text-[#9A9A9A]">Plan a look for {format(selectedDate, 'MMM do')}</p>
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-
-                        {/* DESKTOP: Full Calendar Grid */}
-                        <div className="hidden md:flex flex-1 bg-white border border-[#e5e5e5] rounded-xl shadow-sm overflow-hidden flex-col">
-                            {/* Days Header */}
-                            <div className="grid grid-cols-7 border-b border-[#e5e5e5] bg-[#FAF9F6] shrink-0">
-                                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                    <div key={day} className="py-4 text-center text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400">
-                                        {day}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Days Grid */}
-                            <div className="grid grid-cols-7 flex-1 auto-rows-fr">
-                                {calendarDays.map((day, dayIdx) => {
-                                    const eventData = getOutfitForDate(day);
-                                    const isCurrentMonth = isSameMonth(day, currentDate);
-                                    const isTodayDate = isToday(day);
-
-                                    return (
-                                        <div
-                                            key={day.toISOString()}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
                                             onClick={() => {
                                                 setSelectedDate(day);
                                                 if (!eventData) setShowOutfitPicker(true);
                                             }}
                                             className={cn(
-                                                "border-b border-r border-[#e5e5e5] p-3 relative transition-all cursor-pointer group hover:bg-[#FAF9F6] min-h-[140px]",
-                                                (dayIdx + 1) % 7 === 0 && "border-r-0", // No right border on last column
-                                                !isCurrentMonth && "bg-[#F9F9F9] text-gray-300"
+                                                "bg-white rounded-2xl border border-gray-100 p-4 cursor-pointer hover:shadow-md transition-all flex flex-col",
+                                                isTodayDate && "ring-2 ring-[#80163a] ring-offset-2"
                                             )}
                                         >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className={cn(
-                                                    "font-playfair text-lg w-8 h-8 flex items-center justify-center rounded-full transition-colors",
-                                                    isTodayDate
-                                                        ? "bg-[#1a1a1a] text-white shadow-lg"
-                                                        : "text-[#1a1a1a]",
-                                                    !isCurrentMonth && "text-gray-300"
+                                            {/* Day Header */}
+                                            <div className="text-center mb-3">
+                                                <p className="text-[10px] uppercase tracking-wider text-gray-400">{format(day, 'EEE')}</p>
+                                                <p className={cn(
+                                                    "text-2xl font-playfair",
+                                                    isTodayDate ? "text-[#80163a]" : "text-[#1a1a1a]"
                                                 )}>
                                                     {format(day, 'd')}
-                                                </div>
+                                                </p>
+                                            </div>
 
-                                                {/* Add Button */}
-                                                {!eventData && isCurrentMonth && (
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Plus className="w-4 h-4 text-[#e5e5e5]" />
+                                            {/* Outfit Card */}
+                                            <div className="flex-1 flex items-center justify-center">
+                                                {eventData?.outfit ? (
+                                                    <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden group">
+                                                        {getOutfitPreviewImage(eventData.outfit) && (
+                                                            <img
+                                                                src={getOutfitPreviewImage(eventData.outfit)!}
+                                                                alt={eventData.outfit.name}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        )}
+                                                        <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                                                            <p className="text-white text-xs font-medium truncate">{eventData.outfit.name}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => handleRemoveEvent(e, eventData.id)}
+                                                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-full aspect-[3/4] rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center">
+                                                        <Plus className="w-6 h-6 text-gray-300" />
                                                     </div>
                                                 )}
                                             </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        )}
 
-                                            {eventData && eventData.outfit ? (
-                                                <div className="animate-in fade-in zoom-in duration-300">
-                                                    <div className="bg-[#FAF9F6] border border-[#e5e5e5] hover:border-[#80163A] transition-colors rounded-lg overflow-hidden relative group/event">
-                                                        <div className="flex items-center gap-2 p-1.5">
+                        {/* Month View */}
+                        {viewMode === "month" && (
+                            <div className="flex-1 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                                {/* Days Header */}
+                                <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50 shrink-0">
+                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                                        <div key={day} className="py-3 text-center text-[10px] uppercase tracking-[0.15em] font-bold text-gray-400">
+                                            {day}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Days Grid */}
+                                <div className="grid grid-cols-7 flex-1 auto-rows-fr">
+                                    {calendarDays.map((day, dayIdx) => {
+                                        const eventData = getOutfitForDate(day);
+                                        const isCurrentMonth = isSameMonth(day, currentDate);
+                                        const isTodayDate = isToday(day);
+
+                                        return (
+                                            <motion.div
+                                                key={day.toISOString()}
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ delay: dayIdx * 0.01 }}
+                                                onClick={() => {
+                                                    setSelectedDate(day);
+                                                    if (!eventData) setShowOutfitPicker(true);
+                                                }}
+                                                className={cn(
+                                                    "border-b border-r border-gray-50 p-2 md:p-3 relative transition-all cursor-pointer group hover:bg-gray-50/50 min-h-[100px] md:min-h-[120px]",
+                                                    (dayIdx + 1) % 7 === 0 && "border-r-0",
+                                                    !isCurrentMonth && "bg-gray-50/30"
+                                                )}
+                                            >
+                                                {/* Date Number */}
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <div className={cn(
+                                                        "w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium transition-colors",
+                                                        isTodayDate ? "bg-[#80163a] text-white" : "",
+                                                        !isCurrentMonth && "text-gray-300"
+                                                    )}>
+                                                        {format(day, 'd')}
+                                                    </div>
+
+                                                    {!eventData && isCurrentMonth && (
+                                                        <Plus className="w-4 h-4 text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    )}
+                                                </div>
+
+                                                {/* Event Card */}
+                                                {eventData?.outfit && (
+                                                    <div className="absolute inset-x-2 bottom-2 top-9 group/event">
+                                                        <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-100 hover:border-[#80163a]/30 transition-colors rounded-lg overflow-hidden flex">
                                                             {getOutfitPreviewImage(eventData.outfit) && (
-                                                                <div className="w-8 h-10 rounded-sm bg-gray-100 overflow-hidden shrink-0">
+                                                                <div className="w-10 shrink-0 bg-gray-100">
                                                                     <img
                                                                         src={getOutfitPreviewImage(eventData.outfit)!}
                                                                         alt={eventData.outfit.name}
@@ -342,110 +426,130 @@ export function CalendarPage() {
                                                                     />
                                                                 </div>
                                                             )}
-                                                            <div className="overflow-hidden">
+                                                            <div className="flex-1 p-1.5 min-w-0">
                                                                 {eventData.eventName && (
-                                                                    <p className="text-[9px] uppercase tracking-wider text-[#80163A] font-bold truncate mb-0.5">
+                                                                    <p className="text-[8px] uppercase tracking-wider text-[#80163a] font-bold truncate">
                                                                         {eventData.eventName}
                                                                     </p>
                                                                 )}
-                                                                <p className="font-playfair text-xs text-[#1a1a1a] truncate leading-tight">
+                                                                <p className="text-[10px] text-[#1a1a1a] font-medium truncate leading-tight">
                                                                     {eventData.outfit.name}
                                                                 </p>
                                                             </div>
                                                         </div>
-
                                                         <button
                                                             onClick={(e) => handleRemoveEvent(e, eventData.id)}
-                                                            className="absolute top-1 right-1 opacity-0 group-hover/event:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded-full"
+                                                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center opacity-0 group-hover/event:opacity-100 transition-all shadow-sm"
                                                         >
-                                                            <X className="w-3 h-3 text-red-500" />
+                                                            <X className="w-3 h-3" />
                                                         </button>
                                                     </div>
-                                                </div>
-                                            ) : null}
-                                        </div>
-                                    );
-                                })}
+                                                )}
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Outfit Picker Dialog (Refined) */}
+                {/* Outfit Picker Dialog */}
                 <Dialog open={showOutfitPicker} onOpenChange={setShowOutfitPicker}>
-                    <DialogContent className="max-w-3xl max-h-[85vh] p-0 flex flex-col bg-white border-none shadow-2xl overflow-hidden">
-                        <div className="p-6 bg-white border-b border-[#e5e5e5] shrink-0">
+                    <DialogContent className="max-w-2xl max-h-[85vh] p-0 flex flex-col bg-[#FAF9F6] border-none shadow-2xl overflow-hidden rounded-3xl">
+                        <div className="p-6 bg-white border-b border-gray-100 shrink-0">
                             <DialogHeader>
-                                <DialogTitle className="font-playfair text-2xl">Select Look</DialogTitle>
+                                <DialogTitle className="font-playfair text-2xl">Plan Your Look</DialogTitle>
                                 <p className="text-xs uppercase tracking-widest text-gray-400 mt-1">
-                                    For {selectedDate && format(selectedDate, 'MMMM do, yyyy')}
+                                    {selectedDate && format(selectedDate, 'EEEE, MMMM do')}
                                 </p>
                             </DialogHeader>
                         </div>
 
                         {/* Event Name Input */}
-                        <div className="px-6 py-4 bg-[#FAF9F6] border-b border-[#e5e5e5] shrink-0">
-                            <Label className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 block">Event Name (Optional)</Label>
+                        <div className="px-6 py-4 bg-white border-b border-gray-100 shrink-0">
+                            <Label className="text-[10px] uppercase tracking-widest text-gray-400 mb-2 block">
+                                What's the occasion?
+                            </Label>
                             <Input
-                                className="border-[#e5e5e5] rounded-lg h-10 bg-white"
-                                placeholder="e.g. Gallery Opening, Date Night..."
+                                className="border-gray-200 rounded-xl h-11 bg-gray-50 focus:bg-white"
+                                placeholder="e.g. Date Night, Work Meeting, Wedding..."
                                 value={eventName}
                                 onChange={(e) => setEventName(e.target.value)}
                             />
                         </div>
 
-                        {/* Outfit Grid - with explicit height */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-[#FAF9F6]" style={{ maxHeight: "50vh" }}>
+                        {/* Outfit Grid */}
+                        <div className="flex-1 overflow-y-auto p-6" style={{ maxHeight: "50vh" }}>
                             <div className="flex items-center justify-between mb-4">
-                                <span className="text-xs uppercase tracking-widest text-gray-500">Your Outfits</span>
-                                <span className="text-xs text-gray-400">{outfits?.length || 0} looks</span>
+                                <span className="text-xs uppercase tracking-widest text-gray-400">Your Looks</span>
+                                <span className="text-xs text-gray-400">{outfits?.length || 0} outfits</span>
                             </div>
+
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 {/* Create New Card */}
-                                <div
+                                <motion.div
                                     onClick={() => setLocation("/studio")}
-                                    className="aspect-[3/4] border-2 border-dashed border-[#e5e5e5] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[#1a1a1a] hover:bg-white transition-all group"
+                                    className="aspect-[3/4] border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-[#1a1a1a] hover:bg-white transition-all group"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-3 group-hover:bg-[#1a1a1a] transition-colors shadow-sm">
-                                        <Plus className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 group-hover:bg-[#1a1a1a] transition-colors shadow-sm">
+                                        <Plus className="w-6 h-6 text-gray-400 group-hover:text-white" />
                                     </div>
-                                    <p className="font-playfair text-base text-[#1a1a1a]">New Look</p>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Create in Studio</p>
-                                </div>
+                                    <p className="font-playfair text-base text-[#1a1a1a]">Create New</p>
+                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Open Studio</p>
+                                </motion.div>
 
-                                {outfits?.map(outfit => (
-                                    <div
-                                        key={outfit.id}
-                                        className="cursor-pointer group relative aspect-[3/4] bg-white border border-[#e5e5e5] rounded-xl overflow-hidden hover:shadow-lg hover:border-[#80163a]/30 transition-all"
-                                        onClick={() => handlePlanOutfit(outfit.id)}
-                                    >
-                                        {/* Image or placeholder */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
-                                            {getOutfitPreviewImage(outfit) ? (
-                                                <img
-                                                    src={getOutfitPreviewImage(outfit)!}
-                                                    alt={outfit.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-                                            ) : (
-                                                <Shirt className="w-10 h-10 text-gray-200 group-hover:scale-110 transition-transform duration-300" />
+                                {outfits?.map(outfit => {
+                                    const recentlyWorn = isRecentlyWorn(outfit.id);
+                                    return (
+                                        <motion.div
+                                            key={outfit.id}
+                                            className={cn(
+                                                "cursor-pointer group relative aspect-[3/4] bg-white border rounded-2xl overflow-hidden hover:shadow-lg transition-all",
+                                                recentlyWorn ? "border-orange-200" : "border-gray-100 hover:border-[#80163a]/30"
                                             )}
-                                        </div>
+                                            onClick={() => handlePlanOutfit(outfit.id)}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            {/* Recently Worn Badge */}
+                                            {recentlyWorn && (
+                                                <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-1 bg-orange-100 rounded-full">
+                                                    <Repeat className="w-3 h-3 text-orange-500" />
+                                                    <span className="text-[9px] font-medium text-orange-600">Recent</span>
+                                                </div>
+                                            )}
 
-                                        {/* Overlay Label */}
-                                        <div className="absolute inset-x-0 bottom-0 p-3 bg-white/95 border-t border-[#e5e5e5]">
-                                            <p className="font-playfair text-sm text-[#1a1a1a] truncate">{outfit.name}</p>
-                                            <p className="text-[10px] text-gray-400 mt-0.5">{outfit.items?.length || 0} items</p>
-                                        </div>
+                                            {/* Image or placeholder */}
+                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
+                                                {getOutfitPreviewImage(outfit) ? (
+                                                    <img
+                                                        src={getOutfitPreviewImage(outfit)!}
+                                                        alt={outfit.name}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    />
+                                                ) : (
+                                                    <Shirt className="w-12 h-12 text-gray-200" />
+                                                )}
+                                            </div>
 
-                                        {/* Hover overlay */}
-                                        <div className="absolute inset-0 bg-[#80163a]/0 group-hover:bg-[#80163a]/5 transition-colors flex items-center justify-center">
-                                            <span className="opacity-0 group-hover:opacity-100 text-[#80163a] text-xs font-semibold uppercase tracking-widest bg-white px-3 py-1.5 rounded-full shadow-sm transition-opacity">
-                                                Select
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                                            {/* Overlay Label */}
+                                            <div className="absolute inset-x-0 bottom-0 p-3 bg-white/95 border-t border-gray-100">
+                                                <p className="font-playfair text-sm text-[#1a1a1a] truncate">{outfit.name}</p>
+                                                <p className="text-[10px] text-gray-400 mt-0.5">{outfit.items?.length || 0} items</p>
+                                            </div>
+
+                                            {/* Hover overlay */}
+                                            <div className="absolute inset-0 bg-[#80163a]/0 group-hover:bg-[#80163a]/5 transition-colors flex items-center justify-center">
+                                                <span className="opacity-0 group-hover:opacity-100 text-[#80163a] text-xs font-semibold uppercase tracking-widest bg-white px-4 py-2 rounded-full shadow-sm transition-opacity">
+                                                    Select
+                                                </span>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
 
                             {/* Empty state */}
