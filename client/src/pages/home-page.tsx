@@ -211,7 +211,7 @@ export function HomePage() {
                                             </button>
                                         </div>
 
-                                        <h3 className="text-3xl lg:text-4xl text-[#1A1A1A] leading-tight mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                        <h3 className="text-2xl lg:text-4xl text-[#1A1A1A] leading-tight mb-3 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                                             {dailyLook.name}
                                         </h3>
                                         <p className="text-sm text-gray-500 font-medium leading-relaxed">
@@ -219,14 +219,14 @@ export function HomePage() {
                                         </p>
                                     </div>
 
-                                    <div className="w-full flex flex-col gap-3 mt-8 lg:mt-auto">
+                                    <div className="w-full flex flex-col gap-2.5 mt-6 lg:mt-auto">
                                         <Link href={`/outfits`}>
-                                            <button className="w-full h-12 bg-[#1A1A1A] text-white rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
+                                            <button className="w-full h-10 lg:h-12 bg-[#1A1A1A] text-white rounded-lg font-medium text-[10px] lg:text-[11px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
                                                 Wear Look
                                             </button>
                                         </Link>
                                         <Link href={`/compose`}>
-                                            <button className="w-full h-12 bg-transparent text-[#1A1A1A] border border-[#1A1A1A]/20 rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-[#1A1A1A] hover:text-white transition-all duration-300">
+                                            <button className="w-full h-10 lg:h-12 bg-transparent text-[#1A1A1A] border border-[#1A1A1A]/20 rounded-lg font-medium text-[10px] lg:text-[11px] tracking-[0.2em] uppercase hover:bg-[#1A1A1A] hover:text-white transition-all duration-300">
                                                 Customize
                                             </button>
                                         </Link>
