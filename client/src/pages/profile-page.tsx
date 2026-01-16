@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { AppLayout } from "@/components/layout/app-layout";
 import {
     User, LogOut, Grid3X3, Layers, Heart, ChevronRight,
-    Bell, MapPin, ArrowLeft, Calendar, Plane, Sparkles, Lightbulb, BarChart3
+    Bell, MapPin, Info, FileText, Shield, Mail, Edit2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -11,8 +11,8 @@ import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 
 /**
- * PROFILE PAGE - EDITORIAL THEME
- * Matches the app's editorial aesthetic with proper desktop layout
+ * PROFILE PAGE - REDESIGNED
+ * Single column, mobile-first layout following Apple Settings / Instagram patterns
  */
 
 export function ProfilePage() {
@@ -63,211 +63,210 @@ export function ProfilePage() {
 
     return (
         <AppLayout>
-            <div className="max-w-6xl mx-auto px-6 py-8 md:py-12">
-                {/* Header */}
-                <motion.header
-                    className="mb-10"
+            <div className="max-w-lg mx-auto px-4 py-8 md:py-12">
+
+                {/* ========================================== */}
+                {/* PROFILE HERO */}
+                {/* ========================================== */}
+                <motion.section
+                    className="text-center mb-8"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
+                    transition={{ duration: 0.5 }}
                 >
-                    <Link href="/home">
-                        <motion.button
-                            className="flex items-center gap-2 text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors mb-6 md:hidden"
-                            whileHover={{ x: -4 }}
+                    {/* Avatar */}
+                    <div className="relative inline-block mb-4">
+                        <div
+                            className="w-24 h-24 rounded-full flex items-center justify-center text-3xl text-white shadow-lg"
+                            style={{
+                                fontFamily: "'Playfair Display', serif",
+                                background: "linear-gradient(135deg, #1A1A1A 0%, #80163A 100%)"
+                            }}
                         >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span className="text-sm">Back</span>
-                        </motion.button>
-                    </Link>
+                            {user?.profilePicture ? (
+                                <img src={user.profilePicture} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                                getUserInitials()
+                            )}
+                        </div>
+                        <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors">
+                            <Edit2 className="w-3.5 h-3.5 text-gray-600" />
+                        </button>
+                    </div>
 
-                    <p className="text-xs tracking-[0.2em] uppercase text-[#80163A] mb-2">
-                        Account
-                    </p>
+                    {/* Name & Info */}
                     <h1
-                        className="text-[#1A1A1A]"
-                        style={{
-                            fontFamily: "'Playfair Display', serif",
-                            fontSize: "clamp(2rem, 5vw, 3rem)",
-                            lineHeight: 1.1
-                        }}
+                        className="text-2xl text-[#1A1A1A] mb-1"
+                        style={{ fontFamily: "'Playfair Display', serif" }}
                     >
-                        Profile & Settings
+                        {user?.name || user?.username}
                     </h1>
-                </motion.header>
+                    <p className="text-sm text-gray-500">@{user?.username}</p>
+                    {user?.email && (
+                        <p className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            {user.email}
+                        </p>
+                    )}
+                </motion.section>
 
-                {/* Two-Column Layout for Desktop */}
-                <div className="grid md:grid-cols-2 gap-8">
-                    {/* Left Column - Profile */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                    >
-                        {/* Profile Card */}
-                        <div className="rounded-3xl bg-white/70 backdrop-blur-sm border border-[#E5E5E5]/50 p-8 mb-6">
-                            <div className="flex items-center gap-6 mb-8">
-                                <div
-                                    className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl text-white"
-                                    style={{
-                                        fontFamily: "'Playfair Display', serif",
-                                        background: "linear-gradient(135deg, #1A1A1A 0%, #80163A 100%)"
-                                    }}
-                                >
-                                    {getUserInitials()}
-                                </div>
-                                <div className="flex-1">
-                                    <h2
-                                        className="text-2xl text-[#1A1A1A] mb-1"
-                                        style={{ fontFamily: "'Playfair Display', serif" }}
-                                    >
-                                        {user?.name || user?.username}
-                                    </h2>
-                                    <p className="text-sm text-[#6B6B6B]">@{user?.username}</p>
-                                    {user?.email && (
-                                        <p className="text-sm text-[#9A9A9A] mt-1">{user.email}</p>
-                                    )}
-                                </div>
-                            </div>
 
-                            {/* Stats */}
-                            <div className="grid grid-cols-3 gap-4">
-                                {[
-                                    { label: "Items", value: stats.items, icon: Grid3X3 },
-                                    { label: "Outfits", value: stats.outfits, icon: Layers },
-                                    { label: "Favorites", value: stats.favorites, icon: Heart },
-                                ].map((stat) => (
-                                    <motion.div
-                                        key={stat.label}
-                                        className="text-center p-4 rounded-2xl bg-[#F9F9F7]"
-                                        whileHover={{ y: -2 }}
-                                    >
-                                        <stat.icon className="w-4 h-4 mx-auto mb-2 text-[#9A9A9A]" />
-                                        <p
-                                            className="text-2xl text-[#1A1A1A] mb-1"
-                                            style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                                        >
-                                            {stat.value}
-                                        </p>
-                                        <p className="text-xs text-[#6B6B6B] uppercase tracking-wider">{stat.label}</p>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Sign Out */}
-                        <motion.button
-                            onClick={handleLogout}
-                            disabled={logoutMutation.isPending}
-                            className="w-full h-14 rounded-2xl border border-[#E5E5E5] text-[#B44141] text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 bg-white/70"
-                            whileHover={{ borderColor: "#B44141", backgroundColor: "#FEF2F2" }}
-                            whileTap={{ scale: 0.98 }}
+                {/* ========================================== */}
+                {/* STATS BAR */}
+                {/* ========================================== */}
+                <motion.section
+                    className="grid grid-cols-3 gap-2 mb-8"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                    {[
+                        { label: "Items", value: stats.items, icon: Grid3X3 },
+                        { label: "Outfits", value: stats.outfits, icon: Layers },
+                        { label: "Favorites", value: stats.favorites, icon: Heart },
+                    ].map((stat) => (
+                        <div
+                            key={stat.label}
+                            className="text-center py-4 rounded-2xl bg-white border border-gray-100"
                         >
-                            <LogOut className="w-4 h-4" />
-                            Sign Out
-                        </motion.button>
-                    </motion.div>
-
-                    {/* Right Column - Settings */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                    >
-                        {/* Preferences */}
-                        <div className="rounded-3xl bg-white/70 backdrop-blur-sm border border-[#E5E5E5]/50 overflow-hidden mb-6">
-                            <h3 className="text-xs tracking-[0.2em] uppercase text-[#6B6B6B] px-6 pt-6 pb-4">
-                                Preferences
-                            </h3>
-
-                            {/* Weather Location */}
-                            <motion.button
-                                onClick={updateWeatherLocation}
-                                className="w-full flex items-center justify-between px-6 py-5 hover:bg-[#F9F9F7] transition-colors border-b border-[#E5E5E5]/50 group"
-                                whileTap={{ scale: 0.99 }}
+                            <p
+                                className="text-2xl font-semibold text-[#1A1A1A] mb-0.5"
+                                style={{ fontFamily: "'JetBrains Mono', monospace" }}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-[#F5F5F5] flex items-center justify-center group-hover:bg-[#1A1A1A] transition-colors">
-                                        <MapPin className="w-5 h-5 text-[#1A1A1A] group-hover:text-white transition-colors" />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-sm font-medium text-[#1A1A1A]">Weather Location</p>
-                                        <p className="text-xs text-[#9A9A9A]">{weatherLocation || "Auto-detect"}</p>
-                                    </div>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-[#9A9A9A]" />
-                            </motion.button>
+                                {stat.value}
+                            </p>
+                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                        </div>
+                    ))}
+                </motion.section>
 
-                            {/* Notifications */}
-                            <div className="flex items-center justify-between px-6 py-5 group">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-[#F5F5F5] flex items-center justify-center group-hover:bg-[#1A1A1A] transition-colors">
-                                        <Bell className="w-5 h-5 text-[#1A1A1A] group-hover:text-white transition-colors" />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-sm font-medium text-[#1A1A1A]">Notifications</p>
-                                        <p className="text-xs text-[#9A9A9A]">Outfit suggestions & updates</p>
-                                    </div>
+
+                {/* ========================================== */}
+                {/* PREFERENCES SECTION */}
+                {/* ========================================== */}
+                <motion.section
+                    className="mb-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.15 }}
+                >
+                    <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-3 px-1">
+                        Preferences
+                    </h2>
+                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
+                        {/* Weather Location */}
+                        <button
+                            onClick={updateWeatherLocation}
+                            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                                    <MapPin className="w-4 h-4 text-blue-600" />
                                 </div>
-                                <button
-                                    onClick={toggleNotifications}
-                                    className={`w-12 h-7 rounded-full transition-colors ${notificationsEnabled ? 'bg-[#1A1A1A]' : 'bg-[#E5E5E5]'
-                                        }`}
-                                >
-                                    <motion.div
-                                        className="w-5 h-5 rounded-full bg-white shadow-sm"
-                                        animate={{ x: notificationsEnabled ? 22 : 4 }}
-                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                    />
-                                </button>
+                                <div>
+                                    <p className="text-sm font-medium text-[#1A1A1A]">Weather Location</p>
+                                    <p className="text-xs text-gray-400">{weatherLocation || "Auto-detect"}</p>
+                                </div>
                             </div>
-                        </div>
+                            <ChevronRight className="w-4 h-4 text-gray-300" />
+                        </button>
 
-                        {/* Quick Links */}
-                        <div className="rounded-3xl bg-white/70 backdrop-blur-sm border border-[#E5E5E5]/50 overflow-hidden">
-                            <h3 className="text-xs tracking-[0.2em] uppercase text-[#6B6B6B] px-6 pt-6 pb-4">
-                                Quick Access
-                            </h3>
-
-                            {[
-                                { href: "/wardrobe", label: "My Wardrobe", desc: "Manage your items", icon: Grid3X3 },
-                                { href: "/outfits", label: "Saved Outfits", desc: "View combinations", icon: Layers },
-                                { href: "/calendar", label: "Calendar", desc: "Plan your looks", icon: Calendar },
-                                { href: "/trips", label: "Trips", desc: "Pack for travel", icon: Plane },
-                                { href: "/style-essence", label: "Style DNA", desc: "Your fashion profile", icon: Sparkles },
-                                { href: "/inspiration", label: "Inspiration", desc: "Mood boards & ideas", icon: Lightbulb },
-                                { href: "/statistics", label: "Analytics", desc: "Wardrobe insights", icon: BarChart3 },
-                            ].map((item, i) => (
-                                <Link key={item.href} href={item.href}>
-                                    <motion.div
-                                        className={`flex items-center justify-between px-6 py-5 hover:bg-[#F9F9F7] transition-colors ${i < 2 ? 'border-b border-[#E5E5E5]/50' : ''
-                                            }`}
-                                        whileTap={{ scale: 0.99 }}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-[#F5F5F5] flex items-center justify-center group-hover:bg-[#1A1A1A] transition-colors">
-                                                <item.icon className="w-5 h-5 text-[#1A1A1A] group-hover:text-white transition-colors" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="text-sm font-medium text-[#1A1A1A]">{item.label}</p>
-                                                <p className="text-xs text-[#9A9A9A]">{item.desc}</p>
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="w-5 h-5 text-[#9A9A9A]" />
-                                    </motion.div>
-                                </Link>
-                            ))}
+                        {/* Notifications */}
+                        <div className="flex items-center justify-between px-4 py-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <Bell className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-[#1A1A1A]">Notifications</p>
+                                    <p className="text-xs text-gray-400">Outfit reminders</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={toggleNotifications}
+                                className={`w-11 h-6 rounded-full transition-colors ${notificationsEnabled ? 'bg-[#1A1A1A]' : 'bg-gray-200'}`}
+                            >
+                                <motion.div
+                                    className="w-5 h-5 rounded-full bg-white shadow-sm"
+                                    animate={{ x: notificationsEnabled ? 22 : 2 }}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            </button>
                         </div>
-                    </motion.div>
-                </div>
+                    </div>
+                </motion.section>
+
+
+                {/* ========================================== */}
+                {/* ABOUT SECTION */}
+                {/* ========================================== */}
+                <motion.section
+                    className="mb-8"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                    <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-3 px-1">
+                        About
+                    </h2>
+                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
+                        <button className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors text-left">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
+                                    <Info className="w-4 h-4 text-gray-600" />
+                                </div>
+                                <p className="text-sm font-medium text-[#1A1A1A]">About Celura</p>
+                            </div>
+                            <span className="text-xs text-gray-400">v1.0.0</span>
+                        </button>
+
+                        <button className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors text-left">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
+                                    <Shield className="w-4 h-4 text-gray-600" />
+                                </div>
+                                <p className="text-sm font-medium text-[#1A1A1A]">Privacy Policy</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-gray-300" />
+                        </button>
+
+                        <button className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors text-left">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
+                                    <FileText className="w-4 h-4 text-gray-600" />
+                                </div>
+                                <p className="text-sm font-medium text-[#1A1A1A]">Terms of Service</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-gray-300" />
+                        </button>
+                    </div>
+                </motion.section>
+
+
+                {/* ========================================== */}
+                {/* SIGN OUT */}
+                {/* ========================================== */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.25 }}
+                >
+                    <button
+                        onClick={handleLogout}
+                        disabled={logoutMutation.isPending}
+                        className="w-full py-4 rounded-2xl bg-white border border-gray-100 text-red-500 text-sm font-medium flex items-center justify-center gap-2 hover:bg-red-50 hover:border-red-100 transition-colors disabled:opacity-50"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                    </button>
+                </motion.section>
+
 
                 {/* Footer */}
                 <footer className="mt-12 text-center">
-                    <p className="text-xs text-[#9A9A9A]">CELURA v1.0.0</p>
+                    <p className="text-[10px] text-gray-300 uppercase tracking-widest">Celura • Made with ♥</p>
                 </footer>
             </div>
-
-
         </AppLayout>
     );
 }
