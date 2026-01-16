@@ -175,9 +175,9 @@ export function HomePage() {
                         </div>
                     </motion.div>
 
-                    {/* DAILY LOOK (Unified Canvas) */}
+                    {/* DAILY LOOK (Unified Canvas - Final Polish) */}
                     <motion.div
-                        className="lg:col-span-7 relative h-[500px] lg:h-[380px] rounded-[24px] bg-[#FAF9F6] border border-gray-100/50 p-0 overflow-hidden shadow-xl shadow-gray-100/50 flex flex-col lg:flex-row group/widget"
+                        className="lg:col-span-7 relative min-h-[500px] lg:min-h-0 lg:h-[380px] rounded-[24px] bg-[#FAF9F6] border border-gray-100/50 p-0 overflow-hidden shadow-xl shadow-gray-100/50 flex flex-col lg:flex-row group/widget"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
@@ -187,8 +187,8 @@ export function HomePage() {
 
                         {dailyLook ? (
                             <>
-                                {/* LEFT: ACTIONS & INFO (35%) - Transparent on Canvas */}
-                                <div className="p-6 md:p-8 lg:p-10 flex flex-col justify-between items-start w-full lg:w-[35%] h-full z-10 relative">
+                                {/* LEFT: ACTIONS & INFO (35%) */}
+                                <div className="p-6 md:p-8 lg:p-10 flex flex-col justify-between items-start w-full lg:w-[35%] h-auto lg:h-full z-10 relative bg-transparent">
                                     <div className="w-full">
                                         <div className="flex justify-between items-center mb-6">
                                             <div className="flex flex-col gap-1">
@@ -196,7 +196,7 @@ export function HomePage() {
                                                     Daily Edit
                                                 </p>
                                                 {/* Match Badge - Integrated */}
-                                                <div className="flex items-center gap-1.5 opacity-60">
+                                                <div className="flex items-center gap-1.5 opacity-80">
                                                     <Sparkles className="w-3 h-3 text-[#1A1A1A]" />
                                                     <span className="text-[10px] font-medium text-[#1A1A1A]">98% Match</span>
                                                 </div>
@@ -205,37 +205,37 @@ export function HomePage() {
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                                 disabled={isGenerating}
-                                                className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full border border-gray-200"
+                                                className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white/50"
                                             >
-                                                <Shuffle className={`w-3 h-3 text-gray-400 ${isGenerating ? 'animate-spin' : ''}`} />
+                                                <Shuffle className={`w-3 h-3 text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
                                             </button>
                                         </div>
 
                                         <h3 className="text-3xl lg:text-4xl text-[#1A1A1A] leading-tight mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                                             {dailyLook.name}
                                         </h3>
-                                        <p className="text-sm text-gray-500 font-medium leading-relaxed line-clamp-3">
+                                        <p className="text-sm text-gray-500 font-medium leading-relaxed line-clamp-3 lg:line-clamp-4">
                                             Curated for {weather?.condition?.toLowerCase() || "today"}. <br />
-                                            <span className="opacity-50 font-normal">Effortless style for the modern day.</span>
+                                            <span className="opacity-60 font-normal">Effortless style for the modern day.</span>
                                         </p>
                                     </div>
 
-                                    <div className="w-full flex flex-col gap-3 mt-auto">
+                                    <div className="w-full flex flex-col gap-3 mt-8 lg:mt-auto">
                                         <Link href={`/outfits`}>
                                             <button className="w-full h-12 bg-[#1A1A1A] text-white rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
                                                 Wear Look
                                             </button>
                                         </Link>
                                         <Link href={`/compose`}>
-                                            <button className="w-full h-12 bg-transparent text-[#1A1A1A] border border-[#1A1A1A]/10 rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-[#1A1A1A]/5 transition-colors">
+                                            <button className="w-full h-12 bg-transparent text-[#1A1A1A] border border-[#1A1A1A]/20 rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-[#1A1A1A] hover:text-white transition-all duration-300">
                                                 Customize
                                             </button>
                                         </Link>
                                     </div>
                                 </div>
 
-                                {/* RIGHT: IMAGE COLLAGE (65%) - Pure Collage, No Boards */}
-                                <div className="relative w-full lg:w-[65%] h-full p-6 z-10">
+                                {/* RIGHT: IMAGE COLLAGE (65%) */}
+                                <div className="relative w-full lg:w-[65%] flex-1 lg:h-full p-6 lg:p-6 z-10 flex flex-col justify-center">
                                     {/* Simple Divider Line for visual anchors */}
                                     <div className="absolute left-0 top-10 bottom-10 w-px bg-[#1A1A1A]/5 hidden lg:block" />
 
@@ -249,7 +249,7 @@ export function HomePage() {
                                     </button>
 
                                     {/* Collage Grid */}
-                                    <div className="w-full h-full flex flex-col lg:grid lg:grid-cols-12 gap-0 relative">
+                                    <div className="w-full h-64 lg:h-full flex flex-row lg:grid lg:grid-cols-12 gap-0 relative">
                                         {(() => {
                                             const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
 
@@ -263,7 +263,7 @@ export function HomePage() {
                                             return (
                                                 <>
                                                     {/* MAIN HERO ITEM (Left - Large) */}
-                                                    <div className={`relative w-full lg:w-auto ${items.length === 1 ? 'lg:col-span-12' : 'lg:col-span-7'} flex-1 lg:h-full flex items-center justify-center overflow-hidden`}>
+                                                    <div className={`relative flex-1 lg:flex-none w-1/2 lg:w-auto ${items.length === 1 ? 'lg:col-span-12' : 'lg:col-span-7'} lg:h-full flex items-center justify-center overflow-hidden`}>
                                                         {getItemImage(items[0]) ? (
                                                             <motion.img
                                                                 initial={{ opacity: 0, scale: 0.95 }}
@@ -278,11 +278,11 @@ export function HomePage() {
 
                                                     {/* SECONDARY STACK (Right) */}
                                                     {items.length > 1 && (
-                                                        <div className="w-full h-32 lg:h-full lg:col-span-5 flex flex-row lg:flex-col justify-center gap-4 lg:pl-6">
+                                                        <div className="w-1/2 lg:w-auto lg:h-full lg:col-span-5 flex flex-col justify-center gap-4 lg:pl-6 border-l border-[#1A1A1A]/5 lg:border-none pl-4 lg:pl-0">
                                                             {items.slice(1).map((itemId, idx) => (
                                                                 <div
                                                                     key={itemId}
-                                                                    className="relative flex-1 lg:flex-initial lg:h-[45%] flex items-center justify-center overflow-hidden"
+                                                                    className="relative flex-1 flex items-center justify-center overflow-hidden"
                                                                 >
                                                                     {getItemImage(itemId) ? (
                                                                         <motion.img
