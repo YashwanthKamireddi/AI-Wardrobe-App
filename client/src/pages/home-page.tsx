@@ -214,9 +214,8 @@ export function HomePage() {
                                         <h3 className="text-3xl lg:text-4xl text-[#1A1A1A] leading-tight mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                                             {dailyLook.name}
                                         </h3>
-                                        <p className="text-sm text-gray-500 font-medium leading-relaxed line-clamp-3 lg:line-clamp-4">
-                                            Curated for {weather?.condition?.toLowerCase() || "today"}. <br />
-                                            <span className="opacity-60 font-normal">Effortless style for the modern day.</span>
+                                        <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                                            Curated for {weather?.condition?.toLowerCase() || "today"}.
                                         </p>
                                     </div>
 
