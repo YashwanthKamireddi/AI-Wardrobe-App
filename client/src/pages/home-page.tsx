@@ -144,7 +144,7 @@ export function HomePage() {
 
                     {/* WEATHER (Left) */}
                     <motion.div
-                        className="lg:col-span-5 relative h-[500px] lg:h-[440px] rounded-[24px] bg-[#0F0F0F] text-white p-8 flex flex-col justify-between overflow-hidden group cursor-pointer shadow-2xl shadow-black/20 ring-1 ring-white/10"
+                        className="lg:col-span-5 relative h-[500px] lg:h-[380px] rounded-[24px] bg-[#0F0F0F] text-white p-8 flex flex-col justify-between overflow-hidden group cursor-pointer shadow-2xl shadow-black/20 ring-1 ring-white/10"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
@@ -187,108 +187,94 @@ export function HomePage() {
 
                     {/* DAILY LOOK (Right) */}
                     <motion.div
-                        className="lg:col-span-7 relative flex flex-col justify-between h-[500px] lg:h-[440px] rounded-[24px] bg-white border border-gray-100 p-6 md:p-8 shadow-xl shadow-gray-100/50 overflow-hidden"
+                        className="lg:col-span-7 relative h-[500px] lg:h-[380px] rounded-[24px] bg-white border border-gray-100 p-0 overflow-hidden shadow-xl shadow-gray-100/50 flex flex-col lg:flex-row"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
                     >
                         {dailyLook ? (
                             <>
-                                {/* HEADER */}
-                                <div className="flex justify-between items-start mb-4 z-10 shrink-0">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.25em] mb-1">
-                                            Daily Edit
-                                        </p>
-                                        <h3 className="text-2xl text-[#1A1A1A] line-clamp-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                {/* LEFT: ACTIONS & INFO (35%) */}
+                                <div className="p-6 md:p-8 flex flex-col justify-between items-start w-full lg:w-[35%] h-full z-10 bg-white relative">
+                                    <div className="w-full">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.25em]">
+                                                Daily Edit
+                                            </p>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
+                                                disabled={isGenerating}
+                                                className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full border border-gray-100"
+                                            >
+                                                <Shuffle className={`w-3 h-3 text-gray-400 ${isGenerating ? 'animate-spin' : ''}`} />
+                                            </button>
+                                        </div>
+                                        <h3 className="text-2xl lg:text-3xl text-[#1A1A1A] leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                                             {dailyLook.name}
                                         </h3>
+                                        <p className="text-xs text-gray-400 font-medium line-clamp-2">
+                                            Curated for {weather?.condition?.toLowerCase() || "today"}.
+                                        </p>
                                     </div>
+
+                                    <div className="w-full mt-4">
+                                        <Link href={`/outfits`}>
+                                            <button className="w-full h-12 bg-[#1A1A1A] text-white rounded-xl font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-[#80163A] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-black/5">
+                                                Wear Look
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                {/* RIGHT: IMAGE GALLERY (65%) */}
+                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAFAFA]">
+                                    {/* Desktop Refresh Button (Absolute Top Right) */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent border border-gray-200 hover:border-[#1A1A1A] transition-all duration-300 disabled:opacity-50 group/refresh"
+                                        className="hidden lg:flex absolute top-4 right-4 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm border border-white/50 hover:bg-white transition-all shadow-sm"
                                     >
-                                        <Shuffle className={`w-4 h-4 text-gray-400 group-hover/refresh:text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
+                                        <Shuffle className={`w-4 h-4 text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
-                                </div>
 
-                                {/* CONTENT - RESPONSIVE GALLERY */}
-                                <div className="flex-1 min-h-0 relative mb-4">
-                                    {(() => {
-                                        const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
-                                        const count = items.length;
-
-                                        const GalleryCard = ({ itemId, className = "" }: { itemId: number, className?: string }) => {
-                                            const img = getItemImage(itemId);
-                                            return (
-                                                <div className={`relative w-full h-full rounded-xl bg-[#F8F8F8] border border-gray-100 flex items-center justify-center p-4 overflow-hidden ${className}`}>
-                                                    {img ? (
-                                                        <img
-                                                            src={img}
-                                                            alt="Outfit Item"
-                                                            style={{ objectFit: 'contain', width: '100%', height: '100%' }}
-                                                            className="drop-shadow-sm transition-transform duration-500 hover:scale-105"
-                                                        />
-                                                    ) : (
-                                                        <Shirt className="w-8 h-8 text-gray-300" />
-                                                    )}
-                                                </div>
-                                            );
-                                        };
-
-                                        if (count === 0) return <div className="w-full h-full bg-gray-50 rounded-xl" />;
-
-                                        return (
-                                            <div className="w-full h-full grid grid-cols-1 lg:grid-cols-12 gap-3">
-                                                {/* Main Item */}
-                                                <div className="lg:col-span-7 h-full">
-                                                    <GalleryCard itemId={items[0]} />
-                                                </div>
-
-                                                {/* Secondary Items (Stacked on Desktop, row or hidden on mobile if space allows) */}
-                                                {count > 1 && (
-                                                    <div className="hidden lg:grid lg:col-span-5 grid-rows-2 gap-3 h-full">
-                                                        <GalleryCard itemId={items[1]} />
-                                                        {count > 2 && <GalleryCard itemId={items[2]} />}
+                                    {/* Images Grid */}
+                                    <div className="w-full h-full p-2 grid grid-cols-2 gap-2">
+                                        {(() => {
+                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 2);
+                                            return items.map((itemId, idx) => {
+                                                const img = getItemImage(itemId);
+                                                return (
+                                                    <div
+                                                        key={itemId}
+                                                        className={`relative overflow-hidden rounded-xl bg-white flex items-center justify-center ${items.length === 1 ? 'col-span-2' : ''}`}
+                                                    >
+                                                        {img ? (
+                                                            <img
+                                                                src={img}
+                                                                alt="Item"
+                                                                className="w-full h-full object-contain p-4 hover:scale-105 transition-transform duration-700"
+                                                            />
+                                                        ) : (
+                                                            <Shirt className="w-8 h-8 text-gray-200" />
+                                                        )}
                                                     </div>
-                                                )}
-
-                                                {/* Mobile Secondary (Show only 1 secondary item to save space) */}
-                                                {count > 1 && (
-                                                    <div className="lg:hidden grid grid-cols-2 gap-3 h-24">
-                                                        <GalleryCard itemId={items[1]} />
-                                                        {count > 2 && <GalleryCard itemId={items[2]} />}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-
-                                {/* FOOTER ACTIONS */}
-                                <div className="mt-auto shrink-0 pt-2 border-t border-gray-50">
-                                    <Link href={`/outfits`}>
-                                        <button className="w-full h-12 bg-[#1A1A1A] text-white rounded-xl font-bold text-[11px] tracking-[0.2em] uppercase hover:bg-[#80163A] transition-colors flex items-center justify-center gap-3 shadow-md shadow-gray-200">
-                                            Wear This Look
-                                        </button>
-                                    </Link>
+                                                )
+                                            });
+                                        })()}
+                                    </div>
                                 </div>
                             </>
                         ) : (
                             // Empty State
-                            <div className="flex-1 flex flex-col items-center justify-center text-center">
+                            <div className="w-full h-full flex flex-col items-center justify-center text-center p-8">
                                 <div className="w-16 h-16 rounded-full bg-[#FAF9F6] flex items-center justify-center mb-4 ring-1 ring-gray-100">
                                     <Layers className="w-6 h-6 text-gray-300" />
                                 </div>
                                 <h3 className="text-xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                                     Your Digital Atelier
                                 </h3>
-                                <p className="text-gray-400 text-xs mb-6 max-w-[200px] leading-relaxed">
-                                    Start by adding items to your wardrobe. Your personal stylist is waiting.
-                                </p>
                                 <Link href="/compose">
-                                    <button className="px-6 py-3 bg-[#1A1A1A] text-white rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#80163A] transition-colors">
+                                    <button className="mt-4 px-6 py-3 bg-[#1A1A1A] text-white rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#80163A] transition-colors">
                                         Enter Studio
                                     </button>
                                 </Link>
