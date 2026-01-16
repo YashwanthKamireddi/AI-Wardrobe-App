@@ -7,7 +7,7 @@ import { useOutfits } from "@/hooks/use-outfits";
 import WeatherLocationModal from "@/components/weather-location-modal";
 import { motion } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Plus, Search, Sparkles, MapPin, Zap, X, ArrowRight, Shirt, RefreshCw, Calendar as CalendarIcon, LogOut, Info, Settings, User, Shuffle, Layers, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Sparkles, MapPin, Zap, X, ArrowRight, Shirt, RefreshCw, Calendar as CalendarIcon, LogOut, Info, Settings, User, Shuffle, Layers, ChevronLeft, ChevronRight, Camera, Plane } from "lucide-react";
 import type { Outfit } from "@shared/schema";
 
 /**
