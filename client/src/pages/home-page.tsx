@@ -231,86 +231,84 @@ export function HomePage() {
                                     </div>
                                 </div>
 
-                                {/* RIGHT: IMAGE GALLERY (65%) - SPOTLIGHT CAROUSEL */}
-                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAFAFA] group/gallery overflow-hidden">
-                                    {/* Desktop Refresh Button (Top Right - Glass) */}
+                                {/* RIGHT: IMAGE GALLERY (65%) - MAGAZINE COLLAGE */}
+                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAF9F6] p-4">
+                                    {/* Background Texture (Subtle Paper) */}
+                                    <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+
+                                    {/* Desktop Refresh Button (Minimal floating) */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="hidden lg:flex absolute top-5 right-5 z-20 w-10 h-10 items-center justify-center rounded-full bg-white/60 backdrop-blur-md border border-white/50 shadow-sm hover:scale-105 transition-all duration-300 group/refresh"
+                                        className="hidden lg:flex absolute top-4 right-4 z-20 w-8 h-8 items-center justify-center rounded-full bg-white/50 backdrop-blur-sm border border-black/5 hover:bg-white hover:scale-105 transition-all duration-300 group/refresh"
                                     >
-                                        <Shuffle className={`w-4 h-4 text-[#1A1A1A] transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
+                                        <Shuffle className={`w-3 h-3 text-[#1A1A1A] transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
 
-                                    {/* Spotlight Carousel (Snap Scroll) */}
-                                    <div
-                                        id="daily-look-carousel"
-                                        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
-                                    >
+                                    {/* Magazine Grid */}
+                                    <div className="w-full h-full grid grid-cols-12 gap-3 relative z-10">
                                         {(() => {
-                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []);
+                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
 
-                                            // Empty State
                                             if (items.length === 0) return (
-                                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-2">
-                                                    <Shirt className="w-12 h-12 opacity-10" />
-                                                    <span className="text-[10px] uppercase tracking-widest opacity-30 font-medium">No Items</span>
+                                                <div className="col-span-12 h-full flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-gray-200 rounded-xl">
+                                                    <Shirt className="w-8 h-8 opacity-20" />
+                                                    <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium">Atelier Empty</span>
                                                 </div>
                                             );
 
-                                            return items.map((itemId, idx) => {
-                                                const img = getItemImage(itemId);
-                                                return (
-                                                    <div
-                                                        key={itemId}
-                                                        className="relative min-w-full h-full snap-center flex items-center justify-center bg-[#FAFAFA] p-8"
-                                                    >
-                                                        {img ? (
+                                            return (
+                                                <>
+                                                    {/* MAIN HERO ITEM (Left - Large) */}
+                                                    <div className={`relative ${items.length === 1 ? 'col-span-12' : 'col-span-7'} h-full rounded-xl bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center overflow-hidden`}>
+                                                        {getItemImage(items[0]) ? (
                                                             <motion.img
-                                                                initial={{ opacity: 0, scale: 0.9 }}
-                                                                whileInView={{ opacity: 1, scale: 1 }}
-                                                                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                                                                src={img}
-                                                                alt={`Item ${idx + 1}`}
-                                                                className="w-full h-full object-contain filter drop-shadow-xl"
+                                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                transition={{ duration: 0.5 }}
+                                                                src={getItemImage(items[0])!}
+                                                                alt="Main Piece"
+                                                                className="w-full h-full object-contain p-4 mix-blend-multiply" // Critical: object-contain
                                                             />
-                                                        ) : (
-                                                            <Shirt className="w-16 h-16 text-gray-200/50" />
-                                                        )}
+                                                        ) : <Shirt className="w-10 h-10 text-gray-100" />}
 
-                                                        {/* Caption/Counter (Bottom Center) */}
-                                                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-white/50 text-[10px] uppercase tracking-widest font-bold text-[#1A1A1A]/60 shadow-sm">
-                                                            {idx + 1} / {items.length}
+                                                        {/* Label */}
+                                                        <div className="absolute bottom-3 left-3 px-2 py-1 bg-white/90 backdrop-blur text-[8px] font-bold tracking-widest uppercase text-gray-500 rounded-sm">
+                                                            01 • Main
                                                         </div>
                                                     </div>
-                                                );
-                                            });
+
+                                                    {/* SECONDARY STACK (Right - Vertical) */}
+                                                    {items.length > 1 && (
+                                                        <div className="col-span-5 h-full flex flex-col gap-3">
+                                                            {items.slice(1).map((itemId, idx) => (
+                                                                <div
+                                                                    key={itemId}
+                                                                    className="relative flex-1 rounded-xl bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center overflow-hidden"
+                                                                >
+                                                                    {getItemImage(itemId) ? (
+                                                                        <motion.img
+                                                                            initial={{ opacity: 0, x: 10 }}
+                                                                            animate={{ opacity: 1, x: 0 }}
+                                                                            transition={{ delay: 0.1 * (idx + 1) }}
+                                                                            src={getItemImage(itemId)!}
+                                                                            alt={`Accessory ${idx + 1}`}
+                                                                            className="w-full h-full object-contain p-3 mix-blend-multiply" // Critical: object-contain
+                                                                        />
+                                                                    ) : <Shirt className="w-6 h-6 text-gray-100" />}
+
+                                                                    {/* Label */}
+                                                                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-white/90 backdrop-blur text-[7px] font-bold tracking-widest uppercase text-gray-400 rounded-sm">
+                                                                        0{idx + 2}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            );
                                         })()}
                                     </div>
-
-                                    {/* Navigation Arrows (Desktop Only - Show on Hover) */}
-                                    {dailyLook.items.length > 1 && (
-                                        <>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    document.getElementById('daily-look-carousel')?.scrollBy({ left: -300, behavior: 'smooth' });
-                                                }}
-                                                className="hidden lg:flex absolute top-1/2 left-4 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white/40 backdrop-blur-md border border-white/50 opacity-0 group-hover/gallery:opacity-100 hover:bg-white/80 transition-all text-[#1A1A1A]"
-                                            >
-                                                <ChevronLeft className="w-5 h-5" />
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    document.getElementById('daily-look-carousel')?.scrollBy({ left: 300, behavior: 'smooth' });
-                                                }}
-                                                className="hidden lg:flex absolute top-1/2 right-4 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white/40 backdrop-blur-md border border-white/50 opacity-0 group-hover/gallery:opacity-100 hover:bg-white/80 transition-all text-[#1A1A1A]"
-                                            >
-                                                <ChevronRight className="w-5 h-5" />
-                                            </button>
-                                        </>
-                                    )}
                                 </div>
                             </>
                         ) : (
