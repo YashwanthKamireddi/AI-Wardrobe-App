@@ -238,6 +238,136 @@ app.delete('/api/wardrobe/:id', requireAuth, (req, res) => {
     res.json({ message: 'Item deleted' });
 });
 
+// Seed Demo Items - Professional Men's Fashion Collection
+app.post('/api/wardrobe/seed', requireAuth, (req, res) => {
+    const userId = (req.user as User).id;
+
+    // Curated men's fashion items with high-quality Unsplash images
+    const demoItems = [
+        // TOPS
+        {
+            name: 'Navy Oxford Shirt',
+            category: 'tops',
+            color: 'Navy Blue',
+            brand: 'Ralph Lauren',
+            imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500&h=600&fit=crop',
+            tags: ['formal', 'smart-casual', 'office'],
+        },
+        {
+            name: 'White Linen Shirt',
+            category: 'tops',
+            color: 'White',
+            brand: 'Massimo Dutti',
+            imageUrl: 'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=500&h=600&fit=crop',
+            tags: ['summer', 'casual', 'breathable'],
+        },
+        {
+            name: 'Charcoal Cashmere Sweater',
+            category: 'tops',
+            color: 'Charcoal',
+            brand: 'Theory',
+            imageUrl: 'https://images.unsplash.com/photo-1638292016125-3a92f26b3c94?w=500&h=600&fit=crop',
+            tags: ['winter', 'cozy', 'layering'],
+        },
+        // BOTTOMS
+        {
+            name: 'Slim Fit Chinos',
+            category: 'bottoms',
+            color: 'Khaki',
+            brand: 'Bonobos',
+            imageUrl: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&h=600&fit=crop',
+            tags: ['casual', 'smart-casual', 'versatile'],
+        },
+        {
+            name: 'Dark Wash Selvedge Jeans',
+            category: 'bottoms',
+            color: 'Indigo',
+            brand: 'A.P.C.',
+            imageUrl: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=500&h=600&fit=crop',
+            tags: ['casual', 'denim', 'weekend'],
+        },
+        {
+            name: 'Tailored Grey Trousers',
+            category: 'bottoms',
+            color: 'Grey',
+            brand: 'Hugo Boss',
+            imageUrl: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&h=600&fit=crop',
+            tags: ['formal', 'office', 'business'],
+        },
+        // OUTERWEAR
+        {
+            name: 'Navy Wool Blazer',
+            category: 'outerwear',
+            color: 'Navy',
+            brand: 'Brooks Brothers',
+            imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&h=600&fit=crop',
+            tags: ['formal', 'business', 'classic'],
+        },
+        {
+            name: 'Camel Overcoat',
+            category: 'outerwear',
+            color: 'Camel',
+            brand: 'Reiss',
+            imageUrl: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=500&h=600&fit=crop',
+            tags: ['winter', 'elegant', 'statement'],
+        },
+        // SHOES
+        {
+            name: 'Brown Leather Oxford',
+            category: 'shoes',
+            color: 'Brown',
+            brand: 'Allen Edmonds',
+            imageUrl: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=500&h=600&fit=crop',
+            tags: ['formal', 'classic', 'leather'],
+        },
+        {
+            name: 'White Minimalist Sneakers',
+            category: 'shoes',
+            color: 'White',
+            brand: 'Common Projects',
+            imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&h=600&fit=crop',
+            tags: ['casual', 'versatile', 'everyday'],
+        },
+        // ACCESSORIES
+        {
+            name: 'Cognac Leather Belt',
+            category: 'accessories',
+            color: 'Cognac',
+            brand: 'Anderson\'s',
+            imageUrl: 'https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=500&h=600&fit=crop',
+            tags: ['essential', 'leather', 'classic'],
+        },
+        {
+            name: 'Navy Silk Pocket Square',
+            category: 'accessories',
+            color: 'Navy',
+            brand: 'Drake\'s',
+            imageUrl: 'https://images.unsplash.com/photo-1598522325074-042db73aa4e6?w=500&h=600&fit=crop',
+            tags: ['formal', 'accent', 'elegant'],
+        },
+    ];
+
+    const addedItems: WardrobeItem[] = [];
+
+    for (const item of demoItems) {
+        const newItem: WardrobeItem = {
+            id: wardrobeIdCounter++,
+            userId,
+            name: item.name,
+            category: item.category,
+            color: item.color,
+            brand: item.brand,
+            imageUrl: item.imageUrl,
+            tags: item.tags,
+            createdAt: new Date(),
+        };
+        wardrobeItems.set(newItem.id, newItem);
+        addedItems.push(newItem);
+    }
+
+    res.status(201).json({ count: addedItems.length, items: addedItems });
+});
+
 // ============================================
 // OUTFITS ROUTES
 // ============================================
