@@ -630,66 +630,45 @@ export function WardrobePage() {
                                 name="imageUrl"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <div className="flex items-center justify-between">
-                                            <FormLabel className="text-xs tracking-wider uppercase text-[#6B6B6B]">Image Source</FormLabel>
-                                        </div>
                                         <FormControl>
-                                            <Tabs defaultValue="browse" className="w-full" onValueChange={(val) => { if (val !== 'camera') stopCamera(); }}>
-                                                <TabsList className="grid w-full grid-cols-3 mb-4 bg-[#EDEDE9] rounded-2xl p-1 h-12">
-                                                    <TabsTrigger value="camera" className="rounded-xl text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2" onClick={startCamera}>
-                                                        <Camera className="w-4 h-4" />
-                                                        <span className="hidden sm:inline">Camera</span>
-                                                    </TabsTrigger>
-                                                    <TabsTrigger value="browse" className="rounded-xl text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
+                                            <Tabs
+                                                defaultValue="browse"
+                                                className="w-full"
+                                                onValueChange={(val) => {
+                                                    if (val === 'camera') {
+                                                        startCamera();
+                                                    } else {
+                                                        stopCamera();
+                                                    }
+                                                }}
+                                            >
+                                                {/* Simple 2-Tab Header */}
+                                                <TabsList className="w-full grid grid-cols-2 mb-4 bg-[#EDEDE9] rounded-xl p-1 h-11">
+                                                    <TabsTrigger value="browse" className="rounded-lg text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2">
                                                         <Upload className="w-4 h-4" />
-                                                        <span className="hidden sm:inline">Browse</span>
+                                                        Upload
                                                     </TabsTrigger>
-                                                    <TabsTrigger value="url" className="rounded-xl text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
-                                                        <LinkIcon className="w-4 h-4" />
-                                                        <span className="hidden sm:inline">URL</span>
+                                                    <TabsTrigger value="camera" className="rounded-lg text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2">
+                                                        <Camera className="w-4 h-4" />
+                                                        Camera
                                                     </TabsTrigger>
                                                 </TabsList>
 
-                                                {/* Camera Tab */}
-                                                <TabsContent value="camera" className="mt-0">
-                                                    <div className="relative rounded-2xl overflow-hidden bg-[#1A1A1A] aspect-[4/3]">
-                                                        {isCameraActive ? (
-                                                            <>
-                                                                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                                                                <canvas ref={canvasRef} className="hidden" />
-                                                                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-                                                                    <motion.button
-                                                                        type="button"
-                                                                        onClick={capturePhoto}
-                                                                        className="w-16 h-16 rounded-full bg-white border-4 border-white/30 flex items-center justify-center shadow-2xl"
-                                                                        whileHover={{ scale: 1.05 }}
-                                                                        whileTap={{ scale: 0.9 }}
-                                                                    >
-                                                                        <div className="w-12 h-12 rounded-full bg-[#80163A]" />
-                                                                    </motion.button>
-                                                                </div>
-                                                            </>
-                                                        ) : (
-                                                            <div className="flex flex-col items-center justify-center h-full text-white/50 gap-4 py-12">
-                                                                <Camera className="w-12 h-12" />
-                                                                <p className="text-sm">Tap Camera tab to start</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </TabsContent>
-
-                                                {/* Browse Tab */}
-                                                <TabsContent value="browse" className="mt-0">
-                                                    <div className="flex items-center justify-between mb-3 px-1">
-                                                        <div className="flex items-center space-x-2">
+                                                {/* Browse/Upload Tab */}
+                                                <TabsContent value="browse" className="mt-0 space-y-3">
+                                                    <div className="flex items-center justify-between px-1">
+                                                        <div className="flex items-center gap-2">
                                                             <Switch
                                                                 id="remove-bg"
                                                                 checked={removeBackground}
                                                                 onCheckedChange={setRemoveBackground}
+                                                                className="scale-90"
                                                             />
-                                                            <Label htmlFor="remove-bg" className="text-xs font-medium text-[#6B6B6B]">Auto Remove Background</Label>
+                                                            <Label htmlFor="remove-bg" className="text-xs text-gray-500">Remove Background</Label>
                                                         </div>
-                                                        {removeBackground && <span className="text-[10px] text-[#80163A] font-medium flex items-center gap-1"><Sparkles className="w-3 h-3" />On</span>}
+                                                        {removeBackground && (
+                                                            <span className="text-[10px] text-[#80163A] font-medium">✓ On</span>
+                                                        )}
                                                     </div>
                                                     <FileUpload
                                                         value={field.value}
@@ -699,48 +678,39 @@ export function WardrobePage() {
                                                     />
                                                 </TabsContent>
 
-                                                {/* URL Tab */}
-                                                <TabsContent value="url" className="mt-0">
-                                                    <div className="flex gap-2">
-                                                        <div className="relative flex-1">
-                                                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A9A9A]" />
-                                                            <input
-                                                                placeholder="Paste product link..."
-                                                                className={`${inputClass} pl-10`}
-                                                                value={importUrl}
-                                                                onChange={(e) => setImportUrl(e.target.value)}
-                                                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleImport())}
-                                                            />
-                                                        </div>
-                                                        <motion.button
-                                                            type="button"
-                                                            onClick={handleImport}
-                                                            disabled={isImporting || !importUrl}
-                                                            className="px-4 bg-[#1A1A1A] text-white rounded-xl flex items-center justify-center disabled:opacity-50"
-                                                            whileHover={{ scale: 1.02 }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                        >
-                                                            {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Import'}
-                                                        </motion.button>
-                                                    </div>
-                                                    <p className="text-[10px] text-[#9A9A9A] mt-2">
-                                                        Works with Zara, SSENSE, H&M, ASOS, and more.
-                                                    </p>
-                                                    {field.value && !field.value.startsWith('data:') && (
-                                                        <div className="mt-4 rounded-xl overflow-hidden border border-[#E5E5E5] relative aspect-[3/4] w-24">
-                                                            <img src={field.value} className="w-full h-full object-contain bg-white" />
-                                                            <button
+                                                {/* Camera Tab */}
+                                                <TabsContent value="camera" className="mt-0">
+                                                    <div className="relative rounded-2xl overflow-hidden bg-black aspect-[4/3]">
+                                                        <video
+                                                            ref={videoRef}
+                                                            autoPlay
+                                                            playsInline
+                                                            muted
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <canvas ref={canvasRef} className="hidden" />
+
+                                                        {/* Capture Button */}
+                                                        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                                                            <motion.button
                                                                 type="button"
-                                                                className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1"
-                                                                onClick={() => {
-                                                                    form.setValue('imageUrl', '');
-                                                                    setImportUrl('');
-                                                                }}
+                                                                onClick={capturePhoto}
+                                                                className="w-14 h-14 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-lg"
+                                                                whileHover={{ scale: 1.05 }}
+                                                                whileTap={{ scale: 0.9 }}
                                                             >
-                                                                <X className="w-3 h-3" />
-                                                            </button>
+                                                                <div className="w-10 h-10 rounded-full bg-[#80163A]" />
+                                                            </motion.button>
                                                         </div>
-                                                    )}
+
+                                                        {/* Camera Not Active Overlay */}
+                                                        {!isCameraActive && (
+                                                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white/60 gap-2">
+                                                                <Camera className="w-10 h-10" />
+                                                                <p className="text-xs">Starting camera...</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </TabsContent>
                                             </Tabs>
                                         </FormControl>
