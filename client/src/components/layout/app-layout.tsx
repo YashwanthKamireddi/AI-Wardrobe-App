@@ -139,54 +139,15 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                             {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </button>
 
-                        {/* Profile Avatar with Dropdown */}
-                        <div className="relative">
-                            <button
-                                onClick={() => { setShowProfile(!showProfile); setShowMore(false); }}
+                        {/* Profile Avatar - Direct Link */}
+                        <Link href="/profile">
+                            <div
                                 className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1A1A1A] to-[#80163A] text-white flex items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-[#80163A]/20 transition-all"
                                 style={{ fontFamily: "'Playfair Display', serif" }}
                             >
                                 {user?.name?.charAt(0) || user?.username?.charAt(0) || "U"}
-                            </button>
-
-                            <AnimatePresence>
-                                {showProfile && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                                        transition={{ duration: 0.12 }}
-                                        className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-2xl border border-[#E5E5E5] overflow-hidden"
-                                        onMouseLeave={() => setShowProfile(false)}
-                                    >
-                                        <div className="px-4 py-3 border-b border-[#E5E5E5] bg-[#FAF9F6]">
-                                            <p className="text-sm font-medium text-[#1A1A1A]">{user?.name || user?.username}</p>
-                                            <p className="text-xs text-[#9A9A9A]">@{user?.username}</p>
-                                        </div>
-
-                                        <div className="py-1">
-                                            <Link href="/profile">
-                                                <div
-                                                    className="px-4 py-2.5 flex items-center gap-3 hover:bg-[#FAF9F6] cursor-pointer"
-                                                    onClick={() => setShowProfile(false)}
-                                                >
-                                                    <User className="w-4 h-4 text-[#6B6B6B]" />
-                                                    <span className="text-sm text-[#1A1A1A]">Profile & Settings</span>
-                                                </div>
-                                            </Link>
-
-                                            <button
-                                                onClick={handleLogout}
-                                                className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-red-50 text-red-600"
-                                            >
-                                                <LogOut className="w-4 h-4" />
-                                                <span className="text-sm">Sign Out</span>
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                            </div>
+                        </Link>
                     </div>
                 </div>
             </nav>

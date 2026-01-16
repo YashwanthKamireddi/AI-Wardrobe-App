@@ -59,8 +59,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                             <Link key={item.href} href={item.href}>
                                 <span
                                     className={`px-4 py-2 rounded-lg text-xs tracking-[0.1em] uppercase transition-all cursor-pointer ${location === item.href
-                                            ? "bg-[#1A1A1A] text-white font-medium"
-                                            : "text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F0F0F0]"
+                                        ? "bg-[#1A1A1A] text-white font-medium"
+                                        : "text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F0F0F0]"
                                         }`}
                                 >
                                     {item.label}
@@ -73,8 +73,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                             <button
                                 onClick={() => { setShowMore(!showMore); setShowProfile(false); }}
                                 className={`px-4 py-2 rounded-lg text-xs tracking-[0.1em] uppercase transition-all flex items-center gap-1 ${moreNav.some(n => location === n.href)
-                                        ? "bg-[#1A1A1A] text-white font-medium"
-                                        : "text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F0F0F0]"
+                                    ? "bg-[#1A1A1A] text-white font-medium"
+                                    : "text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-[#F0F0F0]"
                                     }`}
                             >
                                 More
@@ -95,8 +95,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                                             <Link key={item.href} href={item.href}>
                                                 <div
                                                     className={`px-4 py-3 flex items-center gap-3 cursor-pointer transition-colors ${location === item.href
-                                                            ? "bg-[#FAF9F6]"
-                                                            : "hover:bg-[#FAF9F6]"
+                                                        ? "bg-[#FAF9F6]"
+                                                        : "hover:bg-[#FAF9F6]"
                                                         }`}
                                                     onClick={() => setShowMore(false)}
                                                 >
@@ -126,55 +126,15 @@ export function MainLayout({ children }: MainLayoutProps) {
                             {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </button>
 
-                        {/* Profile Avatar */}
-                        <div className="relative hidden md:block">
-                            <button
-                                onClick={() => { setShowProfile(!showProfile); setShowMore(false); }}
-                                className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1A1A1A] to-[#80163A] text-white flex items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-[#80163A]/20 transition-all"
+                        {/* Profile Avatar - Direct Link */}
+                        <Link href="/profile">
+                            <div
+                                className="hidden md:flex w-9 h-9 rounded-full bg-gradient-to-br from-[#1A1A1A] to-[#80163A] text-white items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-[#80163A]/20 transition-all"
                                 style={{ fontFamily: "'Playfair Display', serif" }}
                             >
                                 {user?.name?.charAt(0) || user?.username?.charAt(0) || "U"}
-                            </button>
-
-                            <AnimatePresence>
-                                {showProfile && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                                        transition={{ duration: 0.15 }}
-                                        className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-[#E5E5E5] overflow-hidden"
-                                        onMouseLeave={() => setShowProfile(false)}
-                                    >
-                                        {/* User Info */}
-                                        <div className="px-4 py-3 border-b border-[#E5E5E5]">
-                                            <p className="text-sm font-medium text-[#1A1A1A]">{user?.name || user?.username}</p>
-                                            <p className="text-xs text-[#9A9A9A]">@{user?.username}</p>
-                                        </div>
-
-                                        <div className="py-1">
-                                            <Link href="/profile">
-                                                <div
-                                                    className="px-4 py-2.5 flex items-center gap-3 hover:bg-[#FAF9F6] cursor-pointer"
-                                                    onClick={() => setShowProfile(false)}
-                                                >
-                                                    <User className="w-4 h-4 text-[#6B6B6B]" />
-                                                    <span className="text-sm text-[#1A1A1A]">My Profile</span>
-                                                </div>
-                                            </Link>
-
-                                            <button
-                                                onClick={handleLogout}
-                                                className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-red-50 text-red-600"
-                                            >
-                                                <LogOut className="w-4 h-4" />
-                                                <span className="text-sm">Sign Out</span>
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                            </div>
+                        </Link>
                     </div>
                 </div>
             </nav>
@@ -193,8 +153,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 <Link key={item.href} href={item.href}>
                                     <div
                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${location === item.href
-                                                ? "bg-[#1A1A1A] text-white"
-                                                : "text-[#1A1A1A] hover:bg-[#FAF9F6]"
+                                            ? "bg-[#1A1A1A] text-white"
+                                            : "text-[#1A1A1A] hover:bg-[#FAF9F6]"
                                             }`}
                                         onClick={() => setShowMobileMenu(false)}
                                     >
@@ -239,8 +199,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                         <Link key={item.href} href={item.href}>
                             <div
                                 className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${location === item.href
-                                        ? "text-[#80163A]"
-                                        : "text-[#9A9A9A]"
+                                    ? "text-[#80163A]"
+                                    : "text-[#9A9A9A]"
                                     }`}
                             >
                                 <item.icon className="w-5 h-5" />
