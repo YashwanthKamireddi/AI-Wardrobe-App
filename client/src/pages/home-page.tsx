@@ -187,14 +187,15 @@ export function HomePage() {
 
                     {/* DAILY LOOK (Right) */}
                     <motion.div
-                        className="lg:col-span-7 relative h-[380px] rounded-[24px] bg-white border border-gray-100 p-8 flex flex-col overflow-hidden group shadow-xl shadow-gray-100/50"
+                        className="lg:col-span-7 relative flex flex-col justify-between min-h-[450px] lg:h-[380px] rounded-[24px] bg-white border border-gray-100 p-6 md:p-8 shadow-xl shadow-gray-100/50 overflow-hidden"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
                     >
                         {dailyLook ? (
                             <>
-                                <div className="flex justify-between items-start mb-4 z-10 relative">
+                                {/* HEADER */}
+                                <div className="flex justify-between items-start mb-4 z-10 shrink-0">
                                     <div>
                                         <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.25em] mb-1">
                                             Daily Edit
@@ -203,85 +204,72 @@ export function HomePage() {
                                             {dailyLook.name}
                                         </h3>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
-                                            disabled={isGenerating}
-                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-transparent border border-gray-200 hover:border-[#1A1A1A] transition-all duration-300 disabled:opacity-50 group/refresh"
-                                        >
-                                            <Shuffle className={`w-3 h-3 text-gray-400 group-hover/refresh:text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
+                                        disabled={isGenerating}
+                                        className="w-10 h-10 flex items-center justify-center rounded-full bg-transparent border border-gray-200 hover:border-[#1A1A1A] transition-all duration-300 disabled:opacity-50 group/refresh"
+                                    >
+                                        <Shuffle className={`w-4 h-4 text-gray-400 group-hover/refresh:text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
+                                    </button>
                                 </div>
 
-                                {/* 3. PREMIUM OUTFIT GRID (Robust Layout) */}
-                                <div className="flex-1 w-full min-h-0 mb-4 relative">
+                                {/* CONTENT - RESPONSIVE GALLERY */}
+                                <div className="flex-1 min-h-0 relative mb-4">
                                     {(() => {
                                         const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
                                         const count = items.length;
 
-                                        // Helper: The "Gallery Card" Component
                                         const GalleryCard = ({ itemId, className = "" }: { itemId: number, className?: string }) => {
                                             const img = getItemImage(itemId);
                                             return (
-                                                <div className={`relative overflow-hidden rounded-xl bg-[#F6F6F6] border border-gray-100 flex items-center justify-center p-4 group/card ${className}`}>
+                                                <div className={`relative w-full h-full rounded-xl bg-[#F8F8F8] border border-gray-100 flex items-center justify-center p-4 overflow-hidden ${className}`}>
                                                     {img ? (
                                                         <img
                                                             src={img}
-                                                            className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-sm transition-transform duration-700 group-hover/card:scale-105"
-                                                            alt="Outfit item"
+                                                            alt="Outfit Item"
+                                                            style={{ objectFit: 'contain', width: '100%', height: '100%' }}
+                                                            className="drop-shadow-sm transition-transform duration-500 hover:scale-105"
                                                         />
                                                     ) : (
-                                                        <Shirt className="w-6 h-6 text-gray-300" />
+                                                        <Shirt className="w-8 h-8 text-gray-300" />
                                                     )}
                                                 </div>
                                             );
                                         };
 
-                                        // LAYOUT 1: SINGLE HERO (1 Item)
-                                        if (count === 1) {
-                                            return (
-                                                <div className="w-full h-full p-2">
-                                                    <GalleryCard itemId={items[0]} className="w-full h-full" />
-                                                </div>
-                                            );
-                                        }
+                                        if (count === 0) return <div className="w-full h-full bg-gray-50 rounded-xl" />;
 
-                                        // LAYOUT 2: SPLIT (2 Items)
-                                        if (count === 2) {
-                                            return (
-                                                <div className="w-full h-full grid grid-cols-2 gap-3">
-                                                    <GalleryCard itemId={items[0]} className="h-full" />
-                                                    <GalleryCard itemId={items[1]} className="h-full" />
+                                        return (
+                                            <div className="w-full h-full grid grid-cols-1 lg:grid-cols-12 gap-3">
+                                                {/* Main Item */}
+                                                <div className="lg:col-span-7 h-full">
+                                                    <GalleryCard itemId={items[0]} />
                                                 </div>
-                                            );
-                                        }
 
-                                        // LAYOUT 3: COLLAGE (3 Items - 1 Main, 2 Stacked)
-                                        if (count >= 3) {
-                                            return (
-                                                <div className="w-full h-full grid grid-cols-12 gap-3">
-                                                    {/* Main Hero (Left) */}
-                                                    <div className="col-span-7 h-full">
-                                                        <GalleryCard itemId={items[0]} className="w-full h-full" />
+                                                {/* Secondary Items (Stacked on Desktop, row or hidden on mobile if space allows) */}
+                                                {count > 1 && (
+                                                    <div className="hidden lg:grid lg:col-span-5 grid-rows-2 gap-3 h-full">
+                                                        <GalleryCard itemId={items[1]} />
+                                                        {count > 2 && <GalleryCard itemId={items[2]} />}
                                                     </div>
+                                                )}
 
-                                                    {/* Stack (Right) */}
-                                                    <div className="col-span-5 grid grid-rows-2 gap-3 h-full">
-                                                        <GalleryCard itemId={items[1]} className="h-full" />
-                                                        <GalleryCard itemId={items[2]} className="h-full" />
+                                                {/* Mobile Secondary (Show only 1 secondary item to save space) */}
+                                                {count > 1 && (
+                                                    <div className="lg:hidden grid grid-cols-2 gap-3 h-24">
+                                                        <GalleryCard itemId={items[1]} />
+                                                        {count > 2 && <GalleryCard itemId={items[2]} />}
                                                     </div>
-                                                </div>
-                                            );
-                                        }
-
-                                        return <div className="w-full h-full" />;
+                                                )}
+                                            </div>
+                                        );
                                     })()}
                                 </div>
 
-                                <div className="mt-auto">
+                                {/* FOOTER ACTIONS */}
+                                <div className="mt-auto shrink-0 pt-2 border-t border-gray-50">
                                     <Link href={`/outfits`}>
-                                        <button className="w-full h-11 bg-[#1A1A1A] text-white rounded-lg font-bold text-[10px] tracking-[0.25em] uppercase hover:bg-[#80163A] transition-colors flex items-center justify-center gap-3">
+                                        <button className="w-full h-12 bg-[#1A1A1A] text-white rounded-xl font-bold text-[11px] tracking-[0.2em] uppercase hover:bg-[#80163A] transition-colors flex items-center justify-center gap-3 shadow-md shadow-gray-200">
                                             Wear This Look
                                         </button>
                                     </Link>
