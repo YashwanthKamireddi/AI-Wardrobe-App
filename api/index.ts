@@ -186,6 +186,29 @@ app.get('/api/user', (req, res) => {
     res.json(userWithoutPassword);
 });
 
+// Update user profile
+app.patch('/api/user', requireAuth, (req, res) => {
+    const userId = (req.user as User).id;
+    const user = users.get(userId);
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { name, email, profilePicture, preferences } = req.body;
+
+    // Update allowed fields
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email;
+    if (profilePicture !== undefined) user.profilePicture = profilePicture;
+    if (preferences !== undefined) (user as any).preferences = preferences;
+
+    users.set(userId, user);
+
+    const { password: _, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+});
+
 // ============================================
 // WARDROBE ROUTES
 // ============================================

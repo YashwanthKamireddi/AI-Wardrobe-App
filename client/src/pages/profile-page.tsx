@@ -1,18 +1,19 @@
 import { useState, useMemo } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { AppLayout } from "@/components/layout/app-layout";
 import {
-    User, LogOut, Grid3X3, Layers, Heart, ChevronRight,
-    Bell, MapPin, Info, FileText, Shield, Mail, Edit2
+    LogOut, Grid3X3, Layers, Heart, ChevronRight,
+    Bell, Info, FileText, Shield, Mail, Edit2, Check, X
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
+import { useToast } from "@/hooks/use-toast";
 
 /**
- * PROFILE PAGE - REDESIGNED
- * Single column, mobile-first layout following Apple Settings / Instagram patterns
+ * PROFILE PAGE - FULLY INTEGRATED WITH BACKEND
+ * Single column, mobile-first layout with real API integration
  */
 
 export function ProfilePage() {
@@ -20,12 +21,14 @@ export function ProfilePage() {
     const [, setLocation] = useLocation();
     const { data: wardrobeItems } = useWardrobeItems();
     const { data: outfits } = useOutfits();
+    const { toast } = useToast();
 
+    // Local state
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editedName, setEditedName] = useState(user?.name || user?.username || "");
+    const [isUpdating, setIsUpdating] = useState(false);
     const [notificationsEnabled, setNotificationsEnabled] = useState(
         localStorage.getItem("notificationsEnabled") === "true"
-    );
-    const [weatherLocation, setWeatherLocationState] = useState(
-        localStorage.getItem("weatherLocation") || ""
     );
 
     const handleLogout = () => {
@@ -46,19 +49,51 @@ export function ProfilePage() {
         favorites: wardrobeItems?.filter(item => item.favorite).length || 0,
     }), [wardrobeItems, outfits]);
 
-    const updateWeatherLocation = () => {
-        const newLocation = prompt("Enter your city name:", weatherLocation);
-        if (newLocation !== null) {
-            localStorage.setItem("weatherLocation", newLocation);
-            setWeatherLocationState(newLocation);
+    // Update user profile via API
+    const updateProfile = async (updates: { name?: string; preferences?: object }) => {
+        setIsUpdating(true);
+        try {
+            const response = await fetch('/api/user', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(updates),
+            });
+
+            if (!response.ok) throw new Error('Failed to update profile');
+
+            toast({
+                title: "Profile updated",
+                description: "Your changes have been saved.",
+            });
+
+            // Refresh the page to get updated user data
             window.location.reload();
+        } catch (error) {
+            toast({
+                title: "Update failed",
+                description: "Could not save your changes. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsUpdating(false);
         }
+    };
+
+    const handleSaveName = () => {
+        if (editedName.trim() && editedName !== user?.name) {
+            updateProfile({ name: editedName.trim() });
+        }
+        setIsEditingName(false);
     };
 
     const toggleNotifications = () => {
         const newValue = !notificationsEnabled;
         setNotificationsEnabled(newValue);
         localStorage.setItem("notificationsEnabled", newValue.toString());
+
+        // Also save to backend
+        updateProfile({ preferences: { notifications: newValue } });
     };
 
     return (
@@ -89,18 +124,60 @@ export function ProfilePage() {
                                 getUserInitials()
                             )}
                         </div>
-                        <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors">
-                            <Edit2 className="w-3.5 h-3.5 text-gray-600" />
-                        </button>
                     </div>
 
-                    {/* Name & Info */}
-                    <h1
-                        className="text-2xl text-[#1A1A1A] mb-1"
-                        style={{ fontFamily: "'Playfair Display', serif" }}
-                    >
-                        {user?.name || user?.username}
-                    </h1>
+                    {/* Name - Editable */}
+                    <AnimatePresence mode="wait">
+                        {isEditingName ? (
+                            <motion.div
+                                key="editing"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="flex items-center justify-center gap-2 mb-1"
+                            >
+                                <input
+                                    type="text"
+                                    value={editedName}
+                                    onChange={(e) => setEditedName(e.target.value)}
+                                    className="text-2xl text-center text-[#1A1A1A] bg-gray-100 rounded-lg px-3 py-1 outline-none focus:ring-2 focus:ring-[#80163A]"
+                                    style={{ fontFamily: "'Playfair Display', serif" }}
+                                    autoFocus
+                                />
+                                <button
+                                    onClick={handleSaveName}
+                                    disabled={isUpdating}
+                                    className="p-2 rounded-lg bg-[#1A1A1A] text-white hover:bg-[#333] transition-colors"
+                                >
+                                    <Check className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => { setIsEditingName(false); setEditedName(user?.name || user?.username || ""); }}
+                                    className="p-2 rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="display"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="flex items-center justify-center gap-2 mb-1 group cursor-pointer"
+                                onClick={() => setIsEditingName(true)}
+                            >
+                                <h1
+                                    className="text-2xl text-[#1A1A1A]"
+                                    style={{ fontFamily: "'Playfair Display', serif" }}
+                                >
+                                    {user?.name || user?.username}
+                                </h1>
+                                <Edit2 className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     <p className="text-sm text-gray-500">@{user?.username}</p>
                     {user?.email && (
                         <p className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
@@ -153,24 +230,7 @@ export function ProfilePage() {
                     <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-3 px-1">
                         Preferences
                     </h2>
-                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
-                        {/* Weather Location */}
-                        <button
-                            onClick={updateWeatherLocation}
-                            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors text-left"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                                    <MapPin className="w-4 h-4 text-blue-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-[#1A1A1A]">Weather Location</p>
-                                    <p className="text-xs text-gray-400">{weatherLocation || "Auto-detect"}</p>
-                                </div>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-300" />
-                        </button>
-
+                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                         {/* Notifications */}
                         <div className="flex items-center justify-between px-4 py-4">
                             <div className="flex items-center gap-3">
@@ -179,7 +239,7 @@ export function ProfilePage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-[#1A1A1A]">Notifications</p>
-                                    <p className="text-xs text-gray-400">Outfit reminders</p>
+                                    <p className="text-xs text-gray-400">Outfit reminders & tips</p>
                                 </div>
                             </div>
                             <button
