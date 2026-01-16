@@ -7,23 +7,23 @@ import { useOutfits } from "@/hooks/use-outfits";
 import WeatherLocationModal from "@/components/weather-location-modal";
 import { motion } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Plus, Search, Sparkles, MapPin, Zap, X, ArrowRight, Shirt, RefreshCw, Calendar as CalendarIcon, LogOut, Info, Settings, User, Shuffle, Layers, ChevronLeft, ChevronRight, Camera, Plane } from "lucide-react";
+import { Plus, Sparkles, MapPin, Shirt, Shuffle, Layers, Camera, Plane, Cloud, Sun, CloudRain, ArrowRight } from "lucide-react";
 import type { Outfit } from "@shared/schema";
 
 /**
- * HOME PAGE V5 - "THE DESIGNER'S DESK"
+ * HOME PAGE V6 - "FOCUS ON FASHION"
  *
- * Changes:
- * - High Contrast Weather Widget
- * - "Collage" style Daily Pick
- * - Refined Typography & Spacing
+ * Redesign:
+ * - Compact weather strip in header (not a giant widget)
+ * - Full-width Daily Look Hero
+ * - Streamlined quick actions
+ * - Clean discovery section
  */
 
 export function HomePage() {
     const { user } = useAuth();
     const [currentTime, setCurrentTime] = useState(new Date());
 
-    // Data Hooks
     // Data Hooks
     const savedLocation = typeof window !== 'undefined' ? localStorage.getItem("weatherLocation") || undefined : undefined;
     const [coords, setCoords] = useState<string | undefined>(undefined);
@@ -65,7 +65,6 @@ export function HomePage() {
         if (!outfits || outfits.length === 0) return;
         setIsGenerating(true);
         setTimeout(() => {
-            // Simple random for now, but with "thinking" delay
             const randomPick = outfits[Math.floor(Math.random() * outfits.length)];
             setDailyLook(randomPick);
             setIsGenerating(false);
@@ -78,22 +77,30 @@ export function HomePage() {
 
     const isLoading = weatherLoading || wardrobeLoading || outfitsLoading;
 
-    // Derived Data for "Discovery"
-    const recentItems = useMemo(() => wardrobeItems?.slice(0, 5) || [], [wardrobeItems]);
+    // Derived Data
+    const recentItems = useMemo(() => wardrobeItems?.slice(0, 4) || [], [wardrobeItems]);
     const rediscoverItems = useMemo(() => {
-        if (!wardrobeItems || wardrobeItems.length < 5) return [];
-        return [...wardrobeItems].sort(() => 0.5 - Math.random()).slice(0, 5);
+        if (!wardrobeItems || wardrobeItems.length < 3) return [];
+        return [...wardrobeItems].sort(() => 0.5 - Math.random()).slice(0, 3);
     }, [wardrobeItems]);
 
     const formattedDate = currentTime.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
+        weekday: 'short',
+        month: 'short',
         day: 'numeric'
-    }).toUpperCase();
+    });
 
     const handleSaveWeatherLocation = (newLocation: string) => {
         localStorage.setItem("weatherLocation", newLocation);
         window.location.reload();
+    };
+
+    // Weather icon helper
+    const WeatherIcon = () => {
+        const condition = weather?.condition?.toLowerCase() || '';
+        if (condition.includes('rain') || condition.includes('drizzle')) return <CloudRain className="w-4 h-4" />;
+        if (condition.includes('cloud')) return <Cloud className="w-4 h-4" />;
+        return <Sun className="w-4 h-4" />;
     };
 
     if (isLoading) {
@@ -109,327 +116,256 @@ export function HomePage() {
 
     return (
         <AppLayout>
-            <div className="w-full max-w-5xl mx-auto px-6 py-8 md:py-12 space-y-16">
+            <div className="w-full max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8">
 
-                {/* 1. HEADER */}
+                {/* ========================================== */}
+                {/* 1. HEADER WITH COMPACT WEATHER STRIP */}
+                {/* ========================================== */}
                 <motion.header
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="flex justify-between items-end border-b border-gray-100 pb-8"
+                    transition={{ duration: 0.5 }}
+                    className="space-y-4"
                 >
-                    <div>
-                        <p className="text-[10px] font-bold tracking-[0.25em] text-[#80163A] mb-3 uppercase">
+                    {/* Top Row: Date + Weather Pill */}
+                    <div className="flex items-center justify-between">
+                        <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">
                             {formattedDate}
                         </p>
-                        <h1 className="text-4xl md:text-6xl text-[#1A1A1A] leading-[1.1]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                            Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},<br />
-                            <span className="italic text-gray-400">{user?.username || 'Style Icon'}</span>.
-                        </h1>
+
+                        {/* Compact Weather Pill */}
+                        <button
+                            onClick={() => setShowWeatherModal(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1A1A1A] text-white text-xs font-medium hover:bg-[#333] transition-colors"
+                        >
+                            <WeatherIcon />
+                            <span>{weather?.temperature || '--'}°</span>
+                            <span className="text-white/60 hidden sm:inline">•</span>
+                            <span className="text-white/60 hidden sm:inline truncate max-w-[80px]">{weather?.location || 'Set Location'}</span>
+                        </button>
                     </div>
-                    <Link href="/profile">
-                        <div className="hidden md:block w-14 h-14 rounded-full border border-gray-200 p-1 cursor-pointer hover:border-[#1A1A1A] transition-colors">
-                            <div className="w-full h-full rounded-full overflow-hidden bg-[#1A1A1A]">
-                                {user?.profilePicture ? (
-                                    <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-white text-lg">
-                                        {user?.username?.[0]?.toUpperCase()}
-                                    </div>
-                                )}
+
+                    {/* Greeting */}
+                    <div className="flex items-end justify-between">
+                        <h1 className="text-3xl md:text-5xl text-[#1A1A1A] leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            {currentTime.getHours() < 12 ? 'Good Morning' : currentTime.getHours() < 18 ? 'Good Afternoon' : 'Good Evening'},
+                            <br />
+                            <span className="italic text-gray-400">{user?.username || 'Style Icon'}</span>
+                        </h1>
+
+                        <Link href="/profile">
+                            <div className="w-11 h-11 rounded-full border border-gray-200 p-0.5 cursor-pointer hover:border-[#1A1A1A] transition-colors shrink-0">
+                                <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-[#80163A] to-[#1A1A1A]">
+                                    {user?.profilePicture ? (
+                                        <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium">
+                                            {user?.username?.[0]?.toUpperCase() || 'U'}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    </Link>
+                        </Link>
+                    </div>
                 </motion.header>
 
 
-                {/* 2. HERO: WEATHER & LOOK */}
-                <section className="grid lg:grid-cols-12 gap-6 items-stretch">
-
-                    {/* WEATHER (Left) */}
-                    <motion.div
-                        className="lg:col-span-5 relative h-[500px] lg:h-[380px] rounded-[24px] bg-[#0F0F0F] text-white p-8 flex flex-col justify-between overflow-hidden group cursor-pointer shadow-2xl shadow-black/20 ring-1 ring-white/10"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        onClick={() => setShowWeatherModal(true)}
-                    >
-                        {/* Gradient Orbs - Enhanced for depth */}
-                        <div className="absolute top-[-20%] right-[-20%] w-[350px] h-[350px] bg-[#80163A]/80 rounded-full blur-[120px] opacity-40 group-hover:opacity-60 transition-opacity duration-1000" />
-                        <div className="absolute bottom-[-10%] left-[-10%] w-[250px] h-[250px] bg-indigo-900/80 rounded-full blur-[100px] opacity-40" />
-
-                        {/* Grain Texture Overlay */}
-                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
-
-                        <div className="relative z-10 flex justify-between items-start">
-                            <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                    <MapPin className="w-3 h-3 text-white/60" />
-                                    <p className="text-[10px] uppercase tracking-[0.25em] text-white/60 font-medium">
-                                        {savedLocation || weather?.location || "Detecting..."}
-                                    </p>
-                                </div>
-                                <h2 className="text-3xl font-medium tracking-tight text-white/90" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                    {weather?.condition || "Clear Sky"}
-                                </h2>
-                            </div>
-                        </div>
-
-                        <div className="relative z-10 mt-auto">
-                            <div className="flex items-baseline">
-                                <span className="text-[100px] leading-none font-light tracking-tighter -ml-2 text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                    {weather?.temperature || 20}
-                                </span>
-                                <span className="text-3xl font-light text-white/50 ml-1">°</span>
-                            </div>
-                            <div className="h-px w-12 bg-white/20 my-4" />
-                            <p className="text-sm text-white/80 font-light leading-relaxed max-w-[90%]">
-                                "A quiet confidence in the air today."
-                            </p>
-                        </div>
-                    </motion.div>
-
-                    {/* DAILY LOOK (Unified Canvas - Final Polish) */}
-                    <motion.div
-                        className="lg:col-span-7 relative min-h-[500px] lg:min-h-0 lg:h-[380px] rounded-[24px] bg-[#FAF9F6] border border-gray-100/50 p-0 overflow-hidden shadow-xl shadow-gray-100/50 flex flex-col lg:flex-row group/widget"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        {/* UNIFIED BACKGROUND TEXTURE */}
-                        <div className="absolute inset-0 opacity-[0.5] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
-
-                        {dailyLook ? (
-                            <>
-                                {/* LEFT: ACTIONS & INFO (35%) */}
-                                <div className="p-6 md:p-8 lg:p-10 flex flex-col justify-between items-start w-full lg:w-[35%] h-auto lg:h-full z-10 relative bg-transparent">
-                                    <div className="w-full">
-                                        <div className="flex justify-between items-center mb-6">
-                                            <div className="flex flex-col gap-1">
-                                                <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.3em]">
-                                                    Daily Edit
-                                                </p>
-                                                {/* Match Badge - Integrated */}
-                                                <div className="flex items-center gap-1.5 opacity-80">
-                                                    <MapPin className="w-3 h-3 text-[#1A1A1A]" />
-                                                    <span
-                                                        className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#1A1A1A] cursor-pointer hover:underline underline-offset-4 decoration-1"
-                                                        onClick={() => setShowWeatherModal(true)}
-                                                    >
-                                                        {savedLocation || weather?.location || "Auto Sensing..."}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
-                                                disabled={isGenerating}
-                                                className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white/50"
-                                            >
-                                                <Shuffle className={`w-3 h-3 text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
-                                            </button>
-                                        </div>
-
-                                        <h3 className="text-2xl lg:text-4xl text-[#1A1A1A] leading-tight mb-3 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                            {dailyLook.name}
-                                        </h3>
-                                        <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                                            Curated for {weather?.condition?.toLowerCase() || "today"}.
+                {/* ========================================== */}
+                {/* 2. DAILY LOOK HERO - FULL WIDTH */}
+                {/* ========================================== */}
+                <motion.section
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="relative rounded-[28px] bg-gradient-to-br from-[#FAF9F6] to-[#F5F4F0] border border-gray-100 overflow-hidden min-h-[400px] md:min-h-[450px]"
+                >
+                    {dailyLook ? (
+                        <div className="flex flex-col md:flex-row h-full">
+                            {/* Left: Outfit Info & Actions */}
+                            <div className="flex flex-col justify-between p-6 md:p-10 md:w-[40%] z-10 relative">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="w-2 h-2 rounded-full bg-[#80163A] animate-pulse" />
+                                        <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.2em]">
+                                            Today's Look
                                         </p>
                                     </div>
 
-                                    <div className="w-full flex flex-col gap-2.5 mt-6 lg:mt-auto">
-                                        <Link href={`/outfits`}>
-                                            <button className="w-full h-10 lg:h-12 bg-[#1A1A1A] text-white rounded-lg font-medium text-[10px] lg:text-[11px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
-                                                Wear Look
-                                            </button>
-                                        </Link>
-                                        <Link href={`/compose`}>
-                                            <button className="w-full h-10 lg:h-12 bg-transparent text-[#1A1A1A] border border-[#1A1A1A]/20 rounded-lg font-medium text-[10px] lg:text-[11px] tracking-[0.2em] uppercase hover:bg-[#1A1A1A] hover:text-white transition-all duration-300">
-                                                Customize
-                                            </button>
-                                        </Link>
+                                    <h2 className="text-2xl md:text-4xl text-[#1A1A1A] mb-3 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                        {dailyLook.name}
+                                    </h2>
+
+                                    <p className="text-sm text-gray-500 leading-relaxed mb-2">
+                                        Curated for {weather?.condition?.toLowerCase() || 'today'}'s weather.
+                                    </p>
+
+                                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                                        <Sparkles className="w-3 h-3" />
+                                        <span>{(dailyLook.items?.length || 0)} pieces • AI Matched</span>
                                     </div>
                                 </div>
 
-                                {/* RIGHT: IMAGE COLLAGE (65%) */}
-                                <div className="relative w-full lg:w-[65%] flex-1 lg:h-full p-6 lg:p-6 z-10 flex flex-col justify-center">
-                                    {/* Simple Divider Line for visual anchors */}
-                                    <div className="absolute left-0 top-10 bottom-10 w-px bg-[#1A1A1A]/5 hidden lg:block" />
-
-                                    {/* Desktop Refresh Button */}
+                                <div className="flex gap-3 mt-6">
+                                    <Link href="/outfits" className="flex-1">
+                                        <button className="w-full h-11 bg-[#1A1A1A] text-white rounded-xl font-medium text-xs tracking-wide uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
+                                            Wear Today
+                                        </button>
+                                    </Link>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="hidden lg:flex absolute top-6 right-6 z-20 w-8 h-8 items-center justify-center rounded-full bg-transparent border border-[#1A1A1A]/10 hover:border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-all duration-300 group/refresh"
+                                        className="w-11 h-11 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-all"
                                     >
-                                        <Shuffle className={`w-3 h-3 transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
+                                        <Shuffle className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
-
-                                    {/* Collage Grid */}
-                                    <div className="w-full h-64 lg:h-full flex flex-row lg:grid lg:grid-cols-12 gap-0 relative">
-                                        {(() => {
-                                            const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
-
-                                            if (items.length === 0) return (
-                                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-gray-200/50 rounded-xl">
-                                                    <Shirt className="w-8 h-8 opacity-20" />
-                                                    <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium">Atelier Empty</span>
-                                                </div>
-                                            );
-
-                                            return (
-                                                <>
-                                                    {/* MAIN HERO ITEM (Left - Large) */}
-                                                    <div className={`relative flex-1 lg:flex-none w-1/2 lg:w-auto ${items.length === 1 ? 'lg:col-span-12' : 'lg:col-span-7'} lg:h-full flex items-center justify-center overflow-hidden`}>
-                                                        {getItemImage(items[0]) ? (
-                                                            <motion.img
-                                                                initial={{ opacity: 0, scale: 0.95 }}
-                                                                animate={{ opacity: 1, scale: 1 }}
-                                                                transition={{ duration: 0.5 }}
-                                                                src={getItemImage(items[0])!}
-                                                                alt="Main Piece"
-                                                                className="w-full h-full object-contain p-2 mix-blend-multiply drop-shadow-xl"
-                                                            />
-                                                        ) : <Shirt className="w-10 h-10 text-gray-100" />}
-                                                    </div>
-
-                                                    {/* SECONDARY STACK (Right) */}
-                                                    {items.length > 1 && (
-                                                        <div className="w-1/2 lg:w-auto lg:h-full lg:col-span-5 flex flex-col justify-center gap-4 lg:pl-6 border-l border-[#1A1A1A]/5 lg:border-none pl-4 lg:pl-0">
-                                                            {items.slice(1).map((itemId, idx) => (
-                                                                <div
-                                                                    key={itemId}
-                                                                    className="relative flex-1 flex items-center justify-center overflow-hidden"
-                                                                >
-                                                                    {getItemImage(itemId) ? (
-                                                                        <motion.img
-                                                                            initial={{ opacity: 0, x: 10 }}
-                                                                            animate={{ opacity: 1, x: 0 }}
-                                                                            transition={{ delay: 0.1 * (idx + 1) }}
-                                                                            src={getItemImage(itemId)!}
-                                                                            alt={`Accessory ${idx + 1}`}
-                                                                            className="w-full h-full object-contain p-2 mix-blend-multiply drop-shadow-lg"
-                                                                        />
-                                                                    ) : <Shirt className="w-6 h-6 text-gray-100" />}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
                                 </div>
-                            </>
-                        ) : (
-                            // Empty State
-                            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 z-10 relative">
-                                <div className="w-16 h-16 rounded-full bg-[#FAFAFA] flex items-center justify-center mb-4 ring-1 ring-gray-100/50">
-                                    <Layers className="w-6 h-6 text-gray-300" />
-                                </div>
-                                <h3 className="text-xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                    Your Digital Atelier
-                                </h3>
-                                <p className="text-gray-400 text-xs mb-6 max-w-[200px] leading-relaxed">
-                                    Start by adding items to your wardrobe. Your personal stylist is waiting.
-                                </p>
-                                <Link href="/compose">
-                                    <button className="px-6 py-3 bg-[#1A1A1A] text-white rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#80163A] transition-colors">
-                                        Enter Studio
-                                    </button>
-                                </Link>
                             </div>
-                        )}
-                    </motion.div>
-                </section>
 
-
-                {/* 3. QUICK ACTIONS */}
-                <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <div className="flex items-center gap-4 overflow-x-auto pb-4 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
-                        {[
-                            { icon: Camera, label: "Log Fit", sub: "Track Wear", href: "/wardrobe" },
-                            { icon: Plus, label: "Add Item", sub: "New Piece", href: "/wardrobe" },
-                            { icon: Layers, label: "Studio", sub: "Create", href: "/compose" },
-                            { icon: Plane, label: "Trips", sub: "Packing", href: "/trips" },
-                        ].map((action, i) => (
-                            <Link key={i} href={action.href}>
-                                <div className="min-w-[140px] flex-1 bg-white border border-gray-100 p-5 rounded-[24px] flex flex-col items-center gap-3 cursor-pointer hover:border-[#80163A] hover:shadow-xl hover:shadow-[#80163A]/5 transition-all group active:scale-95">
-                                    <div className="w-10 h-10 rounded-full bg-[#FAF9F6] flex items-center justify-center group-hover:bg-[#1A1A1A] group-hover:text-white transition-colors duration-300">
-                                        <action.icon className="w-4 h-4" />
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-[#1A1A1A] font-semibold text-sm mb-0.5">{action.label}</p>
-                                        <p className="text-[9px] text-gray-400 uppercase tracking-widest">{action.sub}</p>
-                                    </div>
+                            {/* Right: Outfit Images Grid */}
+                            <div className="flex-1 p-4 md:p-6 flex items-center justify-center">
+                                <div className="grid grid-cols-2 gap-3 w-full max-w-[350px]">
+                                    {(Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 4).map((itemId, idx) => (
+                                        <motion.div
+                                            key={itemId}
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 0.1 * idx }}
+                                            className={`relative aspect-square rounded-2xl bg-white shadow-lg shadow-gray-200/50 overflow-hidden ${idx === 0 ? 'col-span-2 aspect-[2/1]' : ''}`}
+                                        >
+                                            {getItemImage(itemId) ? (
+                                                <img
+                                                    src={getItemImage(itemId)!}
+                                                    alt="Outfit piece"
+                                                    className="w-full h-full object-contain p-3"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <Shirt className="w-8 h-8 text-gray-200" />
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    ))}
                                 </div>
+                            </div>
+                        </div>
+                    ) : (
+                        // Empty State
+                        <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-8">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#80163A]/10 to-[#1A1A1A]/10 flex items-center justify-center mb-6">
+                                <Layers className="w-8 h-8 text-[#80163A]" />
+                            </div>
+                            <h3 className="text-2xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                Your Style Awaits
+                            </h3>
+                            <p className="text-gray-400 text-sm mb-6 max-w-[280px]">
+                                Create your first outfit to get personalized daily recommendations.
+                            </p>
+                            <Link href="/compose">
+                                <button className="px-6 py-3 bg-[#1A1A1A] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#80163A] transition-colors">
+                                    Create Outfit
+                                </button>
                             </Link>
-                        ))}
-                    </div>
+                        </div>
+                    )}
                 </motion.section>
 
 
-                {/* 4. DISCOVERY & INSIGHTS */}
+                {/* ========================================== */}
+                {/* 3. QUICK ACTIONS - HORIZONTAL GRID */}
+                {/* ========================================== */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                >
+                    {[
+                        { icon: Plus, label: "Add Item", href: "/wardrobe", color: "bg-[#80163A]" },
+                        { icon: Layers, label: "Create Look", href: "/compose", color: "bg-[#1A1A1A]" },
+                        { icon: Camera, label: "Log Outfit", href: "/wardrobe", color: "bg-emerald-600" },
+                        { icon: Plane, label: "Trip Packer", href: "/trips", color: "bg-indigo-600" },
+                    ].map((action, i) => (
+                        <Link key={i} href={action.href}>
+                            <div className="relative h-20 rounded-2xl bg-white border border-gray-100 p-4 flex items-center gap-3 cursor-pointer hover:border-[#1A1A1A] hover:shadow-lg transition-all group overflow-hidden">
+                                <div className={`w-10 h-10 rounded-xl ${action.color} flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform`}>
+                                    <action.icon className="w-4 h-4" />
+                                </div>
+                                <span className="text-sm font-semibold text-[#1A1A1A]">{action.label}</span>
+                                <ArrowRight className="w-4 h-4 text-gray-300 absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                        </Link>
+                    ))}
+                </motion.section>
+
+
+                {/* ========================================== */}
+                {/* 4. DISCOVERY SECTION */}
+                {/* ========================================== */}
                 <motion.section
                     className="grid md:grid-cols-2 gap-8"
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
+                    transition={{ delay: 0.3 }}
                 >
-                    {/* NEW IN */}
+                    {/* Recent Items */}
                     <div>
-                        <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
-                            <h3 className="text-lg text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>New In</h3>
-                            <Link href="/wardrobe"><span className="text-[10px] font-bold uppercase tracking-widest text-[#80163A] cursor-pointer">View All</span></Link>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg text-[#1A1A1A] font-semibold">New In Wardrobe</h3>
+                            <Link href="/wardrobe">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#80163A] cursor-pointer hover:underline">View All</span>
+                            </Link>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            {recentItems.slice(0, 2).map((item) => (
+                        <div className="grid grid-cols-2 gap-3">
+                            {recentItems.slice(0, 4).map((item) => (
                                 <Link key={item.id} href="/wardrobe">
-                                    <div className="aspect-[3/4] rounded-2xl bg-white overflow-hidden relative group cursor-pointer border border-gray-100">
-                                        {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />}
-                                        <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/50 to-transparent">
-                                            <p className="text-white text-xs font-medium truncate">{item.name}</p>
-                                        </div>
+                                    <div className="aspect-square rounded-2xl bg-white border border-gray-100 overflow-hidden relative group cursor-pointer hover:shadow-lg transition-shadow">
+                                        {item.imageUrl ? (
+                                            <img src={item.imageUrl} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <Shirt className="w-8 h-8 text-gray-200" />
+                                            </div>
+                                        )}
                                     </div>
                                 </Link>
                             ))}
                             {recentItems.length === 0 && (
-                                <div className="col-span-2 py-8 text-center bg-[#FAF9F6] rounded-2xl border border-dashed border-gray-200">
-                                    <p className="text-xs text-gray-400 mb-2">Wardrobe is empty</p>
-                                    <Link href="/wardrobe"><span className="text-xs font-bold underline cursor-pointer">Add Items</span></Link>
+                                <div className="col-span-2 py-12 text-center bg-white rounded-2xl border border-dashed border-gray-200">
+                                    <p className="text-xs text-gray-400 mb-2">Your wardrobe is empty</p>
+                                    <Link href="/wardrobe"><span className="text-xs font-bold text-[#80163A] underline cursor-pointer">Add Items</span></Link>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* REDISCOVER */}
+                    {/* Rediscover */}
                     <div>
-                        <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-2">
-                            <h3 className="text-lg text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>Rediscover</h3>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hidden Gems</span>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg text-[#1A1A1A] font-semibold">Rediscover</h3>
+                            <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">Hidden Gems</span>
                         </div>
                         <div className="space-y-3">
-                            {rediscoverItems.slice(0, 3).map((item) => (
+                            {rediscoverItems.map((item) => (
                                 <Link key={item.id} href="/wardrobe">
                                     <div className="flex items-center gap-4 p-3 rounded-2xl bg-white border border-gray-100 hover:border-[#1A1A1A] transition-colors cursor-pointer group">
-                                        <div className="w-12 h-12 rounded-lg bg-[#FAF9F6] overflow-hidden shrink-0">
-                                            {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-cover" />}
+                                        <div className="w-14 h-14 rounded-xl bg-[#FAF9F6] overflow-hidden shrink-0">
+                                            {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-contain p-1" />}
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#80163A] transition-colors">{item.name}</p>
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">{item.category}</p>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-[#1A1A1A] truncate group-hover:text-[#80163A] transition-colors">{item.name}</p>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">{item.category} • {item.brand || 'No brand'}</p>
                                         </div>
+                                        <ArrowRight className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 </Link>
                             ))}
+                            {rediscoverItems.length === 0 && (
+                                <div className="py-8 text-center text-xs text-gray-400">
+                                    Add more items to discover hidden gems
+                                </div>
+                            )}
                         </div>
                     </div>
-
                 </motion.section>
 
                 {/* Weather Modal */}
