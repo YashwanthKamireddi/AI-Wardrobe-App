@@ -234,7 +234,7 @@ export function HomePage() {
                                                         {[arr[1], arr[2]].map((sId, sIdx) => (
                                                             <div key={sIdx} className="rounded-xl overflow-hidden bg-[#FAF9F6] relative group/simg flex items-center justify-center p-2">
                                                                 {getItemImage(sId) ? (
-                                                                    <img src={getItemImage(sId)} className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover/simg:scale-105" />
+                                                                    <img src={getItemImage(sId)} className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover/simg:scale-105" />
                                                                 ) : <div className="w-full h-full flex items-center justify-center"><Shirt className="text-gray-200" /></div>}
                                                             </div>
                                                         ))}
@@ -247,7 +247,7 @@ export function HomePage() {
                                         return (
                                             <div key={idx} className={`${arr.length === 1 ? 'col-span-12' : 'col-span-6'} h-full rounded-xl overflow-hidden bg-[#FAF9F6] relative group/img flex items-center justify-center p-2`}>
                                                 {img ? (
-                                                    <img src={img} className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover/img:scale-105" />
+                                                    <img src={img} className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover/img:scale-105" />
                                                 ) : <div className="w-full h-full flex items-center justify-center"><Shirt className="text-gray-200" /></div>}
                                             </div>
                                         );
