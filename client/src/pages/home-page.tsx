@@ -185,16 +185,17 @@ export function HomePage() {
                         {dailyLook ? (
                             <>
                                 {/* LEFT: ACTIONS & INFO (35%) */}
-                                <div className="p-6 md:p-8 flex flex-col justify-between items-start w-full lg:w-[35%] h-full z-10 bg-white relative">
+                                <div className="p-6 md:p-8 lg:p-10 flex flex-col justify-between items-start w-full lg:w-[35%] h-full z-10 bg-white relative">
                                     <div className="w-full">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.25em]">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <div className="flex flex-col gap-1">
+                                                <p className="text-[9px] font-bold text-[#80163A] uppercase tracking-[0.3em]">
                                                     Daily Edit
                                                 </p>
-                                                <div className="px-1.5 py-0.5 rounded-full bg-green-50 border border-green-100 flex items-center gap-1">
-                                                    <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
-                                                    <span className="text-[8px] font-bold text-green-700 uppercase tracking-wider">98% Match</span>
+                                                {/* Match Badge - Minimal */}
+                                                <div className="flex items-center gap-1.5 opacity-60">
+                                                    <Sparkles className="w-3 h-3 text-green-600" />
+                                                    <span className="text-[10px] font-medium text-[#1A1A1A]">98% Match</span>
                                                 </div>
                                             </div>
 
@@ -206,25 +207,23 @@ export function HomePage() {
                                                 <Shuffle className={`w-3 h-3 text-gray-400 ${isGenerating ? 'animate-spin' : ''}`} />
                                             </button>
                                         </div>
-                                        <h3 className="text-2xl lg:text-3xl text-[#1A1A1A] leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+
+                                        <h3 className="text-3xl lg:text-4xl text-[#1A1A1A] leading-tight mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                                             {dailyLook.name}
                                         </h3>
-                                        <p className="text-xs text-gray-400 font-medium line-clamp-2 mb-4">
-                                            Perfectly curated for {weather?.condition?.toLowerCase() || "today"}. average temperature.
+                                        <p className="text-sm text-gray-500 font-light leading-relaxed line-clamp-3">
+                                            Curated for {weather?.condition?.toLowerCase() || "today"}. A perfect balance of style and comfort.
                                         </p>
                                     </div>
 
-                                    <div className="w-full flex flex-col gap-2">
+                                    <div className="w-full flex flex-col gap-3 mt-auto">
                                         <Link href={`/outfits`}>
-                                            <button className="w-full h-11 bg-[#1A1A1A] text-white rounded-xl font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-[#80163A] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-black/5">
-                                                Wear This Look
+                                            <button className="w-full h-12 bg-[#1A1A1A] text-white rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
+                                                Wear Look
                                             </button>
                                         </Link>
                                         <Link href={`/compose`}>
-                                            <button className="w-full h-11 bg-white text-[#1A1A1A] border border-gray-200 rounded-xl font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                                                <div className="w-3 h-3 rounded-full border border-[#1A1A1A]/30 flex items-center justify-center">
-                                                    <div className="w-1 h-1 bg-[#1A1A1A] rounded-full" />
-                                                </div>
+                                            <button className="w-full h-12 bg-transparent text-[#1A1A1A] border border-gray-200 rounded-lg font-medium text-[11px] tracking-[0.2em] uppercase hover:bg-gray-50 transition-colors">
                                                 Customize
                                             </button>
                                         </Link>
@@ -232,7 +231,7 @@ export function HomePage() {
                                 </div>
 
                                 {/* RIGHT: IMAGE GALLERY (65%) - MAGAZINE COLLAGE */}
-                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAF9F6] p-4">
+                                <div className="relative w-full lg:w-[65%] h-full bg-[#FAF9F6] p-4 lg:p-6">
                                     {/* Background Texture (Subtle Paper) */}
                                     <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
 
@@ -240,18 +239,18 @@ export function HomePage() {
                                     <button
                                         onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
                                         disabled={isGenerating}
-                                        className="hidden lg:flex absolute top-4 right-4 z-20 w-8 h-8 items-center justify-center rounded-full bg-white/50 backdrop-blur-sm border border-black/5 hover:bg-white hover:scale-105 transition-all duration-300 group/refresh"
+                                        className="hidden lg:flex absolute top-6 right-6 z-20 w-8 h-8 items-center justify-center rounded-full bg-white/40 backdrop-blur-md hover:bg-[#1A1A1A] hover:text-white transition-all duration-300 group/refresh"
                                     >
-                                        <Shuffle className={`w-3 h-3 text-[#1A1A1A] transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
+                                        <Shuffle className={`w-3 h-3 transition-transform duration-700 group-hover/refresh:rotate-180 ${isGenerating ? 'animate-spin' : ''}`} />
                                     </button>
 
-                                    {/* Magazine Grid */}
-                                    <div className="w-full h-full grid grid-cols-12 gap-3 relative z-10">
+                                    {/* Magazine Grid (Responsive: Flex Col Mobile -> Grid Desktop) */}
+                                    <div className="w-full h-full flex flex-col lg:grid lg:grid-cols-12 gap-3 relative z-10">
                                         {(() => {
                                             const items = (Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 3);
 
                                             if (items.length === 0) return (
-                                                <div className="col-span-12 h-full flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-gray-200 rounded-xl">
+                                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-gray-200 rounded-xl">
                                                     <Shirt className="w-8 h-8 opacity-20" />
                                                     <span className="text-[10px] uppercase tracking-widest opacity-40 font-medium">Atelier Empty</span>
                                                 </div>
@@ -260,7 +259,7 @@ export function HomePage() {
                                             return (
                                                 <>
                                                     {/* MAIN HERO ITEM (Left - Large) */}
-                                                    <div className={`relative ${items.length === 1 ? 'col-span-12' : 'col-span-7'} h-full rounded-xl bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center overflow-hidden`}>
+                                                    <div className={`relative w-full lg:w-auto ${items.length === 1 ? 'lg:col-span-12' : 'lg:col-span-8'} flex-1 lg:h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden`}>
                                                         {getItemImage(items[0]) ? (
                                                             <motion.img
                                                                 initial={{ opacity: 0, scale: 0.95 }}
@@ -268,23 +267,23 @@ export function HomePage() {
                                                                 transition={{ duration: 0.5 }}
                                                                 src={getItemImage(items[0])!}
                                                                 alt="Main Piece"
-                                                                className="w-full h-full object-contain p-4 mix-blend-multiply" // Critical: object-contain
+                                                                className="w-full h-full object-contain p-6 mix-blend-multiply"
                                                             />
                                                         ) : <Shirt className="w-10 h-10 text-gray-100" />}
 
                                                         {/* Label */}
-                                                        <div className="absolute bottom-3 left-3 px-2 py-1 bg-white/90 backdrop-blur text-[8px] font-bold tracking-widest uppercase text-gray-500 rounded-sm">
+                                                        <div className="absolute bottom-4 left-4 px-2 py-1 bg-[#FAFAFA]/90 backdrop-blur text-[9px] font-bold tracking-widest uppercase text-gray-500 rounded-sm">
                                                             01 • Main
                                                         </div>
                                                     </div>
 
-                                                    {/* SECONDARY STACK (Right - Vertical) */}
+                                                    {/* SECONDARY STACK (Right - Vertical on Desktop, Horizontal Row on Mobile) */}
                                                     {items.length > 1 && (
-                                                        <div className="col-span-5 h-full flex flex-col gap-3">
+                                                        <div className="w-full h-32 lg:h-full lg:col-span-4 flex flex-row lg:flex-col gap-3">
                                                             {items.slice(1).map((itemId, idx) => (
                                                                 <div
                                                                     key={itemId}
-                                                                    className="relative flex-1 rounded-xl bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center overflow-hidden"
+                                                                    className="relative flex-1 rounded-2xl bg-white flex items-center justify-center overflow-hidden"
                                                                 >
                                                                     {getItemImage(itemId) ? (
                                                                         <motion.img
@@ -293,12 +292,12 @@ export function HomePage() {
                                                                             transition={{ delay: 0.1 * (idx + 1) }}
                                                                             src={getItemImage(itemId)!}
                                                                             alt={`Accessory ${idx + 1}`}
-                                                                            className="w-full h-full object-contain p-3 mix-blend-multiply" // Critical: object-contain
+                                                                            className="w-full h-full object-contain p-4 mix-blend-multiply"
                                                                         />
                                                                     ) : <Shirt className="w-6 h-6 text-gray-100" />}
 
                                                                     {/* Label */}
-                                                                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-white/90 backdrop-blur text-[7px] font-bold tracking-widest uppercase text-gray-400 rounded-sm">
+                                                                    <div className="absolute bottom-3 right-3 px-1.5 py-0.5 bg-[#FAFAFA]/90 backdrop-blur text-[8px] font-bold tracking-widest uppercase text-gray-400 rounded-sm">
                                                                         0{idx + 2}
                                                                     </div>
                                                                 </div>
