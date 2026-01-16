@@ -75,7 +75,7 @@ export function WardrobePage() {
     // Import from Web State
     const [importUrl, setImportUrl] = useState('');
     const [isImporting, setIsImporting] = useState(false);
-    const [removeBackground, setRemoveBackground] = useState(true);
+    // Background removal is always enabled for clean item images
 
     // Camera capture state
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -99,7 +99,7 @@ export function WardrobePage() {
             const result = await processWardrobeImage(file, (stage, progress) => {
                 setAiStage(stage);
                 setAiProgress(progress);
-            }, { removeBg: removeBackground });
+            }, { removeBg: true }); // Always remove background for clean images
 
             setAiResult(result);
             form.setValue('imageUrl', result.processedImageUrl);
@@ -594,16 +594,38 @@ export function WardrobePage() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmitAdd)} className="space-y-5">
-                            {/* AI Processing Status */}
-                            {isAIProcessing && (
-                                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#F5F0FF] to-[#F0F5FF] border border-[#E5E0F0]">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Wand2 className="w-4 h-4 text-[#6B4FBB] animate-pulse" />
-                                        <span className="text-sm font-medium text-[#6B4FBB]">{aiStage}</span>
-                                    </div>
-                                    <Progress value={aiProgress} className="h-1.5" />
-                                </div>
-                            )}
+                            {/* AI Processing Status - Premium Animation */}
+                            <AnimatePresence>
+                                {isAIProcessing && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="p-5 rounded-2xl bg-gradient-to-br from-[#1A1A1A] to-[#2D2D2D] border border-[#333] shadow-xl"
+                                    >
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="relative">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#80163A] to-purple-500 flex items-center justify-center">
+                                                    <Wand2 className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#80163A] to-purple-500 animate-ping opacity-30" />
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-medium text-sm">{aiStage}</p>
+                                                <p className="text-white/50 text-xs">Auto background removal enabled</p>
+                                            </div>
+                                        </div>
+                                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                            <motion.div
+                                                className="h-full bg-gradient-to-r from-[#80163A] to-purple-500 rounded-full"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${aiProgress}%` }}
+                                                transition={{ duration: 0.3 }}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                             {/* AI Results */}
                             {aiResult && !isAIProcessing && (
@@ -654,21 +676,11 @@ export function WardrobePage() {
                                                     </TabsTrigger>
                                                 </TabsList>
 
-                                                {/* Browse/Upload Tab */}
+                                                {/* Browse/Upload Tab - Background removal is automatic */}
                                                 <TabsContent value="browse" className="mt-0 space-y-3">
-                                                    <div className="flex items-center justify-between px-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <Switch
-                                                                id="remove-bg"
-                                                                checked={removeBackground}
-                                                                onCheckedChange={setRemoveBackground}
-                                                                className="scale-90"
-                                                            />
-                                                            <Label htmlFor="remove-bg" className="text-xs text-gray-500">Remove Background</Label>
-                                                        </div>
-                                                        {removeBackground && (
-                                                            <span className="text-[10px] text-[#80163A] font-medium">✓ On</span>
-                                                        )}
+                                                    <div className="flex items-center gap-2 px-1 py-1.5 bg-[#F5F5F5] rounded-lg">
+                                                        <Sparkles className="w-4 h-4 text-[#80163A]" />
+                                                        <span className="text-xs text-gray-600">Auto background removal enabled</span>
                                                     </div>
                                                     <FileUpload
                                                         value={field.value}
