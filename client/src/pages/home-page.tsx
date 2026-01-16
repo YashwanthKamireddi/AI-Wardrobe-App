@@ -166,7 +166,7 @@ export function HomePage() {
                                 <div className="flex items-center gap-2">
                                     <MapPin className="w-3 h-3 text-white/60" />
                                     <p className="text-[10px] uppercase tracking-[0.25em] text-white/60 font-medium">
-                                        {weatherLocation || "Select Location"}
+                                        {savedLocation || weather?.location || "Detecting..."}
                                     </p>
                                 </div>
                                 <h2 className="text-3xl font-medium tracking-tight text-white/90" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -436,7 +436,7 @@ export function HomePage() {
                 <WeatherLocationModal
                     isOpen={showWeatherModal}
                     onClose={() => setShowWeatherModal(false)}
-                    currentLocation={weatherLocation || ""}
+                    currentLocation={savedLocation || ""}
                     onSave={handleSaveWeatherLocation}
                 />
             </div>
