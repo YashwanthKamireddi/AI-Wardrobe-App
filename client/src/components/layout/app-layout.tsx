@@ -39,8 +39,11 @@ const primaryNav = [
 // Secondary items (Profile Menu / More)
 const secondaryNav = [
     { href: "/outfits", label: "Saved Looks", icon: Layers, desc: "Your curated edits" },
-    { href: "/statistics", label: "Analytics", icon: BarChart3, desc: "Wardrobe insights" },
-    { href: "/style-essence", label: "Style DNA", icon: Sparkles, desc: "Your fashion profile" },
+    { href: "/analytics", label: "Analytics", icon: BarChart3, desc: "Wardrobe insights" },
+    { href: "/community", label: "Community", icon: User, desc: "Style network" }, // New
+    { href: "/capsules", label: "Capsules", icon: Grid3X3, desc: "Curated collections" }, // New
+    { href: "/wishlist", label: "Wishlist", icon: DollarSign, desc: "Smart shopping" }, // New
+    { href: "/style-dna", label: "Style DNA", icon: Sparkles, desc: "Your fashion profile" },
     { href: "/inspiration", label: "Mood Boards", icon: Lightbulb, desc: "Visual inspiration" },
 ];
 
