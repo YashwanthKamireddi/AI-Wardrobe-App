@@ -137,14 +137,14 @@ export function ComposePage() {
                     animate={{ opacity: 1, y: 0 }}
                 >
                     <div>
-                        <p className="text-xs tracking-[0.25em] uppercase text-[#80163A] mb-3 font-bold">The Studio</p>
+                        <p className="text-xs tracking-[0.25em] uppercase text-[#80163A] mb-3 font-bold">Build & Create</p>
                         <h1 className="text-[#1A1A1A] leading-[0.9]" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2.5rem, 6vw, 4rem)" }}>
-                            Creative <span className="italic font-light">Canvas</span>.
+                            Outfit <span className="italic font-light">Composer</span>.
                         </h1>
                     </div>
                     <div className="hidden md:block">
                         <p className="text-[#666666] text-sm text-right max-w-xs leading-relaxed">
-                            Curate your look piece by piece. Drag, drop, and let the AI refine your aesthetic.
+                            Build your perfect look piece by piece. Select items and create complete outfits.
                         </p>
                     </div>
                 </motion.header>
@@ -179,8 +179,8 @@ export function ComposePage() {
                                     <motion.div
                                         key={slot.id}
                                         className={`shrink-0 w-[80vw] md:w-auto snap-center relative aspect-[3/4] md:aspect-[4/5] p-3 rounded-none border transition-all cursor-pointer group bg-white shadow-[0_2px_10px_-5px_rgba(0,0,0,0.05)] ${selectedSlot === slot.id
-                                                ? "border-[#1A1A1A] ring-1 ring-[#1A1A1A]"
-                                                : "border-[#E5E5E5] hover:border-[#9A9A9A]"
+                                            ? "border-[#1A1A1A] ring-1 ring-[#1A1A1A]"
+                                            : "border-[#E5E5E5] hover:border-[#9A9A9A]"
                                             }`}
                                         onClick={() => setSelectedSlot(slot.id)}
                                         initial={{ opacity: 0, y: 20 }}

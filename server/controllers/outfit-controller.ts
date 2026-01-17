@@ -135,7 +135,6 @@ export const scheduleOutfit = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Invalid calendar data", errors: error.format() });
         }
         res.status(500).json({ message: "Failed to schedule outfit" });
-        res.status(500).json({ message: "Failed to schedule outfit" });
     }
 };
 

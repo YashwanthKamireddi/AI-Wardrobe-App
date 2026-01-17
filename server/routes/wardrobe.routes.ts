@@ -203,4 +203,131 @@ router.get("/:id/wear-log", async (req: Request, res: Response) => {
     }
 });
 
+// POST /api/wardrobe/batch-delete - Batch delete wardrobe items
+router.post("/batch-delete", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    const { itemIds } = req.body;
+
+    if (!Array.isArray(itemIds) || itemIds.length === 0) {
+        return res.status(400).json({ message: "itemIds must be a non-empty array" });
+    }
+
+    try {
+        const deleted: number[] = [];
+        const failed: number[] = [];
+
+        for (const id of itemIds) {
+            const itemId = typeof id === 'number' ? id : parseInt(id, 10);
+            if (isNaN(itemId)) {
+                failed.push(id);
+                continue;
+            }
+
+            const item = await storage.getWardrobeItem(itemId);
+            if (!item || item.userId !== req.user!.id) {
+                failed.push(itemId);
+                continue;
+            }
+
+            const success = await storage.deleteWardrobeItem(itemId);
+            if (success) {
+                deleted.push(itemId);
+            } else {
+                failed.push(itemId);
+            }
+        }
+
+        res.json({
+            deleted,
+            failed,
+            message: `Successfully deleted ${deleted.length} items${failed.length > 0 ? `, failed to delete ${failed.length} items` : ''}`
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to batch delete items" });
+    }
+});
+
+// POST /api/wardrobe/batch-favorites - Batch update favorite status
+router.post("/batch-favorites", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    const { itemIds, favorite } = req.body;
+
+    if (!Array.isArray(itemIds) || itemIds.length === 0) {
+        return res.status(400).json({ message: "itemIds must be a non-empty array" });
+    }
+
+    if (typeof favorite !== 'boolean') {
+        return res.status(400).json({ message: "favorite must be a boolean" });
+    }
+
+    try {
+        const updated: number[] = [];
+        const failed: number[] = [];
+
+        for (const id of itemIds) {
+            const itemId = typeof id === 'number' ? id : parseInt(id, 10);
+            if (isNaN(itemId)) {
+                failed.push(id);
+                continue;
+            }
+
+            const item = await storage.getWardrobeItem(itemId);
+            if (!item || item.userId !== req.user!.id) {
+                failed.push(itemId);
+                continue;
+            }
+
+            const result = await storage.updateWardrobeItem(itemId, { favorite });
+            if (result) {
+                updated.push(itemId);
+            } else {
+                failed.push(itemId);
+            }
+        }
+
+        res.json({
+            updated,
+            failed,
+            message: `Successfully updated ${updated.length} items${failed.length > 0 ? `, failed to update ${failed.length} items` : ''}`
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to batch update favorites" });
+    }
+});
+
+// GET /api/wardrobe/search - Search wardrobe items
+router.get("/search", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    const query = (req.query.q as string || '').toLowerCase();
+
+    if (!query) {
+        return res.status(400).json({ message: "Search query 'q' is required" });
+    }
+
+    try {
+        const items = await storage.getWardrobeItems(req.user!.id);
+
+        const results = items.filter(item => {
+            const name = (item.name || '').toLowerCase();
+            const category = (item.category || '').toLowerCase();
+            const color = (item.color || '').toLowerCase();
+            const brand = (item.brand || '').toLowerCase();
+            const tags = (item.tags || []).join(' ').toLowerCase();
+
+            return name.includes(query) ||
+                category.includes(query) ||
+                color.includes(query) ||
+                brand.includes(query) ||
+                tags.includes(query);
+        });
+
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to search wardrobe items" });
+    }
+});
+
 export default router;

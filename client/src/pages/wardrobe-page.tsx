@@ -41,6 +41,8 @@ import { WardrobeGridSkeleton } from "@/components/ui/wardrobe-skeletons";
 import { AIProcessingOverlay } from "@/components/ui/ai-processing-overlay";
 import { BeforeAfterComparison } from "@/components/ui/before-after-comparison";
 import { FilterCategoryTabs } from "@/components/ui/filter-category-tabs";
+import { useMultiSelectWardrobe } from "@/hooks/use-multi-select";
+import { OutfitSelectionDialog } from "@/components/ui/outfit-selection-dialog";
 import { MultiSelectToolbar } from "@/components/ui/multi-select-toolbar";
 
 /**
@@ -82,9 +84,9 @@ export function WardrobePage() {
     const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
     const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
 
-    // Multi-select states
-    const [selectionMode, setSelectionMode] = useState(false);
-    const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+    // Multi-select - REAL FUNCTIONAL HOOK (not zombie state!)
+    const multiSelect = useMultiSelectWardrobe();
+    const [showOutfitDialog, setShowOutfitDialog] = useState(false);
 
     // Import from Web State
     const [importUrl, setImportUrl] = useState('');
@@ -1086,6 +1088,22 @@ export function WardrobePage() {
 
 
 
+            {/* Multi-Select Toolbar */}
+            <MultiSelectToolbar
+                selectedCount={multiSelect.selectedCount}
+                onAddToOutfit={() => setShowOutfitDialog(true)}
+                onMarkFavorites={multiSelect.handleBatchFavorites}
+                onDelete={multiSelect.handleBatchDelete}
+                onCancel={multiSelect.clearSelection}
+            />
+
+            {/* Outfit Selection Dialog */}
+            <OutfitSelectionDialog
+                isOpen={showOutfitDialog}
+                onClose={() => setShowOutfitDialog(false)}
+                onSelect={multiSelect.handleAddToOutfit}
+                selectedCount={multiSelect.selectedCount}
+            />
         </AppLayout >
     );
 }

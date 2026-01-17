@@ -115,4 +115,54 @@ router.delete("/:id", async (req: Request, res: Response) => {
     }
 });
 
+// POST /api/outfits/add-items - Add items to existing or new outfit
+router.post("/add-items", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    const { outfitId, itemIds, outfitName } = req.body;
+
+    if (!Array.isArray(itemIds) || itemIds.length === 0) {
+        return res.status(400).json({ message: "itemIds must be a non-empty array" });
+    }
+
+    try {
+        // If outfit ID provided, add to existing outfit
+        if (outfitId) {
+            const id = parseId(outfitId.toString());
+            if (!id) return res.status(400).json({ message: "Invalid outfit ID" });
+
+            const outfit = await storage.getOutfit(id);
+            if (!outfit) {
+                return res.status(404).json({ message: "Outfit not found" });
+            }
+            if (outfit.userId !== req.user!.id) {
+                return res.status(403).json({ message: "Forbidden" });
+            }
+
+            // Merge item IDs (avoid duplicates)
+            const existingItemIds = outfit.items || [];
+            const newItemIds = [...new Set([...existingItemIds, ...itemIds])];
+
+            const updated = await storage.updateOutfit(id, { items: newItemIds });
+            return res.json(updated);
+        }
+
+        // Otherwise, create new outfit
+        if (!outfitName) {
+            return res.status(400).json({ message: "outfitName is required when creating a new outfit" });
+        }
+
+        const newOutfit = await storage.createOutfit({
+            userId: req.user!.id,
+            name: outfitName,
+            items: itemIds,
+            occasion: "casual"
+        });
+
+        res.status(201).json(newOutfit);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to add items to outfit" });
+    }
+});
+
 export default router;

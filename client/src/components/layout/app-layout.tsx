@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
+import { SearchDialog } from "@/components/ui/search-dialog";
 
 /**
  * UNIFIED APP LAYOUT - "THE ATELIER" EDITION
@@ -50,6 +51,7 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
     // UI States
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
 
     // Scroll effect for desktop header
     useEffect(() => {
@@ -109,7 +111,10 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
 
                     {/* 3. RIGHT ACTIONS (PROFILE & UTILS) */}
                     <div className="flex items-center gap-4">
-                        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-[#1A1A1A]">
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-[#1A1A1A]"
+                        >
                             <Search className="w-4 h-4" />
                         </button>
                         <button className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-[#1A1A1A]">
@@ -241,6 +246,12 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                     {children}
                 </motion.div>
             </main>
+
+            {/* Global Search Dialog */}
+            <SearchDialog
+                isOpen={searchOpen}
+                onClose={() => setSearchOpen(false)}
+            />
 
         </div>
     );

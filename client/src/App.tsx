@@ -22,6 +22,7 @@ const CalendarPage = lazy(() => import("@/pages/calendar-page").then(m => ({ def
 const StatisticsPage = lazy(() => import("@/pages/statistics-page").then(m => ({ default: m.StatisticsPage })));
 const StyleEssencePage = lazy(() => import("@/pages/style-essence-page").then(m => ({ default: m.StyleEssencePage })));
 const ComposePage = lazy(() => import("@/pages/compose-page").then(m => ({ default: m.ComposePage })));
+const StudioPage = lazy(() => import("@/pages/studio-page").then(m => ({ default: m.default })));
 const TripsPage = lazy(() => import("@/pages/trips-page").then(m => ({ default: m.TripsPage })));
 const FramingPage = lazy(() => import("@/pages/framing-page").then(m => ({ default: m.FramingPage })));
 const WardrobeIntelligencePage = lazy(() => import("@/pages/intelligence-page").then(m => ({ default: m.WardrobeIntelligencePage })));
@@ -46,6 +47,7 @@ function Router() {
 
                 {/* Protected routes - 5 Pillar Navigation */}
                 <ProtectedRoute path="/home" component={HomePage} />
+                <ProtectedRoute path="/studio" component={StudioPage} />
                 <ProtectedRoute path="/wardrobe" component={WardrobePage} />
                 <ProtectedRoute path="/compose" component={ComposePage} />
                 <ProtectedRoute path="/trips" component={TripsPage} />
