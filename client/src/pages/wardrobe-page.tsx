@@ -107,7 +107,11 @@ export function WardrobePage() {
     const handleAIProcess = async (file: File) => {
         setIsAIProcessing(true);
         setAiProgress(0);
-        setAiStage('Starting AI analysis...');
+        setAiStage('Preparing image...');
+
+        // Store original image for before/after comparison
+        const originalUrl = URL.createObjectURL(file);
+        setOriginalImageUrl(originalUrl);
 
         try {
             const result = await processWardrobeImage(file, (stage, progress) => {
@@ -116,6 +120,11 @@ export function WardrobePage() {
             }, { removeBg: true }); // Always remove background for clean images
 
             setAiResult(result);
+
+            // Store processed image for before/after
+            setProcessedImageUrl(result.processedImageUrl);
+
+            // Auto-fill form
             form.setValue('imageUrl', result.processedImageUrl);
             form.setValue('color', result.colors.colorName);
             form.setValue('category', result.category.category);
@@ -132,6 +141,13 @@ export function WardrobePage() {
                 form.setValue('imageUrl', base64);
             };
             reader.readAsDataURL(result.processedImageBlob);
+
+            setIsAIProcessing(false);
+
+            // Show before/after comparison after brief delay
+            setTimeout(() => {
+                setShowBeforeAfter(true);
+            }, 500);
 
         } catch (error) {
             console.error('AI processing failed:', error);

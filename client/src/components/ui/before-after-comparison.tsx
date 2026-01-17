@@ -1,24 +1,25 @@
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
 
 /**
  * Before/After Comparison - Editorial Style
- * Split grid layout with hover reveal labels
- *
- * Inspiration: Magazine editorial photography
+ * Full-screen split view with hover labels
  */
 
 interface BeforeAfterComparisonProps {
+    isOpen: boolean;
     before: string;
     after: string;
     onClose: () => void;
 }
 
 export function BeforeAfterComparison({
+    isOpen,
     before,
     after,
     onClose
 }: BeforeAfterComparisonProps) {
+    if (!isOpen) return null;
+
     return (
         <motion.div
             className="fixed inset-0 bg-white z-50 overflow-hidden"
@@ -32,7 +33,9 @@ export function BeforeAfterComparison({
                 onClick={onClose}
                 className="absolute top-8 right-8 z-10 w-10 h-10 flex items-center justify-center border border-gray-300 hover:border-black hover:bg-black hover:text-white transition-colors duration-300"
             >
-                <X className="w-4 h-4" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
 
             {/* Title */}
