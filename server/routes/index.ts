@@ -13,6 +13,8 @@ import wearLogRoutes from "./wear-log.routes";
 import uploadRoutes from "./upload.routes";
 import aiRoutes from "./ai.routes";
 import analyticsRoutes from "./analytics.routes";
+import socialRoutes from "./social.routes";
+import advancedRoutes from "./advanced.routes";
 
 /**
  * Register all API routes
@@ -38,6 +40,12 @@ export function registerModularRoutes(app: Express): void {
 
     // Analytics and insights
     app.use("/api/analytics", analyticsRoutes);
+
+    // Social features (Phase 2)
+    app.use("/api/social", socialRoutes);
+
+    // Advanced features (Phase 3)
+    app.use("/api", advancedRoutes);
 }
 
 export default registerModularRoutes;
