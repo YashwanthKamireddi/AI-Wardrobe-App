@@ -37,6 +37,79 @@ import { pgTable, text, serial, integer, boolean, json, timestamp, varchar, json
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// --- Zod Enums & Constants ---
+
+/**
+ * Clothing Categories
+ *
+ * Defines all available clothing categories and their subcategories
+ * Used for consistent categorization across the application
+ */
+export const clothingCategories = [
+    { value: "tops", label: "Tops", subcategories: ["t-shirt", "blouse", "shirt", "sweater", "tank top", "crop top"] },
+    { value: "bottoms", label: "Bottoms", subcategories: ["jeans", "skirt", "shorts", "pants", "leggings"] },
+    { value: "dresses", label: "Dresses", subcategories: ["casual dress", "formal dress", "sundress", "maxi dress"] },
+    { value: "outerwear", label: "Outerwear", subcategories: ["jacket", "coat", "blazer", "cardigan", "hoodie"] },
+    { value: "shoes", label: "Shoes", subcategories: ["sneakers", "heels", "boots", "sandals", "flats", "loafers"] },
+    { value: "accessories", label: "Accessories", subcategories: ["hat", "scarf", "jewelry", "bag", "belt", "sunglasses"] },
+    { value: "makeup", label: "Makeup", subcategories: ["lipstick", "eyeshadow", "foundation", "blush", "mascara"] }
+];
+
+/**
+ * Weather Types
+ *
+ * Standard weather condition classifications used for weather-based outfit recommendations
+ */
+export const weatherTypes = [
+    { value: "sunny", label: "Sunny" },
+    { value: "rainy", label: "Rainy" },
+    { value: "cloudy", label: "Cloudy" },
+    { value: "snowy", label: "Snowy" },
+    { value: "windy", label: "Windy" },
+    { value: "hot", label: "Hot" },
+    { value: "cold", label: "Cold" }
+];
+
+/**
+ * Mood Types
+ *
+ * Standard mood classifications used for mood-based outfit recommendations
+ * These influence color choices and style combinations
+ */
+export const moodTypes = [
+    { value: "happy", label: "Happy" },
+    { value: "confident", label: "Confident" },
+    { value: "relaxed", label: "Relaxed" },
+    { value: "energetic", label: "Energetic" },
+    { value: "romantic", label: "Romantic" },
+    { value: "professional", label: "Professional" },
+    { value: "creative", label: "Creative" }
+];
+
+/**
+ * Seasons
+ *
+ * Standard seasonal classifications for clothing items
+ * Used to associate items with appropriate weather conditions
+ */
+export const seasons = [
+    { value: "winter", label: "Winter" },
+    { value: "spring", label: "Spring" },
+    { value: "summer", label: "Summer" },
+    { value: "fall", label: "Fall" },
+    { value: "all", label: "All Seasons" }
+];
+
+// Extract values for strict validation
+export const CATEGORIES = clothingCategories.map(c => c.value) as [string, ...string[]];
+export const SEASONS = seasons.map(s => s.value) as [string, ...string[]];
+export const WEATHER_TYPES = weatherTypes.map(w => w.value) as [string, ...string[]];
+export const MOOD_TYPES = moodTypes.map(m => m.value) as [string, ...string[]];
+export const TRIP_STATUSES = ["upcoming", "active", "completed", "cancelled"] as const;
+export const TRIP_TYPES = ["business", "vacation", "adventure", "city", "relaxing", "family"] as const;
+
+// --- Drizzle Tables & Schemas ---
+
 // Session storage table for user authentication sessions with PostgreSQL
 export const sessions = pgTable(
     "sessions",
@@ -142,7 +215,11 @@ export const wardrobeItems = pgTable("wardrobe_items", {
     // Timestamps
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+    userIdIdx: index("wardrobe_items_user_id_idx").on(table.userId),
+    categoryIdx: index("wardrobe_items_category_idx").on(table.category),
+    userCategoryIdx: index("wardrobe_items_user_category_idx").on(table.userId, table.category),
+}));
 
 export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
     userId: true,
@@ -161,6 +238,14 @@ export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
     purchasePrice: true,
     purchaseDate: true,
     purchaseLocation: true,
+}).extend({
+    name: z.string().min(1, "Name is required").max(100),
+    category: z.enum(CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
+    season: z.enum(SEASONS).optional(),
+    imageUrl: z.string().url("Invalid image URL"),
+    wearCount: z.number().int().min(0).default(0),
+    purchasePrice: z.number().int().positive().optional(),
+    purchaseDate: z.coerce.date().optional(),
 });
 
 /**
@@ -182,7 +267,7 @@ export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
  * - Calendar-based outfit planning features
  * - Smart outfit recommendations based on weather and mood
  * - Sharing capabilities for social features
- * - Style analytics and usage statistics
+ * - Style analysis and usage statistics
  */
 export const outfits = pgTable("outfits", {
     id: serial("id").primaryKey(),
@@ -201,7 +286,11 @@ export const outfits = pgTable("outfits", {
     // Timestamps
     createdAt: timestamp("created_at").defaultNow(),
     rating: integer("rating"), // 1-5 star rating
-});
+}, (table) => ({
+    userIdIdx: index("outfits_user_id_idx").on(table.userId),
+    seasonIdx: index("outfits_season_idx").on(table.season),
+    userSeasonIdx: index("outfits_user_season_idx").on(table.userId, table.season),
+}));
 
 export const insertOutfitSchema = createInsertSchema(outfits).pick({
     userId: true,
@@ -216,6 +305,13 @@ export const insertOutfitSchema = createInsertSchema(outfits).pick({
     wearCount: true,
     lastWorn: true,
     rating: true,
+}).extend({
+    name: z.string().min(1, "Name is required"),
+    items: z.array(z.number()).min(1, "Outfit must have at least one item"),
+    season: z.enum(SEASONS).optional(),
+    mood: z.enum(MOOD_TYPES).optional(),
+    weatherConditions: z.enum(WEATHER_TYPES).optional(),
+    rating: z.number().min(1).max(5).optional(),
 });
 
 /**
@@ -235,7 +331,11 @@ export const outfitCalendar = pgTable("outfit_calendar", {
     notes: text("notes"),
     isWorn: boolean("is_worn").default(false), // Did they actually wear this?
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+    userIdIdx: index("outfit_calendar_user_id_idx").on(table.userId),
+    dateIdx: index("outfit_calendar_date_idx").on(table.date),
+    userDateIdx: index("outfit_calendar_user_date_idx").on(table.userId, table.date),
+}));
 
 export const insertOutfitCalendarSchema = createInsertSchema(outfitCalendar).pick({
     userId: true,
@@ -244,10 +344,12 @@ export const insertOutfitCalendarSchema = createInsertSchema(outfitCalendar).pic
     eventName: true,
     notes: true,
     isWorn: true,
+}).extend({
+    date: z.coerce.date(),
 });
 
 export type OutfitCalendar = typeof outfitCalendar.$inferSelect;
-export type InsertOutfitCalendar = typeof outfitCalendar.$inferInsert;
+export type InsertOutfitCalendar = z.infer<typeof insertOutfitCalendarSchema>;
 
 /**
  * Wear Log Table
@@ -266,7 +368,11 @@ export const wearLog = pgTable("wear_log", {
     notes: text("notes"),
     rating: integer("rating"), // How did they feel in this? 1-5
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+    userIdIdx: index("wear_log_user_id_idx").on(table.userId),
+    wardrobeItemIdIdx: index("wear_log_wardrobe_item_id_idx").on(table.wardrobeItemId),
+    outfitIdIdx: index("wear_log_outfit_id_idx").on(table.outfitId),
+}));
 
 export const insertWearLogSchema = createInsertSchema(wearLog).pick({
     userId: true,
@@ -276,6 +382,9 @@ export const insertWearLogSchema = createInsertSchema(wearLog).pick({
     occasion: true,
     notes: true,
     rating: true,
+}).extend({
+    wornDate: z.coerce.date(),
+    rating: z.number().min(1).max(5).optional(),
 });
 
 export type WearLog = typeof wearLog.$inferSelect;
@@ -353,6 +462,9 @@ export const insertWeatherPreferenceSchema = createInsertSchema(weatherPreferenc
     userId: true,
     weatherType: true,
     preferredCategories: true,
+}).extend({
+    weatherType: z.enum(WEATHER_TYPES),
+    preferredCategories: z.array(z.enum(CATEGORIES)).optional(),
 });
 
 /**
@@ -388,6 +500,9 @@ export const insertMoodPreferenceSchema = createInsertSchema(moodPreferences).pi
     mood: true,
     preferredCategories: true,
     preferredColors: true,
+}).extend({
+    mood: z.enum(MOOD_TYPES),
+    preferredCategories: z.array(z.enum(CATEGORIES)).optional(),
 });
 
 /**
@@ -414,66 +529,7 @@ export type InsertWeatherPreference = z.infer<typeof insertWeatherPreferenceSche
 export type MoodPreference = typeof moodPreferences.$inferSelect;
 export type InsertMoodPreference = z.infer<typeof insertMoodPreferenceSchema>;
 
-/**
- * Clothing Categories
- *
- * Defines all available clothing categories and their subcategories
- * Used for consistent categorization across the application
- */
-export const clothingCategories = [
-    { value: "tops", label: "Tops", subcategories: ["t-shirt", "blouse", "shirt", "sweater", "tank top", "crop top"] },
-    { value: "bottoms", label: "Bottoms", subcategories: ["jeans", "skirt", "shorts", "pants", "leggings"] },
-    { value: "dresses", label: "Dresses", subcategories: ["casual dress", "formal dress", "sundress", "maxi dress"] },
-    { value: "outerwear", label: "Outerwear", subcategories: ["jacket", "coat", "blazer", "cardigan", "hoodie"] },
-    { value: "shoes", label: "Shoes", subcategories: ["sneakers", "heels", "boots", "sandals", "flats", "loafers"] },
-    { value: "accessories", label: "Accessories", subcategories: ["hat", "scarf", "jewelry", "bag", "belt", "sunglasses"] },
-    { value: "makeup", label: "Makeup", subcategories: ["lipstick", "eyeshadow", "foundation", "blush", "mascara"] }
-];
 
-/**
- * Weather Types
- *
- * Standard weather condition classifications used for weather-based outfit recommendations
- */
-export const weatherTypes = [
-    { value: "sunny", label: "Sunny" },
-    { value: "rainy", label: "Rainy" },
-    { value: "cloudy", label: "Cloudy" },
-    { value: "snowy", label: "Snowy" },
-    { value: "windy", label: "Windy" },
-    { value: "hot", label: "Hot" },
-    { value: "cold", label: "Cold" }
-];
-
-/**
- * Mood Types
- *
- * Standard mood classifications used for mood-based outfit recommendations
- * These influence color choices and style combinations
- */
-export const moodTypes = [
-    { value: "happy", label: "Happy" },
-    { value: "confident", label: "Confident" },
-    { value: "relaxed", label: "Relaxed" },
-    { value: "energetic", label: "Energetic" },
-    { value: "romantic", label: "Romantic" },
-    { value: "professional", label: "Professional" },
-    { value: "creative", label: "Creative" }
-];
-
-/**
- * Seasons
- *
- * Standard seasonal classifications for clothing items
- * Used to associate items with appropriate weather conditions
- */
-export const seasons = [
-    { value: "winter", label: "Winter" },
-    { value: "spring", label: "Spring" },
-    { value: "summer", label: "Summer" },
-    { value: "fall", label: "Fall" },
-    { value: "all", label: "All Seasons" }
-];
 
 /**
  * Trips Table
@@ -493,7 +549,9 @@ export const trips = pgTable("trips", {
     packedItems: integer("packed_items").array(), // IDs of wardrobe items packed
     status: text("status").default("upcoming"), // upcoming, past
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+    userIdIdx: index("trips_user_id_idx").on(table.userId),
+}));
 
 export const insertTripSchema = createInsertSchema(trips).pick({
     userId: true,

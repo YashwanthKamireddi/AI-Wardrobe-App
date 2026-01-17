@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useOutfits, useDeleteOutfit } from "@/hooks/use-outfits";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { cn } from "@/lib/utils";
+import { OutfitCardSkeleton } from "@/components/ui/wardrobe-skeletons";
 
 /**
  * OUTFITS PAGE - EDITORIAL GALLERY
@@ -52,12 +53,19 @@ export function OutfitPage() {
     // Loading State
     if (outfitsLoading) {
         return (
-            <div className="min-h-screen bg-[#F9F9F7] flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-10 h-10 border-2 border-[#E5E5E5] border-t-[#1A1A1A] rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-sm text-[#6B6B6B]">Loading your outfits...</p>
+            <AppLayout>
+                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 lg:py-24">
+                    <div className="mb-16 space-y-4">
+                        <div className="h-8 w-32 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-20 w-3/4 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <OutfitCardSkeleton key={i} />
+                        ))}
+                    </div>
                 </div>
-            </div>
+            </AppLayout>
         );
     }
 

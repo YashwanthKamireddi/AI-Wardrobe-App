@@ -17,25 +17,25 @@ import { Request, Response } from 'express';
  * Limit: 10 requests per minute per user
  */
 export const aiRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // 10 requests per minute
-  message: {
-    message: 'Too many AI requests. Please wait a moment before trying again.',
-    retryAfter: 60
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req: Request) => {
-    // Use user ID if authenticated, otherwise IP
-    return req.user?.id?.toString() || req.ip || 'unknown';
-  },
-  handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      message: 'Too many AI requests. Please wait a moment before trying again.',
-      retryAfter: 60,
-      code: 'RATE_LIMIT_EXCEEDED'
-    });
-  }
+    windowMs: 60 * 1000, // 1 minute
+    max: 10, // 10 requests per minute
+    message: {
+        message: 'Too many AI requests. Please wait a moment before trying again.',
+        retryAfter: 60
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => {
+        // Use user ID if authenticated, otherwise IP
+        return req.user?.id?.toString() || req.ip || 'unknown';
+    },
+    handler: (req: Request, res: Response) => {
+        res.status(429).json({
+            message: 'Too many AI requests. Please wait a moment before trying again.',
+            retryAfter: 60,
+            code: 'RATE_LIMIT_EXCEEDED'
+        });
+    }
 });
 
 /**
@@ -44,25 +44,26 @@ export const aiRateLimiter = rateLimit({
  * Limit: 5 requests per minute per IP (prevent brute force)
  */
 export const authRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 5, // 5 requests per minute
-  message: {
-    message: 'Too many authentication attempts. Please try again later.',
-    retryAfter: 60
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req: Request) => {
-    // Always use IP for auth endpoints
-    return req.ip || 'unknown';
-  },
-  handler: (req: Request, res: Response) => {
-    res.status(429).json({
-      message: 'Too many authentication attempts. Please try again later.',
-      retryAfter: 60,
-      code: 'AUTH_RATE_LIMIT_EXCEEDED'
-    });
-  }
+    windowMs: 60 * 1000, // 1 minute
+    max: 5, // 5 requests per minute
+    message: {
+        message: 'Too many authentication attempts. Please try again later.',
+        retryAfter: 60
+    },
+    validate: { ip: false },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => {
+        // Always use IP for auth endpoints
+        return req.ip || 'unknown';
+    },
+    handler: (req: Request, res: Response) => {
+        res.status(429).json({
+            message: 'Too many authentication attempts. Please try again later.',
+            retryAfter: 60,
+            code: 'AUTH_RATE_LIMIT_EXCEEDED'
+        });
+    }
 });
 
 /**
@@ -71,21 +72,22 @@ export const authRateLimiter = rateLimit({
  * Limit: 100 requests per minute per user
  */
 export const generalRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute
-  message: {
-    message: 'Too many requests. Please slow down.',
-    retryAfter: 60
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req: Request) => {
-    return req.user?.id?.toString() || req.ip || 'unknown';
-  },
-  skip: (req: Request) => {
-    // Skip rate limiting for health check
-    return req.path === '/api/health';
-  }
+    windowMs: 60 * 1000, // 1 minute
+    max: 100, // 100 requests per minute
+    message: {
+        message: 'Too many requests. Please slow down.',
+        retryAfter: 60
+    },
+    validate: { ip: false },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => {
+        return req.user?.id?.toString() || req.ip || 'unknown';
+    },
+    skip: (req: Request) => {
+        // Skip rate limiting for health check
+        return req.path === '/api/health';
+    }
 });
 
 /**
@@ -94,22 +96,23 @@ export const generalRateLimiter = rateLimit({
  * Limit: 20 uploads per minute
  */
 export const uploadRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 20, // 20 uploads per minute
-  message: {
-    message: 'Too many uploads. Please wait before uploading more images.',
-    retryAfter: 60
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req: Request) => {
-    return req.user?.id?.toString() || req.ip || 'unknown';
-  }
+    windowMs: 60 * 1000, // 1 minute
+    max: 20, // 20 uploads per minute
+    message: {
+        message: 'Too many uploads. Please wait before uploading more images.',
+        retryAfter: 60
+    },
+    validate: { ip: false },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => {
+        return req.user?.id?.toString() || req.ip || 'unknown';
+    }
 });
 
 export default {
-  aiRateLimiter,
-  authRateLimiter,
-  generalRateLimiter,
-  uploadRateLimiter
+    aiRateLimiter,
+    authRateLimiter,
+    generalRateLimiter,
+    uploadRateLimiter
 };

@@ -37,6 +37,7 @@ import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem, useUpdateW
 import { clothingCategories, seasons, WardrobeItem as WardrobeItemType } from "@shared/schema";
 import { processWardrobeImage, AIProcessingResult, processImageFromUrl } from "@/lib/image-ai";
 import { Progress } from "@/components/ui/progress";
+import { WardrobeGridSkeleton } from "@/components/ui/wardrobe-skeletons";
 
 /**
  * WARDROBE PAGE - EDITORIAL MASONRY
@@ -325,6 +326,7 @@ export function WardrobePage() {
             await addItem.mutateAsync({
                 ...data,
                 tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
+                wearCount: 0,
             });
             form.reset();
             setAiResult(null);
@@ -367,12 +369,15 @@ export function WardrobePage() {
     // Loading State
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#F9F9F7] flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-10 h-10 border-2 border-[#E5E5E5] border-t-[#1A1A1A] rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-sm text-[#6B6B6B]">Loading your wardrobe...</p>
+            <AppLayout>
+                <div className="max-w-6xl mx-auto px-6 py-8 md:py-12">
+                    <div className="mb-8 space-y-4">
+                        <div className="h-8 w-32 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-12 w-64 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                    <WardrobeGridSkeleton />
                 </div>
-            </div>
+            </AppLayout>
         );
     }
 

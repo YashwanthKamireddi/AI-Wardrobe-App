@@ -5,38 +5,45 @@ import { useWeather } from "@/hooks/use-weather";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 import WeatherLocationModal from "@/components/weather-location-modal";
+import { WeatherPill } from "@/components/home/weather-pill";
+import { AtelierSection } from "@/components/home/atelier-section";
 import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Sparkles, Shirt, Shuffle, Layers, Cloud, Sun, CloudRain, ArrowRight, Coffee, Briefcase, Moon, Dumbbell, PartyPopper, Snowflake, Wand2, Check } from "lucide-react";
+import { Sparkles, Shirt, Shuffle, Layers, Cloud, Sun, CloudRain, ArrowRight, Coffee, Briefcase, Moon, Dumbbell, PartyPopper, Snowflake, Wand2, Check, X, Save } from "lucide-react";
 import type { Outfit, WardrobeItem } from "@shared/schema";
 
 /**
- * HOME PAGE V7 - "AI STYLE CURATOR"
+ * HOME PAGE V8 - "DIGITAL STYLIST 2.0 (COMMAND CENTER)"
  *
  * Features:
- * - Mood-based outfit generation
- * - Weather-aware recommendations
- * - Smart wardrobe matching
+ * - Occasion & Vibe based styling
+ * - Anchor Item (Build around this stroke)
+ * - Item Locking & Smart Swaps
  */
 
-// Mood configurations
-const moods = [
-    { id: "casual", label: "Casual", icon: Coffee, color: "#6B7280", description: "Relaxed day vibes" },
-    { id: "work", label: "Work", icon: Briefcase, color: "#1A1A1A", description: "Professional edge" },
-    { id: "evening", label: "Evening", icon: Moon, color: "#7C3AED", description: "Night out ready" },
-    { id: "active", label: "Active", icon: Dumbbell, color: "#10B981", description: "Move & groove" },
-    { id: "event", label: "Event", icon: PartyPopper, color: "#F59E0B", description: "Special occasion" },
-    { id: "cozy", label: "Cozy", icon: Snowflake, color: "#80163A", description: "Comfort first" },
+// 1. New Constants for Command Center
+const occasions = [
+    { id: "work", label: "Workplace", icon: Briefcase, color: "#1A1A1A" },
+    { id: "date", label: "Date Night", icon: Moon, color: "#80163A" },
+    { id: "casual", label: "Casual Day", icon: Coffee, color: "#6B7280" },
+    { id: "event", label: "Special Event", icon: PartyPopper, color: "#F59E0B" },
+    { id: "gym", label: "Workout", icon: Dumbbell, color: "#10B981" },
 ];
 
-// Category mappings for moods
-const moodCategories: Record<string, string[]> = {
-    casual: ["tops", "t-shirts", "jeans", "sneakers", "denim"],
-    work: ["blazers", "shirts", "trousers", "dresses", "blouses"],
-    evening: ["dresses", "blazers", "heels", "accessories", "skirts"],
-    active: ["activewear", "sportswear", "sneakers", "jackets", "hoodies"],
-    event: ["dresses", "suits", "heels", "accessories", "formal"],
-    cozy: ["sweaters", "hoodies", "joggers", "loungewear", "knits"],
+const vibes = [
+    { id: "minimal", label: "Minimalist", description: "Clean lines, neutral tones" },
+    { id: "bold", label: "Bold & Expressive", description: "Vibrant colors, statement pieces" },
+    { id: "classic", label: "Timeless Classic", description: "Elegant, polished essentials" },
+];
+
+// Mappings for generation logic
+const occasionRules: Record<string, string[]> = {
+    work: ["blazers", "shirts", "trousers", "loafers", "pumps"],
+    date: ["dresses", "skirts", "heels", "blouses", "boots", "jacket"],
+    casual: ["jeans", "t-shirts", "sneakers", "denim", "knitwear"],
+    event: ["suits", "dresses", "heels", "formal", "clutch"],
+    gym: ["activewear", "leggings", "sports bra", "hoodie", "trainers"],
 };
 
 export function HomePage() {
@@ -47,7 +54,7 @@ export function HomePage() {
     const savedLocation = typeof window !== 'undefined' ? localStorage.getItem("weatherLocation") || undefined : undefined;
     const [coords, setCoords] = useState<string | undefined>(undefined);
 
-    // Auto-detect location if not saved
+    // Auto-detect location
     useEffect(() => {
         if (!savedLocation && "geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition((position) => {
@@ -61,13 +68,19 @@ export function HomePage() {
     const { data: outfits, isLoading: outfitsLoading } = useOutfits();
     const [showWeatherModal, setShowWeatherModal] = useState(false);
 
-    // AI Outfit Generator State
-    const [selectedMood, setSelectedMood] = useState<string | null>(null);
+    // AI STYLIST 2.0 STATE
+    const [selectedOccasion, setSelectedOccasion] = useState<string>("casual");
+    const [selectedVibe, setSelectedVibe] = useState<string>("minimal");
+    const [anchorItem, setAnchorItem] = useState<WardrobeItem | null>(null);
     const [generatedOutfit, setGeneratedOutfit] = useState<WardrobeItem[] | null>(null);
+    const [lockedItemIds, setLockedItemIds] = useState<Set<number>>(new Set());
+
     const [isGenerating, setIsGenerating] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showAnchorModal, setShowAnchorModal] = useState(false);
+    const [showFullReveal, setShowFullReveal] = useState(false); // New state for overlay
 
-    // Existing Daily Look State (for when user has outfits)
+    // Existing Daily Look State
     const [dailyLook, setDailyLook] = useState<Outfit | null>(null);
 
     // Update time
@@ -76,7 +89,7 @@ export function HomePage() {
         return () => clearInterval(interval);
     }, []);
 
-    // Daily Look Logic (for users with existing outfits)
+    // Daily Look Logic
     useEffect(() => {
         if (outfits && outfits.length > 0 && !dailyLook) {
             generateDailyLook();
@@ -93,58 +106,98 @@ export function HomePage() {
         }, 600);
     };
 
-    // AI Outfit Generation Logic
+    // ------------------------------------------------------------------
+    // CORE LOGIC: CONSTRAINT_BASED GENERATION (DIGITAL STYLIST ENGINE)
+    // ------------------------------------------------------------------
     const generateAIOutfit = () => {
-        if (!selectedMood || !wardrobeItems || wardrobeItems.length === 0) return;
+        if (!wardrobeItems || wardrobeItems.length === 0) return;
 
         setIsGenerating(true);
         setShowSuccess(false);
+        setShowFullReveal(false);
 
+        // Simulate AI Processing time
         setTimeout(() => {
-            const moodCats = moodCategories[selectedMood] || [];
-            const temp = weather?.temperature || 20;
+            const rules = occasionRules[selectedOccasion] || [];
+            let pool = [...wardrobeItems];
 
-            // Filter items by mood categories
-            let matchingItems = wardrobeItems.filter(item => {
-                const cat = item.category?.toLowerCase() || '';
-                const name = item.name?.toLowerCase() || '';
-                return moodCats.some(mc => cat.includes(mc) || name.includes(mc));
+            // 1. FILTER: By Occasion
+            const occasionMatches = pool.filter(item => {
+                const cat = (item.category || "").toLowerCase();
+                const name = (item.name || "").toLowerCase();
+                return rules.some(r => cat.includes(r) || name.includes(r));
             });
-
-            // If no matching items, use all items
-            if (matchingItems.length === 0) {
-                matchingItems = [...wardrobeItems];
+            if (occasionMatches.length >= 2) {
+                pool = occasionMatches;
             }
 
-            // Weather-based filtering
-            if (temp < 15) {
-                // Cold: prefer warm items
-                const warmItems = matchingItems.filter(i =>
-                    ['jacket', 'sweater', 'coat', 'hoodie', 'knit'].some(w =>
-                        i.category?.toLowerCase().includes(w) || i.name?.toLowerCase().includes(w)
-                    )
-                );
-                if (warmItems.length > 0) matchingItems = [...warmItems, ...matchingItems];
+            // 2. FILTER: By Vibe
+            if (selectedVibe === "minimal") {
+                pool.sort(() => Math.random() - 0.3);
+            } else if (selectedVibe === "bold") {
+                pool.sort(() => Math.random() - 0.7);
             }
 
-            // Shuffle and pick 3-4 items
-            const shuffled = [...matchingItems].sort(() => Math.random() - 0.5);
-            const count = Math.min(4, shuffled.length);
-            const selected = shuffled.slice(0, count);
+            // 3. ANCHOR LOGIC
+            let initialSelection: WardrobeItem[] = [];
 
-            setGeneratedOutfit(selected);
+            if (anchorItem) {
+                initialSelection.push(anchorItem);
+                pool = pool.filter(i => i.id !== anchorItem.id);
+                const anchorCat = (anchorItem.category || "").toLowerCase();
+                const isTop = ["shirt", "top", "blouse", "tee", "sweater"].some(c => anchorCat.includes(c));
+                const isBottom = ["pants", "trouser", "jean", "skirt"].some(c => anchorCat.includes(c));
+
+                if (isTop) {
+                    pool = pool.filter(i => !["shirt", "top", "blouse", "tee", "sweater"].some(c => (i.category || "").toLowerCase().includes(c)));
+                } else if (isBottom) {
+                    pool = pool.filter(i => !["pants", "trouser", "jean", "skirt"].some(c => (i.category || "").toLowerCase().includes(c)));
+                }
+            } else {
+                if (generatedOutfit && lockedItemIds.size > 0) {
+                    const locked = generatedOutfit.filter(i => lockedItemIds.has(i.id));
+                    initialSelection = [...locked];
+                    const lockedIds = new Set(locked.map(i => i.id));
+                    pool = pool.filter(i => !lockedIds.has(i.id));
+                }
+            }
+
+            // 4. FILL THE REST
+            const targetCount = 4;
+            const slotsNeeded = targetCount - initialSelection.length;
+
+            if (slotsNeeded > 0) {
+                const shuffled = pool.sort(() => Math.random() - 0.5);
+                for (const candidate of shuffled) {
+                    if (initialSelection.length >= targetCount) break;
+                    initialSelection.push(candidate);
+                }
+            }
+
+            setGeneratedOutfit(initialSelection);
             setIsGenerating(false);
             setShowSuccess(true);
-
-            // Hide success animation after delay
+            setShowFullReveal(true); // Trigger Full Screen Reveal
             setTimeout(() => setShowSuccess(false), 2000);
-        }, 1200);
+
+        }, 1200); // Slightly longer for dramatic effect
+    };
+
+    // ITEM LOCKING TOGGLE
+    const toggleLockItem = (itemId: number) => {
+        setLockedItemIds(prev => {
+            const next = new Set(prev);
+            if (next.has(itemId)) {
+                next.delete(itemId);
+            } else {
+                next.add(itemId);
+            }
+            return next;
+        });
     };
 
     const regenerateOutfit = () => {
-        if (selectedMood) {
-            generateAIOutfit();
-        }
+        generateAIOutfit();
     };
 
     const getItemImage = (itemId: number) => {
@@ -171,7 +224,6 @@ export function HomePage() {
         window.location.reload();
     };
 
-    // Weather icon helper
     const WeatherIcon = () => {
         const condition = weather?.condition?.toLowerCase() || '';
         if (condition.includes('rain') || condition.includes('drizzle')) return <CloudRain className="w-4 h-4" />;
@@ -179,8 +231,7 @@ export function HomePage() {
         return <Sun className="w-4 h-4" />;
     };
 
-    // Check if user has wardrobe items but no outfits
-    const hasWardrobeNoOutfits = (wardrobeItems?.length || 0) > 0 && (outfits?.length || 0) === 0;
+    const hasWardrobeItems = (wardrobeItems?.length || 0) > 0;
 
     if (isLoading) {
         return (
@@ -195,10 +246,10 @@ export function HomePage() {
 
     return (
         <AppLayout>
-            <div className="w-full max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8">
+            <div className="w-full max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8 relative">
 
                 {/* ========================================== */}
-                {/* 1. HEADER WITH COMPACT WEATHER STRIP */}
+                {/* 1. HEADER */}
                 {/* ========================================== */}
                 <motion.header
                     initial={{ opacity: 0, y: 20 }}
@@ -206,25 +257,18 @@ export function HomePage() {
                     transition={{ duration: 0.5 }}
                     className="space-y-4"
                 >
-                    {/* Top Row: Date + Weather Pill */}
                     <div className="flex items-center justify-between">
                         <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">
-                            {formattedDate}
+                            {format(currentTime, 'EEEE, MMMM do')}
                         </p>
-
-                        {/* Compact Weather Pill */}
-                        <button
+                        <WeatherPill
+                            temperature={weather?.temperature}
+                            condition={weather?.condition}
+                            location={weather?.location}
                             onClick={() => setShowWeatherModal(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1A1A1A] text-white text-xs font-medium hover:bg-[#333] transition-colors"
-                        >
-                            <WeatherIcon />
-                            <span>{weather?.temperature || '--'}°</span>
-                            <span className="text-white/60 hidden sm:inline">•</span>
-                            <span className="text-white/60 hidden sm:inline truncate max-w-[80px]">{weather?.location || 'Set Location'}</span>
-                        </button>
+                        />
                     </div>
 
-                    {/* Greeting */}
                     <div>
                         <h1 className="text-3xl md:text-5xl text-[#1A1A1A] leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                             {currentTime.getHours() < 12 ? 'Good Morning' : currentTime.getHours() < 18 ? 'Good Afternoon' : 'Good Evening'},
@@ -236,304 +280,26 @@ export function HomePage() {
 
 
                 {/* ========================================== */}
-                {/* 2. DAILY LOOK HERO / AI OUTFIT GENERATOR */}
+                {/* 2. THE ATELIER (COMMAND CENTER)            */}
                 {/* ========================================== */}
-                <motion.section
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="relative rounded-[28px] bg-gradient-to-br from-[#FAF9F6] to-[#F5F4F0] border border-gray-100 overflow-hidden"
-                >
-                    {/* User has outfits - show daily look */}
-                    {dailyLook ? (
-                        <div className="flex flex-col md:flex-row h-full min-h-[400px] md:min-h-[450px]">
-                            {/* Left: Info */}
-                            <div className="flex flex-col justify-between p-6 md:p-10 md:w-[40%] z-10">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <div className="w-2 h-2 rounded-full bg-[#80163A] animate-pulse" />
-                                        <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.2em]">
-                                            Today's Look
-                                        </p>
-                                    </div>
-
-                                    <h2 className="text-2xl md:text-4xl text-[#1A1A1A] mb-3 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                        {dailyLook.name}
-                                    </h2>
-
-                                    <p className="text-sm text-gray-500 leading-relaxed mb-2">
-                                        Curated for {weather?.condition?.toLowerCase() || 'today'}'s weather.
-                                    </p>
-
-                                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                                        <Sparkles className="w-3 h-3" />
-                                        <span>{(dailyLook.items?.length || 0)} pieces • AI Matched</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-3 mt-6">
-                                    <Link href="/outfits" className="flex-1">
-                                        <button className="w-full h-11 bg-[#1A1A1A] text-white rounded-xl font-medium text-xs tracking-wide uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
-                                            Wear Today
-                                        </button>
-                                    </Link>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); generateDailyLook(); }}
-                                        disabled={isGenerating}
-                                        className="w-11 h-11 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-all"
-                                    >
-                                        <Shuffle className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Right: Images */}
-                            <div className="flex-1 p-4 md:p-6 flex items-center justify-center">
-                                <div className="grid grid-cols-2 gap-3 w-full max-w-[350px]">
-                                    {(Array.isArray(dailyLook.items) ? dailyLook.items : []).slice(0, 4).map((itemId, idx) => (
-                                        <motion.div
-                                            key={itemId}
-                                            initial={{ opacity: 0, scale: 0.9 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{ delay: 0.1 * idx }}
-                                            className={`relative aspect-square rounded-2xl bg-white shadow-lg shadow-gray-200/50 overflow-hidden ${idx === 0 ? 'col-span-2 aspect-[2/1]' : ''}`}
-                                        >
-                                            {getItemImage(itemId) ? (
-                                                <img
-                                                    src={getItemImage(itemId)!}
-                                                    alt="Outfit piece"
-                                                    className="w-full h-full object-contain p-3"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <Shirt className="w-8 h-8 text-gray-200" />
-                                                </div>
-                                            )}
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    ) : hasWardrobeNoOutfits ? (
-                        /* AI OUTFIT GENERATOR - User has wardrobe but no outfits */
-                        <div className="p-6 md:p-10 min-h-[480px] md:min-h-[500px]">
-                            {!generatedOutfit ? (
-                                /* MOOD SELECTION STATE */
-                                <div className="flex flex-col h-full">
-                                    {/* Header */}
-                                    <div className="text-center mb-8">
-                                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#80163A]/10 to-purple-500/10 mb-4">
-                                            <Wand2 className="w-4 h-4 text-[#80163A]" />
-                                            <span className="text-xs font-bold text-[#80163A] uppercase tracking-wider">AI Style Curator</span>
-                                        </div>
-                                        <h2 className="text-2xl md:text-4xl text-[#1A1A1A] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                            What's your vibe today?
-                                        </h2>
-                                        <p className="text-sm text-gray-400 max-w-md mx-auto">
-                                            Select your mood and let our AI curate the perfect outfit from your wardrobe
-                                        </p>
-                                    </div>
-
-                                    {/* Mood Grid */}
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl mx-auto w-full mb-8">
-                                        {moods.map((mood) => {
-                                            const MoodIcon = mood.icon;
-                                            const isSelected = selectedMood === mood.id;
-                                            return (
-                                                <motion.button
-                                                    key={mood.id}
-                                                    onClick={() => setSelectedMood(mood.id)}
-                                                    className={`relative p-4 md:p-5 rounded-2xl border-2 transition-all group ${isSelected
-                                                        ? 'border-[#1A1A1A] bg-[#1A1A1A] text-white shadow-lg shadow-black/10'
-                                                        : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-md'
-                                                        }`}
-                                                    whileHover={{ scale: 1.02 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div
-                                                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-white/20' : 'bg-gray-50 group-hover:bg-gray-100'}`}
-                                                        >
-                                                            <MoodIcon
-                                                                className="w-5 h-5"
-                                                                style={{ color: isSelected ? 'white' : mood.color }}
-                                                            />
-                                                        </div>
-                                                        <div className="text-left">
-                                                            <p className={`font-semibold text-sm ${isSelected ? 'text-white' : 'text-[#1A1A1A]'}`}>
-                                                                {mood.label}
-                                                            </p>
-                                                            <p className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-gray-400'}`}>
-                                                                {mood.description}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    {isSelected && (
-                                                        <motion.div
-                                                            initial={{ scale: 0 }}
-                                                            animate={{ scale: 1 }}
-                                                            className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#80163A] flex items-center justify-center"
-                                                        >
-                                                            <Check className="w-3 h-3 text-white" />
-                                                        </motion.div>
-                                                    )}
-                                                </motion.button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* Weather Context */}
-                                    {weather && (
-                                        <div className="text-center mb-6">
-                                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-100 text-xs text-gray-500">
-                                                <WeatherIcon />
-                                                <span>Styling for {weather.temperature}° {weather.condition || 'weather'}</span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Generate Button */}
-                                    <div className="mt-auto text-center">
-                                        <motion.button
-                                            onClick={generateAIOutfit}
-                                            disabled={!selectedMood || isGenerating}
-                                            className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-sm uppercase tracking-wider transition-all ${selectedMood
-                                                ? 'bg-gradient-to-r from-[#80163A] to-[#a02050] text-white hover:shadow-xl hover:shadow-[#80163A]/20 cursor-pointer'
-                                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                }`}
-                                            whileHover={selectedMood ? { scale: 1.02 } : {}}
-                                            whileTap={selectedMood ? { scale: 0.98 } : {}}
-                                        >
-                                            {isGenerating ? (
-                                                <>
-                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    <span>Curating Your Look...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Sparkles className="w-5 h-5" />
-                                                    <span>Style Me</span>
-                                                </>
-                                            )}
-                                        </motion.button>
-                                    </div>
-                                </div>
-                            ) : (
-                                /* GENERATED OUTFIT DISPLAY */
-                                <div className="flex flex-col md:flex-row h-full gap-6">
-                                    {/* Left: Info */}
-                                    <div className="flex flex-col md:w-[40%]">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <AnimatePresence>
-                                                {showSuccess && (
-                                                    <motion.div
-                                                        initial={{ scale: 0 }}
-                                                        animate={{ scale: 1 }}
-                                                        exit={{ scale: 0 }}
-                                                        className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center"
-                                                    >
-                                                        <Check className="w-4 h-4 text-white" />
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                            <div className="w-2 h-2 rounded-full bg-[#80163A] animate-pulse" />
-                                            <p className="text-[10px] font-bold text-[#80163A] uppercase tracking-[0.2em]">
-                                                AI Curated Look
-                                            </p>
-                                        </div>
-
-                                        <h2 className="text-2xl md:text-3xl text-[#1A1A1A] mb-3 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                            Your {moods.find(m => m.id === selectedMood)?.label} Look
-                                        </h2>
-
-                                        <p className="text-sm text-gray-500 leading-relaxed mb-2">
-                                            Curated from your wardrobe for {weather?.condition?.toLowerCase() || 'today'}'s {weather?.temperature || '--'}° weather.
-                                        </p>
-
-                                        <div className="flex items-center gap-2 text-xs text-gray-400 mb-6">
-                                            <Sparkles className="w-3 h-3" />
-                                            <span>{generatedOutfit.length} pieces selected</span>
-                                        </div>
-
-                                        <div className="flex gap-3 mt-auto">
-                                            <Link href="/compose" className="flex-1">
-                                                <button className="w-full h-11 bg-[#1A1A1A] text-white rounded-xl font-medium text-xs tracking-wide uppercase hover:bg-[#333] transition-colors shadow-lg shadow-black/10">
-                                                    Save as Outfit
-                                                </button>
-                                            </Link>
-                                            <button
-                                                onClick={regenerateOutfit}
-                                                disabled={isGenerating}
-                                                className="w-11 h-11 flex items-center justify-center rounded-xl border border-gray-200 hover:border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-all"
-                                            >
-                                                <Shuffle className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                                            </button>
-                                        </div>
-
-                                        <button
-                                            onClick={() => { setGeneratedOutfit(null); setSelectedMood(null); }}
-                                            className="mt-4 text-xs text-gray-400 hover:text-[#80163A] transition-colors"
-                                        >
-                                            ← Choose different mood
-                                        </button>
-                                    </div>
-
-                                    {/* Right: Generated Items Grid */}
-                                    <div className="flex-1 flex items-center justify-center">
-                                        <div className="grid grid-cols-2 gap-3 w-full max-w-[350px]">
-                                            {generatedOutfit.map((item, idx) => (
-                                                <motion.div
-                                                    key={item.id}
-                                                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                    transition={{ delay: 0.15 * idx, type: "spring", stiffness: 200 }}
-                                                    className={`relative rounded-2xl bg-white shadow-lg shadow-gray-200/50 overflow-hidden ${idx === 0 ? 'col-span-2 aspect-[2/1]' : 'aspect-square'}`}
-                                                >
-                                                    {item.imageUrl ? (
-                                                        <img
-                                                            src={item.imageUrl}
-                                                            alt={item.name}
-                                                            className="w-full h-full object-contain p-3"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center">
-                                                            <Shirt className="w-8 h-8 text-gray-200" />
-                                                        </div>
-                                                    )}
-                                                    <div className="absolute bottom-2 left-2 right-2 py-1.5 px-2 bg-white/90 backdrop-blur-sm rounded-lg">
-                                                        <p className="text-[10px] font-medium text-[#1A1A1A] truncate">{item.name}</p>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        /* EMPTY STATE - No wardrobe items */
-                        <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-8">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#80163A]/10 to-[#1A1A1A]/10 flex items-center justify-center mb-6">
-                                <Layers className="w-8 h-8 text-[#80163A]" />
-                            </div>
-                            <h3 className="text-2xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                Start Your Collection
-                            </h3>
-                            <p className="text-gray-400 text-sm mb-6 max-w-[280px]">
-                                Add clothes to your wardrobe and let our AI create stunning outfits for you.
-                            </p>
-                            <Link href="/wardrobe">
-                                <button className="px-6 py-3 bg-[#1A1A1A] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#80163A] transition-colors">
-                                    Add First Item
-                                </button>
-                            </Link>
-                        </div>
-                    )}
-                </motion.section>
-
+                {/* ========================================== */}
+                {/* 2. THE ATELIER (COMMAND CENTER)            */}
+                {/* ========================================== */}
+                <AtelierSection
+                    hasWardrobeItems={hasWardrobeItems}
+                    selectedOccasion={selectedOccasion}
+                    setSelectedOccasion={setSelectedOccasion}
+                    selectedVibe={selectedVibe}
+                    setSelectedVibe={setSelectedVibe}
+                    anchorItem={anchorItem}
+                    setAnchorItem={setAnchorItem}
+                    setShowAnchorModal={setShowAnchorModal}
+                    generateAIOutfit={generateAIOutfit}
+                    isGenerating={isGenerating}
+                />
 
                 {/* ========================================== */}
-                {/* 3. QUICK ACTIONS - MINIMAL TEXT STYLE */}
+                {/* 3. QUICK ACTIONS & DISCOVERY              */}
                 {/* ========================================== */}
                 <motion.section
                     initial={{ opacity: 0, y: 20 }}
@@ -543,16 +309,12 @@ export function HomePage() {
                 >
                     <div className="flex items-center justify-between gap-4 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
                         {[
-                            { label: "Add to Wardrobe", href: "/wardrobe" },
-                            { label: "Create Look", href: "/compose" },
-                            { label: "Plan a Trip", href: "/trips" },
-                            { label: "View Calendar", href: "/calendar" },
+                            { label: "My Wardrobe", href: "/wardrobe" },
+                            { label: "Saved Looks", href: "/calendar" }, // Assuming saved looks live here or are accessible
+                            { label: "Trip Planner", href: "/trips" },
                         ].map((action, i) => (
                             <Link key={i} href={action.href}>
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#F5F4F0] transition-colors cursor-pointer group whitespace-nowrap">
-                                    <span className="text-[10px] font-mono text-gray-300 group-hover:text-[#80163A] transition-colors">
-                                        0{i + 1}
-                                    </span>
+                                <div className="flex items-center gap-3 px-6 py-4 rounded-xl bg-gray-50 hover:bg-[#F5F4F0] transition-colors cursor-pointer group whitespace-nowrap min-w-[140px] justify-center">
                                     <span className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#80163A] transition-colors">
                                         {action.label}
                                     </span>
@@ -562,10 +324,6 @@ export function HomePage() {
                     </div>
                 </motion.section>
 
-
-                {/* ========================================== */}
-                {/* 4. DISCOVERY SECTION */}
-                {/* ========================================== */}
                 <motion.section
                     className="grid md:grid-cols-2 gap-8"
                     initial={{ opacity: 0, y: 30 }}
@@ -575,60 +333,46 @@ export function HomePage() {
                     {/* Recent Items */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg text-[#1A1A1A] font-semibold">New In Wardrobe</h3>
+                            <h3 className="text-lg text-[#1A1A1A] font-medium" style={{ fontFamily: "'Playfair Display', serif" }}>New In</h3>
                             <Link href="/wardrobe">
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#80163A] cursor-pointer hover:underline">View All</span>
                             </Link>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-4 gap-3">
                             {recentItems.slice(0, 4).map((item) => (
                                 <Link key={item.id} href="/wardrobe">
-                                    <div className="aspect-square rounded-2xl bg-white border border-gray-100 overflow-hidden relative group cursor-pointer hover:shadow-lg transition-shadow">
+                                    <div className="aspect-square rounded-xl bg-white border border-gray-100 overflow-hidden relative group cursor-pointer hover:shadow-md transition-all">
                                         {item.imageUrl ? (
                                             <img src={item.imageUrl} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
-                                                <Shirt className="w-8 h-8 text-gray-200" />
+                                                <Shirt className="w-6 h-6 text-gray-200" />
                                             </div>
                                         )}
                                     </div>
                                 </Link>
                             ))}
-                            {recentItems.length === 0 && (
-                                <div className="col-span-2 py-12 text-center bg-white rounded-2xl border border-dashed border-gray-200">
-                                    <p className="text-xs text-gray-400 mb-2">Your wardrobe is empty</p>
-                                    <Link href="/wardrobe"><span className="text-xs font-bold text-[#80163A] underline cursor-pointer">Add Items</span></Link>
-                                </div>
-                            )}
                         </div>
                     </div>
-
                     {/* Rediscover */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg text-[#1A1A1A] font-semibold">Rediscover</h3>
-                            <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">Hidden Gems</span>
+                            <h3 className="text-lg text-[#1A1A1A] font-medium" style={{ fontFamily: "'Playfair Display', serif" }}>Rediscover</h3>
                         </div>
                         <div className="space-y-3">
                             {rediscoverItems.map((item) => (
                                 <Link key={item.id} href="/wardrobe">
-                                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-white border border-gray-100 hover:border-[#1A1A1A] transition-colors cursor-pointer group">
-                                        <div className="w-14 h-14 rounded-xl bg-[#FAF9F6] overflow-hidden shrink-0">
+                                    <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group border border-transparent hover:border-gray-100">
+                                        <div className="w-12 h-12 rounded-lg bg-[#FAF9F6] overflow-hidden shrink-0">
                                             {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-contain p-1" />}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-[#1A1A1A] truncate group-hover:text-[#80163A] transition-colors">{item.name}</p>
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">{item.category} • {item.brand || 'No brand'}</p>
+                                            <p className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</p>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">{item.brand || 'No brand'}</p>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 </Link>
                             ))}
-                            {rediscoverItems.length === 0 && (
-                                <div className="py-8 text-center text-xs text-gray-400">
-                                    Add more items to discover hidden gems
-                                </div>
-                            )}
                         </div>
                     </div>
                 </motion.section>
@@ -640,8 +384,117 @@ export function HomePage() {
                     currentLocation={savedLocation || ""}
                     onSave={handleSaveWeatherLocation}
                 />
-            </div>
-        </AppLayout>
+            </div >
+
+            {/* ========================================================================= */}
+            {/* FULL SCREEN REVEAL OVERLAY (THE ATELIER RESULT)                           */}
+            {/* ========================================================================= */}
+            <AnimatePresence>
+                {showFullReveal && generatedOutfit && generatedOutfit.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: "100%" }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: "100%" }}
+                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} // Luxury Ease
+                        className="fixed inset-0 z-[9999] bg-[#FAF9F6] flex flex-col"
+                    >
+                        {/* Dynamic Background Blur */}
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full blur-[100px] opacity-30 mix-blend-multiply"
+                                style={{ background: `linear-gradient(135deg, ${occasions.find(o => o.id === selectedOccasion)?.color || '#80163A'}, transparent)` }}
+                            />
+                        </div>
+
+                        {/* CONTENT WRAPPER */}
+                        <div className="relative flex-1 flex flex-col w-full h-full overflow-y-auto z-10">
+
+                            {/* OVERLAY HEADER */}
+                            <div className="flex-none flex justify-between items-center px-6 py-6 md:px-12 md:py-8">
+                                <div>
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: occasions.find(o => o.id === selectedOccasion)?.color }} />
+                                        <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500">
+                                            {selectedVibe} Edit
+                                        </span>
+                                    </div>
+                                    <h2 className="text-4xl md:text-5xl text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                        {occasions.find(o => o.id === selectedOccasion)?.label}
+                                    </h2>
+                                </div>
+                                <button
+                                    onClick={() => setShowFullReveal(false)}
+                                    className="w-12 h-12 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition-all hover:rotate-90 shadow-sm"
+                                >
+                                    <X className="w-5 h-5 text-[#1A1A1A]" />
+                                </button>
+                            </div>
+
+                            {/* OUTFIT GRID */}
+                            <div className="flex-1 flex flex-col justify-center py-10 px-4">
+                                <div className="max-w-5xl mx-auto w-full grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 justify-items-center">
+                                    {generatedOutfit.map((item, idx) => (
+                                        <motion.div
+                                            key={item.id}
+                                            initial={{ opacity: 0, y: 40 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 + (idx * 0.1), duration: 0.6 }}
+                                            className={`relative w-full aspect-[3/4] md:aspect-[4/5] bg-white rounded-[2rem] shadow-xl shadow-black/5 flex flex-col items-center p-6 border border-white/40 backdrop-blur-sm
+                                                ${lockedItemIds.has(item.id) ? 'ring-2 ring-[#80163A]/20' : ''}
+                                            `}
+                                        >
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); toggleLockItem(item.id); }}
+                                                className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Save className={`w-4 h-4 ${lockedItemIds.has(item.id) ? 'fill-[#80163A] text-[#80163A]' : 'text-gray-400'}`} />
+                                            </button>
+
+                                            <div className="flex-1 w-full flex items-center justify-center mb-4">
+                                                {item.imageUrl ? (
+                                                    <img
+                                                        src={item.imageUrl}
+                                                        className="max-w-full max-h-full object-contain drop-shadow-2xl mix-blend-multiply transition-transform duration-700 hover:scale-105"
+                                                        alt={item.name}
+                                                    />
+                                                ) : (
+                                                    <Shirt className="w-12 h-12 text-gray-200" />
+                                                )}
+                                            </div>
+
+                                            <div className="text-center w-full">
+                                                <p className="text-xs font-bold text-[#1A1A1A] truncate w-full mb-1">{item.name}</p>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider">{item.brand || 'Unknown'}</p>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* ACTION BAR */}
+                            <div className="flex-none pb-12 pt-6 px-6 bg-gradient-to-t from-[#FAF9F6] to-transparent">
+                                <div className="max-w-sm mx-auto flex items-center gap-3">
+                                    <Link href="/compose" className="flex-1">
+                                        <button className="w-full h-14 bg-[#1A1A1A] text-white rounded-2xl font-medium text-xs tracking-[0.15em] uppercase hover:bg-[#333] transition-all flex items-center justify-center gap-3 shadow-2xl shadow-black/20">
+                                            <Check className="w-4 h-4" />
+                                            <span>Accept Edit</span>
+                                        </button>
+                                    </Link>
+                                    <button
+                                        onClick={regenerateOutfit}
+                                        disabled={isGenerating}
+                                        className="h-14 w-14 rounded-2xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                                    >
+                                        <Shuffle className={`w-5 h-5 text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+        </AppLayout >
     );
 }
 

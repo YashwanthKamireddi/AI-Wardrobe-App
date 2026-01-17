@@ -1,22 +1,13 @@
-/**
- * Middleware Index
- *
- * This file exports all application middleware for easier imports elsewhere.
- * Centralizing middleware exports improves code organization and helps
- * maintain a clear middleware dependency structure.
- */
-
-import { errorHandler, asyncHandler, ApiError } from './error-handler';
+import { globalErrorHandler } from './error-handler';
 import { requireAuth, requireRole, requireSelfOrAdmin } from './auth-middleware';
 import { requestLogger, createRequestLogger } from './request-logger';
 import { aiRateLimiter, authRateLimiter, generalRateLimiter, uploadRateLimiter } from './rate-limiter';
+import { sanitizeBody, sanitizeAllStrings } from './xss-protection';
 
 // Export all middleware components
 export {
     // Error handling
-    errorHandler,
-    asyncHandler,
-    ApiError,
+    globalErrorHandler,
 
     // Authentication
     requireAuth,
@@ -31,14 +22,16 @@ export {
     aiRateLimiter,
     authRateLimiter,
     generalRateLimiter,
-    uploadRateLimiter
+    uploadRateLimiter,
+
+    // XSS Protection
+    sanitizeBody,
+    sanitizeAllStrings
 };
 
 // Default export for convenience
 export default {
-    errorHandler,
-    asyncHandler,
-    ApiError,
+    globalErrorHandler,
     requireAuth,
     requireRole,
     requireSelfOrAdmin,
@@ -47,5 +40,7 @@ export default {
     aiRateLimiter,
     authRateLimiter,
     generalRateLimiter,
-    uploadRateLimiter
+    uploadRateLimiter,
+    sanitizeBody,
+    sanitizeAllStrings
 };

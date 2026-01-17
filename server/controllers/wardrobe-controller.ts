@@ -1,131 +1,89 @@
-
 import { Request, Response } from "express";
 import { z } from "zod";
 import storage from "../storage";
-import { insertWardrobeItemSchema } from "@shared/schema";
+import { insertWardrobeItemSchema, CATEGORIES, SEASONS } from "@shared/schema";
+import { asyncHandler } from "../utils/asyncHandler";
+import { AppError } from "../utils/AppError";
 
 // Input validation schemas
 const patchWardrobeItemSchema = z.object({
     name: z.string().min(1).max(100).optional(),
-    category: z.string().min(1).max(50).optional(),
+    category: z.enum(CATEGORIES).optional(),
     color: z.string().min(1).max(50).optional(),
     brand: z.string().max(100).optional(),
     size: z.string().max(20).optional(),
+    season: z.enum(SEASONS).optional(),
     image: z.string().optional(),
     tags: z.array(z.string()).optional(),
     favorite: z.boolean().optional(),
 }).strict();
 
 // Helper function to validate and parse numeric IDs
-const parseId = (id: string): number | null => {
+const parseId = (id: string): number => {
     const parsed = parseInt(id, 10);
-    return isNaN(parsed) || parsed < 1 ? null : parsed;
-};
-
-export const getWardrobeItems = async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
-
-    try {
-        const items = await storage.getWardrobeItems(req.user!.id);
-        res.json(items);
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch wardrobe items" });
+    if (isNaN(parsed) || parsed < 1) {
+        throw new AppError("Invalid item ID", 400);
     }
+    return parsed;
 };
 
-export const createWardrobeItem = async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+export const getWardrobeItems = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw new AppError("Unauthorized", 401);
+    const items = await storage.getWardrobeItems(req.user.id);
+    res.json(items);
+});
 
-    try {
-        const itemData = insertWardrobeItemSchema.parse({
-            ...req.body,
-            userId: req.user!.id
-        });
+export const createWardrobeItem = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw new AppError("Unauthorized", 401);
 
-        const item = await storage.createWardrobeItem(itemData);
-        res.status(201).json(item);
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            return res.status(400).json({ message: "Invalid wardrobe item data", errors: error.format() });
-        }
-        res.status(500).json({ message: "Failed to create wardrobe item" });
-    }
-};
+    // Zod will throw error caught by global handler
+    const itemData = insertWardrobeItemSchema.parse({
+        ...req.body,
+        userId: req.user.id
+    });
 
-export const getWardrobeItem = async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    const item = await storage.createWardrobeItem(itemData);
+    res.status(201).json(item);
+});
 
-    try {
-        const id = parseInt(req.params.id);
-        const item = await storage.getWardrobeItem(id);
+export const getWardrobeItem = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw new AppError("Unauthorized", 401);
 
-        if (!item) {
-            return res.status(404).json({ message: "Wardrobe item not found" });
-        }
+    const id = parseId(req.params.id);
+    const item = await storage.getWardrobeItem(id);
 
-        if (item.userId !== req.user!.id) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
+    if (!item) throw new AppError("Wardrobe item not found", 404);
+    if (item.userId !== req.user.id) throw new AppError("Forbidden", 403);
 
-        res.json(item);
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch wardrobe item" });
-    }
-};
+    res.json(item);
+});
 
-export const updateWardrobeItem = async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+export const updateWardrobeItem = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw new AppError("Unauthorized", 401);
 
-    try {
-        const id = parseId(req.params.id);
-        if (!id) {
-            return res.status(400).json({ message: "Invalid item ID" });
-        }
+    const id = parseId(req.params.id);
+    const validatedData = patchWardrobeItemSchema.parse(req.body);
 
-        // Validate input data
-        const validatedData = patchWardrobeItemSchema.parse(req.body);
+    const item = await storage.getWardrobeItem(id);
+    if (!item) throw new AppError("Wardrobe item not found", 404);
+    if (item.userId !== req.user.id) throw new AppError("Forbidden", 403);
 
-        const item = await storage.getWardrobeItem(id);
+    const updatedItem = await storage.updateWardrobeItem(id, validatedData);
+    res.json(updatedItem);
+});
 
-        if (!item) {
-            return res.status(404).json({ message: "Wardrobe item not found" });
-        }
+export const deleteWardrobeItem = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw new AppError("Unauthorized", 401);
 
-        if (item.userId !== req.user!.id) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
+    const id = parseId(req.params.id);
+    const item = await storage.getWardrobeItem(id);
 
-        const updatedItem = await storage.updateWardrobeItem(id, validatedData);
-        res.json(updatedItem);
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            return res.status(400).json({ message: "Invalid input data", errors: error.format() });
-        }
-        res.status(500).json({ message: "Failed to update wardrobe item" });
-    }
-};
+    if (!item) throw new AppError("Wardrobe item not found", 404);
+    if (item.userId !== req.user.id) throw new AppError("Forbidden", 403);
 
-export const deleteWardrobeItem = async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
-
-    try {
-        const id = parseInt(req.params.id);
-        const item = await storage.getWardrobeItem(id);
-
-        if (!item) {
-            return res.status(404).json({ message: "Wardrobe item not found" });
-        }
-
-        if (item.userId !== req.user!.id) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
-
-        await storage.deleteWardrobeItem(id);
-        res.status(204).end();
-    } catch (error) {
-        res.status(500).json({ message: "Failed to delete wardrobe item" });
-    }
-};
+    await storage.deleteWardrobeItem(id);
+    res.status(204).end();
+});
 
 export const seedWardrobe = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
@@ -277,6 +235,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "classic", "timeless"],
                 favorite: true,
                 purchasePrice: 35000,
+                wearCount: 0
             },
             {
                 userId,
@@ -291,6 +250,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["classic", "elegant", "british"],
                 favorite: true,
                 purchasePrice: 89000,
+                wearCount: 0
             },
             {
                 userId,
@@ -305,6 +265,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["edgy", "casual", "statement"],
                 favorite: true,
                 purchasePrice: 45000,
+                wearCount: 0
             },
             {
                 userId,
@@ -319,6 +280,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "elegant", "winter"],
                 favorite: false,
                 purchasePrice: 55000,
+                wearCount: 0
             },
             // SHOES
             {
@@ -334,6 +296,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["casual", "minimal", "versatile"],
                 favorite: true,
                 purchasePrice: 42500,
+                wearCount: 0
             },
             {
                 userId,
@@ -348,6 +311,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "classic", "elegant"],
                 favorite: true,
                 purchasePrice: 39500,
+                wearCount: 0
             },
             {
                 userId,
@@ -362,6 +326,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["smart-casual", "versatile", "stylish"],
                 favorite: false,
                 purchasePrice: 52500,
+                wearCount: 0
             },
             {
                 userId,
@@ -376,6 +341,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["smart-casual", "summer", "italian"],
                 favorite: false,
                 purchasePrice: 48000,
+                wearCount: 0
             },
             // ACCESSORIES
             {
@@ -391,6 +357,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["essential", "formal", "versatile"],
                 favorite: true,
                 purchasePrice: 35000,
+                wearCount: 0
             },
             {
                 userId,
@@ -405,6 +372,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["luxury", "classic", "timepiece"],
                 favorite: true,
                 purchasePrice: 550000,
+                wearCount: 0
             },
             {
                 userId,
@@ -419,6 +387,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "elegant", "silk"],
                 favorite: false,
                 purchasePrice: 18500,
+                wearCount: 0
             },
             {
                 userId,
@@ -433,6 +402,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["casual", "summer", "classic"],
                 favorite: false,
                 purchasePrice: 15500,
+                wearCount: 0
             },
             {
                 userId,
@@ -447,6 +417,7 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["winter", "cozy", "minimal"],
                 favorite: false,
                 purchasePrice: 22000,
+                wearCount: 0
             },
         ];
 

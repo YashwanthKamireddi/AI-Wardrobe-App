@@ -25,6 +25,9 @@ import {
 } from "@shared/schema";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import { createLogger } from "./utils/logger";
+
+const logger = createLogger('storage');
 
 /**
  * Storage Interface
@@ -157,6 +160,7 @@ export class MemoryStorage implements IStorage {
             role: insertUser.role || "user"
         };
         this.users.set(user.id, user);
+        logger.info(`User created: ${user.username} (ID: ${user.id})`);
         return user;
     }
 
@@ -166,6 +170,7 @@ export class MemoryStorage implements IStorage {
 
         const updatedUser = { ...existingUser, ...userData };
         this.users.set(id, updatedUser);
+        logger.info(`User updated: ${updatedUser.username} (ID: ${id})`);
         return updatedUser;
     }
 
@@ -201,6 +206,7 @@ export class MemoryStorage implements IStorage {
             updatedAt: new Date()
         };
         this.wardrobeItems.set(item.id, item);
+        logger.info(`Wardrobe item created: ${item.name} (ID: ${item.id}, User: ${item.userId})`);
         return item;
     }
 
@@ -249,6 +255,7 @@ export class MemoryStorage implements IStorage {
             rating: insertOutfit.rating || null
         };
         this.outfits.set(outfit.id, outfit);
+        logger.info(`Outfit created: ${outfit.name} (ID: ${outfit.id}, User: ${outfit.userId})`);
         return outfit;
     }
 

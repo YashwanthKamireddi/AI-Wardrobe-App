@@ -9,10 +9,12 @@
 import express, { Express } from 'express';
 import session from 'express-session';
 import cors from 'cors';
-import bodyParser from 'body-parser';
-import { setupAuth } from './auth';
+import helmet from 'helmet';
+import { AuthService } from './features/auth/auth.service';
+import authRoutes from './features/auth/auth.routes';
 import { registerRoutes } from './routes';
-import { errorHandler, requestLogger, generalRateLimiter, authRateLimiter, aiRateLimiter } from './middleware';
+import { requestLogger, generalRateLimiter, authRateLimiter, aiRateLimiter } from './middleware';
+import { globalErrorHandler } from './middleware/error-handler';
 import { logger } from './utils';
 import appConfig from './config/app-config';
 import storage from './storage';
@@ -21,43 +23,62 @@ import storage from './storage';
  * Creates and configures the Express application
  */
 export async function createApp(): Promise<Express> {
-    const timestamp = () => new Date().toISOString();
-    console.log(`[${timestamp()}] [createApp] Initializing Express application...`);
+    logger.info('[createApp] Initializing Express application...');
 
     // Initialize the Express application
     const app = express();
-    console.log(`[${timestamp()}] [createApp] Express app created`);
+    logger.info('[createApp] Express app created');
 
     // Set application variables
     app.set('isLocal', appConfig.environment.isLocal);
     app.set('env', appConfig.environment.nodeEnv);
     app.set('trust proxy', 1);
-    console.log(`[${timestamp()}] [createApp] Application variables set`);
+    logger.info('[createApp] Application variables set');
+
+    // Apply security headers with Helmet
+    // Content Security Policy (CSP) is configured to allow necessary resources
+    app.use(helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts for development convenience
+                styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+                fontSrc: ["'self'", "https://fonts.gstatic.com"],
+                imgSrc: ["'self'", "data:", "https:", "blob:"],
+                connectSrc: ["'self'", "https://api.openai.com"], // Allow connections to self and AI services
+            },
+        },
+    }));
+    logger.info('[createApp] Security headers (Helmet) applied');
 
     // Apply basic middleware
     app.use(cors({
         origin: appConfig.server.corsOrigins,
         credentials: true
     }));
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: false }));
-    console.log(`[${timestamp()}] [createApp] Basic middleware applied`);
+    // Parse request bodies
+    app.use(express.json({ limit: '10mb' }));
+    app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+    // XSS Protection - Sanitize user input (Gold Standard Security)
+    const { sanitizeBody } = await import('./middleware/xss-protection');
+    app.use(sanitizeBody);
+    logger.info('[createApp] Basic middleware applied');
 
     // Set up request logging
     app.use(requestLogger);
-    console.log(`[${timestamp()}] [createApp] Request logging configured`);
+    logger.info('[createApp] Request logging configured');
 
     // Set up authentication (includes session handling)
-    console.log(`[${timestamp()}] [createApp] Setting up authentication...`);
-    setupAuth(app);
-    console.log(`[${timestamp()}] [createApp] Authentication configured`);
+    logger.info('[createApp] Setting up authentication...');
+    AuthService.setup(app);
+    logger.info('[createApp] Authentication configured');
 
     // Apply rate limiting
-    console.log(`[${timestamp()}] [createApp] Setting up rate limiting...`);
+    logger.info('[createApp] Setting up rate limiting...');
 
-    // Auth endpoints - strict rate limiting (5 req/min per IP)
-    app.use('/api/login', authRateLimiter);
-    app.use('/api/register', authRateLimiter);
+    // Mount Auth Routes - Feature Slice
+    app.use('/api', authRoutes);
 
     // AI endpoints - moderate rate limiting (10 req/min per user)
     app.use('/api/ai-outfit-recommendations', aiRateLimiter);
@@ -68,10 +89,10 @@ export async function createApp(): Promise<Express> {
     // General API - relaxed rate limiting (100 req/min per user)
     app.use('/api', generalRateLimiter);
 
-    console.log(`[${timestamp()}] [createApp] Rate limiting configured`);
+    logger.info('[createApp] Rate limiting configured');
 
     // Health check endpoint that doesn't require authentication
-    console.log(`[${timestamp()}] [createApp] Registering health check endpoint...`);
+    logger.info('[createApp] Registering health check endpoint...');
     app.get('/api/health', async (req, res) => {
         try {
             // Check memory usage
@@ -101,19 +122,19 @@ export async function createApp(): Promise<Express> {
             });
         }
     });
-    console.log(`[${timestamp()}] [createApp] Health check endpoint registered`);
+    logger.info('[createApp] Health check endpoint registered');
 
     // Register application routes
-    console.log(`[${timestamp()}] [createApp] About to register application routes...`);
+    logger.info('[createApp] About to register application routes...');
     await registerRoutes(app);
-    console.log(`[${timestamp()}] [createApp] Application routes registered successfully`);
+    logger.info('[createApp] Application routes registered successfully');
 
     // Apply global error handler (must be after routes)
-    console.log(`[${timestamp()}] [createApp] Applying error handler...`);
-    app.use(errorHandler);
-    console.log(`[${timestamp()}] [createApp] Error handler applied`);
+    logger.info('[createApp] Applying error handler...');
+    app.use(globalErrorHandler);
+    logger.info('[createApp] Error handler applied');
 
-    console.log(`[${timestamp()}] [createApp] Application initialization complete`);
+    logger.info('[createApp] Application initialization complete');
     return app;
 }
 

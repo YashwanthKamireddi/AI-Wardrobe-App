@@ -1,102 +1,81 @@
-/**
- * Main Server Entry Point
- *
- * This file is responsible for:
- * 1. Starting the Express application
- * 2. Setting up Vite in development mode
- * 3. Handling graceful shutdown
- */
-
 // Load environment variables FIRST
 import appConfig from './config/app-config';
 
 import { createServer } from 'http';
 import { setupVite, serveStatic } from './vite';
 import { createApp } from './app';
-import { logger } from './utils';
+import { logger } from './utils/logger';
+import { initializeOpenTelemetry, shutdownOpenTelemetry } from './config/telemetry';
 
-// Start the server
-(async () => {
-  try {
-    const timestamp = () => new Date().toISOString();
-    console.log(`[${timestamp()}] Starting Celura application...`);
-    logger.info('Starting Celura application...');
+/**
+ * Start the application
+ */
+async function start() {
+    try {
+        logger.info('🚀 Starting application...');
 
-    // Create Express app
-    console.log(`[${timestamp()}] About to call createApp()...`);
-    const app = await createApp();
-    console.log(`[${timestamp()}] createApp() completed successfully`);
+        // Initialize OpenTelemetry for distributed tracing (Gold Standard)
+        initializeOpenTelemetry();
 
-    // Create HTTP server
-    console.log(`[${timestamp()}] Creating HTTP server...`);
-    const server = createServer(app);
-    console.log(`[${timestamp()}] HTTP server created`);
+        const app = await createApp();
+        const server = createServer(app);
+        const PORT = appConfig.server.port;
+        const HOST = appConfig.server.host;
 
-    // Set up Vite for development or serve static files for production
-    if (appConfig.environment.isDevelopment) {
-      console.log(`[${timestamp()}] About to call setupVite()...`);
-      await setupVite(app, server);
-      console.log(`[${timestamp()}] setupVite() completed successfully`);
-    } else {
-      console.log(`[${timestamp()}] Serving static files...`);
-      serveStatic(app);
-      console.log(`[${timestamp()}] Static files setup complete`);
-    }
+        // Development vs Production Setup
+        if (appConfig.environment.isDevelopment) {
+            await setupVite(app, server);
+        } else {
+            serveStatic(app);
+        }
 
-    // Get port from environment or use default
-    const port = appConfig.server.port;
-    const host = appConfig.server.host;
-
-    // Start listening on the configured port
-    logger.info(`Starting server on port ${port}...`);
-    logger.info(`Binding to host: ${host}`);
-
-    // Windows-specific listen method to avoid socket issues
-    if (process.platform === 'win32') {
-      // On Windows, listen only on port without specifying host
-      server.listen(port, () => {
-        logger.info(`Server running at http://127.0.0.1:${port}`);
-        logger.info(`Environment: ${app.get('env')} (Local)`);
-      });
-    } else {
-      // On other platforms, use the configured host
-      server.listen(port, host, () => {
-        logger.info(`Server running at http://${host}:${port}`);
-        logger.info(`Environment: ${app.get('env')} (Local)`);
-      });
-    }
-
-    server.on('error', (err: any) => {
-      if (err.code === 'EADDRINUSE') {
-        logger.error(`Port ${port} is already in use. Please choose a different port.`);
-      } else {
-        logger.error('Server startup error:', err);
-      }
-      process.exit(1);
-    });
-
-    // Handle graceful shutdown
-    const shutdownHandler = async () => {
-      logger.info('Shutting down gracefully...');
-
-      // Close server first to stop accepting new connections
-      await new Promise<void>((resolve) => {
-        server.close(() => {
-          logger.info('Server closed');
-          resolve();
+        // Start Server
+        server.listen(PORT, HOST, () => {
+            logger.info(`🚀 Server running at http://${HOST}:${PORT}`);
+            logger.info(`Environment: ${app.get('env')}`);
         });
-      });
 
-      logger.info('Application shut down complete');
-      process.exit(0);
-    };
+        server.on('error', (err: any) => {
+            if (err.code === 'EADDRINUSE') {
+                logger.error(`Port ${PORT} is already in use. Please choose a different port.`);
+            } else {
+                logger.error('Server startup error:', err);
+            }
+            process.exit(1);
+        });
 
-    // Register shutdown handlers
-    process.on('SIGINT', shutdownHandler);
-    process.on('SIGTERM', shutdownHandler);
+        // Graceful Shutdown Logic
+        const shutdownHandler = async (signal: string) => {
+            logger.info(`${signal} signal received. Starting graceful shutdown...`);
 
-  } catch (err) {
-    logger.error('Failed to start server:', err instanceof Error ? err : new Error(String(err)));
-    process.exit(1);
-  }
-})();
+            // Close HTTP server
+            server.close(async () => {
+                logger.info('HTTP server closed. Connections drained.');
+                // If we had a direct DB connection pool here, we would close it now.
+                // await db.end();
+
+                // Shutdown OpenTelemetry
+                await shutdownOpenTelemetry();
+                logger.info('OpenTelemetry shut down.');
+
+                process.exit(0);
+            });
+
+            // Force kill if hanging
+            setTimeout(() => {
+                logger.error('Shutdown timed out. Forcing exit.');
+                process.exit(1);
+            }, 10000);
+        };
+
+        process.on('SIGTERM', () => shutdownHandler('SIGTERM'));
+        process.on('SIGINT', () => shutdownHandler('SIGINT'));
+
+    } catch (err) {
+        logger.error({ err: err instanceof Error ? err : new Error(String(err)) }, '❌ Critical failure during startup');
+        process.exit(1);
+    }
+}
+
+// Start the application
+start();
