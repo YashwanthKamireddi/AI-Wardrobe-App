@@ -312,7 +312,7 @@ export function StudioPage() {
                     isOpen={showBeforeAfter}
                     before={beforeAfterItem.originalUrl}
                     after={beforeAfterItem.processedUrl || ''}
-                    onContinue={() => setShowBeforeAfter(false)}
+                    onClose={() => setShowBeforeAfter(false)}
                 />
             )}
         </AppLayout>
