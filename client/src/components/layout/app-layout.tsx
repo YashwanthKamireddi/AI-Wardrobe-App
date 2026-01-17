@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import {
-    Home, Shirt, Layers, Calendar, Plane, BarChart3, Sparkles,
+Home, Shirt, Layers, Calendar, Plane, BarChart3, Sparkles,
     Lightbulb, User, LogOut, ChevronDown, Menu, X, Plus, Frame,
-    Settings, Search, Bell
+    Settings, Search, Bell, Grid3X3, DollarSign
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
