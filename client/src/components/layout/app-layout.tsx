@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-Home, Shirt, Layers, Calendar, Plane, BarChart3, Sparkles,
+import {
+    Home, Shirt, Layers, Calendar, Plane, BarChart3, Sparkles,
     Lightbulb, User, LogOut, ChevronDown, Menu, X, Plus, Frame,
     Settings, Search, Bell, Grid3X3, DollarSign
 } from "lucide-react";
