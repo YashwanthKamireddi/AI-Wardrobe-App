@@ -38,6 +38,10 @@ import { clothingCategories, seasons, WardrobeItem as WardrobeItemType } from "@
 import { processWardrobeImage, AIProcessingResult, processImageFromUrl } from "@/lib/image-ai";
 import { Progress } from "@/components/ui/progress";
 import { WardrobeGridSkeleton } from "@/components/ui/wardrobe-skeletons";
+import { AIProcessingOverlay } from "@/components/ui/ai-processing-overlay";
+import { BeforeAfterComparison } from "@/components/ui/before-after-comparison";
+import { FilterCategoryTabs } from "@/components/ui/filter-category-tabs";
+import { MultiSelectToolbar } from "@/components/ui/multi-select-toolbar";
 
 /**
  * WARDROBE PAGE - EDITORIAL MASONRY
@@ -72,6 +76,15 @@ export function WardrobePage() {
     const [aiProgress, setAiProgress] = useState(0);
     const [aiStage, setAiStage] = useState('');
     const [aiResult, setAiResult] = useState<AIProcessingResult | null>(null);
+
+    // Luxury UI states
+    const [showBeforeAfter, setShowBeforeAfter] = useState(false);
+    const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
+    const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+
+    // Multi-select states
+    const [selectionMode, setSelectionMode] = useState(false);
+    const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
     // Import from Web State
     const [importUrl, setImportUrl] = useState('');
