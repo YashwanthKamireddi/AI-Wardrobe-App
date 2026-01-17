@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import { TrendingUp, DollarSign, Clock, Star, Grid3X3, Package, Info } from "lucide-react";
-import { useWardrobeStats, useCostPerWear, useMostWorn, useNeverWorn } from "@/hooks/use-analytics";
-import { Link } from "wouter";
+import { TrendingUp, DollarSign, Clock, Star, Grid3X3, Package } from "lucide-react";
+import { useWardrobeStats, useCostPerWear, useMostWorn, useNeverWorn, useStylePatterns } from "@/hooks/use-analytics";
 
 /**
  * ANALYTICS DASHBOARD PAGE
@@ -17,6 +16,8 @@ export default function AnalyticsPage() {
     const { data: costPerWear } = useCostPerWear();
     const { data: mostWorn } = useMostWorn(5);
     const { data: neverWorn } = useNeverWorn();
+    // usage of stylePatterns removed for now or add back if needed
+    // const { data: stylePatterns } = useStylePatterns();
 
     if (statsLoading) {
         return (
@@ -78,7 +79,7 @@ export default function AnalyticsPage() {
                     <MetricCard
                         icon={<TrendingUp className="w-5 h-5" />}
                         label="Items Worn"
-                        value={`${stats?.percentWorn.toFixed(1)}%`}
+                        value={`${stats?.percentWorn?.toFixed(1) || 0}%`}
                     />
                 </motion.div>
 
@@ -163,17 +164,17 @@ export default function AnalyticsPage() {
                             {costPerWear.slice(0, 5).map(item => (
                                 <motion.div
                                     key={item.id}
-                                    className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden hover:border-[#1A1A1A] transition-colors group"
+                                    className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden hover:border-[#1A1A1A] transition-colors"
                                     whileHover={{ y: -4 }}
                                 >
                                     <div className="relative aspect-[3/4] bg-[#F5F5F5]">
                                         <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">
+                                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                                             ₹{(item.costPerWear).toFixed(0)}/wear
                                         </div>
                                     </div>
                                     <div className="p-3">
-                                        <h4 className="text-sm font-medium text-[#1A1A1A] truncate group-hover:text-[#80163A] transition-colors">{item.name}</h4>
+                                        <h4 className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</h4>
                                         <p className="text-xs text-[#6B6B6B] mt-1">{item.wearCount} wears</p>
                                     </div>
                                 </motion.div>
@@ -200,18 +201,18 @@ export default function AnalyticsPage() {
                             {mostWorn.map(item => (
                                 <motion.div
                                     key={item.id}
-                                    className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden hover:border-[#1A1A1A] transition-colors group"
+                                    className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden hover:border-[#1A1A1A] transition-colors"
                                     whileHover={{ y: -4 }}
                                 >
                                     <div className="relative aspect-[3/4] bg-[#F5F5F5]">
                                         <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                                        <div className="absolute top-2 right-2 bg-[#80163A] text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1 shadow-sm">
-                                            <Star className="w-3 h-3fill-current" />
+                                        <div className="absolute top-2 right-2 bg-[#80163A] text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                                            <Star className="w-3 h-3" />
                                             {item.wearCount}
                                         </div>
                                     </div>
                                     <div className="p-3">
-                                        <h4 className="text-sm font-medium text-[#1A1A1A] truncate group-hover:text-[#80163A] transition-colors">{item.name}</h4>
+                                        <h4 className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</h4>
                                         <p className="text-xs text-[#6B6B6B] capitalize mt-1">{item.category}</p>
                                     </div>
                                 </motion.div>
@@ -280,8 +281,8 @@ function MetricCard({ icon, label, value }: MetricCardProps) {
             whileHover={{ y: -4, borderColor: "#1A1A1A" }}
             transition={{ duration: 0.2 }}
         >
-            <div className="text-[#80163A] mb-3 p-2 bg-[#80163A]/5 rounded-xl w-fit">{icon}</div>
-            <div className="text-3xl font-bold text-[#1A1A1A] mb-1 font-playfair">{value}</div>
+            <div className="text-[#80163A] mb-3">{icon}</div>
+            <div className="text-3xl font-bold text-[#1A1A1A] mb-1">{value}</div>
             <div className="text-sm text-[#6B6B6B]">{label}</div>
         </motion.div>
     );
@@ -296,7 +297,7 @@ function ChartCard({ title, children }: ChartCardProps) {
     return (
         <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6">
             <h3
-                className="text-[#1A1A1A] mb-6 flex items-center gap-2"
+                className="text-[#1A1A1A] mb-6"
                 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.5rem" }}
             >
                 {title}
@@ -326,9 +327,9 @@ function getColorHex(colorName: string): string {
         teal: "#14B8A6",
         gold: "#CA8A04",
         silver: "#9CA3AF",
-        cream: "#F5F5DC",
+        cream: "#FFFDD0",
+        khaki: "#C3B091",
         olive: "#808000",
-        tan: "#D2B48C",
     };
 
     return colorMap[colorName.toLowerCase()] || "#80163A";

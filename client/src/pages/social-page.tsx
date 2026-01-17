@@ -1,111 +1,177 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import { useCommunityFeed, useChallenges } from "@/hooks/use-social";
-import { SocialOutfitCard } from "@/components/social/social-outfit-card";
-import { Trophy, Flame, Users } from "lucide-react";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Heart, Share2, MessageCircle, Trophy, Users, Award } from "lucide-react";
+import { useCommunityFeed, useChallenges, useLikeOutfit, useUnlikeOutfit } from "@/hooks/use-social";
+import { Button } from "@/components/ui/button";
 
-/**
- * SOCIAL FEED PAGE
- *
- * Community hub for outfit inspiration, sharing, and challenges
- * Design: Instagram-style luxurious feed with horizontal stories/challenges
- */
-
-export default function SocialPage() {
-    const { data: feed, isLoading: feedLoading } = useCommunityFeed();
+export function SocialPage() {
+    const [activeTab, setActiveTab] = useState<'feed' | 'challenges'>('feed');
+    const { data: feed } = useCommunityFeed();
     const { data: challenges } = useChallenges();
+    const likeOutfit = useLikeOutfit();
+    const unlikeOutfit = useUnlikeOutfit();
 
     return (
         <AppLayout>
-            <div className="max-w-2xl mx-auto px-4 py-8 pb-24">
+            <div className="max-w-4xl mx-auto px-6 py-8 md:py-12">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <motion.header
+                    className="mb-12 text-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
+                    <p className="text-xs tracking-[0.2em] uppercase text-[#80163A] mb-3 font-bold">Community</p>
                     <h1
-                        className="text-[#1A1A1A]"
-                        style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem" }}
+                        className="text-[#1A1A1A] mb-4"
+                        style={{
+                            fontFamily: "'Playfair Display', serif",
+                            fontSize: "clamp(2.5rem, 6vw, 4rem)",
+                            lineHeight: 1.1
+                        }}
                     >
-                        Community
+                        Style <span className="italic font-light">Network</span>
                     </h1>
-                    <div className="flex gap-4">
-                        <Users className="w-6 h-6 text-[#1A1A1A]" />
-                    </div>
-                </div>
+                </motion.header>
 
-                {/* Active Challenges (Stories style) */}
-                <div className="mb-10">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Trophy className="w-4 h-4 text-[#80163A]" />
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-[#1A1A1A]">Active Challenges</h2>
-                    </div>
-
-                    <ScrollArea className="w-full whitespace-nowrap rounded-xl">
-                        <div className="flex flex-nowrap w-max space-x-4 p-1">
-                            {/* Create Challenge Card */}
-                            <motion.div
-                                className="w-32 h-44 rounded-xl border-2 border-dashed border-[#E5E5E5] flex flex-col items-center justify-center bg-[#F9F9F7] shrink-0 cursor-pointer hover:border-[#80163A]/50 transition-colors"
-                                whileHover={{ scale: 0.98 }}
-                            >
-                                <div className="w-8 h-8 rounded-full bg-[#80163A] flex items-center justify-center mb-2">
-                                    <Flame className="w-4 h-4 text-white" />
-                                </div>
-                                <span className="text-xs font-medium text-[#1A1A1A]">Join</span>
-                            </motion.div>
-
-                            {/* Challenge Cards */}
-                            {challenges?.map((challenge) => (
+                {/* Tabs */}
+                <div className="flex justify-center mb-12 border-b border-[#E5E5E5]">
+                    <div className="flex gap-8">
+                        <button
+                            onClick={() => setActiveTab('feed')}
+                            className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'feed' ? 'text-[#1A1A1A]' : 'text-[#9A9A9A]'
+                                }`}
+                        >
+                            Community Feed
+                            {activeTab === 'feed' && (
                                 <motion.div
-                                    key={challenge.id}
-                                    className="w-32 h-44 rounded-xl relative overflow-hidden shrink-0 cursor-pointer group"
-                                    whileHover={{ scale: 0.98 }}
-                                >
-                                    <img src={challenge.coverImage || "/placeholder-challenge.jpg"} className="w-full h-full object-cover" alt={challenge.title} />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-3">
-                                        <p className="text-white text-xs font-bold whitespace-normal line-clamp-2">{challenge.title}</p>
-                                        <p className="text-white/80 text-[10px]">{challenge.participants} joined</p>
-                                    </div>
-                                    <div className="absolute top-2 right-2 bg-[#80163A] text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold">
-                                        {challenge.daysLeft}d left
-                                    </div>
-                                </motion.div>
-                            ))}
-
-                            {/* Placeholder Data if empty */}
-                            {(!challenges || challenges.length === 0) && (
-                                <>
-                                    <div className="w-32 h-44 rounded-xl bg-gray-200 shrink-0 animate-pulse" />
-                                    <div className="w-32 h-44 rounded-xl bg-gray-200 shrink-0 animate-pulse" />
-                                </>
+                                    layoutId="activeTab"
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]"
+                                />
                             )}
-                        </div>
-                        <ScrollBar orientation="horizontal" className="hidden" />
-                    </ScrollArea>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('challenges')}
+                            className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'challenges' ? 'text-[#1A1A1A]' : 'text-[#9A9A9A]'
+                                }`}
+                        >
+                            Style Challenges
+                            {activeTab === 'challenges' && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]"
+                                />
+                            )}
+                        </button>
+                    </div>
                 </div>
 
-                {/* Main Feed */}
-                <div className="space-y-8">
-                    {feedLoading ? (
-                        // Skeleton Loaders
-                        [1, 2, 3].map(i => (
-                            <div key={i} className="bg-white rounded-xl h-[500px] border border-[#E5E5E5] animate-pulse" />
-                        ))
-                    ) : feed && feed.length > 0 ? (
-                        feed.map((outfit) => (
-                            <SocialOutfitCard key={outfit.id} outfit={outfit} />
-                        ))
+                {/* Content */}
+                <AnimatePresence mode="wait">
+                    {activeTab === 'feed' ? (
+                        <motion.div
+                            key="feed"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-12"
+                        >
+                            {/* Empty State for now if no feed */}
+                            {(!feed || feed.length === 0) && (
+                                <div className="text-center py-20 bg-[#F9F9F7] rounded-3xl">
+                                    <Users className="w-12 h-12 mx-auto text-[#D5D5D5] mb-4" />
+                                    <h3 className="text-xl font-medium text-[#1A1A1A] mb-2 font-playfair">
+                                        Community Feed Quiet
+                                    </h3>
+                                    <p className="text-[#6B6B6B]">
+                                        Be the first to share your outfit!
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Feed Items Mapping (Mock structure for visual if empty) */}
+                            {feed?.map((post: any) => (
+                                <div key={post.id} className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden">
+                                    <div className="p-4 flex items-center gap-3 border-b border-[#F5F5F5]">
+                                        <div className="w-10 h-10 rounded-full bg-[#F5F5F5]" />
+                                        <div>
+                                            <p className="font-medium text-[#1A1A1A]">{post.userName}</p>
+                                            <p className="text-xs text-[#6B6B6B]">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <div className="aspect-[4/5] bg-[#F5F5F5]">
+                                        {/* Image would go here */}
+                                    </div>
+                                    <div className="p-4">
+                                        <div className="flex items-center gap-4 mb-3">
+                                            <button className="hover:text-[#80163A] transition-colors">
+                                                <Heart className="w-6 h-6" />
+                                            </button>
+                                            <button className="hover:text-[#80163A] transition-colors">
+                                                <MessageCircle className="w-6 h-6" />
+                                            </button>
+                                            <button className="hover:text-[#80163A] transition-colors ml-auto">
+                                                <Share2 className="w-6 h-6" />
+                                            </button>
+                                        </div>
+                                        <p className="text-[#1A1A1A] font-medium mb-1">{post.likes} likes</p>
+                                        <p className="text-[#6B6B6B] text-sm"><span className="text-[#1A1A1A] font-medium">{post.userName}</span> {post.caption}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </motion.div>
                     ) : (
-                        <div className="text-center py-12 bg-white rounded-xl border border-[#E5E5E5]">
-                            <div className="w-16 h-16 rounded-full bg-[#F5F5F5] flex items-center justify-center mx-auto mb-4">
-                                <Users className="w-8 h-8 text-[#D5D5D5]" />
+                        <motion.div
+                            key="challenges"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="grid md:grid-cols-2 gap-6"
+                        >
+                            {/* Always show a sample challenge even if API empty for demo */}
+                            <div className="bg-[#1A1A1A] text-white rounded-3xl p-8 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Trophy className="w-32 h-32" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1 text-xs font-medium mb-4 backdrop-blur-sm">
+                                        <Award className="w-3 h-3" />
+                                        Active Challenge
+                                    </div>
+                                    <h3 className="text-2xl font-playfair mb-2">Summer Minimalist</h3>
+                                    <p className="text-white/60 text-sm mb-6 line-clamp-2">
+                                        Create a stunning outfit using only neutral colors and maximum 3 items.
+                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-xs text-white/40">Ends in 2 days</div>
+                                        <Button className="bg-white text-black hover:bg-white/90 rounded-full px-6">
+                                            Join Now
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
-                            <h3 className="text-lg font-medium text-[#1A1A1A] mb-2">Community is growing</h3>
-                            <p className="text-sm text-[#6B6B6B] max-w-xs mx-auto">
-                                Be the first to share your outfit! Create an outfit and make it public.
-                            </p>
-                        </div>
+
+                            {/* Previous Challenges */}
+                            <div className="bg-[#F9F9F7] rounded-3xl p-8 border border-[#E5E5E5]">
+                                <h3 className="text-xl font-playfair text-[#1A1A1A] mb-4">Past Winners</h3>
+                                <div className="space-y-4">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="flex items-center gap-4 bg-white p-3 rounded-xl border border-[#E5E5E5]">
+                                            <div className="w-12 h-12 bg-[#F5F5F5] rounded-lg" />
+                                            <div>
+                                                <p className="font-medium text-[#1A1A1A] text-sm">Date Night Chic</p>
+                                                <p className="text-xs text-[#6B6B6B]">Winner: @sarah_style</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
                     )}
-                </div>
+                </AnimatePresence>
             </div>
         </AppLayout>
     );
 }
+
+export default SocialPage;

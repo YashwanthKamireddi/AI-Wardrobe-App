@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
     Home, Shirt, Layers, Calendar, Plane, BarChart3, Sparkles,
     Lightbulb, User, LogOut, ChevronDown, Menu, X, Plus, Frame,
-    Settings, Search, Bell, Users2, ShoppingBag
+    Settings, Search, Bell
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -38,10 +38,9 @@ const primaryNav = [
 
 // Secondary items (Profile Menu / More)
 const secondaryNav = [
-    { href: "/social", label: "Community", icon: Users2, desc: "Explore & share outfits" },
-    { href: "/capsules", label: "Capsules", icon: Layers, desc: "Curated collections" },
-    { href: "/wishlist", label: "Wishlist", icon: ShoppingBag, desc: "Plan purchases" },
-    { href: "/analytics", label: "Analytics", icon: BarChart3, desc: "Wardrobe insights" },
+    { href: "/outfits", label: "Saved Looks", icon: Layers, desc: "Your curated edits" },
+    { href: "/statistics", label: "Analytics", icon: BarChart3, desc: "Wardrobe insights" },
+    { href: "/style-essence", label: "Style DNA", icon: Sparkles, desc: "Your fashion profile" },
     { href: "/inspiration", label: "Mood Boards", icon: Lightbulb, desc: "Visual inspiration" },
 ];
 

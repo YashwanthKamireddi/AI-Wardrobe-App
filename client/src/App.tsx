@@ -27,9 +27,6 @@ const TripsPage = lazy(() => import("@/pages/trips-page").then(m => ({ default: 
 const FramingPage = lazy(() => import("@/pages/framing-page").then(m => ({ default: m.FramingPage })));
 const WardrobeIntelligencePage = lazy(() => import("@/pages/intelligence-page").then(m => ({ default: m.WardrobeIntelligencePage })));
 const AnalyticsPage = lazy(() => import("@/pages/analytics-page").then(m => ({ default: m.default })));
-const SocialPage = lazy(() => import("@/pages/social-page").then(m => ({ default: m.default })));
-const WishlistPage = lazy(() => import("@/pages/advanced/wishlist-page").then(m => ({ default: m.default })));
-const CapsulePage = lazy(() => import("@/pages/advanced/capsule-page").then(m => ({ default: m.default })));
 const NotFoundPage = lazy(() => import("@/pages/not-found").then(m => ({ default: m.NotFound })));
 
 // Loading Component
@@ -67,10 +64,12 @@ function Router() {
                 <ProtectedRoute path="/intelligence" component={WardrobeIntelligencePage} />
                 <ProtectedRoute path="/analytics" component={AnalyticsPage} />
 
-                {/* New Feature Routes */}
-                <ProtectedRoute path="/social" component={SocialPage} />
-                <ProtectedRoute path="/wishlist" component={WishlistPage} />
-                <ProtectedRoute path="/capsules" component={CapsulePage} />
+                {/* Phase 2: Social */}
+                <ProtectedRoute path="/community" component={lazy(() => import("@/pages/social-page").then(m => ({ default: m.SocialPage })))} />
+
+                {/* Phase 3: Advanced */}
+                <ProtectedRoute path="/capsules" component={lazy(() => import("@/pages/capsules-page").then(m => ({ default: m.CapsulesPage })))} />
+                <ProtectedRoute path="/wishlist" component={lazy(() => import("@/pages/wishlist-page").then(m => ({ default: m.WishlistPage })))} />
 
                 {/* 404 */}
                 <Route component={NotFoundPage} />
