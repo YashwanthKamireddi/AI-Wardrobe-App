@@ -70,6 +70,7 @@ function Router() {
                 {/* Phase 3: Advanced */}
                 <ProtectedRoute path="/capsules" component={lazy(() => import("@/pages/capsules-page").then(m => ({ default: m.CapsulesPage })))} />
                 <ProtectedRoute path="/wishlist" component={lazy(() => import("@/pages/wishlist-page").then(m => ({ default: m.WishlistPage })))} />
+                <ProtectedRoute path="/style-dna" component={lazy(() => import("@/pages/style-profile-page").then(m => ({ default: m.StyleProfilePage })))} />
 
                 {/* 404 */}
                 <Route component={NotFoundPage} />
