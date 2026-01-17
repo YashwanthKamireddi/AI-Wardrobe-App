@@ -48,6 +48,140 @@ router.post("/", async (req: Request, res: Response) => {
     }
 });
 
+// POST /api/outfits/:id/schedule - Schedule an outfit
+router.post("/:id/schedule", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    const id = parseId(req.params.id);
+    if (!id) return res.status(400).json({ message: "Invalid outfit ID" });
+
+    try {
+        const { date, eventName } = req.body;
+        if (!date) {
+            return res.status(400).json({ message: "Date is required" });
+        }
+
+        const entry = await storage.addToOutfitCalendar({
+            userId: req.user!.id,
+            outfitId: id,
+            date: new Date(date),
+            eventName: eventName || null,
+            notes: null,
+            isWorn: false
+        });
+
+        res.json(entry);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to schedule outfit" });
+    }
+});
+
+// POST /api/outfits/random - Generate random outfit
+router.post("/random", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+        const userId = req.user!.id;
+        const { occasion, season } = req.query;
+
+        // Get all available items
+        let items = await storage.getWardrobeItems(userId);
+        items = items.filter(item => !item.status || item.status === 'available');
+
+        if (season) {
+            items = items.filter(item => !item.season || item.season === season || item.season === 'all');
+        }
+
+        if (items.length < 2) {
+            return res.status(400).json({ message: "Not enough items to create an outfit" });
+        }
+
+        // Simple outfit generation: pick one from each category
+        const categories = ['tops', 'bottoms', 'shoes', 'outerwear', 'accessories'];
+        const outfitItems: number[] = [];
+
+        for (const category of categories) {
+            const categoryItems = items.filter(item => item.category === category);
+            if (categoryItems.length > 0) {
+                const randomItem = categoryItems[Math.floor(Math.random() * categoryItems.length)];
+                outfitItems.push(randomItem.id);
+            }
+        }
+
+        // Ensure at least 2 items
+        if (outfitItems.length < 2) {
+            const remainingItems = items.filter(item => !outfitItems.includes(item.id));
+            while (outfitItems.length < 2 && remainingItems.length > 0) {
+                const randomIndex = Math.floor(Math.random() * remainingItems.length);
+                outfitItems.push(remainingItems[randomIndex].id);
+                remainingItems.splice(randomIndex, 1);
+            }
+        }
+
+        res.json({
+            items: outfitItems,
+            suggestion: true,
+            occasion: occasion || 'casual',
+            season: season || 'all',
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to generate random outfit" });
+    }
+});
+
+// GET /api/items/:id/possibilities - Get outfit possibilities for item
+router.get("/items/:id/possibilities", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+        const userId = req.user!.id;
+        const itemId = parseInt(req.params.id);
+
+        if (!itemId || isNaN(itemId)) {
+            return res.status(400).json({ message: "Invalid item ID" });
+        }
+
+        const item = await storage.getWardrobeItem(itemId);
+        if (!item || item.userId !== userId) {
+            return res.status(404).json({ message: "Item not found" });
+        }
+
+        const allOutfits = await storage.getOutfits(userId);
+        const outfitsWithItem = allOutfits.filter(outfit => outfit.items.includes(itemId));
+
+        const allItems = await storage.getWardrobeItems(userId);
+        const availableItems = allItems.filter(i =>
+            i.id !== itemId &&
+            (!i.status || i.status === 'available')
+        );
+
+        const pairings: Record<string, number[]> = {};
+        availableItems.forEach(availableItem => {
+            if (!pairings[availableItem.category]) {
+                pairings[availableItem.category] = [];
+            }
+            pairings[availableItem.category].push(availableItem.id);
+        });
+
+        res.json({
+            itemId,
+            itemName: item.name,
+            imageUrl: item.imageUrl,
+            outfitCount: outfitsWithItem.length,
+            versatilityScore: outfitsWithItem.length,
+            existingOutfits: outfitsWithItem.map(outfit => ({
+                id: outfit.id,
+                name: outfit.name,
+                items: outfit.items,
+            })),
+            potentialPairings: pairings,
+            totalCombinations: availableItems.length,
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to get outfit possibilities" });
+    }
+});
+
 // GET /api/outfits/:id - Get single outfit
 router.get("/:id", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });

@@ -107,6 +107,7 @@ export const WEATHER_TYPES = weatherTypes.map(w => w.value) as [string, ...strin
 export const MOOD_TYPES = moodTypes.map(m => m.value) as [string, ...string[]];
 export const TRIP_STATUSES = ["upcoming", "active", "completed", "cancelled"] as const;
 export const TRIP_TYPES = ["business", "vacation", "adventure", "city", "relaxing", "family"] as const;
+export const ITEM_STATUSES = ["available", "in_laundry", "at_cleaners", "in_storage", "lent_out", "archived"] as const;
 
 // --- Drizzle Tables & Schemas ---
 
@@ -212,6 +213,11 @@ export const wardrobeItems = pgTable("wardrobe_items", {
     purchasePrice: integer("purchase_price"), // in cents for precision
     purchaseDate: timestamp("purchase_date"),
     purchaseLocation: text("purchase_location"), // store name or website
+    // Status tracking
+    status: text("status").default("available"), // available, in_laundry, at_cleaners, in_storage, lent_out, archived
+    lentTo: text("lent_to"), // who has this item
+    returnDate: timestamp("return_date"), // when should it be returned
+    notes: text("notes"), // general notes about the item
     // Timestamps
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
@@ -219,6 +225,8 @@ export const wardrobeItems = pgTable("wardrobe_items", {
     userIdIdx: index("wardrobe_items_user_id_idx").on(table.userId),
     categoryIdx: index("wardrobe_items_category_idx").on(table.category),
     userCategoryIdx: index("wardrobe_items_user_category_idx").on(table.userId, table.category),
+    statusIdx: index("wardrobe_items_status_idx").on(table.status),
+    wearCountIdx: index("wardrobe_items_wear_count_idx").on(table.wearCount),
 }));
 
 export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
@@ -238,6 +246,10 @@ export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
     purchasePrice: true,
     purchaseDate: true,
     purchaseLocation: true,
+    status: true,
+    lentTo: true,
+    returnDate: true,
+    notes: true,
 }).extend({
     name: z.string().min(1, "Name is required").max(100),
     category: z.enum(CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
@@ -246,6 +258,8 @@ export const insertWardrobeItemSchema = createInsertSchema(wardrobeItems).pick({
     wearCount: z.number().int().min(0).default(0),
     purchasePrice: z.number().int().positive().optional(),
     purchaseDate: z.coerce.date().optional(),
+    status: z.enum(ITEM_STATUSES).default("available"),
+    returnDate: z.coerce.date().optional(),
 });
 
 /**
@@ -389,6 +403,45 @@ export const insertWearLogSchema = createInsertSchema(wearLog).pick({
 
 export type WearLog = typeof wearLog.$inferSelect;
 export type InsertWearLog = typeof wearLog.$inferInsert;
+
+/**
+ * Item Wear History Table (Extended Analytics)
+ *
+ * Purpose:
+ * - Detailed tracking of when individual items are worn
+ * - Enables cost-per-wear calculations and analytics
+ * - Links items to outfits for complete history
+ */
+export const itemWearHistory = pgTable("item_wear_history", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    itemId: integer("item_id").notNull(),
+    outfitId: integer("outfit_id"),
+    wornDate: timestamp("worn_date").notNull().defaultNow(),
+    occasion: text("occasion"),
+    weather: text("weather"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+    userIdIdx: index("item_wear_history_user_id_idx").on(table.userId),
+    itemIdIdx: index("item_wear_history_item_id_idx").on(table.itemId),
+    dateIdx: index("item_wear_history_date_idx").on(table.wornDate),
+}));
+
+export const insertItemWearHistorySchema = createInsertSchema(itemWearHistory).pick({
+    userId: true,
+    itemId: true,
+    outfitId: true,
+    wornDate: true,
+    occasion: true,
+    weather: true,
+    notes: true,
+}).extend({
+    wornDate: z.coerce.date(),
+});
+
+export type ItemWearHistory = typeof itemWearHistory.$inferSelect;
+export type InsertItemWearHistory = z.infer<typeof insertItemWearHistorySchema>;
 
 /**
  * Inspirations Table

@@ -46,6 +46,10 @@ CREATE TABLE IF NOT EXISTS wardrobe_items (
   purchase_price NUMERIC(10,2),
   purchase_date DATE,
   purchase_location VARCHAR(200),
+  status VARCHAR(50) DEFAULT 'available' CHECK (status IN ('available', 'in_laundry', 'at_cleaners', 'in_storage', 'lent_out', 'archived')),
+  lent_to VARCHAR(100),
+  return_date DATE,
+  notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -53,6 +57,45 @@ CREATE TABLE IF NOT EXISTS wardrobe_items (
 -- Create indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_wardrobe_items_user_id ON wardrobe_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_wardrobe_items_category ON wardrobe_items(user_id, category);
+CREATE INDEX IF NOT EXISTS idx_wardrobe_items_status ON wardrobe_items(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_wardrobe_items_wear_count ON wardrobe_items(user_id, wear_count DESC);
+
+-- ============================================
+-- Item Wear History Table (NEW)
+-- ============================================
+CREATE TABLE IF NOT EXISTS item_wear_history (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  item_id INTEGER NOT NULL REFERENCES wardrobe_items(id) ON DELETE CASCADE,
+  outfit_id INTEGER REFERENCES outfits(id) ON DELETE SET NULL,
+  worn_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  occasion VARCHAR(100),
+  weather VARCHAR(50),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for wear history analytics
+CREATE INDEX IF NOT EXISTS idx_wear_history_user_id ON item_wear_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_wear_history_item_id ON item_wear_history(item_id);
+CREATE INDEX IF NOT EXISTS idx_wear_history_date ON item_wear_history(user_id, worn_date DESC);
+
+-- Trigger to update wear_count when item is logged
+CREATE OR REPLACE FUNCTION update_wear_count_on_log()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE wardrobe_items
+  SET wear_count = COALESCE(wear_count, 0) + 1,
+      last_worn = NEW.worn_date
+  WHERE id = NEW.item_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_wear_count
+AFTER INSERT ON item_wear_history
+FOR EACH ROW
+EXECUTE FUNCTION update_wear_count_on_log();
 
 -- ============================================
 -- Outfits Table

@@ -12,6 +12,7 @@ import preferencesRoutes from "./preferences.routes";
 import wearLogRoutes from "./wear-log.routes";
 import uploadRoutes from "./upload.routes";
 import aiRoutes from "./ai.routes";
+import analyticsRoutes from "./analytics.routes";
 
 /**
  * Register all API routes
@@ -34,6 +35,9 @@ export function registerModularRoutes(app: Express): void {
 
     // AI-powered features (recommendations, analytics)
     app.use("/api/ai", aiRoutes);
+
+    // Analytics and insights
+    app.use("/api/analytics", analyticsRoutes);
 }
 
 export default registerModularRoutes;
