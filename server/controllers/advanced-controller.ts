@@ -237,6 +237,8 @@ export async function convertWishlistToWardrobe(req: Request, res: Response) {
             brand: wishlistItem.brand,
             purchasePrice: wishlistItem.price,
             tags: ["from-wishlist"],
+            status: "available",
+            wearCount: 0
         });
 
         // Remove from wishlist

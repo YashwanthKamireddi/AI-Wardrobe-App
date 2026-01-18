@@ -66,7 +66,10 @@ const itemSchema = z.object({
 
 type ItemFormData = z.infer<typeof itemSchema>;
 
+import { useToast } from "@/hooks/use-toast";
+
 export function WardrobePage() {
+    const { toast } = useToast();
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<WardrobeItemType | null>(null);
     const [searchQuery, setSearchQuery] = useState('');

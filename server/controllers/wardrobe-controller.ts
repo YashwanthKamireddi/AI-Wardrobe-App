@@ -206,6 +206,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "office", "elegant"],
                 favorite: true,
                 purchasePrice: 15000,
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -220,6 +222,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["casual", "summer", "outdoor"],
                 favorite: false,
                 purchasePrice: 5500,
+                wearCount: 0,
+                status: "available"
             },
             // OUTERWEAR
             {
@@ -235,7 +239,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "classic", "timeless"],
                 favorite: true,
                 purchasePrice: 35000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -250,7 +255,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["classic", "elegant", "british"],
                 favorite: true,
                 purchasePrice: 89000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -265,7 +271,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["edgy", "casual", "statement"],
                 favorite: true,
                 purchasePrice: 45000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -280,7 +287,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "elegant", "winter"],
                 favorite: false,
                 purchasePrice: 55000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             // SHOES
             {
@@ -296,7 +304,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["casual", "minimal", "versatile"],
                 favorite: true,
                 purchasePrice: 42500,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -311,7 +320,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "classic", "elegant"],
                 favorite: true,
                 purchasePrice: 39500,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -326,7 +336,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["smart-casual", "versatile", "stylish"],
                 favorite: false,
                 purchasePrice: 52500,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -341,7 +352,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["smart-casual", "summer", "italian"],
                 favorite: false,
                 purchasePrice: 48000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             // ACCESSORIES
             {
@@ -357,7 +369,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["essential", "formal", "versatile"],
                 favorite: true,
                 purchasePrice: 35000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -372,7 +385,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["luxury", "classic", "timepiece"],
                 favorite: true,
                 purchasePrice: 550000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -387,7 +401,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "elegant", "silk"],
                 favorite: false,
                 purchasePrice: 18500,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -402,7 +417,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["casual", "summer", "classic"],
                 favorite: false,
                 purchasePrice: 15500,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
             {
                 userId,
@@ -417,7 +433,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["winter", "cozy", "minimal"],
                 favorite: false,
                 purchasePrice: 22000,
-                wearCount: 0
+                wearCount: 0,
+                status: "available"
             },
         ];
 
