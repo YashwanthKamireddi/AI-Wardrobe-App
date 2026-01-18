@@ -12,6 +12,10 @@ import * as preferencesController from "./controllers/preferences-controller";
 import * as wearLogController from "./controllers/wear-log-controller";
 import * as aiController from "./controllers/ai-controller";
 import * as inspirationsController from "./controllers/inspirations-controller";
+import * as advancedController from "./controllers/advanced-controller";
+import * as socialController from "./controllers/social-controller";
+import * as intelligenceController from "./controllers/intelligence-controller";
+
 
 export async function registerRoutes(app: Express): Promise<void> {
 
@@ -93,5 +97,39 @@ export async function registerRoutes(app: Express): Promise<void> {
     // ============================================
     app.get("/api/inspirations", inspirationsController.getInspirations);
     app.get("/api/inspirations/:id", inspirationsController.getInspiration);
+
+    // ============================================
+    // CAPSULE WARDROBES
+    // ============================================
+    app.get("/api/capsules", advancedController.getCapsules);
+    app.post("/api/capsules", advancedController.createCapsule);
+    app.put("/api/capsules/:id", advancedController.updateCapsule);
+    app.delete("/api/capsules/:id", advancedController.deleteCapsule);
+
+    // ============================================
+    // WISHLIST
+    // ============================================
+    app.get("/api/wishlist", advancedController.getWishlist);
+    app.post("/api/wishlist", advancedController.addToWishlist);
+    app.delete("/api/wishlist/:id", advancedController.removeFromWishlist);
+    app.post("/api/wishlist/:id/convert", advancedController.convertWishlistToWardrobe);
+
+    // ============================================
+    // SOCIAL FEATURES
+    // ============================================
+    app.get("/api/social/feed", socialController.getCommunityFeed);
+    app.post("/api/social/follow/:userId", socialController.followUser);
+    app.delete("/api/social/unfollow/:userId", socialController.unfollowUser);
+    app.post("/api/social/outfits/:outfitId/like", socialController.likeOutfit);
+    app.delete("/api/social/outfits/:outfitId/like", socialController.unlikeOutfit);
+    app.post("/api/social/outfits/:outfitId/share", socialController.shareOutfit);
+    app.get("/api/social/challenges", socialController.getChallenges);
+    app.post("/api/social/challenges/:challengeId/submit", socialController.submitToChallenge);
+
+    // ============================================
+    // WARDROBE INTELLIGENCE (AI Shopping Advisor)
+    // ============================================
+    app.get("/api/wardrobe/intelligence", intelligenceController.getWardrobeIntelligence);
+    app.get("/api/wardrobe/shopping-recommendations", intelligenceController.getShoppingRecommendations);
 
 }

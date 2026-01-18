@@ -202,6 +202,10 @@ export class MemoryStorage implements IStorage {
             purchasePrice: insertItem.purchasePrice || null,
             purchaseDate: insertItem.purchaseDate || null,
             purchaseLocation: insertItem.purchaseLocation || null,
+            status: insertItem.status || 'available',
+            lentTo: insertItem.lentTo || null,
+            returnDate: insertItem.returnDate || null,
+            notes: insertItem.notes || null,
             createdAt: new Date(),
             updatedAt: new Date()
         };
@@ -534,14 +538,16 @@ if (isSupabaseConfigured()) {
     const supabaseStorage = createSupabaseStorage();
     if (supabaseStorage) {
         storage = supabaseStorage;
-        console.log('[Storage] Using Supabase storage');
+        logger.info('[Storage] Using Supabase storage');
     } else {
         storage = new MemoryStorage();
-        console.log('[Storage] Supabase failed to initialize, using in-memory storage');
+        logger.info('[Storage] Supabase failed to initialize, using in-memory storage');
     }
 } else {
     storage = new MemoryStorage();
-    console.log('[Storage] No Supabase config found, using in-memory storage');
+    logger.info('[Storage] No Supabase config found, using in-memory storage');
 }
 
+
+export { storage };
 export default storage;

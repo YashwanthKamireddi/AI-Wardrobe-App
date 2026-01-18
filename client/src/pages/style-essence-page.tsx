@@ -136,7 +136,7 @@ export function StyleEssencePage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#F9F9F7] flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="w-10 h-10 border-2 border-[#E5E5E5] border-t-[#1A1A1A] rounded-full animate-spin" />
             </div>
         );
@@ -166,7 +166,7 @@ export function StyleEssencePage() {
                                 whileHover={{ scale: 1.02 }}
                             >
                                 <Star className="w-6 h-6 mb-4 opacity-60" />
-                                <div className="text-5xl mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                                <div className="text-5xl mb-2" className="font-mono">
                                     {analysis.styleScore}
                                 </div>
                                 <p className="text-xs uppercase tracking-wider opacity-60">Style Score</p>
@@ -178,7 +178,7 @@ export function StyleEssencePage() {
                                 whileHover={{ scale: 1.02 }}
                             >
                                 <Palette className="w-6 h-6 mb-4 text-[#9A9A9A]" />
-                                <div className="text-4xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                                <div className="text-4xl text-[#1A1A1A] mb-2" className="font-mono">
                                     {analysis.colorHarmonyScore}%
                                 </div>
                                 <p className="text-xs text-[#9A9A9A] uppercase tracking-wider">Color Harmony</p>
@@ -190,7 +190,7 @@ export function StyleEssencePage() {
                                 whileHover={{ scale: 1.02 }}
                             >
                                 <Layers className="w-6 h-6 mb-4 text-[#9A9A9A]" />
-                                <div className="text-4xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                                <div className="text-4xl text-[#1A1A1A] mb-2" className="font-mono">
                                     {analysis.totalItems}
                                 </div>
                                 <p className="text-xs text-[#9A9A9A] uppercase tracking-wider">Pieces Analyzed</p>
@@ -199,7 +199,7 @@ export function StyleEssencePage() {
 
                         {/* Style Personality Match */}
                         <motion.section className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                            <h2 className="text-xl text-[#1A1A1A] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            <h2 className="text-xl text-[#1A1A1A] mb-6" className="font-playfair">
                                 Your Style Personality
                             </h2>
                             <motion.div
@@ -214,7 +214,7 @@ export function StyleEssencePage() {
 
                                     {/* Info */}
                                     <div className="flex-1">
-                                        <h3 className="text-2xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                        <h3 className="text-2xl text-[#1A1A1A] mb-2" className="font-playfair">
                                             {analysis.personalityMatch?.name}
                                         </h3>
                                         <p className="text-[#6B6B6B] mb-4">{analysis.personalityMatch?.description}</p>
@@ -248,7 +248,7 @@ export function StyleEssencePage() {
 
                         {/* Your Color Palette */}
                         <motion.section className="mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                            <h2 className="text-xl text-[#1A1A1A] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            <h2 className="text-xl text-[#1A1A1A] mb-6" className="font-playfair">
                                 Your Dominant Colors
                             </h2>
                             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
@@ -272,7 +272,7 @@ export function StyleEssencePage() {
 
                         {/* All Personalities */}
                         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                            <h2 className="text-xl text-[#1A1A1A] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            <h2 className="text-xl text-[#1A1A1A] mb-6" className="font-playfair">
                                 Style Archetypes
                             </h2>
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -280,8 +280,8 @@ export function StyleEssencePage() {
                                     <motion.div
                                         key={personality.id}
                                         className={`p-6 rounded-2xl border-2 cursor-pointer transition-all ${analysis.personalityMatch?.id === personality.id
-                                                ? 'border-[#1A1A1A] bg-white'
-                                                : 'border-[#E5E5E5] bg-white hover:border-[#9A9A9A]'
+                                            ? 'border-[#1A1A1A] bg-white'
+                                            : 'border-[#E5E5E5] bg-white hover:border-[#9A9A9A]'
                                             }`}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -320,7 +320,7 @@ export function StyleEssencePage() {
                         <div className="w-20 h-20 rounded-full bg-[#F5F5F5] flex items-center justify-center mx-auto mb-6">
                             <RefreshCw className="w-8 h-8 text-[#9A9A9A]" />
                         </div>
-                        <h2 className="text-2xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                        <h2 className="text-2xl text-[#1A1A1A] mb-2" className="font-playfair">
                             Add Items to Discover
                         </h2>
                         <p className="text-[#6B6B6B] mb-8 max-w-md mx-auto">

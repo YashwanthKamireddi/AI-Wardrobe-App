@@ -143,3 +143,59 @@ export function useStylePatterns() {
         staleTime: 1000 * 60 * 5,
     });
 }
+
+/**
+ * Hook to fetch wardrobe intelligence (AI Shopping Advisor)
+ */
+export interface WardrobeIntelligence {
+    gapAnalysis: {
+        score: number;
+        missingEssentials: string[];
+        recommendations: Array<{ category?: string; item?: string; priority: string; reason?: string }>;
+    };
+    duplicates: Array<{
+        items: Array<{ id: number; name: string; color: string; imageUrl: string }>;
+        category: string;
+        suggestion: string;
+    }>;
+    versatilityScore: number;
+    budgetInsights: {
+        totalValue: number;
+        avgPrice: number;
+        avgCostPerWear: number;
+        bestInvestments: Array<{ name: string; cpw: number }>;
+        worstInvestments: Array<{ name: string; cpw: number }>;
+        suggestions: string[];
+    };
+    totalItems: number;
+}
+
+export function useWardrobeIntelligence() {
+    return useQuery<WardrobeIntelligence>({
+        queryKey: ["wardrobe", "intelligence"],
+        queryFn: () => apiRequest({ path: "/api/wardrobe/intelligence", method: "GET" }),
+        staleTime: 1000 * 60 * 10, // 10 minutes
+    });
+}
+
+/**
+ * Hook to fetch shopping recommendations
+ */
+export interface ShoppingRecommendation {
+    type: string;
+    priority: string;
+    category: string;
+    reason: string;
+    suggestedBudget: number;
+}
+
+export function useShoppingRecommendations(budget?: number) {
+    return useQuery<{ recommendations: ShoppingRecommendation[]; wardrobeHealth: string }>({
+        queryKey: ["wardrobe", "shopping-recommendations", budget],
+        queryFn: () => apiRequest({
+            path: `/api/wardrobe/shopping-recommendations${budget ? `?budget=${budget}` : ''}`,
+            method: "GET"
+        }),
+        staleTime: 1000 * 60 * 10,
+    });
+}

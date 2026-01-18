@@ -61,11 +61,42 @@ export const getCommunityFeed = async (req: Request, res: Response) => {
         if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
         const limit = parseInt(req.query.limit as string) || 20;
-        const offset = parseInt(req.query.offset as string) || 0;
 
-        // TODO: Implement community feed logic
-        // For now, return empty array
-        res.json([]);
+        // Demo feed data
+        const demoFeed = [
+            {
+                id: 1,
+                type: "outfit",
+                user: { id: 101, name: "Priya Sharma", avatar: null, username: "priya.styles" },
+                outfit: { id: 1, name: "Summer Brunch", imageUrl: null, items: 4 },
+                likes: 47,
+                isLiked: false,
+                comments: 8,
+                createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            },
+            {
+                id: 2,
+                type: "outfit",
+                user: { id: 102, name: "Arjun Mehta", avatar: null, username: "arjun.dapper" },
+                outfit: { id: 2, name: "Office Elegance", imageUrl: null, items: 5 },
+                likes: 32,
+                isLiked: false,
+                comments: 4,
+                createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+            },
+            {
+                id: 3,
+                type: "outfit",
+                user: { id: 103, name: "Ananya Roy", avatar: null, username: "ananya.fashion" },
+                outfit: { id: 3, name: "Weekend Casual", imageUrl: null, items: 3 },
+                likes: 89,
+                isLiked: true,
+                comments: 12,
+                createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+            },
+        ];
+
+        res.json(demoFeed.slice(0, limit));
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch community feed" });
     }
@@ -152,8 +183,38 @@ export const shareOutfit = async (req: Request, res: Response) => {
  */
 export const getChallenges = async (req: Request, res: Response) => {
     try {
-        // TODO: Implement challenges logic
-        res.json([]);
+        // Active challenges
+        const challenges = [
+            {
+                id: 1,
+                name: "Minimalist Monday",
+                description: "Create a complete outfit with only 3 pieces",
+                endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                participants: 156,
+                prize: "Featured on Celura homepage",
+                status: "active",
+            },
+            {
+                id: 2,
+                name: "Color Pop Challenge",
+                description: "Style an outfit around a bold accent color",
+                endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+                participants: 89,
+                prize: "₹500 Celura credits",
+                status: "active",
+            },
+            {
+                id: 3,
+                name: "Capsule Wardrobe",
+                description: "Build 7 unique outfits from only 10 items",
+                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                participants: 312,
+                prize: "1 month Premium access",
+                status: "active",
+            },
+        ];
+
+        res.json(challenges);
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch challenges" });
     }

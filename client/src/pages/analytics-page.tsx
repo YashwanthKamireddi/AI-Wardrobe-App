@@ -1,29 +1,41 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import { TrendingUp, DollarSign, Clock, Star, Grid3X3, Package } from "lucide-react";
-import { useWardrobeStats, useCostPerWear, useMostWorn, useNeverWorn, useStylePatterns } from "@/hooks/use-analytics";
+import { TrendingUp, DollarSign, Clock, Star, Grid3X3, ArrowRight, Sparkles, Brain } from "lucide-react";
+import { useWardrobeStats, useCostPerWear, useMostWorn, useNeverWorn } from "@/hooks/use-analytics";
+import { Link } from "wouter";
+import { ShoppingAdvisor } from "@/components/shopping-advisor";
+import { Button } from "@/components/ui/button";
 
 /**
- * ANALYTICS DASHBOARD PAGE
+ * ANALYTICS PAGE - "THE REPORT"
  *
- * Comprehensive wardrobe insights and statistics
- * Features: cost-per-wear, most/least worn, wardrobe breakdown
- * Design: Luxury magazine-style layout
+ * Design Philosophy: Editorial Financial Report meets Vogue.
+ * - Typography: Massive Playfair Display
+ * - Layout: Asymmetrical, extreme whitespace
+ * - Visuals: Abstract charts, "Price Tag" aesthetics
  */
 
 export default function AnalyticsPage() {
+    const [showAdvisor, setShowAdvisor] = useState(false);
     const { data: stats, isLoading: statsLoading } = useWardrobeStats();
     const { data: costPerWear } = useCostPerWear();
-    const { data: mostWorn } = useMostWorn(5);
+    const { data: mostWorn } = useMostWorn(4);
     const { data: neverWorn } = useNeverWorn();
-    // usage of stylePatterns removed for now or add back if needed
-    // const { data: stylePatterns } = useStylePatterns();
 
+    // Loading State - Minimalist Spinner
     if (statsLoading) {
         return (
             <AppLayout>
-                <div className="flex items-center justify-center min-h-screen">
-                    <div className="w-12 h-12 border-2 border-[#80163A]/20 border-t-[#80163A] rounded-full animate-spin" />
+                <div className="min-h-[80vh] flex flex-col items-center justify-center">
+                    <div className="w-px h-24 bg-[#E5E5E5] overflow-hidden">
+                        <motion.div
+                            className="w-full h-full bg-[#1A1A1A]"
+                            animate={{ y: ["-100%", "100%"] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                    </div>
+                    <p className="mt-4 text-[10px] uppercase tracking-[0.3em] text-gray-400 font-medium">Gathering Intelligence</p>
                 </div>
             </AppLayout>
         );
@@ -31,306 +43,265 @@ export default function AnalyticsPage() {
 
     return (
         <AppLayout>
-            <div className="max-w-7xl mx-auto px-6 py-8 md:py-12">
-                {/* Header */}
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12 md:py-20">
+
+                {/* 1. HEADER - "THE COVER" */}
                 <motion.header
-                    className="mb-12"
-                    initial={{ opacity: 0, y: 20 }}
+                    className="mb-24 md:mb-32 relative"
+                    initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 >
-                    <p className="text-xs tracking-[0.2em] uppercase text-[#80163A] mb-3 font-bold">Analytics</p>
-                    <h1
-                        className="text-[#1A1A1A] mb-4"
-                        style={{
-                            fontFamily: "'Playfair Display', serif",
-                            fontSize: "clamp(2.5rem, 6vw, 4rem)",
-                            lineHeight: 1.1
-                        }}
-                    >
-                        Wardrobe <span className="italic font-light">Insights</span>
-                    </h1>
-                    <p className="text-[#6B6B6B] text-lg max-w-2xl">
-                        Understand your style, optimize your wardrobe, and make smarter fashion decisions
-                    </p>
+                    <div className="absolute -top-10 -left-10 w-64 h-64 bg-[#E5E5E5]/20 rounded-full blur-[80px] pointer-events-none" />
+
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[#1A1A1A] pb-8">
+                        <div>
+                            <p className="text-[#80163A] text-xs font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                <span className="w-2 h-2 bg-[#80163A] rounded-full animate-pulse" />
+                                Live Intelligence
+                            </p>
+                            <h1 className="text-6xl md:text-8xl lg:text-9xl text-[#1A1A1A] leading-[0.9] tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                The <br /> <span className="italic font-light text-[#6B6B6B]">Report</span>
+                            </h1>
+                        </div>
+                        <div className="text-right hidden md:block">
+                            <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Total Asset Value</p>
+                            <p className="text-4xl text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                ₹{((stats?.totalValue || 0)).toLocaleString()}
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() => setShowAdvisor(true)}
+                            className="bg-gradient-to-r from-[#80163A] to-[#D4AF37] hover:from-[#6B1233] hover:to-[#B8962F] text-white h-14 px-6 rounded-none flex items-center gap-3 uppercase tracking-widest text-xs shadow-lg"
+                        >
+                            <Brain className="w-5 h-5" />
+                            <span className="hidden md:inline">AI Shopping Advisor</span>
+                            <span className="md:hidden">AI Advisor</span>
+                        </Button>
+                    </div>
                 </motion.header>
 
-                {/* Key Metrics Grid */}
-                <motion.div
-                    className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                >
-                    <MetricCard
-                        icon={<Grid3X3 className="w-5 h-5" />}
-                        label="Total Items"
-                        value={stats?.totalItems || 0}
-                    />
-                    <MetricCard
-                        icon={<Package className="w-5 h-5" />}
-                        label="Total Outfits"
-                        value={stats?.totalOutfits || 0}
-                    />
-                    <MetricCard
-                        icon={<DollarSign className="w-5 h-5" />}
-                        label="Wardrobe Value"
-                        value={`₹${((stats?.totalValue || 0)).toLocaleString()}`}
-                    />
-                    <MetricCard
-                        icon={<TrendingUp className="w-5 h-5" />}
-                        label="Items Worn"
-                        value={`${stats?.percentWorn?.toFixed(1) || 0}%`}
-                    />
-                </motion.div>
+                {/* 2. KEY METRICS - "THE TICKER" */}
+                <section className="mb-32">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 border border-gray-200">
+                        <MetricCell
+                            label="Portfolio Size"
+                            value={stats?.totalItems || 0}
+                            sub="Total Items"
+                        />
+                        <MetricCell
+                            label="Efficiency Name"
+                            value={`${stats?.percentWorn?.toFixed(0)}%`}
+                            sub="Utilization Rate"
+                            highlight
+                        />
+                        <MetricCell
+                            label="Composition"
+                            value={stats?.totalOutfits || 0}
+                            sub="Outfit Combos"
+                        />
+                        <MetricCell
+                            label="Liquidated"
+                            value={costPerWear && costPerWear.length > 0 ? `₹${Math.min(...costPerWear.map(i => i.costPerWear)).toFixed(0)}` : "—"}
+                            sub="Lowest CPW"
+                        />
+                    </div>
+                </section>
 
-                {/* Charts Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                    {/* Category Breakdown */}
-                    {stats?.categoryBreakdown && (
-                        <ChartCard title="Category Breakdown">
-                            <div className="space-y-3">
-                                {Object.entries(stats.categoryBreakdown)
+                {/* 3. SPLIT SECTION - "THE BREAKDOWN" */}
+                <div className="grid lg:grid-cols-12 gap-12 mb-32">
+
+                    {/* Left: Category Analysis (Abstract Bars) */}
+                    <div className="lg:col-span-7 space-y-12">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <h2 className="text-3xl md:text-4xl text-[#1A1A1A] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                Composition <span className="italic text-[#80163A]">Analysis</span>
+                            </h2>
+
+                            <div className="space-y-8">
+                                {stats?.categoryBreakdown && Object.entries(stats.categoryBreakdown)
                                     .sort(([, a], [, b]) => b - a)
-                                    .map(([category, count]) => {
+                                    .map(([category, count], index) => {
                                         const percentage = (count / stats.totalItems) * 100;
                                         return (
-                                            <div key={category} className="space-y-2">
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="capitalize text-[#1A1A1A] font-medium">{category}</span>
-                                                    <span className="text-[#6B6B6B]">{count} items ({percentage.toFixed(0)}%)</span>
+                                            <div key={category} className="group cursor-default">
+                                                <div className="flex items-baseline justify-between mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                                                    <span className="text-lg md:text-xl font-light capitalize">{category}</span>
+                                                    <span className="text-xs tracking-widest">{count} ITEMS / {percentage.toFixed(0)}%</span>
                                                 </div>
-                                                <div className="h-2 bg-[#F5F5F5] rounded-full overflow-hidden">
+                                                <div className="h-px bg-[#E5E5E5] w-full relative overflow-hidden">
                                                     <motion.div
-                                                        className="h-full bg-gradient-to-r from-[#80163A] to-[#A01D4A] rounded-full"
+                                                        className="absolute top-0 left-0 h-full bg-[#1A1A1A]"
                                                         initial={{ width: 0 }}
-                                                        animate={{ width: `${percentage}%` }}
-                                                        transition={{ duration: 0.8, delay: 0.2 }}
+                                                        whileInView={{ width: `${percentage}%` }}
+                                                        viewport={{ once: true }}
+                                                        transition={{ duration: 1.2, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
                                                     />
                                                 </div>
                                             </div>
                                         );
                                     })}
                             </div>
-                        </ChartCard>
-                    )}
+                        </motion.div>
+                    </div>
 
-                    {/* Color Palette */}
-                    {stats?.colorBreakdown && Object.keys(stats.colorBreakdown).length > 0 && (
-                        <ChartCard title="Color Palette">
-                            <div className="space-y-3">
-                                {Object.entries(stats.colorBreakdown)
+                    {/* Right: Color Season & Alerts */}
+                    <div className="lg:col-span-5 space-y-12">
+
+                        {/* Color Palette - "Make Up Palette" Style */}
+                        <div className="bg-white p-8 border border-gray-100 shadow-xl shadow-[#1a1a1a]/5 relative overflow-hidden group">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-[#D4AF37]" />
+                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#D4AF37] mb-6">Color DNA</h3>
+
+                            <div className="grid grid-cols-4 gap-2">
+                                {stats?.colorBreakdown && Object.entries(stats.colorBreakdown)
                                     .sort(([, a], [, b]) => b - a)
                                     .slice(0, 8)
-                                    .map(([color, count]) => {
-                                        const percentage = (count / stats.totalItems) * 100;
-                                        return (
-                                            <div key={color} className="space-y-2">
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="capitalize text-[#1A1A1A] font-medium">{color}</span>
-                                                    <span className="text-[#6B6B6B]">{count} items</span>
-                                                </div>
-                                                <div className="h-2 bg-[#F5F5F5] rounded-full overflow-hidden">
-                                                    <motion.div
-                                                        className="h-full rounded-full"
-                                                        style={{ backgroundColor: getColorHex(color) }}
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${percentage}%` }}
-                                                        transition={{ duration: 0.8, delay: 0.3 }}
-                                                    />
-                                                </div>
+                                    .map(([color, count], i) => (
+                                        <motion.div
+                                            key={color}
+                                            className="aspect-square relative group/color cursor-pointer"
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            whileInView={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: i * 0.05 }}
+                                        >
+                                            <div
+                                                className="w-full h-full rounded-sm"
+                                                style={{ backgroundColor: getColorHex(color) }}
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/color:opacity-100 bg-black/40 transition-opacity">
+                                                <span className="text-[10px] text-white font-medium capitalize">{color}</span>
                                             </div>
-                                        );
-                                    })}
+                                        </motion.div>
+                                    ))
+                                }
                             </div>
-                        </ChartCard>
-                    )}
+                            <p className="mt-6 text-sm text-gray-500 font-light italic text-center">
+                                "Your palette leans towards deep earth tones, suggesting an Autumn color season."
+                            </p>
+                        </div>
+
+                        {/* Never Worn Alert - "The Archive" */}
+                        {neverWorn && neverWorn.length > 0 && (
+                            <div className="border border-[#80163A]/20 bg-[#80163A]/5 p-8 relative">
+                                <div className="absolute top-4 right-4 animate-pulse">
+                                    <Clock className="w-4 h-4 text-[#80163A]" />
+                                </div>
+                                <h3 className="text-2xl text-[#1A1A1A] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>The Archive</h3>
+                                <p className="text-sm text-gray-600 mb-6 max-w-xs">
+                                    {neverWorn.length} items have been dormant. Reintroduce them or liquidate.
+                                </p>
+                                <div className="flex -space-x-3 overflow-hidden">
+                                    {neverWorn.slice(0, 5).map(item => (
+                                        <img
+                                            key={item.id}
+                                            src={item.imageUrl}
+                                            className="w-12 h-12 rounded-full border-2 border-[#FAF9F6] object-cover grayscale hover:grayscale-0 transition-all duration-500 hover:scale-110 hover:z-10"
+                                            alt={item.name}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Cost Per Wear - Best Value Items */}
+                {/* 4. COST PER WEAR - "THE INVESTMENT" */}
                 {costPerWear && costPerWear.length > 0 && (
                     <motion.section
-                        className="mb-12"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
+                        className="mb-8"
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                     >
-                        <h2
-                            className="text-[#1A1A1A] mb-6"
-                            style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem" }}
-                        >
-                            Best Value Items
-                        </h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            {costPerWear.slice(0, 5).map(item => (
+                        <div className="flex items-baseline justify-between mb-12 border-b border-[#1A1A1A] pb-4">
+                            <h2 className="text-4xl md:text-5xl text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                Best <span className="italic text-[#80163A]">Investments</span>
+                            </h2>
+                            <Link href="/analytics/financials">
+                                <span className="text-xs font-bold uppercase tracking-widest cursor-pointer hover:text-[#80163A] transition-colors flex items-center gap-2">
+                                    View Full Ledger <ArrowRight className="w-4 h-4" />
+                                </span>
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {costPerWear.slice(0, 3).map((item, i) => (
                                 <motion.div
                                     key={item.id}
-                                    className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden hover:border-[#1A1A1A] transition-colors"
-                                    whileHover={{ y: -4 }}
+                                    className="group relative cursor-pointer"
+                                    whileHover={{ y: -10 }}
+                                    transition={{ duration: 0.4 }}
                                 >
-                                    <div className="relative aspect-[3/4] bg-[#F5F5F5]">
-                                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                                            ₹{(item.costPerWear).toFixed(0)}/wear
+                                    <div className="aspect-[3/4] overflow-hidden mb-4 relative bg-gray-100">
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
+                                        {/* Luxury Price Tag */}
+                                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-4 shadow-xl flex flex-col items-center min-w-[60px] border border-gray-100">
+                                            <span className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">CPW</span>
+                                            <span className="text-sm font-bold text-[#1A1A1A]">₹{(item.costPerWear).toFixed(0)}</span>
+                                            <div className="w-1 h-1 bg-[#80163A] rounded-full mt-2" />
                                         </div>
                                     </div>
-                                    <div className="p-3">
-                                        <h4 className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</h4>
-                                        <p className="text-xs text-[#6B6B6B] mt-1">{item.wearCount} wears</p>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h4 className="text-lg font-medium text-[#1A1A1A] font-playfair italic">{item.name}</h4>
+                                            <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Worn {item.wearCount} times</p>
+                                        </div>
+                                        {i === 0 && <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />}
                                     </div>
                                 </motion.div>
                             ))}
-                        </div>
-                    </motion.section>
-                )}
-
-                {/* Most Worn Items */}
-                {mostWorn && mostWorn.length > 0 && (
-                    <motion.section
-                        className="mb-12"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                    >
-                        <h2
-                            className="text-[#1A1A1A] mb-6"
-                            style={{ fontFamily: "'Playfair Display', serif", fontSize: "2rem" }}
-                        >
-                            Go-To Favorites
-                        </h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            {mostWorn.map(item => (
-                                <motion.div
-                                    key={item.id}
-                                    className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden hover:border-[#1A1A1A] transition-colors"
-                                    whileHover={{ y: -4 }}
-                                >
-                                    <div className="relative aspect-[3/4] bg-[#F5F5F5]">
-                                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                                        <div className="absolute top-2 right-2 bg-[#80163A] text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
-                                            <Star className="w-3 h-3" />
-                                            {item.wearCount}
-                                        </div>
-                                    </div>
-                                    <div className="p-3">
-                                        <h4 className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</h4>
-                                        <p className="text-xs text-[#6B6B6B] capitalize mt-1">{item.category}</p>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.section>
-                )}
-
-                {/* Never Worn Items Alert */}
-                {neverWorn && neverWorn.length > 0 && (
-                    <motion.section
-                        className="mb-12"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                    >
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                                    <Clock className="w-6 h-6 text-amber-600" />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-medium text-[#1A1A1A] mb-2">
-                                        {neverWorn.length} Item{neverWorn.length > 1 ? 's' : ''} Never Worn
-                                    </h3>
-                                    <p className="text-sm text-[#6B6B6B] mb-4">
-                                        These items are waiting for their debut. Consider styling them into outfits or decluttering your wardrobe.
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {neverWorn.slice(0, 8).map(item => (
-                                            <div
-                                                key={item.id}
-                                                className="w-16 h-20 rounded-lg overflow-hidden border border-amber-200"
-                                            >
-                                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                                            </div>
-                                        ))}
-                                        {neverWorn.length > 8 && (
-                                            <div className="w-16 h-20 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center">
-                                                <span className="text-xs text-amber-700 font-medium">+{neverWorn.length - 8}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </motion.section>
                 )}
             </div>
+
+            {/* Shopping Advisor Modal */}
+            <ShoppingAdvisor
+                isOpen={showAdvisor}
+                onClose={() => setShowAdvisor(false)}
+            />
         </AppLayout>
     );
 }
 
-// Helper Components
-
-interface MetricCardProps {
-    icon: React.ReactNode;
-    label: string;
-    value: string | number;
-}
-
-function MetricCard({ icon, label, value }: MetricCardProps) {
+// Minimalist Metric Cell
+function MetricCell({ label, value, sub, highlight = false }: { label: string, value: string | number, sub: string, highlight?: boolean }) {
     return (
-        <motion.div
-            className="bg-white rounded-2xl border border-[#E5E5E5] p-6"
-            whileHover={{ y: -4, borderColor: "#1A1A1A" }}
-            transition={{ duration: 0.2 }}
-        >
-            <div className="text-[#80163A] mb-3">{icon}</div>
-            <div className="text-3xl font-bold text-[#1A1A1A] mb-1">{value}</div>
-            <div className="text-sm text-[#6B6B6B]">{label}</div>
-        </motion.div>
-    );
-}
-
-interface ChartCardProps {
-    title: string;
-    children: React.ReactNode;
-}
-
-function ChartCard({ title, children }: ChartCardProps) {
-    return (
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6">
-            <h3
-                className="text-[#1A1A1A] mb-6"
-                style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.5rem" }}
-            >
-                {title}
-            </h3>
-            {children}
+        <div className={`bg-white p-8 md:p-12 hover:bg-[#FAF9F6] transition-colors relative flex flex-col justify-between min-h-[200px] group ${highlight ? 'bg-[#1A1A1A] text-white hover:bg-[#1A1A1A]' : ''}`}>
+            <span className={`text-[10px] uppercase tracking-[0.2em] font-medium ${highlight ? 'text-gray-400' : 'text-gray-400'}`}>
+                {label}
+            </span>
+            <div>
+                <span className={`text-5xl md:text-6xl font-light block mb-2 ${highlight ? 'text-white' : 'text-[#1A1A1A]'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {value}
+                </span>
+                <span className={`text-xs border-t pt-2 inline-block w-full ${highlight ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-500'}`}>
+                    {sub}
+                </span>
+            </div>
+            {highlight && <Sparkles className="absolute top-8 right-8 w-5 h-5 text-[#D4AF37] animate-pulse" />}
         </div>
     );
 }
 
-// Helper function for color visualization
+// Utility
 function getColorHex(colorName: string): string {
     const colorMap: Record<string, string> = {
-        black: "#000000",
-        white: "#FFFFFF",
-        red: "#DC2626",
-        blue: "#2563EB",
-        green: "#16A34A",
-        yellow: "#EAB308",
-        purple: "#9333EA",
-        pink: "#EC4899",
-        orange: "#F97316",
-        brown: "#92400E",
-        gray: "#6B7280",
-        beige: "#D4C5B9",
-        navy: "#1E3A8A",
-        maroon: "#7F1D1D",
-        teal: "#14B8A6",
-        gold: "#CA8A04",
-        silver: "#9CA3AF",
-        cream: "#FFFDD0",
-        khaki: "#C3B091",
-        olive: "#808000",
+        black: "#000000", white: "#FFFFFF", red: "#DC2626", blue: "#2563EB",
+        green: "#16A34A", yellow: "#EAB308", purple: "#9333EA", pink: "#EC4899",
+        orange: "#F97316", brown: "#92400E", gray: "#6B7280", beige: "#D4C5B9",
+        navy: "#1E3A8A", maroon: "#7F1D1D", teal: "#14B8A6", gold: "#CA8A04",
+        silver: "#9CA3AF", cream: "#FFFDD0", khaki: "#C3B091", olive: "#808000",
     };
-
     return colorMap[colorName.toLowerCase()] || "#80163A";
 }

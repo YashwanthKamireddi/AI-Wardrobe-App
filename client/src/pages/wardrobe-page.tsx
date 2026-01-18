@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Plus, Search, Grid3X3, LayoutList, X, Edit, Trash2, Sparkles, Loader2, Wand2, User, Layers, Heart, Filter, Link as LinkIcon, Globe, Camera, Upload, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Grid3X3, LayoutList, X, Edit, Trash2, Sparkles, Loader2, Wand2, User, Layers, Heart, Filter, Link as LinkIcon, Globe, Camera, Upload, Image as ImageIcon, Shirt } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -153,6 +153,11 @@ export function WardrobePage() {
 
         } catch (error) {
             console.error('AI processing failed:', error);
+            toast({
+                title: " AI Analysis Failed", // Space for alignment if needed
+                description: "Could not process image. Using original instead.",
+                variant: "destructive"
+            });
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64 = reader.result as string;
@@ -192,15 +197,40 @@ export function WardrobePage() {
                 form.setValue('tags', currentTags ? `${currentTags}, ${newTag}` : newTag);
             }
 
-            // Set a mock result to clearly show success to the user
-            setAiStage('Imported from web');
-            setAiResult({
-                colors: { dominant: '#ffffff', palette: [], colorName: 'Web Import' },
-                category: { category: 'tops', confidence: 1 }
-            } as any);
+            // Process the imported image through AI to get real color/category
+            if (data.imageUrl) {
+                setAiStage('Analyzing style...');
+                const { detectColors, detectCategory } = await import('@/lib/image-ai');
+
+                // Use the image URL directly (assuming CORS is handled or using proxy)
+                const colors = await detectColors(data.imageUrl);
+                const category = await detectCategory(data.imageUrl);
+
+                form.setValue('color', colors.colorName);
+                if (!form.getValues('category')) {
+                    form.setValue('category', category.category);
+                }
+
+                setAiResult({
+                    processedImageUrl: data.imageUrl, // Web images usually clean
+                    processedImageBlob: new Blob(), // Placeholder format
+                    colors,
+                    category
+                } as any);
+            }
+
+            toast({
+                title: "Import Successful",
+                description: `Found ${data.name || 'item'} from ${new URL(importUrl).hostname}`,
+            });
 
         } catch (error) {
             console.error('Import failed:', error);
+            toast({
+                title: "Import Failed",
+                description: "Could not fetch product details. Try a different URL.",
+                variant: "destructive"
+            });
         } finally {
             setIsImporting(false);
         }
@@ -358,6 +388,7 @@ export function WardrobePage() {
                 ...data,
                 tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
                 wearCount: 0,
+                status: 'available', // Added missing status
             });
             form.reset();
             setAiResult(null);
@@ -414,253 +445,178 @@ export function WardrobePage() {
 
     return (
         <AppLayout>
-            <div className="max-w-6xl mx-auto px-6 py-8 md:py-12">
-                {/* Header */}
+            <div className="min-h-screen bg-[#FDFBF7] pb-24 md:pb-12"> {/* Added pb-24 for mobile bottom bar */}
+
+                {/* V2.0: MOBILE HEADER (Sticky) */}
                 <motion.header
-                    className="mb-8"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
+                    className="md:hidden sticky top-0 z-40 bg-[#FDFBF7]/80 backdrop-blur-md border-b border-black/5 px-4 h-14 flex items-center justify-between"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
                 >
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <p className="text-xs tracking-[0.2em] uppercase text-[#6B6B6B] mb-2">
-                                Collection
-                            </p>
-                            <h1
-                                className="text-[#1A1A1A]"
-                                style={{
-                                    fontFamily: "'Playfair Display', serif",
-                                    fontSize: "clamp(2rem, 5vw, 3rem)",
-                                    lineHeight: 1.1
-                                }}
-                            >
-                                Your Wardrobe
-                            </h1>
-                        </div>
-                        <motion.button
-                            onClick={() => setIsAddDialogOpen(true)}
-                            className="h-12 px-6 bg-[#1A1A1A] text-[#F9F9F7] text-sm font-medium rounded-full flex items-center gap-2"
-                            whileHover={{ backgroundColor: "#80163A" }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span className="hidden sm:inline">Add Item</span>
-                        </motion.button>
+                    <div className="flex flex-col">
+                        <h1 className="text-[#151515] font-playfair text-lg font-bold leading-none">Collection</h1>
+                        <span className="text-[9px] text-gray-400 font-mono tracking-widest uppercase">{filteredItems.length} ITEMS</span>
                     </div>
+                    <motion.button
+                        onClick={() => setIsAddDialogOpen(true)}
+                        className="w-8 h-8 rounded-full bg-[#151515] flex items-center justify-center text-white"
+                        whileTap={{ scale: 0.9 }}
+                    >
+                        <Plus className="w-4 h-4" />
+                    </motion.button>
                 </motion.header>
 
-                {/* Search & Filters */}
-                <motion.div
-                    className="mb-8"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                    <div className="flex gap-4">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9A9A9A]" />
-                            <input
-                                type="text"
-                                placeholder="Search items..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-12 pl-12 pr-4 bg-white border border-[#E5E5E5] rounded-full text-sm text-[#1A1A1A] placeholder:text-[#9A9A9A] focus:outline-none focus:border-[#1A1A1A] transition-colors"
-                            />
+                <div className="max-w-[1920px] mx-auto md:px-10 md:py-8">
+
+                    {/* DESKTOP HEADER (Hidden on Mobile) */}
+                    <div className="hidden md:block mb-8 px-6">
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <p className="text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Collection</p>
+                                <h1 className="text-4xl md:text-5xl font-playfair text-[#151515]">Your Wardrobe</h1>
+                            </div>
+                            <button
+                                onClick={() => setIsAddDialogOpen(true)}
+                                className="px-6 py-3 bg-[#151515] text-white text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors"
+                            >
+                                + Add Item
+                            </button>
                         </div>
-                        <motion.button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className={`h-12 px-5 rounded-full flex items-center gap-2 text-sm font-medium transition-all ${showFilters || categoryFilter !== 'all'
-                                ? 'bg-[#1A1A1A] text-white'
-                                : 'bg-white border border-[#E5E5E5] text-[#6B6B6B]'
-                                }`}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <Filter className="w-4 h-4" />
-                            Filter
-                        </motion.button>
                     </div>
 
-                    {/* Filter Pills */}
-                    <AnimatePresence>
-                        {showFilters && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="flex flex-wrap gap-2 pt-4">
-                                    <button
-                                        onClick={() => setCategoryFilter('all')}
-                                        className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${categoryFilter === 'all'
-                                            ? 'bg-[#1A1A1A] text-white'
-                                            : 'bg-white border border-[#E5E5E5] text-[#6B6B6B] hover:border-[#1A1A1A]'
-                                            }`}
-                                    >
-                                        All
-                                    </button>
-                                    {clothingCategories.map(cat => (
-                                        <button
-                                            key={cat.value}
-                                            onClick={() => setCategoryFilter(cat.value)}
-                                            className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${categoryFilter === cat.value
-                                                ? 'bg-[#1A1A1A] text-white'
-                                                : 'bg-white border border-[#E5E5E5] text-[#6B6B6B] hover:border-[#1A1A1A]'
-                                                }`}
-                                        >
-                                            {cat.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
-
-                {/* Stats Bar */}
-                <motion.div
-                    className="flex items-center gap-6 mb-8 text-sm text-[#6B6B6B]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                    <span>{filteredItems.length} items</span>
-                    {categoryFilter !== 'all' && (
-                        <span className="flex items-center gap-2">
-                            in <span className="text-[#1A1A1A] font-medium capitalize">{categoryFilter}</span>
+                    {/* DESKTOP SEARCH & FILTERS (Hidden on Mobile - Moved to Bottom Bar) */}
+                    <div className="hidden md:block px-6 mb-8">
+                        <div className="flex gap-4">
+                            <div className="flex-1 relative max-w-md">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search archive..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full h-10 pl-10 pr-4 bg-white border border-gray-100 text-sm text-[#151515] placeholder:text-gray-300 focus:outline-none focus:border-black/10 transition-colors"
+                                />
+                            </div>
                             <button
-                                onClick={() => setCategoryFilter('all')}
-                                className="text-[#9A9A9A] hover:text-[#1A1A1A]"
+                                onClick={() => setShowFilters(!showFilters)}
+                                className={`h-10 px-6 border text-xs font-bold uppercase tracking-widest transition-all ${showFilters ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-100 text-[#151515] hover:border-black/10'
+                                    }`}
                             >
-                                <X className="w-3 h-3" />
+                                Filter
                             </button>
-                        </span>
-                    )}
-                </motion.div>
-
-                {/* Items Grid - True Masonry */}
-                {filteredItems.length > 0 ? (
-                    <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-                        {filteredItems.map((item, index) => (
-                            <motion.div
-                                key={item.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: index * 0.05 }}
-                                className="break-inside-avoid"
-                            >
+                        </div>
+                        <AnimatePresence>
+                            {showFilters && (
                                 <motion.div
-                                    className="group relative bg-white rounded-2xl overflow-hidden border border-[#E5E5E5]/50 cursor-pointer"
-                                    whileHover={{ y: -4, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
-                                    onClick={() => setEditingItem(item)}
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="overflow-hidden bg-white border-b border-gray-100"
                                 >
-                                    {/* Image */}
-                                    <div className="relative aspect-[3/4] bg-[#F5F5F5]">
-                                        {item.imageUrl ? (
-                                            <img
-                                                src={item.imageUrl}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Grid3X3 className="w-8 h-8 text-[#D5D5D5]" />
-                                            </div>
-                                        )}
-
-                                        {/* Hover Overlay */}
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                            <div className="flex gap-2">
-                                                <motion.button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setEditingItem(item);
-                                                    }}
-                                                    className="w-10 h-10 rounded-full bg-white flex items-center justify-center"
-                                                    whileHover={{ scale: 1.1 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                >
-                                                    <Edit className="w-4 h-4 text-[#1A1A1A]" />
-                                                </motion.button>
-                                                <motion.button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDelete(item.id);
-                                                    }}
-                                                    className="w-10 h-10 rounded-full bg-white flex items-center justify-center"
-                                                    whileHover={{ scale: 1.1 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                >
-                                                    <Trash2 className="w-4 h-4 text-[#B44141]" />
-                                                </motion.button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className="p-4">
-                                        <h3 className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</h3>
-                                        <p className="text-xs text-[#6B6B6B] capitalize mt-1">{item.category}</p>
-                                        {item.color && (
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <div
-                                                    className="w-3 h-3 rounded-full border border-[#E5E5E5]"
-                                                    style={{ backgroundColor: item.color.toLowerCase() }}
-                                                />
-                                                <span className="text-xs text-[#9A9A9A] capitalize">{item.color}</span>
-                                            </div>
-                                        )}
+                                    <div className="flex flex-wrap gap-2 p-4">
+                                        <button onClick={() => setCategoryFilter('all')} className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest border transition-colors ${categoryFilter === 'all' ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-100'}`}>All</button>
+                                        {clothingCategories.map(cat => (
+                                            <button key={cat.value} onClick={() => setCategoryFilter(cat.value)} className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest border transition-colors ${categoryFilter === cat.value ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-100 hover:border-black/10'}`}>{cat.label}</button>
+                                        ))}
                                     </div>
                                 </motion.div>
-                            </motion.div>
-                        ))}
+                            )}
+                        </AnimatePresence>
                     </div>
-                ) : (
-                    <motion.div
-                        className="py-24 text-center"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                    >
-                        <div className="w-20 h-20 rounded-full bg-[#F5F5F5] flex items-center justify-center mx-auto mb-6">
-                            <Grid3X3 className="w-8 h-8 text-[#D5D5D5]" />
-                        </div>
-                        <h3
-                            className="text-xl text-[#1A1A1A] mb-3"
-                            style={{ fontFamily: "'Playfair Display', serif" }}
-                        >
-                            {searchQuery || categoryFilter !== 'all' ? 'No items found' : 'Your wardrobe is empty'}
-                        </h3>
-                        <p className="text-sm text-[#6B6B6B] mb-8 max-w-sm mx-auto">
-                            {searchQuery || categoryFilter !== 'all'
-                                ? 'Try adjusting your search or filters'
-                                : 'Start building your collection by adding your first item'}
-                        </p>
-                        {!searchQuery && categoryFilter === 'all' && (
-                            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                                <motion.button
-                                    onClick={() => setIsAddDialogOpen(true)}
-                                    className="h-12 px-8 bg-[#1A1A1A] text-[#F9F9F7] text-sm font-medium rounded-full inline-flex items-center gap-2"
-                                    whileHover={{ backgroundColor: "#80163A" }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    Add Your First Item
-                                </motion.button>
-                                <motion.button
-                                    onClick={() => seedItems.mutate()}
-                                    disabled={seedItems.isPending}
-                                    className="h-12 px-8 bg-white border border-[#E5E5E5] text-[#1A1A1A] text-sm font-medium rounded-full inline-flex items-center gap-2 disabled:opacity-50"
-                                    whileHover={{ borderColor: "#1A1A1A" }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    {seedItems.isPending ? "Adding..." : "Add Demo Items"}
-                                </motion.button>
+
+
+                    {/* V2.0: MOBILE ARCHIVE GRID (2-Col, Gap-1) vs DESKTOP MASONRY */}
+                    <div className="px-0 md:px-6">
+                        {filteredItems.length > 0 ? (
+                            <>
+                                {/* Mobile Grid */}
+                                <div className="grid grid-cols-2 gap-[1px] md:hidden">
+                                    {filteredItems.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            onClick={() => setEditingItem(item)}
+                                            className="aspect-[3/4] relative bg-white overflow-hidden active:opacity-90 transition-opacity"
+                                        >
+                                            {item.imageUrl ? (
+                                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-50"><Shirt className="w-6 h-6 text-gray-200" /></div>
+                                            )}
+                                            {/* Minimal Label Overlay */}
+                                            <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
+                                                <p className="text-[10px] font-medium text-white truncate drop-shadow-sm">{item.name}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Desktop Masonry */}
+                                <div className="hidden md:block columns-2 lg:columns-4 gap-4 space-y-4">
+                                    {filteredItems.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            onClick={() => setEditingItem(item)}
+                                            className="break-inside-avoid group relative bg-white border border-gray-100 cursor-pointer hover:border-black/10 transition-all duration-300"
+                                        >
+                                            <div className="aspect-[3/4] relative overflow-hidden bg-gray-50">
+                                                {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-cover grayscale-[0.1] group-hover:grayscale-0 transition-all duration-500" />}
+
+                                                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="p-2 bg-white text-black hover:bg-black hover:text-white transition-colors"><Edit className="w-3 h-3" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} className="p-2 bg-white text-red-500 hover:bg-red-500 hover:text-white transition-colors"><Trash2 className="w-3 h-3" /></button>
+                                                </div>
+                                            </div>
+                                            <div className="p-3">
+                                                <p className="font-playfair text-sm text-[#151515] truncate">{item.name}</p>
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mt-1">{item.category}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="py-24 text-center">
+                                <Grid3X3 className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                                <h3 className="text-xl font-playfair text-[#151515] mb-2">Archive Empty</h3>
+                                <p className="text-gray-400 text-xs">Start building your collection.</p>
+                                <button onClick={() => setIsAddDialogOpen(true)} className="mt-6 px-6 py-2 bg-[#151515] text-white text-[10px] font-bold uppercase tracking-widest">Add First Item</button>
                             </div>
                         )}
-                    </motion.div>
-                )}
+                    </div>
+                </div>
+
+                {/* V2.0: MOBILE THUMB ZONE (Fixed Bottom Bar) */}
+                <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/5 pb-safe">
+                    {/* Search/Filter Context Bar (Collapsible or just integrated icons) */}
+                    {showFilters && (
+                        <div className="flex overflow-x-auto gap-2 p-2 border-b border-gray-100 bg-gray-50/50">
+                            <button onClick={() => setCategoryFilter('all')} className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap border ${categoryFilter === 'all' ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-200'}`}>All</button>
+                            {clothingCategories.map(cat => (
+                                <button key={cat.value} onClick={() => setCategoryFilter(cat.value)} className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap border ${categoryFilter === cat.value ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-200'}`}>{cat.label}</button>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="h-14 flex items-center justify-around px-2">
+                        <button onClick={() => setShowFilters(!showFilters)} className={`flex flex-col items-center justify-center w-14 h-full  gap-1 ${showFilters ? 'text-[#151515]' : 'text-gray-400'}`}>
+                            <Filter className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="text-[9px] font-medium">FILTER</span>
+                        </button>
+
+                        {/* Center Search Input */}
+                        <div className="flex-1 px-2">
+                            <div className="h-9 bg-gray-100/50 rounded-full flex items-center px-3 border border-gray-200/50 focus-within:border-black/10 focus-within:bg-white transition-all">
+                                <Search className="w-3.5 h-3.5 text-gray-400 mr-2" />
+                                <input
+                                    className="bg-transparent border-none outline-none text-xs w-full placeholder:text-gray-400"
+                                    placeholder="Search..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Add Item Dialog */}

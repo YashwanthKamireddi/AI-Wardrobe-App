@@ -4,12 +4,15 @@ import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 import { AppLayout } from "@/components/layout/app-layout";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar as CalendarIcon, Plus, X, Shirt, ArrowLeft, ArrowRight, Grid3X3, Rows3, Flame, Sparkles, Repeat } from "lucide-react";
+import {
+    Plus, X, Shirt, ArrowLeft, ArrowRight, Grid3X3, Rows3,
+    Flame, Sparkles, Repeat, Calendar as CalendarIcon, Camera
+} from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, addWeeks, subWeeks, differenceInDays } from "date-fns";
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { OutfitCalendar, Outfit } from "@shared/schema";
@@ -28,7 +31,6 @@ export function CalendarPage() {
     const { data: outfits } = useOutfits();
     const { data: wardrobeItems } = useWardrobeItems();
 
-    // Helper to get first item image from outfit
     const getOutfitPreviewImage = (outfit: Outfit) => {
         if (!outfit.items || outfit.items.length === 0 || !wardrobeItems) return null;
         const firstItemId = outfit.items[0];
@@ -36,7 +38,6 @@ export function CalendarPage() {
         return item?.imageUrl || null;
     };
 
-    // Use a query to fetch all calendar events
     const { data: calendarEvents, isLoading: isEventsLoading } = useQuery<OutfitCalendar[]>({
         queryKey: ["/api/calendar-outfits"],
     });
@@ -63,7 +64,6 @@ export function CalendarPage() {
         setSelectedDate(today);
     };
 
-    // Convert array of events to a Map for O(1) lookup by date string
     const eventsByDate = useMemo(() => {
         const map = new Map<string, OutfitCalendar>();
         if (!calendarEvents) return map;
@@ -75,13 +75,10 @@ export function CalendarPage() {
         return map;
     }, [calendarEvents]);
 
-    // Calculate streak (consecutive days with planned outfits)
     const currentStreak = useMemo(() => {
         if (!calendarEvents || calendarEvents.length === 0) return 0;
-
         let streak = 0;
         let checkDate = new Date();
-
         while (true) {
             const dateStr = checkDate.toISOString().split('T')[0];
             if (eventsByDate.has(dateStr)) {
@@ -94,7 +91,6 @@ export function CalendarPage() {
         return streak;
     }, [calendarEvents, eventsByDate]);
 
-    // Create Event Mutation
     const createEventMutation = useMutation({
         mutationFn: async (eventData: any) => {
             const res = await apiRequest({
@@ -110,8 +106,8 @@ export function CalendarPage() {
             setEventName("");
             setSelectedDate(null);
             toast({
-                title: "Scheduled",
-                description: "Look added to your calendar.",
+                title: "Schedule Updated",
+                description: "Look added to your runway schedule.",
             });
         },
         onError: () => {
@@ -123,7 +119,6 @@ export function CalendarPage() {
         },
     });
 
-    // Delete Event Mutation
     const deleteEventMutation = useMutation({
         mutationFn: async (eventId: number) => {
             await apiRequest({
@@ -156,7 +151,6 @@ export function CalendarPage() {
         deleteEventMutation.mutate(eventId);
     };
 
-    // Generate calendar days based on view mode
     const calendarDays = useMemo(() => {
         if (viewMode === "month") {
             const monthStart = startOfMonth(currentDate);
@@ -182,7 +176,6 @@ export function CalendarPage() {
         return outfit ? { ...event, outfit } : null;
     };
 
-    // Check if outfit was worn recently (within 2 weeks)
     const isRecentlyWorn = (outfitId: number) => {
         if (!calendarEvents) return false;
         const twoWeeksAgo = new Date();
@@ -195,376 +188,339 @@ export function CalendarPage() {
         );
     };
 
-    // Date formatting for header
     const monthName = format(currentDate, 'MMMM');
     const year = format(currentDate, 'yyyy');
     const weekRange = viewMode === "week"
-        ? `${format(startOfWeek(currentDate), 'MMM d')} - ${format(endOfWeek(currentDate), 'MMM d')}`
+        ? `${format(startOfWeek(currentDate), 'MMMM d')} - ${format(endOfWeek(currentDate), 'MMMM d')}`
         : null;
 
     return (
         <AppLayout>
-            <div className="min-h-screen bg-[#FAF9F6] flex flex-col">
-                <div className="flex-1 flex flex-col md:px-6 md:pb-6 max-w-7xl mx-auto w-full">
-                    {/* Header */}
-                    <motion.div
-                        className="pt-10 pb-6 px-6 md:px-0 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-200 mb-6"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
+            <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+                {/* Background Noise with reduced opacity */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+
+                <div className="flex-1 flex flex-col md:px-8 md:pb-8 max-w-7xl mx-auto w-full z-10">
+
+                    {/* Editorial Header */}
+                    <div className="pt-12 pb-8 px-6 md:px-0 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#1A1A1A]/10 mb-8">
                         <div>
-                            <span className="text-[#80163a] text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block">Style Planner</span>
-                            <div className="flex items-baseline gap-4">
-                                <h1 className="text-4xl md:text-6xl font-playfair text-[#1a1a1a] leading-[0.9]">
-                                    {viewMode === "month" ? monthName : weekRange}
-                                </h1>
-                                {viewMode === "month" && (
-                                    <span className="text-xl md:text-2xl font-playfair italic text-gray-300">{year}</span>
-                                )}
-                            </div>
-
-                            {/* Streak Badge */}
-                            {currentStreak > 0 && (
-                                <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 rounded-full border border-orange-100">
-                                    <Flame className="w-4 h-4 text-orange-500" />
-                                    <span className="text-xs font-medium text-orange-600">
-                                        {currentStreak} day planning streak!
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-3 mt-6 md:mt-0">
-                            {/* View Toggle */}
-                            <div className="flex items-center border border-gray-200 rounded-full p-1 bg-white">
-                                <button
-                                    onClick={() => setViewMode("month")}
-                                    className={cn(
-                                        "w-9 h-9 rounded-full flex items-center justify-center transition-all",
-                                        viewMode === "month" ? "bg-[#1a1a1a] text-white" : "text-gray-400 hover:text-gray-600"
-                                    )}
-                                >
-                                    <Grid3X3 className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode("week")}
-                                    className={cn(
-                                        "w-9 h-9 rounded-full flex items-center justify-center transition-all",
-                                        viewMode === "week" ? "bg-[#1a1a1a] text-white" : "text-gray-400 hover:text-gray-600"
-                                    )}
-                                >
-                                    <Rows3 className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={goToToday}
-                                className="text-[10px] uppercase tracking-[0.15em] font-bold text-gray-500 hover:text-[#80163a] transition-colors px-3 py-2"
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="flex items-center gap-3 mb-2"
                             >
-                                Today
-                            </button>
+                                <div className="h-[1px] w-8 bg-[#80163a]" />
+                                <span className="text-[#80163a] font-mono text-xs uppercase tracking-[0.2em]">Fashion Week Schedule</span>
+                            </motion.div>
 
-                            <div className="flex items-center gap-1 border border-gray-200 rounded-full p-1 bg-white">
-                                <button onClick={prevPeriod} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                                    <ArrowLeft className="w-4 h-4 text-[#1a1a1a]" />
-                                </button>
-                                <div className="w-[1px] h-4 bg-gray-200" />
-                                <button onClick={nextPeriod} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                                    <ArrowRight className="w-4 h-4 text-[#1a1a1a]" />
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
+                            <motion.h1
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-5xl md:text-7xl font-playfair text-[#1A1A1A] leading-[0.9] mb-1"
+                            >
+                                {viewMode === "month" ? monthName : "Weekly View"}
+                            </motion.h1>
 
-                    {/* Stats Bar */}
-                    <div className="px-6 md:px-0 mb-4 flex items-center gap-4 overflow-x-auto pb-2">
-                        <div className="bg-white border border-gray-100 rounded-xl px-4 py-2.5 flex items-center gap-3 shrink-0">
-                            <CalendarIcon className="w-4 h-4 text-[#80163a]" />
-                            <div>
-                                <p className="text-[10px] uppercase tracking-wider text-gray-400">This Month</p>
-                                <p className="text-sm font-medium text-[#1a1a1a]">
-                                    {calendarEvents?.filter(e => isSameMonth(new Date(e.date), currentDate)).length || 0} looks planned
-                                </p>
-                            </div>
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                                className="font-mono text-xs uppercase tracking-[0.3em] text-[#1A1A1A]/40"
+                            >
+                                {viewMode === "month" ? year : weekRange}
+                            </motion.p>
                         </div>
-                        <div className="bg-white border border-gray-100 rounded-xl px-4 py-2.5 flex items-center gap-3 shrink-0">
-                            <Sparkles className="w-4 h-4 text-purple-500" />
-                            <div>
-                                <p className="text-[10px] uppercase tracking-wider text-gray-400">Outfits</p>
-                                <p className="text-sm font-medium text-[#1a1a1a]">{outfits?.length || 0} created</p>
+
+                        <div className="flex flex-col items-end gap-4 mt-8 md:mt-0">
+                            {/* Streak Badge Styled */}
+                            {currentStreak > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="flex items-center gap-2 px-3 py-1 bg-[#1A1A1A] text-white rounded-sm"
+                                >
+                                    <Flame className="w-3 h-3 text-[#f59e0b]" />
+                                    <span className="font-mono text-[10px] uppercase tracking-wider">
+                                        {currentStreak} Day Streak
+                                    </span>
+                                </motion.div>
+                            )}
+
+                            <div className="flex items-center gap-4">
+                                {/* View Toggles */}
+                                <div className="flex items-center border border-[#1A1A1A]/10 p-1 bg-white">
+                                    <button
+                                        onClick={() => setViewMode("month")}
+                                        className={cn(
+                                            "w-10 h-10 flex items-center justify-center transition-all",
+                                            viewMode === "month" ? "bg-[#1A1A1A] text-white" : "text-[#1A1A1A]/40 hover:text-[#1A1A1A]"
+                                        )}
+                                    >
+                                        <Grid3X3 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode("week")}
+                                        className={cn(
+                                            "w-10 h-10 flex items-center justify-center transition-all",
+                                            viewMode === "week" ? "bg-[#1A1A1A] text-white" : "text-[#1A1A1A]/40 hover:text-[#1A1A1A]"
+                                        )}
+                                    >
+                                        <Rows3 className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                {/* Navigation */}
+                                <div className="flex items-center gap-2">
+                                    <button onClick={prevPeriod} className="w-10 h-10 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white">
+                                        <ArrowLeft className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={goToToday} className="h-10 px-4 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white font-mono text-[10px] uppercase tracking-wider">
+                                        Current
+                                    </button>
+                                    <button onClick={nextPeriod} className="w-10 h-10 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white">
+                                        <ArrowRight className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Calendar Container */}
-                    <div className="flex-1 flex flex-col overflow-hidden px-6 md:px-0">
-                        {/* Week View */}
-                        {viewMode === "week" && (
-                            <div className="grid grid-cols-7 gap-2 flex-1">
-                                {calendarDays.map((day) => {
-                                    const eventData = getOutfitForDate(day);
-                                    const isTodayDate = isToday(day);
+                    {/* Season Overview Stats */}
+                    <div className="mb-8 px-6 md:px-0 flex gap-12 overflow-x-auto pb-4 scrollbar-hide">
+                        <div className="shrink-0">
+                            <p className="font-playfair text-3xl text-[#1A1A1A]">
+                                {calendarEvents?.filter(e => isSameMonth(new Date(e.date), currentDate)).length || 0}
+                            </p>
+                            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 mt-1">Shows Scheduled</p>
+                        </div>
+                        <div className="shrink-0 relative">
+                            <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-[1px] h-8 bg-[#1A1A1A]/10" />
+                            <p className="font-playfair text-3xl text-[#1A1A1A]">
+                                {outfits?.length || 0}
+                            </p>
+                            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 mt-1">Collection Size</p>
+                        </div>
+                    </div>
 
-                                    return (
-                                        <motion.div
-                                            key={day.toISOString()}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            onClick={() => {
-                                                setSelectedDate(day);
-                                                if (!eventData) setShowOutfitPicker(true);
-                                            }}
-                                            className={cn(
-                                                "bg-white rounded-2xl border border-gray-100 p-4 cursor-pointer hover:shadow-md transition-all flex flex-col",
-                                                isTodayDate && "ring-2 ring-[#80163a] ring-offset-2"
-                                            )}
-                                        >
-                                            {/* Day Header */}
-                                            <div className="text-center mb-3">
-                                                <p className="text-[10px] uppercase tracking-wider text-gray-400">{format(day, 'EEE')}</p>
-                                                <p className={cn(
-                                                    "text-2xl font-playfair",
-                                                    isTodayDate ? "text-[#80163a]" : "text-[#1a1a1a]"
-                                                )}>
-                                                    {format(day, 'd')}
-                                                </p>
-                                            </div>
-
-                                            {/* Outfit Card */}
-                                            <div className="flex-1 flex items-center justify-center">
-                                                {eventData?.outfit ? (
-                                                    <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden group">
-                                                        {getOutfitPreviewImage(eventData.outfit) && (
-                                                            <img
-                                                                src={getOutfitPreviewImage(eventData.outfit)!}
-                                                                alt={eventData.outfit.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        )}
-                                                        <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
-                                                            <p className="text-white text-xs font-medium truncate">{eventData.outfit.name}</p>
-                                                        </div>
-                                                        <button
-                                                            onClick={(e) => handleRemoveEvent(e, eventData.id)}
-                                                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-full aspect-[3/4] rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-                                                        <Plus className="w-6 h-6 text-gray-300" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
+                    {/* Calendar Grid */}
+                    <div className="flex-1 flex flex-col bg-white border border-[#1A1A1A]/10 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                        {/* Weekly Header for Month View */}
+                        {viewMode === "month" && (
+                            <div className="grid grid-cols-7 border-b border-[#1A1A1A]/10 bg-background shrink-0">
+                                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                                    <div key={day} className="py-4 text-center font-mono text-[9px] uppercase tracking-[0.2em] text-[#1A1A1A]/50">
+                                        {day}
+                                    </div>
+                                ))}
                             </div>
                         )}
 
-                        {/* Month View */}
-                        {viewMode === "month" && (
-                            <div className="flex-1 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-                                {/* Days Header */}
-                                <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50 shrink-0">
-                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                        <div key={day} className="py-3 text-center text-[10px] uppercase tracking-[0.15em] font-bold text-gray-400">
-                                            {day}
+                        <div className={cn(
+                            "flex-1",
+                            viewMode === "month" ? "grid grid-cols-7 auto-rows-fr" : "grid grid-cols-7 divide-x divide-[#1A1A1A]/5"
+                        )}>
+                            {calendarDays.map((day, dayIdx) => {
+                                const eventData = getOutfitForDate(day);
+                                const isCurrentMonth = isSameMonth(day, currentDate);
+                                const isTodayDate = isToday(day);
+                                const isPastDate = day < new Date(new Date().setHours(0, 0, 0, 0));
+
+                                return (
+                                    <motion.div
+                                        key={day.toISOString()}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: dayIdx * 0.01 }}
+                                        onClick={() => {
+                                            setSelectedDate(day);
+                                            if (!eventData) setShowOutfitPicker(true);
+                                        }}
+                                        className={cn(
+                                            "relative transition-all cursor-pointer group flex flex-col",
+                                            viewMode === "month"
+                                                ? "min-h-[140px] border-b border-r border-[#1A1A1A]/5 p-3 hover:bg-[#FAF9F6]"
+                                                : "min-h-[400px] p-4 hover:bg-[#FAF9F6]",
+                                            (dayIdx + 1) % 7 === 0 && viewMode === "month" && "border-r-0",
+                                            !isCurrentMonth && viewMode === "month" && "bg-background/50 text-opacity-30"
+                                        )}
+                                    >
+                                        <div className="flex justify-between items-start mb-2 z-10">
+                                            <span className={cn(
+                                                "font-playfair text-lg leading-none transition-colors",
+                                                isTodayDate ? "text-[#80163a] font-bold" : "text-[#1A1A1A]",
+                                                !isCurrentMonth && "opacity-30"
+                                            )}>
+                                                {format(day, 'd')}
+                                            </span>
+                                            {viewMode === "week" && (
+                                                <span className="font-mono text-[9px] uppercase tracking-widest text-[#1A1A1A]/30">
+                                                    {format(day, 'EEE')}
+                                                </span>
+                                            )}
                                         </div>
-                                    ))}
-                                </div>
 
-                                {/* Days Grid */}
-                                <div className="grid grid-cols-7 flex-1 auto-rows-fr">
-                                    {calendarDays.map((day, dayIdx) => {
-                                        const eventData = getOutfitForDate(day);
-                                        const isCurrentMonth = isSameMonth(day, currentDate);
-                                        const isTodayDate = isToday(day);
-
-                                        return (
-                                            <motion.div
-                                                key={day.toISOString()}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: dayIdx * 0.01 }}
-                                                onClick={() => {
-                                                    setSelectedDate(day);
-                                                    if (!eventData) setShowOutfitPicker(true);
-                                                }}
-                                                className={cn(
-                                                    "border-b border-r border-gray-50 p-2 md:p-3 relative transition-all cursor-pointer group hover:bg-gray-50/50 min-h-[100px] md:min-h-[120px]",
-                                                    (dayIdx + 1) % 7 === 0 && "border-r-0",
-                                                    !isCurrentMonth && "bg-gray-50/30"
-                                                )}
-                                            >
-                                                {/* Date Number */}
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <div className={cn(
-                                                        "w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium transition-colors",
-                                                        isTodayDate ? "bg-[#80163a] text-white" : "",
-                                                        !isCurrentMonth && "text-gray-300"
-                                                    )}>
-                                                        {format(day, 'd')}
-                                                    </div>
-
-                                                    {!eventData && isCurrentMonth && (
-                                                        <Plus className="w-4 h-4 text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        {/* Lookbook Card */}
+                                        {eventData?.outfit ? (
+                                            <div className="flex-1 relative group/card">
+                                                <div className="absolute inset-0 bg-background overflow-hidden border border-[#1A1A1A]/5 transition-all duration-500 group-hover/card:shadow-xl">
+                                                    {getOutfitPreviewImage(eventData.outfit) ? (
+                                                        <img
+                                                            src={getOutfitPreviewImage(eventData.outfit)!}
+                                                            alt={eventData.outfit.name}
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 grayscale group-hover/card:grayscale-0"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Shirt className="w-6 h-6 text-[#1A1A1A]/20" />
+                                                        </div>
                                                     )}
+
+                                                    <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/10 transition-colors" />
                                                 </div>
 
-                                                {/* Event Card */}
-                                                {eventData?.outfit && (
-                                                    <div className="absolute inset-x-2 bottom-2 top-9 group/event">
-                                                        <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-100 hover:border-[#80163a]/30 transition-colors rounded-lg overflow-hidden flex">
-                                                            {getOutfitPreviewImage(eventData.outfit) && (
-                                                                <div className="w-10 shrink-0 bg-gray-100">
-                                                                    <img
-                                                                        src={getOutfitPreviewImage(eventData.outfit)!}
-                                                                        alt={eventData.outfit.name}
-                                                                        className="w-full h-full object-cover"
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                            <div className="flex-1 p-1.5 min-w-0">
-                                                                {eventData.eventName && (
-                                                                    <p className="text-[8px] uppercase tracking-wider text-[#80163a] font-bold truncate">
-                                                                        {eventData.eventName}
-                                                                    </p>
-                                                                )}
-                                                                <p className="text-[10px] text-[#1a1a1a] font-medium truncate leading-tight">
-                                                                    {eventData.outfit.name}
-                                                                </p>
-                                                            </div>
+                                                {/* Label Float */}
+                                                <div className="absolute bottom-0 left-0 right-0 p-3 bg-white/95 border-t border-[#1A1A1A]/5 translate-y-full group-hover/card:translate-y-0 transition-transform duration-300">
+                                                    {eventData.eventName && (
+                                                        <p className="font-mono text-[8px] uppercase tracking-wider text-[#80163a] mb-1">
+                                                            {eventData.eventName}
+                                                        </p>
+                                                    )}
+                                                    <p className="font-playfair text-xs truncate text-[#1A1A1A]">
+                                                        {eventData.outfit.name}
+                                                    </p>
+                                                </div>
+
+                                                <button
+                                                    onClick={(e) => handleRemoveEvent(e, eventData.id)}
+                                                    className="absolute top-2 right-2 w-6 h-6 bg-white text-[#1A1A1A] flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-[#80163a] hover:text-white"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            /* Empty State / Add Trigger */
+                                            <div className="flex-1 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {!isPastDate && (
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <div className="w-8 h-8 rounded-full border border-[#1A1A1A]/20 flex items-center justify-center">
+                                                            <Plus className="w-4 h-4 text-[#1A1A1A]/40" />
                                                         </div>
-                                                        <button
-                                                            onClick={(e) => handleRemoveEvent(e, eventData.id)}
-                                                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center opacity-0 group-hover/event:opacity-100 transition-all shadow-sm"
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
+                                                        <span className="font-mono text-[9px] uppercase tracking-widest text-[#1A1A1A]/40">Plan Look</span>
                                                     </div>
                                                 )}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Outfit Picker / Studio Modal */}
+                <Dialog open={showOutfitPicker} onOpenChange={setShowOutfitPicker}>
+                    <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col bg-[#FAF9F6] border-none shadow-2xl overflow-hidden">
+                        <div className="flex flex-col md:flex-row h-full">
+                            {/* Left: Context / Header */}
+                            <div className="w-full md:w-1/3 p-8 border-b md:border-b-0 md:border-r border-[#1A1A1A]/10 bg-white flex flex-col">
+                                <div>
+                                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/40 mb-2">
+                                        Backstage Access
+                                    </p>
+                                    <h2 className="font-playfair text-4xl text-[#1A1A1A] mb-1">Select Look</h2>
+                                    <p className="font-playfair italic text-xl text-[#80163a]">
+                                        {selectedDate && format(selectedDate, 'MMMM do')}
+                                    </p>
+                                </div>
+
+                                <div className="mt-12 space-y-6 flex-1">
+                                    <div>
+                                        <Label className="block font-mono text-[10px] uppercase tracking-widest text-[#1A1A1A]/40 mb-3">
+                                            Event Details
+                                        </Label>
+                                        <Input
+                                            className="border-b border-[#1A1A1A]/20 rounded-none px-0 h-10 bg-transparent focus:outline-none focus:border-[#80163a] font-playfair text-xl placeholder:text-[#1A1A1A]/20"
+                                            placeholder="Gala, Dinner, Office..."
+                                            value={eventName}
+                                            onChange={(e) => setEventName(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="pt-8 border-t border-[#1A1A1A]/5">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <Sparkles className="w-4 h-4 text-[#80163a]" />
+                                            <span className="font-mono text-[10px] uppercase tracking-widest text-[#1A1A1A]">AI Suggestion</span>
+                                        </div>
+                                        <p className="text-sm text-[#1A1A1A]/60 font-light leading-relaxed">
+                                            Based on the season, a structured coat and tailored trousers would suit this date perfectly.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setLocation("/studio")}
+                                    className="mt-8 w-full py-4 border border-[#1A1A1A] text-[#1A1A1A] font-mono text-xs uppercase tracking-[0.2em] hover:bg-[#1A1A1A] hover:text-white transition-all flex items-center justify-center gap-3"
+                                >
+                                    <Camera className="w-4 h-4" />
+                                    <span>Create New Fit</span>
+                                </button>
+                            </div>
+
+                            {/* Right: Grid */}
+                            <div className="flex-1 bg-background overflow-y-auto p-8">
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {outfits?.map(outfit => {
+                                        const recentlyWorn = isRecentlyWorn(outfit.id);
+                                        return (
+                                            <motion.div
+                                                key={outfit.id}
+                                                className={cn(
+                                                    "cursor-pointer group relative aspect-[3/4] bg-white transition-all duration-500",
+                                                    recentlyWorn ? "grayscale opacity-60" : "grayscale-0 hover:shadow-2xl"
+                                                )}
+                                                onClick={() => handlePlanOutfit(outfit.id)}
+                                                whileHover={{ y: -5 }}
+                                            >
+                                                <div className="absolute inset-0 p-2">
+                                                    <div className="w-full h-full bg-[#FAF9F6] relative overflow-hidden">
+                                                        {getOutfitPreviewImage(outfit) ? (
+                                                            <img
+                                                                src={getOutfitPreviewImage(outfit)!}
+                                                                alt={outfit.name}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center">
+                                                                <Shirt className="w-8 h-8 text-[#1A1A1A]/10" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Selection Overlay */}
+                                                <div className="absolute inset-0 bg-[#80163a]/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span className="font-mono text-white text-xs uppercase tracking-[0.2em] border border-white/30 px-4 py-2">
+                                                        Select Look
+                                                    </span>
+                                                </div>
+
+                                                {/* Info */}
+                                                <div className="absolute -bottom-8 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100">
+                                                    <p className="font-playfair text-sm text-[#1A1A1A]">{outfit.name}</p>
+                                                </div>
                                             </motion.div>
                                         );
                                     })}
                                 </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
 
-                {/* Outfit Picker Dialog */}
-                <Dialog open={showOutfitPicker} onOpenChange={setShowOutfitPicker}>
-                    <DialogContent className="max-w-2xl max-h-[85vh] p-0 flex flex-col bg-[#FAF9F6] border-none shadow-2xl overflow-hidden rounded-3xl">
-                        <div className="p-6 bg-white border-b border-gray-100 shrink-0">
-                            <DialogHeader>
-                                <DialogTitle className="font-playfair text-2xl">Plan Your Look</DialogTitle>
-                                <p className="text-xs uppercase tracking-widest text-gray-400 mt-1">
-                                    {selectedDate && format(selectedDate, 'EEEE, MMMM do')}
-                                </p>
-                            </DialogHeader>
-                        </div>
-
-                        {/* Event Name Input */}
-                        <div className="px-6 py-4 bg-white border-b border-gray-100 shrink-0">
-                            <Label className="text-[10px] uppercase tracking-widest text-gray-400 mb-2 block">
-                                What's the occasion?
-                            </Label>
-                            <Input
-                                className="border-gray-200 rounded-xl h-11 bg-gray-50 focus:bg-white"
-                                placeholder="e.g. Date Night, Work Meeting, Wedding..."
-                                value={eventName}
-                                onChange={(e) => setEventName(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Outfit Grid */}
-                        <div className="flex-1 overflow-y-auto p-6" style={{ maxHeight: "50vh" }}>
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-xs uppercase tracking-widest text-gray-400">Your Looks</span>
-                                <span className="text-xs text-gray-400">{outfits?.length || 0} outfits</span>
-                            </div>
-
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {/* Create New Card */}
-                                <motion.div
-                                    onClick={() => setLocation("/studio")}
-                                    className="aspect-[3/4] border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-[#1a1a1a] hover:bg-white transition-all group"
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 group-hover:bg-[#1a1a1a] transition-colors shadow-sm">
-                                        <Plus className="w-6 h-6 text-gray-400 group-hover:text-white" />
+                                {(!outfits || outfits.length === 0) && (
+                                    <div className="h-full flex flex-col items-center justify-center text-[#1A1A1A]/40">
+                                        <Shirt className="w-12 h-12 mb-4 opacity-50" />
+                                        <p className="font-playfair text-xl">No looks in collection</p>
                                     </div>
-                                    <p className="font-playfair text-base text-[#1a1a1a]">Create New</p>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Open Studio</p>
-                                </motion.div>
-
-                                {outfits?.map(outfit => {
-                                    const recentlyWorn = isRecentlyWorn(outfit.id);
-                                    return (
-                                        <motion.div
-                                            key={outfit.id}
-                                            className={cn(
-                                                "cursor-pointer group relative aspect-[3/4] bg-white border rounded-2xl overflow-hidden hover:shadow-lg transition-all",
-                                                recentlyWorn ? "border-orange-200" : "border-gray-100 hover:border-[#80163a]/30"
-                                            )}
-                                            onClick={() => handlePlanOutfit(outfit.id)}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                        >
-                                            {/* Recently Worn Badge */}
-                                            {recentlyWorn && (
-                                                <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-1 bg-orange-100 rounded-full">
-                                                    <Repeat className="w-3 h-3 text-orange-500" />
-                                                    <span className="text-[9px] font-medium text-orange-600">Recent</span>
-                                                </div>
-                                            )}
-
-                                            {/* Image or placeholder */}
-                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
-                                                {getOutfitPreviewImage(outfit) ? (
-                                                    <img
-                                                        src={getOutfitPreviewImage(outfit)!}
-                                                        alt={outfit.name}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                    />
-                                                ) : (
-                                                    <Shirt className="w-12 h-12 text-gray-200" />
-                                                )}
-                                            </div>
-
-                                            {/* Overlay Label */}
-                                            <div className="absolute inset-x-0 bottom-0 p-3 bg-white/95 border-t border-gray-100">
-                                                <p className="font-playfair text-sm text-[#1a1a1a] truncate">{outfit.name}</p>
-                                                <p className="text-[10px] text-gray-400 mt-0.5">{outfit.items?.length || 0} items</p>
-                                            </div>
-
-                                            {/* Hover overlay */}
-                                            <div className="absolute inset-0 bg-[#80163a]/0 group-hover:bg-[#80163a]/5 transition-colors flex items-center justify-center">
-                                                <span className="opacity-0 group-hover:opacity-100 text-[#80163a] text-xs font-semibold uppercase tracking-widest bg-white px-4 py-2 rounded-full shadow-sm transition-opacity">
-                                                    Select
-                                                </span>
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
+                                )}
                             </div>
-
-                            {/* Empty state */}
-                            {(!outfits || outfits.length === 0) && (
-                                <div className="text-center py-12">
-                                    <Shirt className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                                    <p className="text-gray-400 mb-2">No outfits yet</p>
-                                    <button
-                                        onClick={() => setLocation("/studio")}
-                                        className="text-[#80163a] text-sm font-semibold hover:underline"
-                                    >
-                                        Create your first look
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     </DialogContent>
                 </Dialog>

@@ -25,9 +25,11 @@ export const aiRateLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Disable IP validation since we use user ID when available
+    validate: { ip: false },
     keyGenerator: (req: Request) => {
-        // Use user ID if authenticated, otherwise IP
-        return req.user?.id?.toString() || req.ip || 'unknown';
+        // Use user ID if authenticated, otherwise use a hash
+        return req.user?.id?.toString() || 'anon-' + (req.headers['x-forwarded-for'] || 'unknown');
     },
     handler: (req: Request, res: Response) => {
         res.status(429).json({
@@ -54,8 +56,8 @@ export const authRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: Request) => {
-        // Always use IP for auth endpoints
-        return req.ip || 'unknown';
+        // Use forwarded header or fallback
+        return String(req.headers['x-forwarded-for'] || 'unknown');
     },
     handler: (req: Request, res: Response) => {
         res.status(429).json({
@@ -82,7 +84,7 @@ export const generalRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: Request) => {
-        return req.user?.id?.toString() || req.ip || 'unknown';
+        return req.user?.id?.toString() || 'anon-' + (req.headers['x-forwarded-for'] || 'unknown');
     },
     skip: (req: Request) => {
         // Skip rate limiting for health check
@@ -106,7 +108,7 @@ export const uploadRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: Request) => {
-        return req.user?.id?.toString() || req.ip || 'unknown';
+        return req.user?.id?.toString() || 'anon-' + (req.headers['x-forwarded-for'] || 'unknown');
     }
 });
 

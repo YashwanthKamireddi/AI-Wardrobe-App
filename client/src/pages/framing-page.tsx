@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { Link } from "wouter";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { AppLayout } from "@/components/layout/app-layout";
 import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
@@ -129,6 +131,7 @@ export function FramingPage() {
     const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
     const { data: outfits, isLoading: outfitsLoading } = useOutfits();
     const { toast } = useToast();
+    const queryClient = useQueryClient();
     const frameRef = useRef<HTMLDivElement>(null);
 
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -185,11 +188,91 @@ export function FramingPage() {
         }
     };
 
+    // Mutation for uploading image
+    const uploadMutation = useMutation({
+        mutationFn: async (blob: Blob) => {
+            const formData = new FormData();
+            formData.append('image', blob);
+            const res = await apiRequest("POST", "/api/upload-image", formData);
+            return await res.json();
+        }
+    });
+
+    // Mutation for creating the wardrobe item (Frame)
+    const createFrameItemMutation = useMutation({
+        mutationFn: async (data: any) => {
+            const res = await apiRequest("POST", "/api/wardrobe", data);
+            return await res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
+            toast({
+                title: "Saved to Gallery",
+                description: "Your frame has been saved to your collection.",
+            });
+            setStep("select"); // Reset or stay?
+        },
+        onError: () => {
+            toast({
+                title: "Save Failed",
+                description: "Could not save to gallery.",
+                variant: "destructive",
+            });
+        }
+    });
+
+    const handleSaveToGallery = async () => {
+        if (!frameRef.current) return;
+
+        try {
+            // 1. Capture Canvas
+            const canvas = await html2canvas(frameRef.current, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null,
+            });
+
+            canvas.toBlob(async (blob) => {
+                if (!blob) throw new Error("Canvas blob creation failed");
+
+                // 2. Upload Image
+                const uploadRes = await uploadMutation.mutateAsync(blob);
+                const imageUrl = uploadRes.url;
+
+                // 3. Create Wardrobe Item (Frame)
+                await createFrameItemMutation.mutateAsync({
+                    name: frameTitle || `Style Frame ${new Date().toLocaleDateString()}`,
+                    category: "accessories", // Hack to fit schema
+                    subcategory: "other",
+                    imageUrl: imageUrl,
+                    color: "multicolor",
+                    season: "all",
+                    tags: ["#frame", "style_dna", selectedFrame.name],
+                    notes: JSON.stringify({
+                        frameId: selectedFrame.id,
+                        backgroundId: selectedBackground.id,
+                        overlay: selectedOverlay
+                    })
+                });
+
+            }, 'image/png');
+
+        } catch (error) {
+            console.error("Gallery save failed:", error);
+            toast({
+                title: "Error",
+                description: "Failed to render frame.",
+                variant: "destructive",
+            });
+        }
+    };
+
     const handleShare = async () => {
         if (!frameRef.current) return;
 
         try {
-            const canvas = await html2canvas(frameRef.current, { scale: 2, useCORS: true });
+            const canvas = await html2canvas(frameRef.current, { scale: 2, useCORS: true, allowTaint: true });
             canvas.toBlob(async (blob) => {
                 if (!blob) return;
                 const file = new File([blob], "outfit.png", { type: "image/png" });
@@ -454,7 +537,21 @@ export function FramingPage() {
                                                 whileTap={{ scale: 0.99 }}
                                             >
                                                 <Download className="w-4 h-4" />
-                                                SAVE TO GALLERY
+                                                DOWNLOAD IMAGE
+                                            </motion.button>
+                                            <motion.button
+                                                className="w-full py-4 rounded-xl bg-[#1A1A1A] text-white text-sm tracking-wider flex items-center justify-center gap-2"
+                                                onClick={handleSaveToGallery}
+                                                disabled={createFrameItemMutation.isPending || uploadMutation.isPending}
+                                                whileHover={{ scale: 1.01 }}
+                                                whileTap={{ scale: 0.99 }}
+                                            >
+                                                {createFrameItemMutation.isPending ? (
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <Layers className="w-4 h-4" />
+                                                )}
+                                                SAVE TO COLLECTION
                                             </motion.button>
                                             <motion.button
                                                 className="w-full py-4 rounded-xl bg-white border border-[#E5E5E5] text-[#1A1A1A] text-sm tracking-wider flex items-center justify-center gap-2"

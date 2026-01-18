@@ -255,8 +255,8 @@ export function WardrobeIntelligencePage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
                             className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${activeTab === tab.id
-                                    ? "bg-white text-[#1A1A1A] shadow-sm"
-                                    : "text-[#6B6B6B] hover:text-[#1A1A1A]"
+                                ? "bg-white text-[#1A1A1A] shadow-sm"
+                                : "text-[#6B6B6B] hover:text-[#1A1A1A]"
                                 }`}
                         >
                             {tab.label}
@@ -461,14 +461,14 @@ export function WardrobeIntelligencePage() {
                                             </div>
                                             <span
                                                 className={`px-3 py-1 rounded-full text-xs font-medium ${insight.cpwGrade === "Excellent"
-                                                        ? "bg-[#E8F5E9] text-[#2E7D32]"
-                                                        : insight.cpwGrade === "Good"
-                                                            ? "bg-[#E3F2FD] text-[#1565C0]"
-                                                            : insight.cpwGrade === "Fair"
-                                                                ? "bg-[#FFF8E1] text-[#F9A825]"
-                                                                : insight.cpwGrade === "Dead Stock"
-                                                                    ? "bg-[#FFEBEE] text-[#C62828]"
-                                                                    : "bg-[#FFF3E0] text-[#EF6C00]"
+                                                    ? "bg-[#E8F5E9] text-[#2E7D32]"
+                                                    : insight.cpwGrade === "Good"
+                                                        ? "bg-[#E3F2FD] text-[#1565C0]"
+                                                        : insight.cpwGrade === "Fair"
+                                                            ? "bg-[#FFF8E1] text-[#F9A825]"
+                                                            : insight.cpwGrade === "Dead Stock"
+                                                                ? "bg-[#FFEBEE] text-[#C62828]"
+                                                                : "bg-[#FFF3E0] text-[#EF6C00]"
                                                     }`}
                                             >
                                                 {insight.cpwGrade}
@@ -506,8 +506,8 @@ export function WardrobeIntelligencePage() {
                                             <motion.div
                                                 key={pred.item.id}
                                                 className={`p-5 rounded-2xl border ${pred.replacementUrgency === "High"
-                                                        ? "bg-[#FFEBEE] border-[#FFCDD2]"
-                                                        : "bg-[#FFF8E1] border-[#FFE082]"
+                                                    ? "bg-[#FFEBEE] border-[#FFCDD2]"
+                                                    : "bg-[#FFF8E1] border-[#FFE082]"
                                                     }`}
                                                 initial={{ opacity: 0, x: -10 }}
                                                 animate={{ opacity: 1, x: 0 }}
@@ -530,8 +530,8 @@ export function WardrobeIntelligencePage() {
                                                     </div>
                                                     <span
                                                         className={`px-3 py-1.5 rounded-full text-xs font-medium ${pred.replacementUrgency === "High"
-                                                                ? "bg-[#C62828] text-white"
-                                                                : "bg-[#EF6C00] text-white"
+                                                            ? "bg-[#C62828] text-white"
+                                                            : "bg-[#EF6C00] text-white"
                                                             }`}
                                                     >
                                                         {pred.replacementUrgency} Priority
@@ -568,10 +568,10 @@ export function WardrobeIntelligencePage() {
                                                     <p className="font-medium text-[#1A1A1A]">{gap.gap}</p>
                                                     <span
                                                         className={`px-2.5 py-1 rounded-full text-xs ${gap.priority === "Essential"
-                                                                ? "bg-[#80163A] text-white"
-                                                                : gap.priority === "Recommended"
-                                                                    ? "bg-[#1A1A1A] text-white"
-                                                                    : "bg-[#E5E5E5] text-[#6B6B6B]"
+                                                            ? "bg-[#80163A] text-white"
+                                                            : gap.priority === "Recommended"
+                                                                ? "bg-[#1A1A1A] text-white"
+                                                                : "bg-[#E5E5E5] text-[#6B6B6B]"
                                                             }`}
                                                     >
                                                         {gap.priority}

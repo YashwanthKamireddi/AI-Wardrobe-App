@@ -65,7 +65,7 @@ export class AuthService {
                 const user = await storage.getUser(id as number);
                 done(null, user);
             } catch (error) {
-                logger.error(`Failed to deserialize user ${id}`, error as Error);
+                logger.error({ err: error, userId: id }, 'Failed to deserialize user');
                 done(error);
             }
         });

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * AUTH PAGE - "THE CURATION DESK" (MOODBOARD LAYOUT)
@@ -49,6 +50,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export function AuthPage() {
     const [, setLocation] = useLocation();
     const { user, isLoading, loginMutation, registerMutation } = useAuth();
+    const { toast } = useToast();
     const [showPassword, setShowPassword] = useState(false);
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -56,10 +58,13 @@ export function AuthPage() {
     const [isRegister, setIsRegister] = useState(initialMode);
 
     useEffect(() => {
-        if (user) {
-            setTimeout(() => setLocation("/home"), 500);
+        if (user && !isLoading) {
+            const timer = setTimeout(() => {
+                setLocation("/home");
+            }, 100); // Increased timeout slightly for stability
+            return () => clearTimeout(timer);
         }
-    }, [user, setLocation]);
+    }, [user, isLoading, setLocation]);
 
     const loginForm = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -72,7 +77,15 @@ export function AuthPage() {
     });
 
     const handleLogin = async (data: LoginFormData) => {
-        try { await loginMutation.mutateAsync(data); } catch { }
+        try {
+            await loginMutation.mutateAsync(data);
+        } catch (error: any) {
+            toast({
+                title: "Access Denied",
+                description: error.message || "Invalid credentials. Please try again.",
+                variant: "destructive",
+            });
+        }
     };
 
     const handleRegister = async (data: RegisterFormData) => {
@@ -84,7 +97,13 @@ export function AuthPage() {
                 ...(rest.name && { name: rest.name }),
                 ...(rest.email && { email: rest.email }),
             });
-        } catch { }
+        } catch (error: any) {
+            toast({
+                title: "Registration Failed",
+                description: error.message || "Could not create account. Username might be taken.",
+                variant: "destructive",
+            });
+        }
     };
 
     if (isLoading || user) {

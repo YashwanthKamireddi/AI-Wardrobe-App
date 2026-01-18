@@ -686,13 +686,16 @@ export async function createUserStyleProfile(wardrobeItems: any[]) {
             throw new AppError('Not enough wardrobe items to create a style profile. Please add more items to your wardrobe.', 400);
         }
 
-        // This could be more complex, but for now we'll leverage the analyzeStyle function
-        // and add some additional processing
-        const styleAnalysis = await analyzeStyle(validItems);
+        // Use analyzeUserStyle for richer data (Archetype, etc.)
+        const styleAnalysis = await analyzeUserStyle({
+            wardrobeItems: validItems
+            // We could add outfitHistory or userPreferences here if we had them easily accessible
+        });
 
         // Add a profile summary and creation date
         return {
             ...styleAnalysis,
+            styleProfile: styleAnalysis.personalizedAdvice, // Map detailed advice to styleProfile for backward compatibility if needed
             profileSummary: `Style profile based on ${validItems.length} wardrobe items`,
             createdAt: new Date().toISOString()
         };

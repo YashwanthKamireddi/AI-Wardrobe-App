@@ -47,11 +47,10 @@ export const getAdvancedOutfitRecommendations = async (req: Request, res: Respon
         // For now, I will keep the AI part and simplified error handling.
         throw new Error("AI returned empty recommendations");
 
-    } catch (error) {
-        // ... Error handling logic ...
-        // For the sake of this refactor, I'm assuming we rely on the service.
-        // If the user wants the EXACT logic including the local fallback, it should be in a service helper.
-        res.status(500).json({ message: "Failed to generate outfit recommendations" });
+    } catch (error: any) {
+        const status = error.statusCode || error.status || 500;
+        const message = error.message || "Failed to generate outfit recommendations";
+        res.status(status).json({ message });
     }
 };
 
@@ -65,8 +64,10 @@ export const createStyleProfile = async (req: Request, res: Response) => {
         }
         const styleProfile = await aiService.createUserStyleProfile(wardrobeItems);
         res.json(styleProfile);
-    } catch (error) {
-        res.status(500).json({ message: "Failed to create style profile" });
+    } catch (error: any) {
+        const status = error.statusCode || error.status || 500;
+        const message = error.message || "Failed to create style profile";
+        res.status(status).json({ message });
     }
 };
 
@@ -80,8 +81,10 @@ export const analyzeStyle = async (req: Request, res: Response) => {
         }
         const analysis = await aiService.analyzeStyle(wardrobeItems);
         res.json({ analysis, itemCount: wardrobeItems.length });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to analyze style" });
+    } catch (error: any) {
+        const status = error.statusCode || error.status || 500;
+        const message = error.message || "Failed to analyze style";
+        res.status(status).json({ message });
     }
 };
 
@@ -106,7 +109,9 @@ export const getOccasionOutfit = async (req: Request, res: Response) => {
         }
 
         throw new Error("AI returned null recommendation");
-    } catch (error) {
-        res.status(500).json({ message: "Failed to generate occasion outfit" });
+    } catch (error: any) {
+        const status = error.statusCode || error.status || 500;
+        const message = error.message || "Failed to generate occasion outfit";
+        res.status(status).json({ message });
     }
 };

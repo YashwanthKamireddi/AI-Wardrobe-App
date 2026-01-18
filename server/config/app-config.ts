@@ -19,75 +19,90 @@ const isLocal = true; // Always running locally
 
 // Environment configuration
 export const environment = {
-  nodeEnv,
-  isProduction,
-  isDevelopment,
-  isTest,
-  isLocal
+    nodeEnv,
+    isProduction,
+    isDevelopment,
+    isTest,
+    isLocal
 };
 
 // Server configuration
 export const server = {
-  port: parseInt(process.env.PORT || '5000', 10),
-  host: process.env.HOST || (process.platform === 'win32' ? '127.0.0.1' : '0.0.0.0'),
-  corsOrigins: process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',')
-    : '*'
+    port: parseInt(process.env.PORT || '5000', 10),
+    host: process.env.HOST || (process.platform === 'win32' ? '127.0.0.1' : '0.0.0.0'),
+    corsOrigins: process.env.CORS_ORIGINS
+        ? process.env.CORS_ORIGINS.split(',')
+        : '*'
 };
 
 // Database configuration
 export const database = {
-  url: process.env.DATABASE_URL || '',
-  host: process.env.PGHOST || 'localhost',
-  port: parseInt(process.env.PGPORT || '5432', 10),
-  user: process.env.PGUSER || 'postgres',
-  password: process.env.PGPASSWORD || '',
-  database: process.env.PGDATABASE || 'postgres',
-  maxPoolSize: parseInt(process.env.DB_POOL_SIZE || '10', 10),
-  connectionTimeoutMs: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000', 10),
-  idleTimeoutMs: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10)
+    url: process.env.DATABASE_URL || '',
+    host: process.env.PGHOST || 'localhost',
+    port: parseInt(process.env.PGPORT || '5432', 10),
+    user: process.env.PGUSER || 'postgres',
+    password: process.env.PGPASSWORD || '',
+    database: process.env.PGDATABASE || 'postgres',
+    maxPoolSize: parseInt(process.env.DB_POOL_SIZE || '10', 10),
+    connectionTimeoutMs: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10000', 10),
+    idleTimeoutMs: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10)
 };
 
 // Authentication configuration
+// SECURITY: In production, missing secrets cause immediate crash (Fail Fast)
+// This prevents running with known default secrets that enable session hijacking
+const getSecureSecret = (envVar: string, name: string): string => {
+    const value = process.env[envVar];
+    if (!value) {
+        if (isProduction) {
+            throw new Error(`CRITICAL: ${name} environment variable is required in production. Set ${envVar} before deployment.`);
+        }
+        // Development only: warn and use a random-ish fallback
+        console.warn(`⚠️  [SECURITY] ${envVar} not set. Using insecure dev-only fallback.`);
+        return `dev-only-${name}-${Date.now()}`;
+    }
+    return value;
+};
+
 export const auth = {
-  sessionSecret: process.env.SESSION_SECRET || 'chers-closet-session-secret',
-  cookieMaxAge: parseInt(process.env.COOKIE_MAX_AGE || String(24 * 60 * 60 * 1000), 10), // 24 hours
-  saltRounds: parseInt(process.env.SALT_ROUNDS || '10', 10),
-  jwtSecret: process.env.JWT_SECRET || 'chers-closet-jwt-secret',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d'
+    sessionSecret: getSecureSecret('SESSION_SECRET', 'session-secret'),
+    cookieMaxAge: parseInt(process.env.COOKIE_MAX_AGE || String(24 * 60 * 60 * 1000), 10), // 24 hours
+    saltRounds: parseInt(process.env.SALT_ROUNDS || '10', 10),
+    jwtSecret: getSecureSecret('JWT_SECRET', 'jwt-secret'),
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d'
 };
 
 // OpenAI configuration for AI features
 export const openai = {
-  apiKey: process.env.OPENAI_API_KEY || '',
-  model: process.env.OPENAI_MODEL || 'gpt-4o',
-  maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '2000', 10),
-  temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.7')
+    apiKey: process.env.OPENAI_API_KEY || '',
+    model: process.env.OPENAI_MODEL || 'gpt-4o',
+    maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '2000', 10),
+    temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.7')
 };
 
 // Application-specific configuration
 export const app = {
-  name: 'Cher\'s Closet',
-  version: process.env.npm_package_version || '1.0.0',
-  defaultAdminUser: process.env.DEFAULT_ADMIN_USER || 'admin',
-  defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD,
-  defaultAdminEmail: process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com'
+    name: 'Cher\'s Closet',
+    version: process.env.npm_package_version || '1.0.0',
+    defaultAdminUser: process.env.DEFAULT_ADMIN_USER || 'admin',
+    defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD,
+    defaultAdminEmail: process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com'
 };
 
 // Weather API configuration
 export const weather = {
-  apiKey: process.env.WEATHER_API_KEY || '',
-  baseUrl: process.env.WEATHER_API_BASE_URL || 'https://api.weatherapi.com/v1',
-  defaultLocation: process.env.DEFAULT_WEATHER_LOCATION || 'Los Angeles'
+    apiKey: process.env.WEATHER_API_KEY || '',
+    baseUrl: process.env.WEATHER_API_BASE_URL || 'https://api.weatherapi.com/v1',
+    defaultLocation: process.env.DEFAULT_WEATHER_LOCATION || 'Los Angeles'
 };
 
 // Export configuration object
 export default {
-  environment,
-  server,
-  database,
-  auth,
-  openai,
-  app,
-  weather
+    environment,
+    server,
+    database,
+    auth,
+    openai,
+    app,
+    weather
 };

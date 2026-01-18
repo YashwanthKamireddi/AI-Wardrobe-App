@@ -30,7 +30,7 @@ export async function ensureBucketExists(): Promise<boolean> {
         const { data: buckets, error: listError } = await client.storage.listBuckets();
 
         if (listError) {
-            logger.error('Error listing buckets:', listError);
+            logger.error({ err: listError }, 'Error listing buckets');
             return false;
         }
 
@@ -45,7 +45,7 @@ export async function ensureBucketExists(): Promise<boolean> {
             });
 
             if (createError) {
-                logger.error('Error creating bucket:', createError);
+                logger.error({ err: createError }, 'Error creating bucket');
                 return false;
             }
 
@@ -55,7 +55,7 @@ export async function ensureBucketExists(): Promise<boolean> {
         return true;
     } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
-        logger.error('Error ensuring bucket exists:', error);
+        logger.error({ err: error }, 'Error ensuring bucket exists');
         return false;
     }
 }
@@ -105,7 +105,7 @@ export async function uploadImage(
             });
 
         if (error) {
-            logger.error('Error uploading image:', error);
+            logger.error({ err: error }, 'Error uploading image');
             return {
                 success: false,
                 url: '',
@@ -124,7 +124,7 @@ export async function uploadImage(
         };
     } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
-        logger.error('Error in uploadImage:', error);
+        logger.error({ err: error }, 'Error in uploadImage');
         return {
             success: false,
             url: '',
@@ -182,7 +182,7 @@ export async function uploadImageFromPath(
             });
 
         if (error) {
-            logger.error('Error uploading image:', error);
+            logger.error({ err: error }, 'Error uploading image');
             return {
                 success: false,
                 url: '',
@@ -201,7 +201,7 @@ export async function uploadImageFromPath(
         };
     } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
-        logger.error('Error in uploadImageFromPath:', error);
+        logger.error({ err: error }, 'Error in uploadImageFromPath');
         return {
             success: false,
             url: '',
@@ -223,7 +223,7 @@ export async function deleteImage(imageUrl: string): Promise<boolean> {
         const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/wardrobe-images\/(.+)/);
 
         if (!pathMatch) {
-            logger.warn('Could not extract path from image URL', { url: imageUrl });
+            logger.warn({ url: imageUrl }, 'Could not extract path from image URL');
             return false;
         }
 
@@ -234,14 +234,14 @@ export async function deleteImage(imageUrl: string): Promise<boolean> {
             .remove([path]);
 
         if (error) {
-            logger.error('Error deleting image:', error);
+            logger.error({ err: error }, 'Error deleting image');
             return false;
         }
 
         return true;
     } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
-        logger.error('Error in deleteImage:', error);
+        logger.error({ err: error }, 'Error in deleteImage');
         return false;
     }
 }

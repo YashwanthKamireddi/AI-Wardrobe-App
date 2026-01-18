@@ -52,7 +52,7 @@ export class SupabaseStorage implements IStorage {
             if (error || !data) return undefined;
             return this.mapDbUserToUser(data);
         } catch (err) {
-            logger.error('Error getting user:', err instanceof Error ? err : new Error(String(err)));
+            logger.error({ err: err instanceof Error ? err : new Error(String(err)) }, 'Error getting user');
             return undefined;
         }
     }
@@ -68,7 +68,7 @@ export class SupabaseStorage implements IStorage {
             if (error || !data) return undefined;
             return this.mapDbUserToUser(data);
         } catch (err) {
-            logger.error('Error getting user by username:', err instanceof Error ? err : new Error(String(err)));
+            logger.error({ err: err instanceof Error ? err : new Error(String(err)) }, 'Error getting user by username');
             return undefined;
         }
     }
@@ -88,7 +88,7 @@ export class SupabaseStorage implements IStorage {
             .single();
 
         if (error || !data) {
-            logger.error('Error creating user:', error ? new Error(error.message) : undefined);
+            logger.error({ err: error ? new Error(error.message) : undefined }, 'Error creating user');
             throw new Error('Failed to create user');
         }
 
@@ -112,7 +112,7 @@ export class SupabaseStorage implements IStorage {
             .single();
 
         if (error || !data) {
-            logger.error('Error updating user:', error ? new Error(error.message) : undefined);
+            logger.error({ err: error ? new Error(error.message) : undefined }, 'Error updating user');
             return undefined;
         }
 
@@ -128,7 +128,7 @@ export class SupabaseStorage implements IStorage {
             .order('created_at', { ascending: false });
 
         if (error) {
-            logger.error('Error getting wardrobe items:', error);
+            logger.error({ err: error }, 'Error getting wardrobe items');
             return [];
         }
 
@@ -164,7 +164,7 @@ export class SupabaseStorage implements IStorage {
             .single();
 
         if (error || !data) {
-            logger.error('Error creating wardrobe item:', error ? new Error(error.message) : undefined);
+            logger.error({ err: error ? new Error(error.message) : undefined }, 'Error creating wardrobe item');
             throw new Error('Failed to create wardrobe item');
         }
 
@@ -254,7 +254,7 @@ export class SupabaseStorage implements IStorage {
             .single();
 
         if (error || !data) {
-            logger.error('Error creating outfit:', error ? new Error(error.message) : undefined);
+            logger.error({ err: error ? new Error(error.message) : undefined }, 'Error creating outfit');
             throw new Error('Failed to create outfit');
         }
 
@@ -536,7 +536,7 @@ export class SupabaseStorage implements IStorage {
     }
 
     async createTrip(insertTrip: InsertTrip): Promise<Trip> {
-        console.log("[SupabaseStorage.createTrip] Input:", JSON.stringify(insertTrip, null, 2));
+        logger.debug({ insertTrip }, "[SupabaseStorage.createTrip] Input");
 
         const { data, error } = await this.client
             .from('trips')
@@ -554,16 +554,16 @@ export class SupabaseStorage implements IStorage {
             .single();
 
         if (error) {
-            console.error("[SupabaseStorage.createTrip] Supabase error:", error);
+            logger.error({ error }, "[SupabaseStorage.createTrip] Supabase error");
             throw new Error(`Failed to create trip: ${error.message}`);
         }
 
         if (!data) {
-            console.error("[SupabaseStorage.createTrip] No data returned");
+            logger.error("[SupabaseStorage.createTrip] No data returned");
             throw new Error('Failed to create trip: no data returned');
         }
 
-        console.log("[SupabaseStorage.createTrip] Created:", data);
+        logger.info({ tripId: data.id }, "[SupabaseStorage.createTrip] Created");
         return this.mapDbTripToTrip(data);
     }
 
@@ -668,6 +668,10 @@ export class SupabaseStorage implements IStorage {
             purchasePrice: data.purchase_price,
             purchaseDate: data.purchase_date ? new Date(data.purchase_date) : null,
             purchaseLocation: data.purchase_location,
+            status: data.status || 'available',
+            lentTo: data.lent_to || null,
+            returnDate: data.return_date ? new Date(data.return_date) : null,
+            notes: data.notes || null,
             createdAt: data.created_at ? new Date(data.created_at) : null,
             updatedAt: data.updated_at ? new Date(data.updated_at) : null
         };

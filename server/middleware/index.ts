@@ -3,6 +3,9 @@ import { requireAuth, requireRole, requireSelfOrAdmin } from './auth-middleware'
 import { requestLogger, createRequestLogger } from './request-logger';
 import { aiRateLimiter, authRateLimiter, generalRateLimiter, uploadRateLimiter } from './rate-limiter';
 import { sanitizeBody, sanitizeAllStrings } from './xss-protection';
+import { validate, validateParams, validateQuery, validateAll } from './validate';
+import { csrfTokenMiddleware, getCsrfToken, validateCsrf } from './csrf-protection';
+
 
 // Export all middleware components
 export {
@@ -26,7 +29,18 @@ export {
 
     // XSS Protection
     sanitizeBody,
-    sanitizeAllStrings
+    sanitizeAllStrings,
+
+    // Validation
+    validate,
+    validateParams,
+    validateQuery,
+    validateAll,
+
+    // CSRF Protection
+    csrfTokenMiddleware,
+    getCsrfToken,
+    validateCsrf
 };
 
 // Default export for convenience
@@ -42,5 +56,12 @@ export default {
     generalRateLimiter,
     uploadRateLimiter,
     sanitizeBody,
-    sanitizeAllStrings
+    sanitizeAllStrings,
+    validate,
+    validateParams,
+    validateQuery,
+    validateAll,
+    csrfTokenMiddleware,
+    getCsrfToken,
+    validateCsrf
 };

@@ -1,60 +1,114 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useWeather } from "@/hooks/use-weather";
 import { useWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 import WeatherLocationModal from "@/components/weather-location-modal";
-import { WeatherPill } from "@/components/home/weather-pill";
-import { AtelierSection } from "@/components/home/atelier-section";
-import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Sparkles, Shirt, Shuffle, Layers, Cloud, Sun, CloudRain, ArrowRight, Coffee, Briefcase, Moon, Dumbbell, PartyPopper, Snowflake, Wand2, Check, X, Save } from "lucide-react";
-import type { Outfit, WardrobeItem } from "@shared/schema";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    Plus, Calendar, Search,
+    Shirt, RefreshCw, ArrowUpRight, Maximize2, Settings,
+    X, Layers, Loader2
+} from "lucide-react";
+import type { Outfit } from "@shared/schema";
 
 /**
- * HOME PAGE V8 - "DIGITAL STYLIST 2.0 (COMMAND CENTER)"
+ * HOME PAGE - "QUIET LUXURY" EDITION
  *
- * Features:
- * - Occasion & Vibe based styling
- * - Anchor Item (Build around this stroke)
- * - Item Locking & Smart Swaps
+ * Design Philosophy:
+ * - Clean, editorial aesthetic matching Celura brand
+ * - Warm off-white (#FDFBF7) background
+ * - Minimalist interactions with premium feel
+ * - Content-first: Wardrobe items are the interface
  */
 
-// 1. New Constants for Command Center
-const occasions = [
-    { id: "work", label: "Workplace", icon: Briefcase, color: "#1A1A1A" },
-    { id: "date", label: "Date Night", icon: Moon, color: "#80163A" },
-    { id: "casual", label: "Casual Day", icon: Coffee, color: "#6B7280" },
-    { id: "event", label: "Special Event", icon: PartyPopper, color: "#F59E0B" },
-    { id: "gym", label: "Workout", icon: Dumbbell, color: "#10B981" },
-];
+// --- COMPONENTS ---
 
-const vibes = [
-    { id: "minimal", label: "Minimalist", description: "Clean lines, neutral tones" },
-    { id: "bold", label: "Bold & Expressive", description: "Vibrant colors, statement pieces" },
-    { id: "classic", label: "Timeless Classic", description: "Elegant, polished essentials" },
-];
-
-// Mappings for generation logic
-const occasionRules: Record<string, string[]> = {
-    work: ["blazers", "shirts", "trousers", "loafers", "pumps"],
-    date: ["dresses", "skirts", "heels", "blouses", "boots", "jacket"],
-    casual: ["jeans", "t-shirts", "sneakers", "denim", "knitwear"],
-    event: ["suits", "dresses", "heels", "formal", "clutch"],
-    gym: ["activewear", "leggings", "sports bra", "hoodie", "trainers"],
+const ToolCard = ({ label, icon: Icon, onClick, href }: {
+    label: string;
+    icon: React.ElementType;
+    onClick?: () => void;
+    href?: string;
+}) => {
+    const Content = (
+        <motion.div
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            className="group flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-black/5 hover:border-black/10 hover:shadow-sm transition-all duration-300 h-full min-h-[100px] cursor-pointer"
+        >
+            <Icon className="w-5 h-5 text-[#666] group-hover:text-[#1A1A1A] mb-2 transition-colors duration-300" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#666] group-hover:text-[#1A1A1A] transition-colors duration-300">{label}</span>
+        </motion.div>
+    );
+    return href ? <Link href={href} className="flex-1 h-full">{Content}</Link> : <div onClick={onClick} className="flex-1 h-full">{Content}</div>;
 };
+
+const StatBlock = ({ label, value }: { label: string; value: string | number }) => (
+    <div className="flex flex-col p-4 flex-1 bg-white rounded-xl border border-black/5 justify-center items-center">
+        <span className="text-2xl font-semibold text-[#1A1A1A] leading-none mb-1">{value}</span>
+        <span className="text-[10px] font-medium uppercase tracking-widest text-[#666]">{label}</span>
+    </div>
+);
+
+const OutfitDetails = ({ items, onGenerate, isGenerating }: {
+    items: any[];
+    onGenerate: (e?: React.MouseEvent) => void;
+    isGenerating: boolean
+}) => (
+    <>
+        <div className="p-6 md:p-8 flex-1 overflow-y-auto">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-black/5">
+                <span className="text-xs font-semibold uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2">
+                    <Layers className="w-3.5 h-3.5" />
+                    Composition
+                </span>
+                <span className="font-mono text-xs text-[#666]">{items.length} items</span>
+            </div>
+
+            <ul className="space-y-4">
+                {items.map((item, i) => (
+                    <motion.li
+                        key={i}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="group cursor-pointer flex gap-4"
+                    >
+                        <div className="w-12 h-16 bg-[#FAFAFA] flex-none border border-black/5 rounded-lg overflow-hidden">
+                            {item?.imageUrl && <img src={item.imageUrl} className="w-full h-full object-cover" alt={item.name} />}
+                        </div>
+                        <div className="py-1 min-w-0">
+                            <p className="font-medium text-[#1A1A1A] group-hover:underline decoration-black/20 underline-offset-4 transition-all truncate">{item?.name}</p>
+                            <p className="text-xs text-[#666] capitalize mt-0.5">{item?.category}</p>
+                        </div>
+                    </motion.li>
+                ))}
+            </ul>
+        </div>
+
+        <div className="p-6 border-t border-black/5 bg-[#FAFAFA] shrink-0">
+            <button
+                onClick={onGenerate}
+                className="w-full py-3 bg-[#1A1A1A] text-white text-xs font-semibold uppercase tracking-widest rounded-xl hover:bg-[#333] transition-colors flex items-center justify-center gap-2"
+            >
+                <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
+                Generate New Look
+            </button>
+        </div>
+    </>
+);
 
 export function HomePage() {
     const { user } = useAuth();
-    const [currentTime, setCurrentTime] = useState(new Date());
 
-    // Data Hooks
+    // Data & State
     const savedLocation = typeof window !== 'undefined' ? localStorage.getItem("weatherLocation") || undefined : undefined;
     const [coords, setCoords] = useState<string | undefined>(undefined);
+    const [showWeatherModal, setShowWeatherModal] = useState(false);
 
-    // Auto-detect location
     useEffect(() => {
         if (!savedLocation && "geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition((position) => {
@@ -64,437 +118,283 @@ export function HomePage() {
     }, [savedLocation]);
 
     const { data: weather, isLoading: weatherLoading } = useWeather(savedLocation || coords);
-    const { data: wardrobeItems, isLoading: wardrobeLoading } = useWardrobeItems();
-    const { data: outfits, isLoading: outfitsLoading } = useOutfits();
-    const [showWeatherModal, setShowWeatherModal] = useState(false);
+    const { data: wardrobeItems } = useWardrobeItems();
+    const { data: outfits } = useOutfits();
 
-    // AI STYLIST 2.0 STATE
-    const [selectedOccasion, setSelectedOccasion] = useState<string>("casual");
-    const [selectedVibe, setSelectedVibe] = useState<string>("minimal");
-    const [anchorItem, setAnchorItem] = useState<WardrobeItem | null>(null);
-    const [generatedOutfit, setGeneratedOutfit] = useState<WardrobeItem[] | null>(null);
-    const [lockedItemIds, setLockedItemIds] = useState<Set<number>>(new Set());
-
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [showAnchorModal, setShowAnchorModal] = useState(false);
-    const [showFullReveal, setShowFullReveal] = useState(false); // New state for overlay
-
-    // Existing Daily Look State
     const [dailyLook, setDailyLook] = useState<Outfit | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [showMobileDetails, setShowMobileDetails] = useState(false);
 
-    // Update time
-    useEffect(() => {
-        const interval = setInterval(() => setCurrentTime(new Date()), 60000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // Daily Look Logic
     useEffect(() => {
         if (outfits && outfits.length > 0 && !dailyLook) {
-            generateDailyLook();
+            const today = new Date().getDate();
+            const index = today % outfits.length;
+            setDailyLook(outfits[index]);
         }
-    }, [outfits]);
+    }, [outfits, dailyLook]);
 
-    const generateDailyLook = () => {
+    const refreshDailyLook = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
         if (!outfits || outfits.length === 0) return;
         setIsGenerating(true);
         setTimeout(() => {
-            const randomPick = outfits[Math.floor(Math.random() * outfits.length)];
-            setDailyLook(randomPick);
+            let nextLook = dailyLook;
+            if (outfits.length > 1) {
+                while (nextLook?.id === dailyLook?.id) {
+                    nextLook = outfits[Math.floor(Math.random() * outfits.length)];
+                }
+            } else {
+                nextLook = outfits[0];
+            }
+            setDailyLook(nextLook);
             setIsGenerating(false);
         }, 600);
     };
 
-    // ------------------------------------------------------------------
-    // CORE LOGIC: CONSTRAINT_BASED GENERATION (DIGITAL STYLIST ENGINE)
-    // ------------------------------------------------------------------
-    const generateAIOutfit = () => {
-        if (!wardrobeItems || wardrobeItems.length === 0) return;
-
-        setIsGenerating(true);
-        setShowSuccess(false);
-        setShowFullReveal(false);
-
-        // Simulate AI Processing time
-        setTimeout(() => {
-            const rules = occasionRules[selectedOccasion] || [];
-            let pool = [...wardrobeItems];
-
-            // 1. FILTER: By Occasion
-            const occasionMatches = pool.filter(item => {
-                const cat = (item.category || "").toLowerCase();
-                const name = (item.name || "").toLowerCase();
-                return rules.some(r => cat.includes(r) || name.includes(r));
-            });
-            if (occasionMatches.length >= 2) {
-                pool = occasionMatches;
-            }
-
-            // 2. FILTER: By Vibe
-            if (selectedVibe === "minimal") {
-                pool.sort(() => Math.random() - 0.3);
-            } else if (selectedVibe === "bold") {
-                pool.sort(() => Math.random() - 0.7);
-            }
-
-            // 3. ANCHOR LOGIC
-            let initialSelection: WardrobeItem[] = [];
-
-            if (anchorItem) {
-                initialSelection.push(anchorItem);
-                pool = pool.filter(i => i.id !== anchorItem.id);
-                const anchorCat = (anchorItem.category || "").toLowerCase();
-                const isTop = ["shirt", "top", "blouse", "tee", "sweater"].some(c => anchorCat.includes(c));
-                const isBottom = ["pants", "trouser", "jean", "skirt"].some(c => anchorCat.includes(c));
-
-                if (isTop) {
-                    pool = pool.filter(i => !["shirt", "top", "blouse", "tee", "sweater"].some(c => (i.category || "").toLowerCase().includes(c)));
-                } else if (isBottom) {
-                    pool = pool.filter(i => !["pants", "trouser", "jean", "skirt"].some(c => (i.category || "").toLowerCase().includes(c)));
-                }
-            } else {
-                if (generatedOutfit && lockedItemIds.size > 0) {
-                    const locked = generatedOutfit.filter(i => lockedItemIds.has(i.id));
-                    initialSelection = [...locked];
-                    const lockedIds = new Set(locked.map(i => i.id));
-                    pool = pool.filter(i => !lockedIds.has(i.id));
-                }
-            }
-
-            // 4. FILL THE REST
-            const targetCount = 4;
-            const slotsNeeded = targetCount - initialSelection.length;
-
-            if (slotsNeeded > 0) {
-                const shuffled = pool.sort(() => Math.random() - 0.5);
-                for (const candidate of shuffled) {
-                    if (initialSelection.length >= targetCount) break;
-                    initialSelection.push(candidate);
-                }
-            }
-
-            setGeneratedOutfit(initialSelection);
-            setIsGenerating(false);
-            setShowSuccess(true);
-            setShowFullReveal(true); // Trigger Full Screen Reveal
-            setTimeout(() => setShowSuccess(false), 2000);
-
-        }, 1200); // Slightly longer for dramatic effect
+    const resolveOutfitItems = (outfit: Outfit) => {
+        const itemIds = outfit.items as unknown as number[];
+        return itemIds.map(id => wardrobeItems?.find(item => item.id === id)).filter(Boolean);
     };
+    const resolvedDailyItems = dailyLook ? resolveOutfitItems(dailyLook) : [];
 
-    // ITEM LOCKING TOGGLE
-    const toggleLockItem = (itemId: number) => {
-        setLockedItemIds(prev => {
-            const next = new Set(prev);
-            if (next.has(itemId)) {
-                next.delete(itemId);
-            } else {
-                next.add(itemId);
-            }
-            return next;
-        });
-    };
+    // Greeting
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
-    const regenerateOutfit = () => {
-        generateAIOutfit();
-    };
-
-    const getItemImage = (itemId: number) => {
-        return wardrobeItems?.find(i => i.id === itemId)?.imageUrl;
-    };
-
-    const isLoading = weatherLoading || wardrobeLoading || outfitsLoading;
-
-    // Derived Data
-    const recentItems = useMemo(() => wardrobeItems?.slice(0, 4) || [], [wardrobeItems]);
-    const rediscoverItems = useMemo(() => {
-        if (!wardrobeItems || wardrobeItems.length < 3) return [];
-        return [...wardrobeItems].sort(() => 0.5 - Math.random()).slice(0, 3);
-    }, [wardrobeItems]);
-
-    const formattedDate = currentTime.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-    });
-
-    const handleSaveWeatherLocation = (newLocation: string) => {
-        localStorage.setItem("weatherLocation", newLocation);
-        window.location.reload();
-    };
-
-    const WeatherIcon = () => {
-        const condition = weather?.condition?.toLowerCase() || '';
-        if (condition.includes('rain') || condition.includes('drizzle')) return <CloudRain className="w-4 h-4" />;
-        if (condition.includes('cloud')) return <Cloud className="w-4 h-4" />;
-        return <Sun className="w-4 h-4" />;
-    };
-
-    const hasWardrobeItems = (wardrobeItems?.length || 0) > 0;
-
-    if (isLoading) {
+    if (weatherLoading) {
         return (
-            <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-2 border-[#E5E5E5] border-t-[#1A1A1A] rounded-full animate-spin" />
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Loading Atelier...</p>
+            <AppLayout>
+                <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-[#666] animate-spin" />
                 </div>
-            </div>
+            </AppLayout>
         );
     }
 
     return (
         <AppLayout>
-            <div className="w-full max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8 relative">
+            <div className="bg-[#FAFAFA] text-[#1A1A1A] w-full min-h-[calc(100vh-5rem)] md:h-[calc(100vh-5rem)] overflow-y-auto md:overflow-hidden flex flex-col font-sans">
 
-                {/* ========================================== */}
-                {/* 1. HEADER */}
-                {/* ========================================== */}
-                <motion.header
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="space-y-4"
-                >
-                    <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">
-                            {format(currentTime, 'EEEE, MMMM do')}
-                        </p>
-                        <WeatherPill
-                            temperature={weather?.temperature}
-                            condition={weather?.condition}
-                            location={weather?.location}
+                <div className="flex-1 max-w-[1600px] mx-auto w-full px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6">
+
+                    {/* HEADER */}
+                    <motion.header
+                        className="flex flex-col md:flex-row justify-between items-start md:items-end pb-4 border-b border-black/5 shrink-0"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-semibold text-[#1A1A1A] leading-tight tracking-tight mb-1">
+                                {greeting}, {user?.username || 'there'}.
+                            </h1>
+                            <p className="text-xs text-[#666] uppercase tracking-widest">
+                                {format(new Date(), 'EEEE, MMMM do')}
+                            </p>
+                        </div>
+
+                        {/* Weather Widget */}
+                        <button
                             onClick={() => setShowWeatherModal(true)}
-                        />
-                    </div>
+                            className="mt-4 md:mt-0 flex items-center gap-3 text-xs font-mono text-[#666] bg-white border border-black/5 px-4 py-2.5 rounded-full hover:border-black/10 hover:shadow-sm transition-all"
+                        >
+                            <span>{weather?.location || 'Select City'}</span>
+                            <span className="w-px h-4 bg-black/10" />
+                            <span className="text-[#1A1A1A] font-semibold">{weather?.temperature || 20}°C</span>
+                            <span className="hidden sm:inline text-[#666]">{weather?.condition || "Clear"}</span>
+                        </button>
+                    </motion.header>
 
-                    <div>
-                        <h1 className="text-3xl md:text-5xl text-[#1A1A1A] leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                            {currentTime.getHours() < 12 ? 'Good Morning' : currentTime.getHours() < 18 ? 'Good Afternoon' : 'Good Evening'},
-                            <br />
-                            <span className="italic text-gray-400">{user?.username || 'Style Icon'}</span>
-                        </h1>
-                    </div>
-                </motion.header>
+                    {/* MAIN GRID */}
+                    <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
 
-
-                {/* ========================================== */}
-                {/* 2. THE ATELIER (COMMAND CENTER)            */}
-                {/* ========================================== */}
-                {/* ========================================== */}
-                {/* 2. THE ATELIER (COMMAND CENTER)            */}
-                {/* ========================================== */}
-                <AtelierSection
-                    hasWardrobeItems={hasWardrobeItems}
-                    selectedOccasion={selectedOccasion}
-                    setSelectedOccasion={setSelectedOccasion}
-                    selectedVibe={selectedVibe}
-                    setSelectedVibe={setSelectedVibe}
-                    anchorItem={anchorItem}
-                    setAnchorItem={setAnchorItem}
-                    setShowAnchorModal={setShowAnchorModal}
-                    generateAIOutfit={generateAIOutfit}
-                    isGenerating={isGenerating}
-                />
-
-                {/* ========================================== */}
-                {/* 3. QUICK ACTIONS & DISCOVERY              */}
-                {/* ========================================== */}
-                <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="py-6 border-y border-gray-100"
-                >
-                    <div className="flex items-center justify-between gap-4 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-                        {[
-                            { label: "My Wardrobe", href: "/wardrobe" },
-                            { label: "Saved Looks", href: "/calendar" }, // Assuming saved looks live here or are accessible
-                            { label: "Trip Planner", href: "/trips" },
-                        ].map((action, i) => (
-                            <Link key={i} href={action.href}>
-                                <div className="flex items-center gap-3 px-6 py-4 rounded-xl bg-gray-50 hover:bg-[#F5F4F0] transition-colors cursor-pointer group whitespace-nowrap min-w-[140px] justify-center">
-                                    <span className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#80163A] transition-colors">
-                                        {action.label}
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </motion.section>
-
-                <motion.section
-                    className="grid md:grid-cols-2 gap-8"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    {/* Recent Items */}
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg text-[#1A1A1A] font-medium" style={{ fontFamily: "'Playfair Display', serif" }}>New In</h3>
-                            <Link href="/wardrobe">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#80163A] cursor-pointer hover:underline">View All</span>
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-4 gap-3">
-                            {recentItems.slice(0, 4).map((item) => (
-                                <Link key={item.id} href="/wardrobe">
-                                    <div className="aspect-square rounded-xl bg-white border border-gray-100 overflow-hidden relative group cursor-pointer hover:shadow-md transition-all">
-                                        {item.imageUrl ? (
-                                            <img src={item.imageUrl} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Shirt className="w-6 h-6 text-gray-200" />
+                        {/* LEFT: VISUAL STAGE (8 COLS) */}
+                        <div className="lg:col-span-8 flex flex-col min-h-[500px] lg:min-h-0 relative">
+                            <motion.div
+                                className="flex-1 w-full bg-white border border-black/5 rounded-2xl shadow-sm flex relative overflow-hidden"
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.1 }}
+                            >
+                                {dailyLook ? (
+                                    <>
+                                        {/* IMAGE COMPOSITION */}
+                                        <div className="relative bg-[#1A1A1A] h-full w-full lg:w-2/3 transition-all duration-500">
+                                            <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-[1px] bg-[#1A1A1A]">
+                                                {resolvedDailyItems.slice(0, 4).map((item, i) => (
+                                                    <div key={i} className="bg-white relative overflow-hidden">
+                                                        {item?.imageUrl ? (
+                                                            <img src={item.imageUrl} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt={item.name} />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-[#FAFAFA]"><Shirt className="w-10 h-10 text-[#DDD]" /></div>
+                                                        )}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                    {/* Rediscover */}
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg text-[#1A1A1A] font-medium" style={{ fontFamily: "'Playfair Display', serif" }}>Rediscover</h3>
-                        </div>
-                        <div className="space-y-3">
-                            {rediscoverItems.map((item) => (
-                                <Link key={item.id} href="/wardrobe">
-                                    <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group border border-transparent hover:border-gray-100">
-                                        <div className="w-12 h-12 rounded-lg bg-[#FAF9F6] overflow-hidden shrink-0">
-                                            {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-contain p-1" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-[#1A1A1A] truncate">{item.name}</p>
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">{item.brand || 'No brand'}</p>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                </motion.section>
 
-                {/* Weather Modal */}
+                                            {/* OVERLAY */}
+                                            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/50 to-transparent pt-24 pointer-events-none">
+                                                <div className="relative z-10">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_10px_white]" />
+                                                        <p className="text-[10px] text-white/80 font-mono uppercase tracking-widest">
+                                                            Daily Curated
+                                                        </p>
+                                                    </div>
+                                                    <h2 className="text-2xl md:text-3xl font-semibold italic text-white leading-none drop-shadow-sm">
+                                                        {dailyLook.name}
+                                                    </h2>
+                                                </div>
+                                            </div>
+
+                                            {/* MOBILE INFO BUTTON */}
+                                            <button
+                                                onClick={() => setShowMobileDetails(true)}
+                                                className="lg:hidden absolute top-4 right-4 p-2.5 bg-black/20 backdrop-blur-md border border-white/20 text-white rounded-full hover:bg-black/40 transition-all"
+                                            >
+                                                <Maximize2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        {/* DESKTOP SIDEBAR */}
+                                        <div className="hidden lg:flex w-1/3 bg-white border-l border-black/5 flex-col relative">
+                                            <OutfitDetails
+                                                items={resolvedDailyItems}
+                                                onGenerate={refreshDailyLook}
+                                                isGenerating={isGenerating}
+                                            />
+                                        </div>
+
+                                        {/* MOBILE DETAILS OVERLAY */}
+                                        <AnimatePresence>
+                                            {showMobileDetails && (
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    className="fixed inset-0 z-50 bg-black/50 lg:hidden"
+                                                    onClick={() => setShowMobileDetails(false)}
+                                                >
+                                                    <motion.div
+                                                        initial={{ y: '100%' }}
+                                                        animate={{ y: 0 }}
+                                                        exit={{ y: '100%' }}
+                                                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                                                        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[80vh] flex flex-col"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <div className="p-4 border-b border-black/5 flex justify-between items-center shrink-0">
+                                                            <h3 className="font-semibold text-[#1A1A1A]">{dailyLook.name}</h3>
+                                                            <button onClick={() => setShowMobileDetails(false)} className="p-2 text-[#666] hover:text-[#1A1A1A]">
+                                                                <X className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                        <OutfitDetails
+                                                            items={resolvedDailyItems}
+                                                            onGenerate={(e) => { refreshDailyLook(e); setShowMobileDetails(false); }}
+                                                            isGenerating={isGenerating}
+                                                        />
+                                                    </motion.div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </>
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-8">
+                                        <Shirt className="w-16 h-16 text-[#DDD]" />
+                                        <div className="text-center">
+                                            <p className="text-[#666] mb-2">No outfits yet</p>
+                                            <Link href="/compose">
+                                                <button className="text-xs font-semibold uppercase tracking-widest text-[#1A1A1A] border-b border-[#1A1A1A] hover:text-[#80163a] hover:border-[#80163a] transition-colors">
+                                                    Create Your First Look
+                                                </button>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                )}
+                            </motion.div>
+                        </div>
+
+                        {/* RIGHT: UTILITY STACK (4 COLS) */}
+                        <div className="lg:col-span-4 flex flex-col gap-4 h-full min-h-0">
+
+                            {/* STATS */}
+                            <motion.div
+                                className="flex gap-4 shrink-0"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <StatBlock label="Items" value={wardrobeItems?.length || 0} />
+                                <StatBlock label="Outfits" value={outfits?.length || 0} />
+                            </motion.div>
+
+                            {/* TOOLS */}
+                            <motion.div
+                                className="grid grid-cols-2 gap-3 shrink-0"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <ToolCard label="Add Item" icon={Plus} href="/wardrobe" />
+                                <ToolCard label="Plan Trip" icon={Calendar} href="/trips" />
+                                <ToolCard label="Search" icon={Search} href="/wardrobe" />
+                                <ToolCard label="Settings" icon={Settings} href="/profile" />
+                            </motion.div>
+
+                            {/* RECENT ITEMS */}
+                            <motion.div
+                                className="flex-1 bg-white border border-black/5 rounded-2xl p-5 flex flex-col min-h-0 overflow-hidden"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                            >
+                                <div className="flex justify-between items-center mb-4 pb-3 border-b border-black/5 shrink-0">
+                                    <span className="text-xs font-semibold uppercase tracking-widest text-[#666]">Recent Items</span>
+                                    <Link href="/wardrobe">
+                                        <div className="flex items-center gap-1 cursor-pointer group">
+                                            <span className="text-xs font-semibold text-[#1A1A1A] group-hover:underline">View All</span>
+                                            <ArrowUpRight className="w-3.5 h-3.5 text-[#1A1A1A]" />
+                                        </div>
+                                    </Link>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-2">
+                                    {(wardrobeItems || []).slice(0, 5).map((item) => (
+                                        <Link key={item.id} href={`/wardrobe?item=${item.id}`}>
+                                            <div className="flex items-center gap-3 group cursor-pointer hover:bg-black/[0.02] p-2 rounded-xl transition-colors">
+                                                <div className="w-10 h-10 bg-[#FAFAFA] flex-none overflow-hidden border border-black/5 rounded-lg">
+                                                    {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-cover" alt={item.name} />}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-medium text-[#1A1A1A] truncate group-hover:underline">{item.name}</p>
+                                                    <p className="text-xs text-[#666] capitalize">{item.category}</p>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                    {(!wardrobeItems || wardrobeItems.length === 0) && (
+                                        <div className="text-center py-8 text-[#666] text-sm">
+                                            No items yet
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </div>
+
+                    </div>
+
+                </div>
+
                 <WeatherLocationModal
                     isOpen={showWeatherModal}
                     onClose={() => setShowWeatherModal(false)}
                     currentLocation={savedLocation || ""}
-                    onSave={handleSaveWeatherLocation}
+                    onSave={(newLocation) => {
+                        localStorage.setItem("weatherLocation", newLocation);
+                        window.location.reload();
+                    }}
                 />
-            </div >
-
-            {/* ========================================================================= */}
-            {/* FULL SCREEN REVEAL OVERLAY (THE ATELIER RESULT)                           */}
-            {/* ========================================================================= */}
-            <AnimatePresence>
-                {showFullReveal && generatedOutfit && generatedOutfit.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: "100%" }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: "100%" }}
-                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} // Luxury Ease
-                        className="fixed inset-0 z-[9999] bg-[#FAF9F6] flex flex-col"
-                    >
-                        {/* Dynamic Background Blur */}
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full blur-[100px] opacity-30 mix-blend-multiply"
-                                style={{ background: `linear-gradient(135deg, ${occasions.find(o => o.id === selectedOccasion)?.color || '#80163A'}, transparent)` }}
-                            />
-                        </div>
-
-                        {/* CONTENT WRAPPER */}
-                        <div className="relative flex-1 flex flex-col w-full h-full overflow-y-auto z-10">
-
-                            {/* OVERLAY HEADER */}
-                            <div className="flex-none flex justify-between items-center px-6 py-6 md:px-12 md:py-8">
-                                <div>
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: occasions.find(o => o.id === selectedOccasion)?.color }} />
-                                        <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500">
-                                            {selectedVibe} Edit
-                                        </span>
-                                    </div>
-                                    <h2 className="text-4xl md:text-5xl text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                        {occasions.find(o => o.id === selectedOccasion)?.label}
-                                    </h2>
-                                </div>
-                                <button
-                                    onClick={() => setShowFullReveal(false)}
-                                    className="w-12 h-12 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition-all hover:rotate-90 shadow-sm"
-                                >
-                                    <X className="w-5 h-5 text-[#1A1A1A]" />
-                                </button>
-                            </div>
-
-                            {/* OUTFIT GRID */}
-                            <div className="flex-1 flex flex-col justify-center py-10 px-4">
-                                <div className="max-w-5xl mx-auto w-full grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 justify-items-center">
-                                    {generatedOutfit.map((item, idx) => (
-                                        <motion.div
-                                            key={item.id}
-                                            initial={{ opacity: 0, y: 40 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.3 + (idx * 0.1), duration: 0.6 }}
-                                            className={`relative w-full aspect-[3/4] md:aspect-[4/5] bg-white rounded-[2rem] shadow-xl shadow-black/5 flex flex-col items-center p-6 border border-white/40 backdrop-blur-sm
-                                                ${lockedItemIds.has(item.id) ? 'ring-2 ring-[#80163A]/20' : ''}
-                                            `}
-                                        >
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); toggleLockItem(item.id); }}
-                                                className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-                                            >
-                                                <Save className={`w-4 h-4 ${lockedItemIds.has(item.id) ? 'fill-[#80163A] text-[#80163A]' : 'text-gray-400'}`} />
-                                            </button>
-
-                                            <div className="flex-1 w-full flex items-center justify-center mb-4">
-                                                {item.imageUrl ? (
-                                                    <img
-                                                        src={item.imageUrl}
-                                                        className="max-w-full max-h-full object-contain drop-shadow-2xl mix-blend-multiply transition-transform duration-700 hover:scale-105"
-                                                        alt={item.name}
-                                                    />
-                                                ) : (
-                                                    <Shirt className="w-12 h-12 text-gray-200" />
-                                                )}
-                                            </div>
-
-                                            <div className="text-center w-full">
-                                                <p className="text-xs font-bold text-[#1A1A1A] truncate w-full mb-1">{item.name}</p>
-                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider">{item.brand || 'Unknown'}</p>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* ACTION BAR */}
-                            <div className="flex-none pb-12 pt-6 px-6 bg-gradient-to-t from-[#FAF9F6] to-transparent">
-                                <div className="max-w-sm mx-auto flex items-center gap-3">
-                                    <Link href="/compose" className="flex-1">
-                                        <button className="w-full h-14 bg-[#1A1A1A] text-white rounded-2xl font-medium text-xs tracking-[0.15em] uppercase hover:bg-[#333] transition-all flex items-center justify-center gap-3 shadow-2xl shadow-black/20">
-                                            <Check className="w-4 h-4" />
-                                            <span>Accept Edit</span>
-                                        </button>
-                                    </Link>
-                                    <button
-                                        onClick={regenerateOutfit}
-                                        disabled={isGenerating}
-                                        className="h-14 w-14 rounded-2xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                                    >
-                                        <Shuffle className={`w-5 h-5 text-[#1A1A1A] ${isGenerating ? 'animate-spin' : ''}`} />
-                                    </button>
-                                </div>
-                            </div>
-
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-        </AppLayout >
+            </div>
+        </AppLayout>
     );
 }
 

@@ -3,6 +3,9 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import storage from "../storage";
 import { insertTripSchema } from "@shared/schema";
+import { createLogger } from "../utils/logger";
+
+const logger = createLogger('trips-controller');
 
 export const getTrips = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
@@ -19,21 +22,21 @@ export const createTrip = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        console.log("[createTrip] Received body:", JSON.stringify(req.body, null, 2));
+        logger.debug({ body: req.body }, "[createTrip] Received request");
 
         const tripData = insertTripSchema.parse({
             ...req.body,
             userId: req.user!.id
         });
 
-        console.log("[createTrip] Parsed data:", JSON.stringify(tripData, null, 2));
+        logger.debug({ tripData }, "[createTrip] Parsed data");
 
         const trip = await storage.createTrip(tripData);
-        console.log("[createTrip] Created trip:", trip);
+        logger.info({ tripId: trip.id, userId: req.user!.id }, "[createTrip] Trip created successfully");
 
         res.status(201).json(trip);
     } catch (error) {
-        console.error("[createTrip] ERROR:", error);
+        logger.error({ err: error }, "[createTrip] Error creating trip");
         if (error instanceof z.ZodError) {
             return res.status(400).json({ message: "Invalid trip data", errors: error.format() });
         }
