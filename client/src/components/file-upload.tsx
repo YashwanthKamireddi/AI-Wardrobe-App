@@ -1,11 +1,12 @@
 import { useState, useCallback, useRef } from "react";
-import { Upload, X, Image as ImageIcon, Camera, Link, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Camera, Link, AlertCircle, Loader2, Sparkles } from "lucide-react";
 
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { LuxuryInput } from "@/components/ui/luxury-input";
 import { useToast } from "@/hooks/use-toast";
 import { HapticFeedback } from "@/lib/haptics";
 import { processImage, generatePlaceholder } from "@/lib/image-pipeline";
+import { processWardrobeImage, AIProcessingResult } from "@/lib/image-ai";
 
 // File validation constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -17,9 +18,11 @@ interface FileUploadProps {
     onChange: (url: string) => void;
     onFileSelect?: (file: File) => void; // New: expose raw file for AI processing
     onUrlProcess?: (url: string) => void; // New: process URL with background removal
+    onAIProcess?: (result: AIProcessingResult) => void; // Full AI pipeline: bg removal + colors + category
     accept?: string;
     maxSize?: number;
     showAIBadge?: boolean; // Show AI processing badge
+    enableAI?: boolean; // Enable AI processing (background removal, color detection)
 }
 
 export default function FileUpload({
@@ -27,15 +30,18 @@ export default function FileUpload({
     onChange,
     onFileSelect,
     onUrlProcess,
+    onAIProcess,
     accept = "image/*",
     maxSize = MAX_FILE_SIZE,
-    showAIBadge = false
+    showAIBadge = false,
+    enableAI = false
 }: FileUploadProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlInput, setUrlInput] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [aiProgress, setAiProgress] = useState<{ stage: string; progress: number } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
 
@@ -73,6 +79,34 @@ export default function FileUpload({
         if (onFileSelect) {
             onFileSelect(file);
             return; // Let the parent handle the rest
+        }
+
+        // AI Processing: background removal + color detection + category suggestion
+        if (enableAI && onAIProcess) {
+            setIsLoading(true);
+            setAiProgress({ stage: 'Initializing AI...', progress: 5 });
+
+            try {
+                const result = await processWardrobeImage(
+                    file,
+                    (stage, progress) => setAiProgress({ stage, progress }),
+                    { removeBg: true }
+                );
+
+                onAIProcess(result);
+                setAiProgress(null);
+                setIsLoading(false);
+
+                toast({
+                    title: "AI Processing Complete",
+                    description: `Detected: ${result.colors.colorName} ${result.category.category}`,
+                });
+                return;
+            } catch (aiError) {
+                console.error('AI processing failed:', aiError);
+                setAiProgress(null);
+                // Fall through to standard upload
+            }
         }
 
         setIsLoading(true);
@@ -226,10 +260,25 @@ export default function FileUpload({
                 onDrop={handleDrop}
             >
                 {isLoading ? (
-                    <>
+                    <div className="flex flex-col items-center">
                         <div className="h-8 w-8 rounded-full border-2 border-[#80163A]/20 border-t-[#80163A] animate-spin" />
-                        <p className="text-xs font-medium text-[#80163A] mt-3 tracking-wide uppercase">Adding to Studio...</p>
-                    </>
+                        {aiProgress ? (
+                            <div className="mt-3 w-full max-w-[150px]">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <Sparkles className="h-3 w-3 text-[#80163A]" />
+                                    <p className="text-[10px] font-medium text-[#80163A] tracking-wide uppercase">{aiProgress.stage}</p>
+                                </div>
+                                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-[#80163A] to-[#D4AF37] transition-all duration-300"
+                                        style={{ width: `${aiProgress.progress}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-xs font-medium text-[#80163A] mt-3 tracking-wide uppercase">Adding to Studio...</p>
+                        )}
+                    </div>
                 ) : (
                     <>
                         <div className={`rounded-full p-3 mb-3 ${error ? 'bg-destructive/10' : 'bg-muted'}`}>

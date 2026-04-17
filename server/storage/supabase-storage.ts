@@ -65,7 +65,21 @@ export class SupabaseStorage implements IStorage {
                 .eq('username', username)
                 .single();
 
-            if (error || !data) return undefined;
+            if (error) {
+                logger.warn({ error: error.message }, `[Supabase] Error fetching user by username: ${username}`);
+                return undefined;
+            }
+
+            if (!data) {
+                logger.info(`[Supabase] No user found for username: ${username}`);
+                return undefined;
+            }
+
+            // Debug: Check if password is present in DB response
+            const hasPassword = !!data.password;
+            const passwordLength = data.password?.length || 0;
+            logger.info(`[Supabase] User ${username} found: hasPassword=${hasPassword}, passwordLength=${passwordLength}`);
+
             return this.mapDbUserToUser(data);
         } catch (err) {
             logger.error({ err: err instanceof Error ? err : new Error(String(err)) }, 'Error getting user by username');
@@ -634,6 +648,182 @@ export class SupabaseStorage implements IStorage {
             .delete()
             .eq('id', id);
         return !error;
+    }
+
+    // Capsule Wardrobes operations
+    async getCapsules(userId: number): Promise<any[]> {
+        const { data, error } = await this.client
+            .from('capsule_wardrobes')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) return [];
+        return (data || []).map(capsule => this.mapDbCapsuleToCapsule(capsule));
+    }
+
+    async getCapsule(id: number): Promise<any | undefined> {
+        const { data, error } = await this.client
+            .from('capsule_wardrobes')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error || !data) return undefined;
+        return this.mapDbCapsuleToCapsule(data);
+    }
+
+    async createCapsule(insertCapsule: any): Promise<any> {
+        const { data, error } = await this.client
+            .from('capsule_wardrobes')
+            .insert({
+                user_id: insertCapsule.userId,
+                name: insertCapsule.name,
+                description: insertCapsule.description || '',
+                type: insertCapsule.type || 'custom',
+                season: insertCapsule.season || 'all',
+                items: insertCapsule.items || [],
+                is_active: insertCapsule.isActive ?? true,
+            })
+            .select()
+            .single();
+
+        if (error || !data) {
+            throw new Error('Failed to create capsule: ' + (error?.message || 'Unknown error'));
+        }
+
+        return this.mapDbCapsuleToCapsule(data);
+    }
+
+    async updateCapsule(id: number, capsuleData: any): Promise<any | undefined> {
+        const updateData: any = { updated_at: new Date().toISOString() };
+        if (capsuleData.name !== undefined) updateData.name = capsuleData.name;
+        if (capsuleData.description !== undefined) updateData.description = capsuleData.description;
+        if (capsuleData.type !== undefined) updateData.type = capsuleData.type;
+        if (capsuleData.season !== undefined) updateData.season = capsuleData.season;
+        if (capsuleData.items !== undefined) updateData.items = capsuleData.items;
+        if (capsuleData.isActive !== undefined) updateData.is_active = capsuleData.isActive;
+
+        const { data, error } = await this.client
+            .from('capsule_wardrobes')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error || !data) return undefined;
+        return this.mapDbCapsuleToCapsule(data);
+    }
+
+    async deleteCapsule(id: number): Promise<boolean> {
+        const { error } = await this.client
+            .from('capsule_wardrobes')
+            .delete()
+            .eq('id', id);
+        return !error;
+    }
+
+    // Wishlist operations
+    async getWishlist(userId: number): Promise<any[]> {
+        const { data, error } = await this.client
+            .from('wishlist_items')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) return [];
+        return (data || []).map(item => this.mapDbWishlistToWishlist(item));
+    }
+
+    async addToWishlist(insertItem: any): Promise<any> {
+        const { data, error } = await this.client
+            .from('wishlist_items')
+            .insert({
+                user_id: insertItem.userId,
+                name: insertItem.name,
+                brand: insertItem.brand || null,
+                price: insertItem.price || null,
+                url: insertItem.url || insertItem.sourceUrl || null,
+                image_url: insertItem.imageUrl || null,
+                category: insertItem.category || null,
+                notes: insertItem.notes || null,
+                priority: insertItem.priority || 'medium',
+                purchased: false,
+            })
+            .select()
+            .single();
+
+        if (error || !data) {
+            throw new Error('Failed to add to wishlist: ' + (error?.message || 'Unknown error'));
+        }
+
+        return this.mapDbWishlistToWishlist(data);
+    }
+
+    async updateWishlistItem(id: number, itemData: any): Promise<any | undefined> {
+        const updateData: any = { updated_at: new Date().toISOString() };
+        if (itemData.name !== undefined) updateData.name = itemData.name;
+        if (itemData.brand !== undefined) updateData.brand = itemData.brand;
+        if (itemData.price !== undefined) updateData.price = itemData.price;
+        if (itemData.url !== undefined) updateData.url = itemData.url;
+        if (itemData.imageUrl !== undefined) updateData.image_url = itemData.imageUrl;
+        if (itemData.category !== undefined) updateData.category = itemData.category;
+        if (itemData.notes !== undefined) updateData.notes = itemData.notes;
+        if (itemData.priority !== undefined) updateData.priority = itemData.priority;
+        if (itemData.purchased !== undefined) updateData.purchased = itemData.purchased;
+
+        const { data, error } = await this.client
+            .from('wishlist_items')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error || !data) return undefined;
+        return this.mapDbWishlistToWishlist(data);
+    }
+
+    async removeFromWishlist(id: number): Promise<boolean> {
+        const { error } = await this.client
+            .from('wishlist_items')
+            .delete()
+            .eq('id', id);
+        return !error;
+    }
+
+    // Mapping helpers - Capsule
+    private mapDbCapsuleToCapsule(data: any): any {
+        return {
+            id: data.id,
+            userId: data.user_id,
+            name: data.name,
+            description: data.description,
+            type: data.type,
+            season: data.season,
+            items: data.items || [],
+            isActive: data.is_active,
+            createdAt: data.created_at ? new Date(data.created_at) : null,
+            updatedAt: data.updated_at ? new Date(data.updated_at) : null,
+        };
+    }
+
+    // Mapping helpers - Wishlist
+    private mapDbWishlistToWishlist(data: any): any {
+        return {
+            id: data.id,
+            userId: data.user_id,
+            name: data.name,
+            brand: data.brand,
+            price: data.price,
+            url: data.url,
+            imageUrl: data.image_url,
+            category: data.category,
+            notes: data.notes,
+            priority: data.priority,
+            purchased: data.purchased,
+            createdAt: data.created_at ? new Date(data.created_at) : null,
+            updatedAt: data.updated_at ? new Date(data.updated_at) : null,
+        };
     }
 
     // Mapping helpers

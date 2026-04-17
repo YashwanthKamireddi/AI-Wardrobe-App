@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import { TrendingUp, DollarSign, Clock, Star, Grid3X3, ArrowRight, Sparkles, Brain } from "lucide-react";
+import { TrendingUp, DollarSign, Clock, Star, Grid3X3, ArrowRight, Sparkles, Brain, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useWardrobeStats, useCostPerWear, useMostWorn, useNeverWorn } from "@/hooks/use-analytics";
+import { useWardrobeAnalytics, useWardrobeGaps, useReplacementPredictions } from "@/hooks/use-intelligence";
 import { Link } from "wouter";
 import { ShoppingAdvisor } from "@/components/shopping-advisor";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,11 @@ export default function AnalyticsPage() {
     const { data: costPerWear } = useCostPerWear();
     const { data: mostWorn } = useMostWorn(4);
     const { data: neverWorn } = useNeverWorn();
+
+    // Intelligence Engine hooks
+    const { analytics } = useWardrobeAnalytics();
+    const { gaps } = useWardrobeGaps();
+    const { predictions } = useReplacementPredictions();
 
     // Loading State - Minimalist Spinner
     if (statsLoading) {
@@ -43,7 +49,7 @@ export default function AnalyticsPage() {
 
     return (
         <AppLayout>
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12 md:py-20">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12 pb-28 md:py-20 md:pb-20">
 
                 {/* 1. HEADER - "THE COVER" */}
                 <motion.header
@@ -260,6 +266,102 @@ export default function AnalyticsPage() {
                                     </div>
                                 </motion.div>
                             ))}
+                        </div>
+                    </motion.section>
+                )}
+
+                {/* 5. WARDROBE INTELLIGENCE - Powered by Engine */}
+                {analytics && (
+                    <motion.section
+                        className="mb-32"
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="flex items-baseline justify-between mb-12 border-b border-[#1A1A1A] pb-4">
+                            <h2 className="text-4xl md:text-5xl text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                Wardrobe <span className="italic text-[#80163A]">Intelligence</span>
+                            </h2>
+                            <div className="flex items-center gap-2">
+                                <span className={`text-3xl font-bold ${analytics.investmentHealth.grade === 'A' ? 'text-green-600' :
+                                    analytics.investmentHealth.grade === 'B' ? 'text-blue-600' :
+                                        analytics.investmentHealth.grade === 'C' ? 'text-yellow-600' :
+                                            'text-red-600'
+                                    }`}>
+                                    {analytics.investmentHealth.grade}
+                                </span>
+                                <span className="text-xs uppercase tracking-widest text-gray-400">Health Grade</span>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Investment Health Card */}
+                            <div className="p-6 bg-white border border-gray-100 shadow-lg">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-semibold text-[#1A1A1A]">Investment Health</h3>
+                                    <div className="text-2xl font-bold text-[#1A1A1A]">{analytics.investmentHealth.score}%</div>
+                                </div>
+                                <div className="space-y-2">
+                                    {analytics.investmentHealth.insights.slice(0, 2).map((insight, i) => (
+                                        <div key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                                            <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                            <span>{insight}</span>
+                                        </div>
+                                    ))}
+                                    {analytics.investmentHealth.recommendations.slice(0, 1).map((rec, i) => (
+                                        <div key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                                            <Sparkles className="w-4 h-4 text-[#D4AF37] mt-0.5 shrink-0" />
+                                            <span>{rec}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Wardrobe Gaps Card */}
+                            {gaps && gaps.length > 0 && (
+                                <div className="p-6 bg-white border border-gray-100 shadow-lg">
+                                    <h3 className="font-semibold text-[#1A1A1A] mb-4">Wardrobe Gaps</h3>
+                                    <div className="space-y-3">
+                                        {gaps.slice(0, 3).map((gap, i) => (
+                                            <div key={i} className="flex items-start gap-3">
+                                                <AlertTriangle className={`w-4 h-4 mt-0.5 shrink-0 ${gap.priority === 'Essential' ? 'text-red-500' :
+                                                    gap.priority === 'Recommended' ? 'text-yellow-500' :
+                                                        'text-gray-400'
+                                                    }`} />
+                                                <div>
+                                                    <p className="text-sm font-medium text-[#1A1A1A]">{gap.gap}</p>
+                                                    <p className="text-xs text-gray-500">{gap.reason}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Replacement Predictions Card */}
+                            {predictions && predictions.length > 0 && (
+                                <div className="p-6 bg-white border border-gray-100 shadow-lg">
+                                    <h3 className="font-semibold text-[#1A1A1A] mb-4">Replacement Forecast</h3>
+                                    <div className="space-y-3">
+                                        {predictions.slice(0, 3).map((pred, i) => (
+                                            <div key={i} className="flex items-center gap-3">
+                                                {pred.item.imageUrl && (
+                                                    <img src={pred.item.imageUrl} alt={pred.item.name} className="w-10 h-10 rounded-lg object-cover" />
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-[#1A1A1A] truncate">{pred.item.name}</p>
+                                                    <p className="text-xs text-gray-500">{pred.estimatedLifeRemaining}</p>
+                                                </div>
+                                                <span className={`text-xs px-2 py-1 rounded-full ${pred.replacementUrgency === 'High' ? 'bg-red-100 text-red-700' :
+                                                    'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                    {pred.replacementUrgency}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </motion.section>
                 )}

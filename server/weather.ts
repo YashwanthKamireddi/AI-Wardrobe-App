@@ -7,6 +7,13 @@ import { createLogger } from './utils/logger';
 
 const logger = createLogger('weather');
 
+export interface HourlyForecast {
+    time: string;
+    temp: number;
+    condition: string;
+    suitability: number;
+}
+
 export interface WeatherData {
     type: 'sunny' | 'rainy' | 'cloudy' | 'snowy' | 'windy' | 'hot' | 'cold';
     temperature: number;
@@ -14,6 +21,8 @@ export interface WeatherData {
     humidity: number;
     windSpeed: number;
     location?: string;
+    feelsLike?: number;
+    hourlyForecast?: HourlyForecast[];
 }
 
 export const validLocations = [
@@ -146,13 +155,34 @@ export function getMockWeatherForLocation(location: string): WeatherData {
         cold: 'Cold and crisp'
     };
 
+    // Generate hourly forecast
+    const hourlyForecast: HourlyForecast[] = [];
+    const hours = ['Now', '10AM', '12PM', '2PM', '4PM', '6PM'];
+    const conditions = ['sunny', 'partly_cloudy', 'cloudy'];
+
+    for (let i = 0; i < 6; i++) {
+        const tempVariation = Math.floor(Math.random() * 8) - 4;
+        const hourTemp = temp + tempVariation + (i < 3 ? i * 2 : (6 - i) * 2);
+        const conditionIndex = (hash + i) % conditions.length;
+        const suitability = Math.max(50, 95 - Math.abs(20 - hourTemp) * 2);
+
+        hourlyForecast.push({
+            time: hours[i],
+            temp: Math.round(hourTemp),
+            condition: conditions[conditionIndex],
+            suitability: Math.round(suitability)
+        });
+    }
+
     return {
         type,
         temperature: temp,
         description: descriptions[type] || 'Clear',
         humidity: 40 + (hash % 40),
         windSpeed: 5 + (hash % 20),
-        location
+        location,
+        feelsLike: temp + (type === 'hot' ? 3 : type === 'windy' ? -3 : 0),
+        hourlyForecast
     };
 }
 

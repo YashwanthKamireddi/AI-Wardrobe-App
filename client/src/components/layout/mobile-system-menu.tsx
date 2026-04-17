@@ -1,18 +1,17 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import {
-    X, Search, ChevronRight, LogOut,
-    Home, Shirt, Plus, Calendar, Plane, // Primary
-    Layers, BarChart3, User, Grid3X3, DollarSign, Sparkles, Lightbulb // System
+    X, Search, LogOut,
+    Home, Shirt, Layers, Calendar, Compass, // Primary 5
+    BarChart3, Sparkles, DollarSign, User, Frame, Palette // System
 } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
 
 /**
- * MOBILE SYSTEM MENU - THE "APP" DOCK
+ * MOBILE SYSTEM MENU - SIMPLIFIED NAVIGATION (V2.0)
  *
  * Design: Full screen glassmorphism overlay.
- * Animation: Spring physics slide-up.
- * Content: Unified access to "Atelier" (Primary) and "System" (Secondary) tools.
+ * Navigation: 5 Core Apps + 4 System Tools
  */
 
 interface MobileSystemMenuProps {
@@ -21,23 +20,23 @@ interface MobileSystemMenuProps {
     onLogout: () => void;
 }
 
+// Primary Navigation - 5 Core Features
 const PRIMARY_APPS = [
-    { href: "/home", label: "Atelier", icon: Home, description: "Dashboard" },
-    { href: "/wardrobe", label: "Collection", icon: Shirt, description: "Digital Wardrobe" },
-    { href: "/compose", label: "Studio", icon: Plus, description: "Outfit Builder" },
-    { href: "/calendar", label: "Plan", icon: Calendar, description: "Schedule" },
-    { href: "/trips", label: "Trips", icon: Plane, description: "Travel Log" },
+    { href: "/home", label: "Home", icon: Home, description: "Dashboard" },
+    { href: "/wardrobe", label: "Wardrobe", icon: Shirt, description: "Your Collection" },
+    { href: "/outfits", label: "Outfits", icon: Layers, description: "Create & View Looks" },
+    { href: "/plan", label: "Plan", icon: Calendar, description: "Calendar & Trips" },
+    { href: "/discover", label: "Discover", icon: Compass, description: "Community & Inspiration" },
 ];
 
+// System Menu - Secondary Features
 const SYSTEM_TOOLS = [
-    { href: "/outfits", label: "Saved Looks", icon: Layers },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/community", label: "Community", icon: User },
-    { href: "/capsules", label: "Capsules", icon: Grid3X3 },
-    { href: "/wishlist", label: "Wishlist", icon: DollarSign },
     { href: "/style-dna", label: "Style DNA", icon: Sparkles },
-    { href: "/inspiration", label: "Mood Boards", icon: Lightbulb },
-    { href: "/framing", label: "Frame Studio", icon: Layers },
+    { href: "/framing", label: "Framing", icon: Frame },
+    { href: "/studio", label: "Studio", icon: Palette },
+    { href: "/wishlist", label: "Wishlist", icon: DollarSign },
+    { href: "/profile", label: "Profile", icon: User },
 ];
 
 export function MobileSystemMenu({ isOpen, onClose, onLogout }: MobileSystemMenuProps) {
@@ -82,7 +81,7 @@ export function MobileSystemMenu({ isOpen, onClose, onLogout }: MobileSystemMenu
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-black/5">
                             <span className="text-lg font-playfair font-bold text-[#1A1A1A]">
-                                SYSTEM<span className="text-[#80163A]">.</span>
+                                VESSURA<span className="text-[#80163A]">.</span>
                             </span>
                             <button
                                 onClick={onClose}
@@ -95,19 +94,19 @@ export function MobileSystemMenu({ isOpen, onClose, onLogout }: MobileSystemMenu
                         {/* Scrolling Content */}
                         <div className="flex-1 overflow-y-auto px-6 py-6 pb-safe">
 
-                            {/* Search Bar - Prominent */}
+                            {/* Search Bar */}
                             <div className="relative mb-8">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search entire collection..."
+                                    placeholder="Search your wardrobe..."
                                     className="w-full h-12 pl-11 pr-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1A1A1A] focus:ring-1 focus:ring-[#1A1A1A] transition-all shadow-sm"
                                 />
                             </div>
 
                             {/* Section: Primary Apps */}
                             <div className="mb-8">
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-4 font-bold">Applications</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-4 font-bold">Navigate</p>
                                 <div className="space-y-2">
                                     {PRIMARY_APPS.map((app) => (
                                         <Link key={app.href} href={app.href}>
@@ -136,16 +135,19 @@ export function MobileSystemMenu({ isOpen, onClose, onLogout }: MobileSystemMenu
 
                             {/* Section: System Tools */}
                             <div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-4 font-bold">System Tools</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-4 font-bold">Tools</p>
                                 <div className="grid grid-cols-2 gap-3">
                                     {SYSTEM_TOOLS.map((tool) => (
                                         <Link key={tool.href} href={tool.href}>
                                             <div
                                                 onClick={onClose}
-                                                className="flex flex-col gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.96] transition-transform"
+                                                className={`flex flex-col gap-3 p-4 rounded-xl border shadow-sm active:scale-[0.96] transition-transform ${location === tool.href
+                                                    ? 'bg-[#1A1A1A] border-[#1A1A1A] text-white'
+                                                    : 'bg-white border-gray-100 text-[#1A1A1A]'
+                                                    }`}
                                             >
-                                                <tool.icon className="w-5 h-5 text-gray-600" strokeWidth={1.5} />
-                                                <span className="text-xs font-medium text-[#1A1A1A]">{tool.label}</span>
+                                                <tool.icon className={`w-5 h-5 ${location === tool.href ? 'text-white' : 'text-gray-600'}`} strokeWidth={1.5} />
+                                                <span className="text-xs font-medium">{tool.label}</span>
                                             </div>
                                         </Link>
                                     ))}
@@ -159,10 +161,10 @@ export function MobileSystemMenu({ isOpen, onClose, onLogout }: MobileSystemMenu
                                     className="w-full flex items-center justify-center gap-2 p-4 text-red-600 bg-red-50/50 rounded-xl hover:bg-red-50 transition-colors font-medium text-sm"
                                 >
                                     <LogOut className="w-4 h-4" />
-                                    Disconnect System
+                                    Sign Out
                                 </button>
                                 <p className="text-center text-[10px] text-gray-300 mt-4 tracking-widest">
-                                    CELURA v19.5 (BUILD 2026.1)
+                                    VESSURA v2.0
                                 </p>
                             </div>
                         </div>

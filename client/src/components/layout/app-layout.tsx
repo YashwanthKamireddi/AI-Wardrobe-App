@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
-    Home, Shirt, Layers, Calendar, Plane, BarChart3, Sparkles,
-    Lightbulb, User, LogOut, ChevronDown, Menu, X, Plus, Frame,
-    Settings, Search, Bell, Grid3X3, DollarSign, Command
+    Home, Shirt, Layers, Calendar, BarChart3, Sparkles,
+    User, LogOut, ChevronDown, Menu, X, Compass,
+    Settings, Search, DollarSign, Frame, Palette
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -11,11 +11,11 @@ import { SearchDialog } from "@/components/ui/search-dialog";
 import { MobileSystemMenu } from "@/components/layout/mobile-system-menu";
 
 /**
- * UNIFIED APP LAYOUT - "THE ATELIER" EDITION (V19)
+ * UNIFIED APP LAYOUT - "THE ATELIER" EDITION (V20)
  *
- * DESIGN SYSTEM UPGRADE:
- * - Header: Minimalist "SYSTEM" toggle.
- * - Aesthetics: Quiet Luxury, Production Polish.
+ * SIMPLIFIED NAVIGATION:
+ * - 5 Core Pages: Home, Wardrobe, Outfits, Plan, Discover
+ * - System Menu: Analytics, Style DNA, Wishlist, Profile
  */
 
 interface AppLayoutProps {
@@ -25,25 +25,26 @@ interface AppLayoutProps {
 }
 
 // ------------------------------------------------------------------
-// NAVIGATION CONFIGURATION
+// NAVIGATION CONFIGURATION - SIMPLIFIED
 // ------------------------------------------------------------------
 
+// Primary Nav: 5 Core Features
 const primaryNav = [
-    { href: "/home", label: "Atelier", icon: Home },
-    { href: "/wardrobe", label: "Collection", icon: Shirt },
-    { href: "/compose", label: "Compose", icon: Plus, isAction: true },
-    { href: "/calendar", label: "Plan", icon: Calendar },
-    { href: "/trips", label: "Trips", icon: Plane },
+    { href: "/home", label: "Home", icon: Home },
+    { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
+    { href: "/outfits", label: "Outfits", icon: Layers },
+    { href: "/plan", label: "Plan", icon: Calendar },
+    { href: "/discover", label: "Discover", icon: Compass },
 ];
 
+// System Menu: Secondary Features
 const systemNav = [
-    { href: "/outfits", label: "Saved Looks", icon: Layers },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/community", label: "Community", icon: User },
-    { href: "/capsules", label: "Capsules", icon: Grid3X3 },
-    { href: "/wishlist", label: "Wishlist", icon: DollarSign },
     { href: "/style-dna", label: "Style DNA", icon: Sparkles },
-    { href: "/inspiration", label: "Mood Boards", icon: Lightbulb },
+    { href: "/framing", label: "Framing", icon: Frame },
+    { href: "/studio", label: "Studio", icon: Palette },
+    { href: "/wishlist", label: "Wishlist", icon: DollarSign },
+    { href: "/profile", label: "Profile", icon: User },
 ];
 
 export function AppLayout({ children, fullWidth = false, hideMobileNav = false }: AppLayoutProps) {
@@ -83,23 +84,29 @@ export function AppLayout({ children, fullWidth = false, hideMobileNav = false }
                     <Link href="/home">
                         <div className="flex items-center gap-3 cursor-pointer group">
                             <span className="text-xl tracking-[0.15em] font-playfair font-bold text-[#151515]">
-                                CELURA<span className="text-[#80163A]">.</span>
+                                VESSURA<span className="text-[#80163A]">.</span>
                             </span>
                         </div>
                     </Link>
 
-                    {/* 2. CENTER NAV (PILL) */}
+                    {/* 2. CENTER NAV (PILL) - With Animated Indicator */}
                     <div className="flex items-center gap-1 bg-white border border-gray-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] px-1.5 py-1.5 rounded-full">
                         {primaryNav.map((item) => (
                             <Link key={item.href} href={item.href}>
-                                <div className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 cursor-pointer group ${item.isAction
-                                    ? 'bg-[#151515] text-white hover:bg-black shadow-md mx-1'
-                                    : isActive(item.href)
-                                        ? 'bg-gray-100/80 text-[#151515]'
-                                        : 'text-gray-500 hover:text-[#151515] hover:bg-gray-50'
+                                <div className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-colors duration-200 cursor-pointer group ${isActive(item.href)
+                                    ? 'text-white'
+                                    : 'text-gray-500 hover:text-[#151515]'
                                     }`}>
-                                    <item.icon className={`w-4 h-4 ${item.isAction ? 'text-white' : ''}`} strokeWidth={1.5} />
-                                    <span className="text-[11px] font-semibold tracking-wide uppercase">{item.label}</span>
+                                    {/* Animated Background Pill */}
+                                    {isActive(item.href) && (
+                                        <motion.div
+                                            layoutId="desktop-nav-indicator"
+                                            className="absolute inset-0 bg-[#151515] rounded-full shadow-md"
+                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                        />
+                                    )}
+                                    <item.icon className="w-4 h-4 relative z-10" strokeWidth={1.5} />
+                                    <span className="text-[11px] font-semibold tracking-wide uppercase relative z-10">{item.label}</span>
                                 </div>
                             </Link>
                         ))}
@@ -168,7 +175,7 @@ export function AppLayout({ children, fullWidth = false, hideMobileNav = false }
             {!hideMobileNav && (
                 <nav className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-black/5 px-4 py-3 flex justify-between items-center">
                     <Link href="/home">
-                        <span className="text-lg font-playfair font-bold text-[#151515]">CELURA.</span>
+                        <span className="text-lg font-playfair font-bold text-[#151515]">VESSURA.</span>
                     </Link>
                     <div className="flex gap-4">
                         <button onClick={() => setSearchOpen(true)}>
@@ -186,16 +193,40 @@ export function AppLayout({ children, fullWidth = false, hideMobileNav = false }
                 {children}
             </main>
 
-            {/* MOBILE DOCK ("THE ISLAND") */}
+            {/* MOBILE DOCK ("THE ISLAND") - With Animated Indicator */}
             {!hideMobileNav && (
                 <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40">
-                    <div className="bg-[#151515] text-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.25)] px-6 py-4 flex justify-between items-center backdrop-blur-md bg-opacity-95">
+                    <div className="bg-[#151515] text-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.25)] px-4 py-3.5 flex justify-around items-center backdrop-blur-md bg-opacity-95">
                         {primaryNav.map((item) => (
                             <Link key={item.href} href={item.href}>
-                                <div className={`flex flex-col items-center gap-1 ${isActive(item.href) ? 'text-white' : 'text-white/40'}`}>
-                                    <item.icon className="w-5 h-5" strokeWidth={1.5} />
-                                    {isActive(item.href) && <div className="w-1 h-1 bg-white rounded-full mt-1" />}
-                                </div>
+                                <motion.div
+                                    className="relative flex flex-col items-center justify-center w-14 h-10"
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    {/* Animated Background Pill */}
+                                    {isActive(item.href) && (
+                                        <motion.div
+                                            layoutId="mobile-nav-indicator"
+                                            className="absolute inset-0 bg-white/15 rounded-xl"
+                                            transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                                        />
+                                    )}
+                                    <item.icon
+                                        className={`w-5 h-5 relative z-10 transition-colors duration-200 ${isActive(item.href) ? 'text-white' : 'text-white/40'}`}
+                                        strokeWidth={1.5}
+                                    />
+                                    {/* Active Dot */}
+                                    <AnimatePresence>
+                                        {isActive(item.href) && (
+                                            <motion.div
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0, opacity: 0 }}
+                                                className="w-1 h-1 bg-white rounded-full mt-1 relative z-10"
+                                            />
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
                             </Link>
                         ))}
                     </div>

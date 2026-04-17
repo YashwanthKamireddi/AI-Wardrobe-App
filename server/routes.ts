@@ -115,6 +115,18 @@ export async function registerRoutes(app: Express): Promise<void> {
     app.post("/api/wishlist/:id/convert", advancedController.convertWishlistToWardrobe);
 
     // ============================================
+    // WEAR LOGGING
+    // ============================================
+    app.get("/api/wear-logs", advancedController.getWearLogs);
+    app.post("/api/wear-logs", advancedController.createWearLog);
+    app.delete("/api/wear-logs/:id", advancedController.deleteWearLog);
+
+    // ============================================
+    // SEASONAL FILTERS
+    // ============================================
+    app.get("/api/wardrobe/seasonal", advancedController.getWardrobeBySeasonalFilter);
+
+    // ============================================
     // SOCIAL FEATURES
     // ============================================
     app.get("/api/social/feed", socialController.getCommunityFeed);

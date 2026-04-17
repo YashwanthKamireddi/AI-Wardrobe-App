@@ -275,7 +275,7 @@ export function ProfilePage() {
                                 <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
                                     <Info className="w-4 h-4 text-gray-600" />
                                 </div>
-                                <p className="text-sm font-medium text-[#1A1A1A]">About Celura</p>
+                                <p className="text-sm font-medium text-[#1A1A1A]">About Vessura</p>
                             </div>
                             <span className="text-xs text-gray-400">v1.0.0</span>
                         </button>
@@ -324,7 +324,7 @@ export function ProfilePage() {
 
                 {/* Footer */}
                 <footer className="mt-12 text-center">
-                    <p className="text-[10px] text-gray-300 uppercase tracking-widest">Celura • Made with ♥</p>
+                    <p className="text-[10px] text-gray-300 uppercase tracking-widest">Vessura • Made with ♥</p>
                 </footer>
             </div>
         </AppLayout>

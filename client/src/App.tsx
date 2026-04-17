@@ -1,5 +1,5 @@
 import { useEffect, lazy, Suspense } from "react";
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,78 +10,122 @@ import { SharedElementProvider, AnimatedPage } from "@/components/ui/shared-tran
 import { GlobalErrorBoundary } from "@/components/ui/error-boundary";
 import { Loader2 } from "lucide-react";
 
-// Lazy-loaded pages with proper wouter typing
+/**
+ * VESSURA APP - SIMPLIFIED NAVIGATION (V2.0)
+ *
+ * Primary Navigation (5 Core):
+ * - /home      → Dashboard
+ * - /wardrobe  → Items + Collections
+ * - /outfits   → Create + View Looks
+ * - /plan      → Calendar + Trips
+ * - /discover  → Community + Inspiration
+ *
+ * System Menu (Secondary):
+ * - /analytics → Wardrobe Analytics
+ * - /style-dna → Style Profile
+ * - /wishlist  → Shopping List
+ * - /profile   → Account Settings
+ */
+
+// ============================================================
+// LAZY-LOADED PAGES
+// ============================================================
+
+// Core 5 Navigation Pages
 const LandingPage = lazy(() => import("@/pages/landing-page").then(m => ({ default: m.LandingPage })));
-const HomePage = lazy(() => import("@/pages/home-page").then(m => ({ default: m.HomePage })));
 const AuthPage = lazy(() => import("@/pages/auth-page").then(m => ({ default: m.AuthPage })));
+const HomePage = lazy(() => import("@/pages/home-page").then(m => ({ default: m.HomePage })));
 const WardrobePage = lazy(() => import("@/pages/wardrobe-page").then(m => ({ default: m.WardrobePage })));
 const OutfitPage = lazy(() => import("@/pages/outfit-page").then(m => ({ default: m.OutfitPage })));
-const InspirationPage = lazy(() => import("@/pages/inspiration-page").then(m => ({ default: m.InspirationPage })));
-const ProfilePage = lazy(() => import("@/pages/profile-page").then(m => ({ default: m.ProfilePage })));
 const CalendarPage = lazy(() => import("@/pages/calendar-page").then(m => ({ default: m.CalendarPage })));
-const StatisticsPage = lazy(() => import("@/pages/statistics-page").then(m => ({ default: m.StatisticsPage })));
-const StyleEssencePage = lazy(() => import("@/pages/style-essence-page").then(m => ({ default: m.StyleEssencePage })));
-const ComposePage = lazy(() => import("@/pages/compose-page").then(m => ({ default: m.ComposePage })));
-const StudioPage = lazy(() => import("@/pages/studio-page").then(m => ({ default: m.default })));
 const TripsPage = lazy(() => import("@/pages/trips-page").then(m => ({ default: m.TripsPage })));
-const FramingPage = lazy(() => import("@/pages/framing-page").then(m => ({ default: m.FramingPage })));
-const WardrobeIntelligencePage = lazy(() => import("@/pages/intelligence-page").then(m => ({ default: m.WardrobeIntelligencePage })));
+const SocialPage = lazy(() => import("@/pages/social-page").then(m => ({ default: m.SocialPage })));
+
+// System Menu Pages
 const AnalyticsPage = lazy(() => import("@/pages/analytics-page").then(m => ({ default: m.default })));
+const StyleProfilePage = lazy(() => import("@/pages/style-profile-page").then(m => ({ default: m.StyleProfilePage })));
+const WishlistPage = lazy(() => import("@/pages/wishlist-page").then(m => ({ default: m.WishlistPage })));
+const ProfilePage = lazy(() => import("@/pages/profile-page").then(m => ({ default: m.ProfilePage })));
+
+// Legacy pages (for backward compatibility)
+const ComposePage = lazy(() => import("@/pages/compose-page").then(m => ({ default: m.ComposePage })));
+const CapsulesPage = lazy(() => import("@/pages/capsules-page").then(m => ({ default: m.CapsulesPage })));
+
+// Additional Feature Pages
+const FramingPage = lazy(() => import("@/pages/framing-page").then(m => ({ default: m.FramingPage })));
+const StudioPage = lazy(() => import("@/pages/studio-page").then(m => ({ default: m.StudioPage })));
+
+// Other/Utility
 const NotFoundPage = lazy(() => import("@/pages/not-found").then(m => ({ default: m.NotFound })));
 
-// Loading Component
+// ============================================================
+// LOADING COMPONENT
+// ============================================================
+
 const PageLoader = () => (
     <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
 );
 
+// ============================================================
+// ROUTER - SIMPLIFIED NAVIGATION
+// ============================================================
 
 function Router() {
     return (
         <Suspense fallback={<PageLoader />}>
             <Switch>
-                {/* Public routes */}
+                {/* ========== PUBLIC ROUTES ========== */}
                 <Route path="/" component={LandingPage} />
                 <Route path="/auth" component={AuthPage} />
 
-                {/* Protected routes - 5 Pillar Navigation */}
+                {/* ========== CORE 5 NAVIGATION ========== */}
                 <ProtectedRoute path="/home" component={HomePage} />
-                <ProtectedRoute path="/studio" component={StudioPage} />
                 <ProtectedRoute path="/wardrobe" component={WardrobePage} />
-                <ProtectedRoute path="/compose" component={ComposePage} />
-                <ProtectedRoute path="/trips" component={TripsPage} />
+                <ProtectedRoute path="/outfits" component={OutfitPage} />
+                <ProtectedRoute path="/plan" component={CalendarPage} />
+                <ProtectedRoute path="/discover" component={SocialPage} />
+
+                <ProtectedRoute path="/analytics" component={AnalyticsPage} />
+                <ProtectedRoute path="/style-dna" component={StyleProfilePage} />
+                <ProtectedRoute path="/framing" component={FramingPage} />
+                <ProtectedRoute path="/studio" component={StudioPage} />
+                <ProtectedRoute path="/wishlist" component={WishlistPage} />
                 <ProtectedRoute path="/profile" component={ProfilePage} />
 
-                {/* Additional routes */}
-                <ProtectedRoute path="/outfits" component={OutfitPage} />
-                <ProtectedRoute path="/inspiration" component={InspirationPage} />
-                <ProtectedRoute path="/inspirations" component={InspirationPage} />
-                <ProtectedRoute path="/calendar" component={CalendarPage} />
-                <ProtectedRoute path="/statistics" component={StatisticsPage} />
-                <ProtectedRoute path="/style-essence" component={StyleEssencePage} />
-                <ProtectedRoute path="/framing" component={FramingPage} />
-                <ProtectedRoute path="/intelligence" component={WardrobeIntelligencePage} />
-                <ProtectedRoute path="/analytics" component={AnalyticsPage} />
+                {/* ========== LEGACY REDIRECTS ========== */}
+                {/* Old routes redirect to new structure */}
+                <Route path="/compose">
+                    <Redirect to="/outfits" />
+                </Route>
+                <Route path="/calendar">
+                    <Redirect to="/plan" />
+                </Route>
+                <Route path="/trips">
+                    <Redirect to="/plan" />
+                </Route>
+                <Route path="/community">
+                    <Redirect to="/discover" />
+                </Route>
+                <Route path="/capsules">
+                    <Redirect to="/wardrobe" />
+                </Route>
 
-                {/* Phase 2: Social */}
-                <ProtectedRoute path="/community" component={lazy(() => import("@/pages/social-page").then(m => ({ default: m.SocialPage })))} />
-
-                {/* Phase 3: Advanced */}
-                <ProtectedRoute path="/capsules" component={lazy(() => import("@/pages/capsules-page").then(m => ({ default: m.CapsulesPage })))} />
-                <ProtectedRoute path="/wishlist" component={lazy(() => import("@/pages/wishlist-page").then(m => ({ default: m.WishlistPage })))} />
-                <ProtectedRoute path="/style-dna" component={lazy(() => import("@/pages/style-profile-page").then(m => ({ default: m.StyleProfilePage })))} />
-
-                {/* 404 */}
+                {/* ========== 404 ========== */}
                 <Route component={NotFoundPage} />
             </Switch>
         </Suspense>
     );
 }
 
+// ============================================================
+// APP COMPONENT
+// ============================================================
+
 function App() {
     useEffect(() => {
-        // Setting default values in localStorage to bypass tutorial/onboarding
+        // Skip onboarding/tutorials
         localStorage.setItem("onboardingComplete", "true");
         localStorage.setItem("tutorialComplete", "true");
     }, []);

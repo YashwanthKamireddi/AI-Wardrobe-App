@@ -623,3 +623,79 @@ export const insertTripSchema = createInsertSchema(trips).pick({
 
 export type Trip = typeof trips.$inferSelect;
 export type InsertTrip = z.infer<typeof insertTripSchema>;
+
+/**
+ * Capsule Wardrobes Table
+ *
+ * Purpose:
+ * - Stores curated capsule collections for seasonal/travel/style purposes
+ * - Allows grouping wardrobe items into themed capsules
+ */
+export const capsuleWardrobes = pgTable("capsule_wardrobes", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    type: text("type").default("custom"), // seasonal, travel, work, casual, custom
+    season: text("season").default("all"), // spring, summer, fall, winter, all
+    items: integer("items").array(), // IDs of wardrobe items in capsule
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+    userIdIdx: index("capsule_wardrobes_user_id_idx").on(table.userId),
+}));
+
+export const insertCapsuleSchema = createInsertSchema(capsuleWardrobes).pick({
+    userId: true,
+    name: true,
+    description: true,
+    type: true,
+    season: true,
+    items: true,
+    isActive: true,
+});
+
+export type CapsuleWardrobe = typeof capsuleWardrobes.$inferSelect;
+export type InsertCapsuleWardrobe = z.infer<typeof insertCapsuleSchema>;
+
+/**
+ * Wishlist Items Table
+ *
+ * Purpose:
+ * - Stores items the user wants to purchase
+ * - Tracks price, source, and priority for shopping
+ */
+export const wishlistItems = pgTable("wishlist_items", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    name: text("name").notNull(),
+    brand: text("brand"),
+    price: integer("price"), // Store in cents
+    url: text("url"),
+    imageUrl: text("image_url"),
+    category: text("category"),
+    notes: text("notes"),
+    priority: text("priority").default("medium"), // low, medium, high
+    purchased: boolean("purchased").default(false),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+    userIdIdx: index("wishlist_items_user_id_idx").on(table.userId),
+}));
+
+export const insertWishlistItemSchema = createInsertSchema(wishlistItems).pick({
+    userId: true,
+    name: true,
+    brand: true,
+    price: true,
+    url: true,
+    imageUrl: true,
+    category: true,
+    notes: true,
+    priority: true,
+    purchased: true,
+});
+
+export type WishlistItem = typeof wishlistItems.$inferSelect;
+export type InsertWishlistItem = z.infer<typeof insertWishlistItemSchema>;

@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import createDOMPurify from 'isomorphic-dompurify';
-
-const DOMPurify = createDOMPurify();
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * XSS Protection Middleware

@@ -61,7 +61,7 @@ router.post("/:id/schedule", async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Date is required" });
         }
 
-        const entry = await storage.addToOutfitCalendar({
+        const entry = await storage.createCalendarEvent({
             userId: req.user!.id,
             outfitId: id,
             date: new Date(date),

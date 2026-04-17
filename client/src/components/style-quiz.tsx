@@ -1,313 +1,327 @@
+/**
+ * STYLE QUIZ COMPONENT
+ *
+ * Multi-step style profiling quiz following Vessura design system.
+ * Based on Indyx's approach to understanding personal style.
+ *
+ * Steps:
+ * 1. Style Category Selection
+ * 2. Color Preferences
+ * 3. Lifestyle & Occasions
+ * 4. Style Words
+ * 5. Shopping Habits
+ */
 
-import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Progress } from './ui/progress';
-import { AnimatedCard } from './ui/animated-card';
-import { Palette, Sun, Heart, Leaf, Shirt, Zap, Sparkles, Crown } from 'lucide-react';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    ChevronRight, ChevronLeft, Sparkles, Check,
+    Palette, Heart, Calendar, ShoppingBag, Tag
+} from "lucide-react";
+import { BRAND, STYLE_QUIZ, StyleCategory, StyleWord } from "@/lib/brand";
 
-type StyleOption = {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  icon: React.ElementType;
-};
+interface StyleProfile {
+    categories: StyleCategory[];
+    colorPreferences: string[];
+    occasions: string[];
+    styleWords: StyleWord[];
+    shoppingHabits: string[];
+}
 
-type Question = {
-  id: string;
-  question: string;
-  options: StyleOption[];
-};
+interface StyleQuizProps {
+    onComplete: (profile: StyleProfile) => void;
+    onSkip?: () => void;
+}
 
-const QUIZ_QUESTIONS: Question[] = [
-  {
-    id: 'q1',
-    question: 'Which color palette do you gravitate towards?',
-    options: [
-      {
-        id: 'q1o1',
-        name: 'Neutrals',
-        description: 'Beige, white, black, gray',
-        color: '#64748b',
-        icon: Palette
-      },
-      {
-        id: 'q1o2',
-        name: 'Vibrant',
-        description: 'Bold reds, blues, yellows',
-        color: '#ef4444',
-        icon: Zap
-      },
-      {
-        id: 'q1o3',
-        name: 'Pastels',
-        description: 'Soft pinks, blues, and lavenders',
-        color: '#f472b6',
-        icon: Heart
-      },
-      {
-        id: 'q1o4',
-        name: 'Earth tones',
-        description: 'Browns, greens, and terracotta',
-        color: '#84cc16',
-        icon: Leaf
-      }
-    ]
-  },
-  {
-    id: 'q2',
-    question: "What's your ideal weekend outfit?",
-    options: [
-      {
-        id: 'q2o1',
-        name: 'Casual chic',
-        description: 'Jeans and a nice top',
-        color: '#3b82f6',
-        icon: Shirt
-      },
-      {
-        id: 'q2o2',
-        name: 'Athleisure',
-        description: 'Leggings and a comfortable hoodie',
-        color: '#10b981',
-        icon: Sun
-      },
-      {
-        id: 'q2o3',
-        name: 'Dress up',
-        description: 'A cute dress or button-up shirt',
-        color: '#8b5cf6',
-        icon: Sparkles
-      },
-      {
-        id: 'q2o4',
-        name: 'Vintage inspired',
-        description: 'Thrifted finds with character',
-        color: '#f59e0b',
-        icon: Crown
-      }
-    ]
-  },
-  {
-    id: 'q3',
-    question: 'Which accessories do you prefer?',
-    options: [
-      {
-        id: 'q3o1',
-        name: 'Minimal',
-        description: 'Simple, delicate pieces',
-        color: '#94a3b8',
-        icon: Sparkles
-      },
-      {
-        id: 'q3o2',
-        name: 'Statement',
-        description: 'Bold, eye-catching pieces',
-        color: '#ec4899',
-        icon: Crown
-      },
-      {
-        id: 'q3o3',
-        name: 'Practical',
-        description: 'Functional bags and watches',
-        color: '#0891b2',
-        icon: Shirt
-      },
-      {
-        id: 'q3o4',
-        name: 'Layered',
-        description: 'Multiple necklaces, rings, or bracelets',
-        color: '#eab308',
-        icon: Heart
-      }
-    ]
-  }
+const STEPS = [
+    { id: 1, title: "Your Style DNA", subtitle: "What styles resonate with you?", icon: Sparkles },
+    { id: 2, title: "Color Palette", subtitle: "What colors make you feel confident?", icon: Palette },
+    { id: 3, title: "Your Lifestyle", subtitle: "How do you spend your days?", icon: Calendar },
+    { id: 4, title: "Style Words", subtitle: "Pick 3-5 words that describe your ideal style", icon: Tag },
+    { id: 5, title: "Shopping Philosophy", subtitle: "How do you approach building your wardrobe?", icon: ShoppingBag },
 ];
 
-const styleResults = {
-  'Minimalist': {
-    description: 'You prefer clean lines, neutral colors, and quality basics. Your style is timeless and polished without being flashy.',
-    recommendations: ['Invest in high-quality basics', 'Focus on perfect fit', 'Choose neutral color palette']
-  },
-  'Bohemian': {
-    description: 'You have a free-spirited aesthetic with natural fabrics, earthy colors, and unique accessories. Your style is relaxed and eclectic.',
-    recommendations: ['Layer different textures', 'Mix patterns thoughtfully', 'Add unique vintage accessories']
-  },
-  'Classic': {
-    description: 'You appreciate traditional styles that stand the test of time. Your wardrobe consists of well-tailored pieces in traditional silhouettes.',
-    recommendations: ['Invest in timeless silhouettes', 'Choose structured pieces', 'Focus on traditional color palettes']
-  },
-  'Trendy': {
-    description: 'You stay current with the latest fashion trends and enjoy experimenting with new styles. Your wardrobe is constantly evolving.',
-    recommendations: ['Follow fashion influencers', 'Shop seasonally', 'Mix trend pieces with basics']
-  },
-  'Sporty': {
-    description: 'You prioritize comfort and functionality with athletic-inspired pieces. Your style is active and casual.',
-    recommendations: ['Invest in quality activewear', 'Look for stylish performance fabrics', 'Mix athletic pieces with casual basics']
-  }
-};
+export function StyleQuiz({ onComplete, onSkip }: StyleQuizProps) {
+    const [currentStep, setCurrentStep] = useState(1);
+    const [profile, setProfile] = useState<StyleProfile>({
+        categories: [],
+        colorPreferences: [],
+        occasions: [],
+        styleWords: [],
+        shoppingHabits: [],
+    });
 
-type StyleResultsType = keyof typeof styleResults;
+    const toggleSelection = (field: keyof StyleProfile, value: string) => {
+        setProfile(prev => {
+            const current = prev[field] as string[];
+            const exists = current.includes(value);
 
-export const StyleQuiz = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<StyleResultsType | null>(null);
-  const [showResults, setShowResults] = useState(false);
+            // Limit style words to 5
+            if (field === 'styleWords' && !exists && current.length >= 5) {
+                return prev;
+            }
 
-  const handleAnswer = (questionId: string, optionId: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: optionId
-    }));
+            return {
+                ...prev,
+                [field]: exists
+                    ? current.filter(v => v !== value)
+                    : [...current, value],
+            };
+        });
+    };
 
-    if (currentQuestion < QUIZ_QUESTIONS.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-    } else {
-      // Determine result based on answers
-      // This is just a simplified example - a real implementation would use a more sophisticated algorithm
-      const resultsMap: Record<string, number> = {
-        'Minimalist': 0,
-        'Bohemian': 0,
-        'Classic': 0,
-        'Trendy': 0,
-        'Sporty': 0
-      };
-
-      // Simple matching algorithm (in a real app this would be more complex)
-      Object.values(answers).forEach(answer => {
-        if (answer.includes('q1o1') || answer.includes('q2o1') || answer.includes('q3o1')) {
-          resultsMap['Minimalist'] += 1;
+    const canProceed = () => {
+        switch (currentStep) {
+            case 1: return profile.categories.length >= 1;
+            case 2: return profile.colorPreferences.length >= 1;
+            case 3: return profile.occasions.length >= 1;
+            case 4: return profile.styleWords.length >= 3;
+            case 5: return profile.shoppingHabits.length >= 1;
+            default: return false;
         }
-        if (answer.includes('q1o4') || answer.includes('q2o4') || answer.includes('q3o4')) {
-          resultsMap['Bohemian'] += 1;
+    };
+
+    const handleNext = () => {
+        if (currentStep < 5) {
+            setCurrentStep(prev => prev + 1);
+        } else {
+            onComplete(profile);
         }
-        if (answer.includes('q1o3') || answer.includes('q2o3') || answer.includes('q3o1')) {
-          resultsMap['Classic'] += 1;
+    };
+
+    const handleBack = () => {
+        if (currentStep > 1) {
+            setCurrentStep(prev => prev - 1);
         }
-        if (answer.includes('q1o2') || answer.includes('q2o3') || answer.includes('q3o2')) {
-          resultsMap['Trendy'] += 1;
-        }
-        if (answer.includes('q1o1') || answer.includes('q2o2') || answer.includes('q3o3')) {
-          resultsMap['Sporty'] += 1;
-        }
-      });
+    };
 
-      // Find style with highest score
-      const maxStyle = Object.entries(resultsMap).reduce((max, [style, score]) =>
-        score > max.score ? { style: style as StyleResultsType, score } : max,
-        { style: 'Minimalist' as StyleResultsType, score: 0 }
-      );
+    const step = STEPS[currentStep - 1];
+    const StepIcon = step.icon;
 
-      setResult(maxStyle.style);
-      setShowResults(true);
-    }
-  };
-
-  const restartQuiz = () => {
-    setCurrentQuestion(0);
-    setAnswers({});
-    setResult(null);
-    setShowResults(false);
-  };
-
-  const currentQ = QUIZ_QUESTIONS[currentQuestion];
-  const progress = ((currentQuestion) / QUIZ_QUESTIONS.length) * 100;
-
-  return (
-    <div className="w-full max-w-4xl mx-auto py-8">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl">Discover Your Style</CardTitle>
-          <CardDescription>
-            Answer a few questions to find your personal style and get customized recommendations
-          </CardDescription>
-          {!showResults && (
-            <div className="mt-4">
-              <Progress value={progress} className="h-2" />
-              <p className="text-sm text-right mt-1 text-muted-foreground">
-                Question {currentQuestion + 1} of {QUIZ_QUESTIONS.length}
-              </p>
-            </div>
-          )}
-        </CardHeader>
-
-        <CardContent>
-          {!showResults ? (
-            <div className="animate-fade-in">
-              <h3 className="text-xl font-medium mb-6">{currentQ.question}</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentQ.options.map((option, index) => (
-                  <AnimatedCard
-                    key={option.id}
-                    hoverEffect="lift"
-                    className="cursor-pointer border-2 hover:border-primary transition-all overflow-hidden"
-                    onClick={() => handleAnswer(currentQ.id, option.id)}
-                    style={{ transitionDelay: `${index * 100}ms` }}
-                  >
-                    <div className="h-32 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${option.color}20 0%, ${option.color}40 100%)` }}>
-                      <option.icon
-                        className="w-14 h-14 transition-transform hover:scale-110"
-                        style={{ color: option.color }}
-                      />
+    const renderStepContent = () => {
+        switch (currentStep) {
+            case 1:
+                return (
+                    <SelectionGrid
+                        items={STYLE_QUIZ.categories as unknown as string[]}
+                        selected={profile.categories}
+                        onToggle={(v) => toggleSelection('categories', v)}
+                        columns={2}
+                    />
+                );
+            case 2:
+                return (
+                    <SelectionGrid
+                        items={STYLE_QUIZ.colorPreferences as unknown as string[]}
+                        selected={profile.colorPreferences}
+                        onToggle={(v) => toggleSelection('colorPreferences', v)}
+                        columns={1}
+                    />
+                );
+            case 3:
+                return (
+                    <SelectionGrid
+                        items={STYLE_QUIZ.occasions as unknown as string[]}
+                        selected={profile.occasions}
+                        onToggle={(v) => toggleSelection('occasions', v)}
+                        columns={2}
+                    />
+                );
+            case 4:
+                return (
+                    <div>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Selected: {profile.styleWords.length}/5
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                            {(STYLE_QUIZ.styleWords as unknown as string[]).map(word => {
+                                const isSelected = profile.styleWords.includes(word as StyleWord);
+                                return (
+                                    <button
+                                        key={word}
+                                        onClick={() => toggleSelection('styleWords', word)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isSelected
+                                                ? 'bg-[#80163A] text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        {word}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
-                    <div className="p-4">
-                      <h4 className="font-medium">{option.name}</h4>
-                      <p className="text-sm text-muted-foreground">{option.description}</p>
+                );
+            case 5:
+                return (
+                    <SelectionGrid
+                        items={STYLE_QUIZ.shoppingHabits as unknown as string[]}
+                        selected={profile.shoppingHabits}
+                        onToggle={(v) => toggleSelection('shoppingHabits', v)}
+                        columns={1}
+                    />
+                );
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
+            {/* Header */}
+            <header className="p-6 border-b border-black/5">
+                <div className="max-w-2xl mx-auto">
+                    <div className="flex items-center justify-between mb-6">
+                        <h1
+                            className="text-2xl text-[#1A1A1A]"
+                            style={{ fontFamily: BRAND.fonts.heading }}
+                        >
+                            {BRAND.name} <span className="text-[#80163A]">Style Quiz</span>
+                        </h1>
+                        {onSkip && (
+                            <button
+                                onClick={onSkip}
+                                className="text-sm text-gray-400 hover:text-gray-600"
+                            >
+                                Skip for now
+                            </button>
+                        )}
                     </div>
-                  </AnimatedCard>
-                ))}
-              </div>
-            </div>
-          ) : result && (
-            <div className="animate-slide-up">
-              <h3 className="text-2xl font-semibold mb-4 gradient-text">Your Style: {result}</h3>
-              <p className="mb-6">{styleResults[result].description}</p>
 
-              <h4 className="font-medium mb-2">Recommendations:</h4>
-              <ul className="space-y-2 mb-6">
-                {styleResults[result].recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start">
-                    <span className="inline-block w-5 h-5 mr-2 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs">✓</span>
-                    {rec}
-                  </li>
-                ))}
-              </ul>
+                    {/* Progress Bar */}
+                    <div className="flex gap-2">
+                        {STEPS.map((s, i) => (
+                            <div
+                                key={s.id}
+                                className={`h-1 flex-1 rounded-full transition-colors ${i + 1 <= currentStep ? 'bg-[#80163A]' : 'bg-gray-200'
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </header>
 
-              <div className="rounded-lg p-4 bg-primary/10 border border-primary/20 mt-6">
-                <p className="text-sm">Based on your style, we'll customize your fashion recommendations and suggest items that match your personal aesthetic.</p>
-              </div>
-            </div>
-          )}
-        </CardContent>
+            {/* Content */}
+            <main className="flex-1 p-6 overflow-y-auto">
+                <div className="max-w-2xl mx-auto">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentStep}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {/* Step Header */}
+                            <div className="mb-8">
+                                <div className="w-12 h-12 rounded-full bg-[#80163A]/10 flex items-center justify-center mb-4">
+                                    <StepIcon className="w-6 h-6 text-[#80163A]" />
+                                </div>
+                                <h2
+                                    className="text-2xl md:text-3xl text-[#1A1A1A] mb-2"
+                                    style={{ fontFamily: BRAND.fonts.heading }}
+                                >
+                                    {step.title}
+                                </h2>
+                                <p className="text-gray-500">{step.subtitle}</p>
+                            </div>
 
-        <CardFooter className="flex justify-between">
-          {showResults ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={restartQuiz}
-              >
-                Restart Quiz
-              </Button>
-              <Button>
-                See Curated Recommendations
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={() => currentQuestion > 0 && setCurrentQuestion(prev => prev - 1)}
-              disabled={currentQuestion === 0}
-              className="ml-auto"
-            >
-              Back
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
-    </div>
-  );
-};
+                            {/* Step Content */}
+                            {renderStepContent()}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </main>
+
+            {/* Footer Navigation */}
+            <footer className="p-6 border-t border-black/5 bg-white">
+                <div className="max-w-2xl mx-auto flex items-center justify-between">
+                    <button
+                        onClick={handleBack}
+                        disabled={currentStep === 1}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${currentStep === 1
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-gray-600 hover:text-[#1A1A1A] hover:bg-gray-100'
+                            }`}
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                        Back
+                    </button>
+
+                    <span className="text-sm text-gray-400">
+                        Step {currentStep} of {STEPS.length}
+                    </span>
+
+                    <motion.button
+                        onClick={handleNext}
+                        disabled={!canProceed()}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all ${canProceed()
+                                ? 'bg-[#1A1A1A] text-white hover:bg-[#80163A]'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            }`}
+                        whileHover={canProceed() ? { scale: 1.02 } : {}}
+                        whileTap={canProceed() ? { scale: 0.98 } : {}}
+                    >
+                        {currentStep === 5 ? (
+                            <>
+                                Complete
+                                <Check className="w-4 h-4" />
+                            </>
+                        ) : (
+                            <>
+                                Continue
+                                <ChevronRight className="w-4 h-4" />
+                            </>
+                        )}
+                    </motion.button>
+                </div>
+            </footer>
+        </div>
+    );
+}
+
+// Selection Grid Component
+function SelectionGrid({
+    items,
+    selected,
+    onToggle,
+    columns = 2
+}: {
+    items: string[];
+    selected: string[];
+    onToggle: (value: string) => void;
+    columns?: number;
+}) {
+    return (
+        <div className={`grid gap-3 ${columns === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+            {items.map(item => {
+                const isSelected = selected.includes(item);
+                return (
+                    <motion.button
+                        key={item}
+                        onClick={() => onToggle(item)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected
+                                ? 'border-[#80163A] bg-[#80163A]/5'
+                                : 'border-gray-200 bg-white hover:border-gray-300'
+                            }`}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="flex items-center justify-between">
+                            <span className={`text-sm font-medium ${isSelected ? 'text-[#80163A]' : 'text-[#1A1A1A]'
+                                }`}>
+                                {item}
+                            </span>
+                            {isSelected && (
+                                <div className="w-5 h-5 rounded-full bg-[#80163A] flex items-center justify-center">
+                                    <Check className="w-3 h-3 text-white" />
+                                </div>
+                            )}
+                        </div>
+                    </motion.button>
+                );
+            })}
+        </div>
+    );
+}
+
+export default StyleQuiz;

@@ -45,13 +45,29 @@ export class AuthService {
             new LocalStrategy(async (username, password, done) => {
                 try {
                     const user = await storage.getUserByUsername(username);
-                    if (!user || !(await AuthService.comparePasswords(password, user.password))) {
-                        logger.warn(`Failed login attempt for username: ${username}`);
+                    logger.info(`[Auth] Login attempt for: ${username}, User found: ${!!user}`);
+
+                    if (!user) {
+                        logger.warn(`[Auth] User not found: ${username}`);
                         return done(null, false);
-                    } else {
-                        logger.info(`User logged in: ${username}`);
-                        return done(null, user);
                     }
+
+                    // Debug: Log password hash info (NOT the actual passwords)
+                    const hasPassword = !!user.password;
+                    const passwordLength = user.password?.length || 0;
+                    const isHash = user.password?.startsWith('$2') || false;
+                    logger.info(`[Auth] Password check: hasPassword=${hasPassword}, length=${passwordLength}, isHash=${isHash}`);
+
+                    const passwordMatch = await AuthService.comparePasswords(password, user.password);
+                    logger.info(`[Auth] Password match result: ${passwordMatch}`);
+
+                    if (!passwordMatch) {
+                        logger.warn(`[Auth] Invalid password for user: ${username}`);
+                        return done(null, false);
+                    }
+
+                    logger.info(`[Auth] User logged in successfully: ${username}`);
+                    return done(null, user);
                 } catch (error) {
                     logger.error({ err: error }, "Error during local strategy authentication");
                     return done(error);

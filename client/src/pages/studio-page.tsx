@@ -113,7 +113,8 @@ export function StudioPage() {
                 imageUrl: base64,
                 tags: ['studio-processed'],
                 favorite: false,
-                wearCount: 0
+                wearCount: 0,
+                status: 'available'
             });
         }
 

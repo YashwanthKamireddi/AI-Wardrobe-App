@@ -6,6 +6,7 @@ import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/us
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { GapAnalysisSection } from "@/components/gap-analysis";
 
 /**
  * WISHLIST PAGE - "THE EDITOR'S CART"
@@ -140,6 +141,9 @@ export function WishlistPage() {
                         </motion.button>
                     )}
                 </div>
+
+                {/* Gap Analysis Section - "The Curator's Eye" */}
+                <GapAnalysisSection />
             </div>
 
             {/* Add Item Dialog */}

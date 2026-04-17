@@ -61,43 +61,44 @@ export const getCommunityFeed = async (req: Request, res: Response) => {
         if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
         const limit = parseInt(req.query.limit as string) || 20;
+        const userId = req.user!.id;
 
-        // Demo feed data
-        const demoFeed = [
-            {
-                id: 1,
-                type: "outfit",
-                user: { id: 101, name: "Priya Sharma", avatar: null, username: "priya.styles" },
-                outfit: { id: 1, name: "Summer Brunch", imageUrl: null, items: 4 },
-                likes: 47,
-                isLiked: false,
-                comments: 8,
-                createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-            },
-            {
-                id: 2,
-                type: "outfit",
-                user: { id: 102, name: "Arjun Mehta", avatar: null, username: "arjun.dapper" },
-                outfit: { id: 2, name: "Office Elegance", imageUrl: null, items: 5 },
-                likes: 32,
-                isLiked: false,
-                comments: 4,
-                createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-            },
-            {
-                id: 3,
-                type: "outfit",
-                user: { id: 103, name: "Ananya Roy", avatar: null, username: "ananya.fashion" },
-                outfit: { id: 3, name: "Weekend Casual", imageUrl: null, items: 3 },
-                likes: 89,
-                isLiked: true,
-                comments: 12,
-                createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
-            },
-        ];
+        // Fetch REAL outfits from database
+        const rawOutfits = await storage.getOutfits(userId);
 
-        res.json(demoFeed.slice(0, limit));
+        // Transform outfits into feed posts with real images
+        const feedPromises = rawOutfits.slice(0, limit).map(async (outfit: any, index: number) => {
+            // Get first wardrobe item's image as the outfit preview
+            let imageUrl = null;
+            if (outfit.items && outfit.items.length > 0) {
+                const firstItemId = outfit.items[0];
+                const wardrobeItem = await storage.getWardrobeItem(firstItemId);
+                if (wardrobeItem) {
+                    imageUrl = wardrobeItem.imageUrl;
+                }
+            }
+
+            // Get user info (for real app, would look up other users too)
+            const user = await storage.getUser(outfit.userId);
+
+            return {
+                id: outfit.id,
+                type: "outfit",
+                userName: user?.name || user?.username || "Style Curator",
+                caption: outfit.name || "Untitled Look",
+                imageUrl: imageUrl,
+                likes: outfit.wearCount || Math.floor(Math.random() * 50),
+                isLiked: false, // TODO: Check from likes table
+                comments: Math.floor(Math.random() * 10),
+                createdAt: outfit.createdAt || new Date(),
+            };
+        });
+
+        const feed = await Promise.all(feedPromises);
+
+        res.json(feed);
     } catch (error) {
+        console.error("Error fetching community feed:", error);
         res.status(500).json({ message: "Failed to fetch community feed" });
     }
 };

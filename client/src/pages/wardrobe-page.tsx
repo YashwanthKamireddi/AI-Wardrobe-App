@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Plus, Search, Grid3X3, LayoutList, X, Edit, Trash2, Sparkles, Loader2, Wand2, User, Layers, Heart, Filter, Link as LinkIcon, Globe, Camera, Upload, Image as ImageIcon, Shirt } from "lucide-react";
+import { Plus, Search, Grid3X3, LayoutList, X, Edit, Trash2, Sparkles, Loader2, Wand2, User, Layers, Heart, Filter, Link as LinkIcon, Globe, Camera, Upload, Image as ImageIcon, Shirt, Sun, Edit2, FolderOpen } from "lucide-react";
+import { useCapsules, useDeleteCapsule } from "@/hooks/use-advanced";
+import { CapsuleDialog } from "@/components/capsule-dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -75,6 +77,15 @@ export function WardrobePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [showFilters, setShowFilters] = useState(false);
+
+    // Tab for Items vs Collections
+    const [activeTab, setActiveTab] = useState<'items' | 'collections'>('items');
+
+    // Capsules/Collections state
+    const { data: capsules, isLoading: capsulesLoading } = useCapsules();
+    const deleteCapsule = useDeleteCapsule();
+    const [capsuleDialogOpen, setCapsuleDialogOpen] = useState(false);
+    const [editingCapsule, setEditingCapsule] = useState<any>(null);
 
     // AI Processing states
     const [isAIProcessing, setIsAIProcessing] = useState(false);
@@ -452,21 +463,49 @@ export function WardrobePage() {
 
                 {/* V2.0: MOBILE HEADER (Sticky) */}
                 <motion.header
-                    className="md:hidden sticky top-0 z-40 bg-[#FDFBF7]/80 backdrop-blur-md border-b border-black/5 px-4 h-14 flex items-center justify-between"
+                    className="md:hidden sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-black/5"
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                 >
-                    <div className="flex flex-col">
-                        <h1 className="text-[#151515] font-playfair text-lg font-bold leading-none">Collection</h1>
-                        <span className="text-[9px] text-gray-400 font-mono tracking-widest uppercase">{filteredItems.length} ITEMS</span>
+                    <div className="px-4 h-14 flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <h1 className="text-[#151515] font-playfair text-lg font-bold leading-none">Wardrobe</h1>
+                            <span className="text-[9px] text-gray-400 font-mono tracking-widest uppercase">
+                                {activeTab === 'items' ? `${filteredItems.length} ITEMS` : `${capsules?.length || 0} COLLECTIONS`}
+                            </span>
+                        </div>
+                        <motion.button
+                            onClick={() => activeTab === 'items' ? setIsAddDialogOpen(true) : setCapsuleDialogOpen(true)}
+                            className="w-8 h-8 rounded-full bg-[#151515] flex items-center justify-center text-white"
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <Plus className="w-4 h-4" />
+                        </motion.button>
                     </div>
-                    <motion.button
-                        onClick={() => setIsAddDialogOpen(true)}
-                        className="w-8 h-8 rounded-full bg-[#151515] flex items-center justify-center text-white"
-                        whileTap={{ scale: 0.9 }}
-                    >
-                        <Plus className="w-4 h-4" />
-                    </motion.button>
+
+                    {/* Tab Bar */}
+                    <div className="px-4 py-2 flex gap-2">
+                        <button
+                            onClick={() => setActiveTab('items')}
+                            className={`flex-1 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-1.5 ${activeTab === 'items'
+                                ? 'bg-[#1A1A1A] text-white'
+                                : 'bg-white border border-gray-200 text-gray-500'
+                                }`}
+                        >
+                            <Shirt className="w-3 h-3" />
+                            Items
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('collections')}
+                            className={`flex-1 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-1.5 ${activeTab === 'collections'
+                                ? 'bg-[#1A1A1A] text-white'
+                                : 'bg-white border border-gray-200 text-gray-500'
+                                }`}
+                        >
+                            <FolderOpen className="w-3 h-3" />
+                            Collections
+                        </button>
+                    </div>
                 </motion.header>
 
                 <div className="max-w-[1920px] mx-auto md:px-10 md:py-8">
@@ -475,15 +514,42 @@ export function WardrobePage() {
                     <div className="hidden md:block mb-8 px-6">
                         <div className="flex items-end justify-between">
                             <div>
-                                <p className="text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Collection</p>
-                                <h1 className="text-4xl md:text-5xl font-playfair text-[#151515]">Your Wardrobe</h1>
+                                <p className="text-xs tracking-[0.2em] uppercase text-gray-400 mb-2">Your Wardrobe</p>
+                                <h1 className="text-4xl md:text-5xl font-playfair text-[#151515]">
+                                    {activeTab === 'items' ? 'All Items' : 'Collections'}
+                                </h1>
                             </div>
-                            <button
-                                onClick={() => setIsAddDialogOpen(true)}
-                                className="px-6 py-3 bg-[#151515] text-white text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors"
-                            >
-                                + Add Item
-                            </button>
+                            <div className="flex items-center gap-4">
+                                {/* Tab Switcher */}
+                                <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        onClick={() => setActiveTab('items')}
+                                        className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-md flex items-center gap-2 ${activeTab === 'items'
+                                            ? 'bg-white text-[#1A1A1A] shadow-sm'
+                                            : 'text-gray-500 hover:text-[#1A1A1A]'
+                                            }`}
+                                    >
+                                        <Shirt className="w-3 h-3" />
+                                        Items
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('collections')}
+                                        className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-md flex items-center gap-2 ${activeTab === 'collections'
+                                            ? 'bg-white text-[#1A1A1A] shadow-sm'
+                                            : 'text-gray-500 hover:text-[#1A1A1A]'
+                                            }`}
+                                    >
+                                        <FolderOpen className="w-3 h-3" />
+                                        Collections
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={() => activeTab === 'items' ? setIsAddDialogOpen(true) : setCapsuleDialogOpen(true)}
+                                    className="px-6 py-3 bg-[#151515] text-white text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors"
+                                >
+                                    + {activeTab === 'items' ? 'Add Item' : 'New Collection'}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -527,99 +593,279 @@ export function WardrobePage() {
                         </AnimatePresence>
                     </div>
 
-
-                    {/* V2.0: MOBILE ARCHIVE GRID (2-Col, Gap-1) vs DESKTOP MASONRY */}
+                    {/* CONTENT AREA - Switches between Items and Collections */}
                     <div className="px-0 md:px-6">
-                        {filteredItems.length > 0 ? (
+
+                        {/* ==================== ITEMS VIEW ==================== */}
+                        {activeTab === 'items' && (
+                            <>
+                                {filteredItems.length > 0 ? (
+                                    <>
+                                        {/* Mobile Grid */}
+                                        <div className="grid grid-cols-2 gap-[1px] md:hidden">
+                                            {filteredItems.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    onClick={() => setEditingItem(item)}
+                                                    className="aspect-[3/4] relative bg-white overflow-hidden active:opacity-90 transition-opacity"
+                                                >
+                                                    {item.imageUrl ? (
+                                                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-50"><Shirt className="w-6 h-6 text-gray-200" /></div>
+                                                    )}
+                                                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
+                                                        <p className="text-[10px] font-medium text-white truncate drop-shadow-sm">{item.name}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Desktop Masonry */}
+                                        <div className="hidden md:block columns-2 lg:columns-4 gap-4 space-y-4">
+                                            {filteredItems.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    onClick={() => setEditingItem(item)}
+                                                    className="break-inside-avoid group relative bg-white border border-gray-100 cursor-pointer hover:border-black/10 transition-all duration-300"
+                                                >
+                                                    <div className="aspect-[3/4] relative overflow-hidden bg-gray-50">
+                                                        {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-cover grayscale-[0.1] group-hover:grayscale-0 transition-all duration-500" />}
+                                                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                            <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="p-2 bg-white text-black hover:bg-black hover:text-white transition-colors"><Edit className="w-3 h-3" /></button>
+                                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} className="p-2 bg-white text-red-500 hover:bg-red-500 hover:text-white transition-colors"><Trash2 className="w-3 h-3" /></button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-3">
+                                                        <p className="font-playfair text-sm text-[#151515] truncate">{item.name}</p>
+                                                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mt-1">{item.category}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="py-24 text-center">
+                                        <Grid3X3 className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                                        <h3 className="text-xl font-playfair text-[#151515] mb-2">Archive Empty</h3>
+                                        <p className="text-gray-400 text-xs">Start building your collection.</p>
+                                        <button onClick={() => setIsAddDialogOpen(true)} className="mt-6 px-6 py-2 bg-[#151515] text-white text-[10px] font-bold uppercase tracking-widest">Add First Item</button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* ==================== COLLECTIONS VIEW ==================== */}
+                        {activeTab === 'collections' && (
                             <>
                                 {/* Mobile Grid */}
-                                <div className="grid grid-cols-2 gap-[1px] md:hidden">
-                                    {filteredItems.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            onClick={() => setEditingItem(item)}
-                                            className="aspect-[3/4] relative bg-white overflow-hidden active:opacity-90 transition-opacity"
-                                        >
-                                            {item.imageUrl ? (
-                                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-gray-50"><Shirt className="w-6 h-6 text-gray-200" /></div>
-                                            )}
-                                            {/* Minimal Label Overlay */}
-                                            <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
-                                                <p className="text-[10px] font-medium text-white truncate drop-shadow-sm">{item.name}</p>
-                                            </div>
+                                <div className="md:hidden">
+                                    {capsules && capsules.length > 0 ? (
+                                        <div className="grid grid-cols-2 gap-[1px] bg-gray-200">
+                                            {capsules.map((capsule: any, index: number) => (
+                                                <motion.div
+                                                    key={capsule.id}
+                                                    onClick={() => { setEditingCapsule(capsule); setCapsuleDialogOpen(true); }}
+                                                    className="bg-white aspect-[3/4] relative overflow-hidden active:opacity-90 transition-opacity"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ delay: index * 0.05 }}
+                                                >
+                                                    {/* Image Grid */}
+                                                    {capsule.items && capsule.items.length > 0 && capsule.resolvedItems ? (
+                                                        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-[1px] bg-[#1A1A1A]">
+                                                            {capsule.resolvedItems.slice(0, 4).map((item: any, i: number) => (
+                                                                <div key={i} className="relative overflow-hidden bg-white">
+                                                                    {item?.imageUrl ? (
+                                                                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-full h-full flex items-center justify-center bg-[#FAFAFA]">
+                                                                            <Sparkles className="w-4 h-4 text-gray-200" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                            {Array.from({ length: Math.max(0, 4 - (capsule.resolvedItems?.length || 0)) }).map((_, i) => (
+                                                                <div key={`empty-${i}`} className="bg-[#FAFAFA] flex items-center justify-center">
+                                                                    <Plus className="w-3 h-3 text-gray-200" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
+                                                            <Sparkles className="w-8 h-8 text-gray-300 mb-2" />
+                                                            <span className="text-[9px] uppercase tracking-widest text-gray-400">Add Items</span>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Info Overlay */}
+                                                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 via-black/30 to-transparent">
+                                                        <p className="text-white text-sm font-playfair italic truncate drop-shadow-sm">{capsule.name}</p>
+                                                        <p className="text-white/70 text-[10px] font-mono uppercase tracking-wider">{capsule.items?.length || 0} items</p>
+                                                    </div>
+
+                                                    {/* Season Badge */}
+                                                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-md px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest flex items-center gap-1 shadow-sm">
+                                                        <Sun className="w-2.5 h-2.5 text-[#D4AF37]" />
+                                                        {capsule.season || "SS25"}
+                                                    </div>
+
+                                                    {/* Index Number */}
+                                                    <div className="absolute top-2 left-2 text-white/30 font-playfair text-2xl font-light">
+                                                        0{index + 1}
+                                                    </div>
+                                                </motion.div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    ) : (
+                                        <div className="py-24 text-center px-6">
+                                            <FolderOpen className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                                            <h3 className="text-xl font-playfair text-[#151515] mb-2">No Collections</h3>
+                                            <p className="text-gray-400 text-xs mb-6">Create capsule wardrobes to organize your items.</p>
+                                            <button onClick={() => setCapsuleDialogOpen(true)} className="px-6 py-2 bg-[#151515] text-white text-[10px] font-bold uppercase tracking-widest">Create Collection</button>
+                                        </div>
+                                    )}
                                 </div>
 
-                                {/* Desktop Masonry */}
-                                <div className="hidden md:block columns-2 lg:columns-4 gap-4 space-y-4">
-                                    {filteredItems.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            onClick={() => setEditingItem(item)}
-                                            className="break-inside-avoid group relative bg-white border border-gray-100 cursor-pointer hover:border-black/10 transition-all duration-300"
-                                        >
-                                            <div className="aspect-[3/4] relative overflow-hidden bg-gray-50">
-                                                {item.imageUrl && <img src={item.imageUrl} className="w-full h-full object-cover grayscale-[0.1] group-hover:grayscale-0 transition-all duration-500" />}
+                                {/* Desktop Grid */}
+                                <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+                                    {/* Blueprint Card */}
+                                    <motion.button
+                                        onClick={() => { setEditingCapsule(null); setCapsuleDialogOpen(true); }}
+                                        className="group relative aspect-[3/4] border border-dashed border-[#1A1A1A]/20 hover:border-[#80163A] bg-[#FAF9F6] transition-all flex flex-col items-center justify-center gap-6 overflow-hidden"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                    >
+                                        <div className="absolute inset-0 opacity-[0.03]"
+                                            style={{ backgroundImage: 'linear-gradient(#1A1A1A 1px, transparent 1px), linear-gradient(90deg, #1A1A1A 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+                                        </div>
+                                        <div className="w-20 h-20 rounded-full border border-[#1A1A1A] flex items-center justify-center group-hover:scale-110 transition-transform duration-500 bg-white z-10">
+                                            <Plus className="w-8 h-8 text-[#1A1A1A]" strokeWidth={1} />
+                                        </div>
+                                        <div className="text-center z-10">
+                                            <p className="text-lg font-playfair italic text-[#1A1A1A] mb-2">New Collection</p>
+                                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Start Blank Canvas</p>
+                                        </div>
+                                    </motion.button>
 
-                                                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                    <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="p-2 bg-white text-black hover:bg-black hover:text-white transition-colors"><Edit className="w-3 h-3" /></button>
-                                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} className="p-2 bg-white text-red-500 hover:bg-red-500 hover:text-white transition-colors"><Trash2 className="w-3 h-3" /></button>
+                                    {/* Collection Cards */}
+                                    {capsules && capsules.map((capsule: any, index: number) => (
+                                        <motion.div
+                                            key={capsule.id}
+                                            className="group cursor-pointer relative"
+                                            initial={{ opacity: 0, y: 50 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.1, duration: 0.6 }}
+                                        >
+                                            <div className="relative aspect-[3/4] bg-[#E5E5E5] overflow-hidden mb-6">
+                                                {capsule.items && capsule.items.length > 0 && capsule.resolvedItems ? (
+                                                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-[1px] bg-[#1A1A1A]">
+                                                        {capsule.resolvedItems.slice(0, 4).map((item: any, i: number) => (
+                                                            <div key={i} className="relative overflow-hidden bg-white">
+                                                                {item?.imageUrl ? (
+                                                                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-[#FAFAFA]">
+                                                                        <Sparkles className="w-6 h-6 text-gray-300" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                        {Array.from({ length: Math.max(0, 4 - (capsule.resolvedItems?.length || 0)) }).map((_, i) => (
+                                                            <div key={`empty-${i}`} className="bg-[#FAFAFA] flex items-center justify-center">
+                                                                <Plus className="w-4 h-4 text-gray-200" />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-300 flex flex-col items-center justify-center group-hover:scale-105 transition-transform duration-700">
+                                                        <Sparkles className="w-12 h-12 text-white opacity-50 mb-4" />
+                                                        <span className="text-[10px] uppercase tracking-widest text-white/50">Add Items</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Hover Overlay */}
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                                                    <button
+                                                        onClick={() => { setEditingCapsule(capsule); setCapsuleDialogOpen(true); }}
+                                                        className="px-6 py-3 bg-white/90 backdrop-blur-md text-[#1A1A1A] text-xs uppercase tracking-widest font-bold hover:bg-white transition-colors"
+                                                    >
+                                                        Edit Collection
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (confirm(`Delete "${capsule.name}"?`)) {
+                                                                deleteCapsule.mutate(capsule.id);
+                                                            }
+                                                        }}
+                                                        className="w-10 h-10 bg-red-500/90 backdrop-blur-md flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+
+                                                {/* Season Badge */}
+                                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm">
+                                                    <Sun className="w-3 h-3 text-[#D4AF37]" />
+                                                    {capsule.season || "SS25"}
                                                 </div>
                                             </div>
-                                            <div className="p-3">
-                                                <p className="font-playfair text-sm text-[#151515] truncate">{item.name}</p>
-                                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mt-1">{item.category}</p>
+
+                                            {/* Typography */}
+                                            <div className="border-t border-[#1A1A1A] pt-4">
+                                                <div className="flex justify-between items-baseline mb-2">
+                                                    <h3 className="text-2xl text-[#1A1A1A] font-playfair italic group-hover:text-[#80163A] transition-colors">
+                                                        {capsule.name}
+                                                    </h3>
+                                                    <span className="text-4xl font-light text-gray-200 font-playfair">0{index + 1}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-xs text-gray-400 font-mono uppercase tracking-widest">
+                                                    <span>{capsule.items?.length || 0} Items</span>
+                                                    <span>{capsule.type || "Curated"}</span>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     ))}
                                 </div>
                             </>
-                        ) : (
-                            <div className="py-24 text-center">
-                                <Grid3X3 className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                                <h3 className="text-xl font-playfair text-[#151515] mb-2">Archive Empty</h3>
-                                <p className="text-gray-400 text-xs">Start building your collection.</p>
-                                <button onClick={() => setIsAddDialogOpen(true)} className="mt-6 px-6 py-2 bg-[#151515] text-white text-[10px] font-bold uppercase tracking-widest">Add First Item</button>
-                            </div>
                         )}
                     </div>
                 </div>
 
-                {/* V2.0: MOBILE THUMB ZONE (Fixed Bottom Bar) */}
-                <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/5 pb-safe">
-                    {/* Search/Filter Context Bar (Collapsible or just integrated icons) */}
-                    {showFilters && (
-                        <div className="flex overflow-x-auto gap-2 p-2 border-b border-gray-100 bg-gray-50/50">
-                            <button onClick={() => setCategoryFilter('all')} className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap border ${categoryFilter === 'all' ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-200'}`}>All</button>
-                            {clothingCategories.map(cat => (
-                                <button key={cat.value} onClick={() => setCategoryFilter(cat.value)} className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap border ${categoryFilter === cat.value ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-200'}`}>{cat.label}</button>
-                            ))}
-                        </div>
-                    )}
+                {/* V2.0: MOBILE THUMB ZONE (Fixed Bottom Bar) - Only show for Items tab */}
+                {activeTab === 'items' && (
+                    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/5 pb-safe">
+                        {/* Search/Filter Context Bar (Collapsible or just integrated icons) */}
+                        {showFilters && (
+                            <div className="flex overflow-x-auto gap-2 p-2 border-b border-gray-100 bg-gray-50/50">
+                                <button onClick={() => setCategoryFilter('all')} className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap border ${categoryFilter === 'all' ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-200'}`}>All</button>
+                                {clothingCategories.map(cat => (
+                                    <button key={cat.value} onClick={() => setCategoryFilter(cat.value)} className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap border ${categoryFilter === cat.value ? 'bg-[#151515] text-white border-[#151515]' : 'bg-white border-gray-200'}`}>{cat.label}</button>
+                                ))}
+                            </div>
+                        )}
 
-                    <div className="h-14 flex items-center justify-around px-2">
-                        <button onClick={() => setShowFilters(!showFilters)} className={`flex flex-col items-center justify-center w-14 h-full  gap-1 ${showFilters ? 'text-[#151515]' : 'text-gray-400'}`}>
-                            <Filter className="w-4 h-4" strokeWidth={1.5} />
-                            <span className="text-[9px] font-medium">FILTER</span>
-                        </button>
+                        <div className="h-14 flex items-center justify-around px-2">
+                            <button onClick={() => setShowFilters(!showFilters)} className={`flex flex-col items-center justify-center w-14 h-full  gap-1 ${showFilters ? 'text-[#151515]' : 'text-gray-400'}`}>
+                                <Filter className="w-4 h-4" strokeWidth={1.5} />
+                                <span className="text-[9px] font-medium">FILTER</span>
+                            </button>
 
-                        {/* Center Search Input */}
-                        <div className="flex-1 px-2">
-                            <div className="h-9 bg-gray-100/50 rounded-full flex items-center px-3 border border-gray-200/50 focus-within:border-black/10 focus-within:bg-white transition-all">
-                                <Search className="w-3.5 h-3.5 text-gray-400 mr-2" />
-                                <input
-                                    className="bg-transparent border-none outline-none text-xs w-full placeholder:text-gray-400"
-                                    placeholder="Search..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
+                            {/* Center Search Input */}
+                            <div className="flex-1 px-2">
+                                <div className="h-9 bg-gray-100/50 rounded-full flex items-center px-3 border border-gray-200/50 focus-within:border-black/10 focus-within:bg-white transition-all">
+                                    <Search className="w-3.5 h-3.5 text-gray-400 mr-2" />
+                                    <input
+                                        className="bg-transparent border-none outline-none text-xs w-full placeholder:text-gray-400"
+                                        placeholder="Search..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Add Item Dialog */}
@@ -1062,6 +1308,16 @@ export function WardrobePage() {
                 onClose={() => setShowOutfitDialog(false)}
                 onSelect={multiSelect.handleAddToOutfit}
                 selectedCount={multiSelect.selectedCount}
+            />
+
+            {/* Capsule/Collection Dialog */}
+            <CapsuleDialog
+                isOpen={capsuleDialogOpen}
+                onClose={() => {
+                    setCapsuleDialogOpen(false);
+                    setEditingCapsule(null);
+                }}
+                capsule={editingCapsule}
             />
         </AppLayout >
     );

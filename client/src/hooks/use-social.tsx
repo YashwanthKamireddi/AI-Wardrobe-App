@@ -4,33 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API helper
-async function apiRequest<T = unknown>(config: {
-    path: string;
-    method: string;
-    body?: any
-}): Promise<T> {
-    const options: RequestInit = {
-        method: config.method,
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    };
-
-    if (config.body) {
-        options.body = JSON.stringify(config.body);
-    }
-
-    const response = await fetch(config.path, options);
-
-    if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
-    }
-
-    return response.json();
-}
+import { apiRequest } from "@/lib/api";
 
 /**
  * Follow a user

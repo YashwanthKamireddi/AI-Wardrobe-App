@@ -1,29 +1,72 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Heart, Share2, MessageCircle, Trophy, Users, Award, Sparkles, Camera } from "lucide-react";
+import {
+    Heart, Share2, MessageCircle, Trophy, Users, Award, Sparkles, Camera,
+    Bookmark, TrendingUp, Sun, Shirt, Clock, Crown, Search, ExternalLink
+} from "lucide-react";
 import { useCommunityFeed, useChallenges, useLikeOutfit, useUnlikeOutfit } from "@/hooks/use-social";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Inspiration } from "@shared/schema";
 
 /**
  * SOCIAL PAGE - "THE FRONT ROW"
  *
- * Design Philosophy: High-Fashion Community.
+ * Design Philosophy: High-Fashion Community + Inspiration Hub.
  * - Layout: Masonry Grid (Pinterest/Tumblr style)
  * - Visuals: Polaroid Frames, subtle rotations, white borders.
  * - Vibe: Exclusive, Curated, Backstage.
+ *
+ * Combines:
+ * - Community Feed (user-shared outfits)
+ * - Style Challenges (competitions)
+ * - Inspiration/Mood Boards (curated collections)
  */
 
+// Featured collections for Inspiration tab
+const featuredCollections = [
+    { id: 1, title: "Spring Essentials", count: 24, icon: Sun, image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400" },
+    { id: 2, title: "Office Chic", count: 18, icon: Shirt, image: "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400" },
+    { id: 3, title: "Weekend Casual", count: 32, icon: Clock, image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400" },
+    { id: 4, title: "Evening Elegance", count: 15, icon: Crown, image: "https://images.unsplash.com/photo-1518577915332-c2a19f149a75?w=400" },
+];
+
+// Trending styles
+const trendingStyles = [
+    { name: "Quiet Luxury", desc: "Understated elegance", tag: "#quietluxury" },
+    { name: "Minimalist", desc: "Clean & simple", tag: "#minimalist" },
+    { name: "Classic", desc: "Timeless pieces", tag: "#classic" },
+    { name: "Smart Casual", desc: "Versatile looks", tag: "#smartcasual" },
+    { name: "Parisian Chic", desc: "Effortless style", tag: "#parisian" },
+];
+
 export function SocialPage() {
-    const [activeTab, setActiveTab] = useState<'feed' | 'challenges'>('feed');
+    const [activeTab, setActiveTab] = useState<'feed' | 'challenges' | 'inspiration'>('feed');
+    const [searchQuery, setSearchQuery] = useState('');
     const { data: feed } = useCommunityFeed();
     const { data: challenges } = useChallenges();
+    const { data: inspirations } = useQuery<Inspiration[], Error>({
+        queryKey: ["/api/inspirations"],
+    });
     const likeOutfit = useLikeOutfit();
     const unlikeOutfit = useUnlikeOutfit();
+    const { toast } = useToast();
+
+    // Filter inspirations by search
+    const filteredInspirations = useMemo(() => {
+        if (!inspirations) return [];
+        if (!searchQuery) return inspirations;
+        return inspirations.filter(i =>
+            i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            i.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+    }, [inspirations, searchQuery]);
 
     return (
         <AppLayout>
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12 pb-28 md:pb-12">
 
                 {/* 1. HEADER */}
                 <motion.header
@@ -46,20 +89,20 @@ export function SocialPage() {
                         The <span className="italic font-light text-[#6B6B6B]">Front Row</span>
                     </h1>
                     <p className="text-[#6B6B6B] max-w-md mx-auto text-sm md:text-base font-light">
-                        Curated looks from the Celura collective. <br className="hidden md:block" /> Join the discourse and showcase your signature style.
+                        Curated looks from the Vessura collective. <br className="hidden md:block" /> Join the discourse, find inspiration, and showcase your signature style.
                     </p>
                 </motion.header>
 
                 {/* 2. NAVIGATION */}
                 <div className="flex justify-center mb-16 md:mb-24 sticky top-24 z-30">
                     <div className="flex gap-1 p-1 bg-white/80 backdrop-blur-xl border border-gray-200 rounded-full shadow-lg shadow-black/5">
-                        {['feed', 'challenges'].map((tab) => (
+                        {['feed', 'inspiration', 'challenges'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab as any)}
-                                className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 relative ${activeTab === tab
-                                        ? 'text-white'
-                                        : 'text-gray-400 hover:text-[#1A1A1A]'
+                                className={`px-6 md:px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 relative ${activeTab === tab
+                                    ? 'text-white'
+                                    : 'text-gray-400 hover:text-[#1A1A1A]'
                                     }`}
                             >
                                 <span className="relative z-10">{tab}</span>
@@ -77,7 +120,8 @@ export function SocialPage() {
 
                 {/* 3. CONTENT AREA */}
                 <AnimatePresence mode="wait">
-                    {activeTab === 'feed' ? (
+                    {/* FEED TAB */}
+                    {activeTab === 'feed' && (
                         <motion.div
                             key="feed"
                             initial={{ opacity: 0 }}
@@ -126,13 +170,22 @@ export function SocialPage() {
 
                                             {/* Image Frame */}
                                             <div className="aspect-[3/4] bg-[#F5F5F5] overflow-hidden mb-4 relative cursor-pointer">
-                                                {/* Placeholder for no image */}
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-300">
-                                                    <Camera className="w-8 h-8 mb-2 opacity-50" />
-                                                    <span className="text-[10px] tracking-widest uppercase">Image Preview</span>
-                                                </div>
-                                                {/* Actual Image if available */}
-                                                {/* <img src={post.imageUrl} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" /> */}
+                                                {post.imageUrl ? (
+                                                    <img
+                                                        src={post.imageUrl}
+                                                        alt={post.caption || "Community outfit"}
+                                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        loading="lazy"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).style.display = 'none';
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-300">
+                                                        <Camera className="w-8 h-8 mb-2 opacity-50" />
+                                                        <span className="text-[10px] tracking-widest uppercase">No Preview</span>
+                                                    </div>
+                                                )}
 
                                                 {/* Overlay Actions */}
                                                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
@@ -162,7 +215,195 @@ export function SocialPage() {
                                 ))}
                             </div>
                         </motion.div>
-                    ) : (
+                    )}
+
+                    {/* INSPIRATION TAB */}
+                    {activeTab === 'inspiration' && (
+                        <motion.div
+                            key="inspiration"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="space-y-16"
+                        >
+                            {/* Search */}
+                            <div className="max-w-xl mx-auto">
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search for styles, trends, or looks..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full h-14 pl-12 pr-4 bg-white border border-[#E5E5E5] text-sm text-[#1A1A1A] placeholder:text-gray-400 focus:outline-none focus:border-[#1A1A1A] transition-colors"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Trending Styles - Horizontal Scroll */}
+                            <div>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <TrendingUp className="w-5 h-5 text-[#80163A]" />
+                                    <h2
+                                        className="text-2xl text-[#1A1A1A]"
+                                        style={{ fontFamily: "'Playfair Display', serif" }}
+                                    >
+                                        Trending <span className="italic text-[#6B6B6B]">Now</span>
+                                    </h2>
+                                </div>
+                                <div className="flex gap-4 overflow-x-auto py-2 -mx-6 px-6 scrollbar-hide">
+                                    {trendingStyles.map((style, i) => (
+                                        <motion.button
+                                            key={style.name}
+                                            className="flex-shrink-0 px-6 py-4 bg-white border border-[#E5E5E5] hover:border-[#1A1A1A] transition-all shadow-lg shadow-black/5"
+                                            whileHover={{ y: -4 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: i * 0.1 }}
+                                        >
+                                            <p className="font-medium text-[#1A1A1A] mb-1">{style.name}</p>
+                                            <p className="text-xs text-gray-400">{style.tag}</p>
+                                        </motion.button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Featured Collections - Polaroid Style */}
+                            <div>
+                                <h2
+                                    className="text-2xl text-[#1A1A1A] mb-8"
+                                    style={{ fontFamily: "'Playfair Display', serif" }}
+                                >
+                                    Curated <span className="italic text-[#6B6B6B]">Collections</span>
+                                </h2>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                    {featuredCollections.map((collection, i) => (
+                                        <motion.div
+                                            key={collection.id}
+                                            className="group cursor-pointer"
+                                            initial={{ opacity: 0, y: 30 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.1 }}
+                                        >
+                                            {/* Polaroid Card */}
+                                            <div className={`bg-white p-3 pb-5 shadow-2xl shadow-black/5 border border-gray-100 ${i % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:rotate-0 transition-transform duration-500`}>
+                                                <div className="aspect-[4/5] bg-[#F5F5F5] overflow-hidden mb-3 relative">
+                                                    <img
+                                                        src={collection.image}
+                                                        alt={collection.title}
+                                                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <collection.icon className="w-8 h-8 text-white" />
+                                                    </div>
+                                                </div>
+                                                <div className="text-center">
+                                                    <h3 className="font-playfair text-lg text-[#1A1A1A] mb-1">{collection.title}</h3>
+                                                    <p className="text-[10px] uppercase tracking-widest text-gray-400">{collection.count} Looks</p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Inspiration Grid - Masonry */}
+                            <div>
+                                <h2
+                                    className="text-2xl text-[#1A1A1A] mb-8"
+                                    style={{ fontFamily: "'Playfair Display', serif" }}
+                                >
+                                    For <span className="italic text-[#6B6B6B]">You</span>
+                                </h2>
+
+                                {filteredInspirations && filteredInspirations.length > 0 ? (
+                                    <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+                                        {filteredInspirations.map((inspiration, index) => (
+                                            <motion.div
+                                                key={inspiration.id}
+                                                className="break-inside-avoid mb-8 group"
+                                                initial={{ opacity: 0, y: 50 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                viewport={{ once: true }}
+                                                transition={{ duration: 0.6, delay: index * 0.05 }}
+                                            >
+                                                {/* Polaroid Card */}
+                                                <div className={`bg-white p-4 pb-6 shadow-2xl shadow-black/5 border border-gray-100 ${index % 3 === 0 ? 'rotate-1' : index % 3 === 1 ? '-rotate-1' : 'rotate-0'} hover:rotate-0 transition-transform duration-500`}>
+                                                    {/* Image */}
+                                                    <div className="aspect-[3/4] bg-[#F5F5F5] overflow-hidden mb-4 relative">
+                                                        {inspiration.imageUrl && (
+                                                            <img
+                                                                src={inspiration.imageUrl}
+                                                                alt={inspiration.title}
+                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                                loading="lazy"
+                                                            />
+                                                        )}
+
+                                                        {/* Tags Overlay */}
+                                                        {inspiration.tags && inspiration.tags.length > 0 && (
+                                                            <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+                                                                {inspiration.tags.slice(0, 2).map(tag => (
+                                                                    <span
+                                                                        key={tag}
+                                                                        className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] uppercase tracking-wider text-[#1A1A1A]"
+                                                                    >
+                                                                        {tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Actions Overlay */}
+                                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
+                                                            <button
+                                                                className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#1A1A1A] hover:bg-[#D4AF37] hover:text-white transition-colors shadow-xl"
+                                                                onClick={() => toast({ title: "Saved!", description: "Added to your collection" })}
+                                                            >
+                                                                <Bookmark className="w-5 h-5" />
+                                                            </button>
+                                                            {inspiration.source && (
+                                                                <a
+                                                                    href={inspiration.source}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors shadow-xl"
+                                                                >
+                                                                    <ExternalLink className="w-5 h-5" />
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Caption */}
+                                                    <div className="text-center">
+                                                        <p className="text-lg font-playfair italic text-[#1A1A1A] mb-2">"{inspiration.title}"</p>
+                                                        {inspiration.description && (
+                                                            <p className="text-xs text-gray-400 line-clamp-2">{inspiration.description}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-32 border border-dashed border-gray-200">
+                                        <Sparkles className="w-8 h-8 mx-auto text-[#D5D5D5] mb-4" />
+                                        <h3 className="text-2xl text-[#1A1A1A] mb-2 font-playfair italic">
+                                            {searchQuery ? "No results found" : "Inspiration awaits"}
+                                        </h3>
+                                        <p className="text-gray-400 text-sm tracking-widest uppercase">
+                                            {searchQuery ? "Try a different search" : "Check back for curated looks"}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* CHALLENGES TAB */}
+                    {activeTab === 'challenges' && (
                         <motion.div
                             key="challenges"
                             initial={{ opacity: 0 }}

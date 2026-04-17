@@ -107,6 +107,8 @@ export const seedWardrobe = async (req: Request, res: Response) => {
                 tags: ["formal", "classic", "versatile"],
                 favorite: true,
                 purchasePrice: 8900,
+                wearCount: 0,
+                status: "available" as const,
             },
             {
                 userId,
@@ -440,7 +442,13 @@ export const seedWardrobe = async (req: Request, res: Response) => {
 
         const createdItems = [];
         for (const item of sampleItems) {
-            const created = await storage.createWardrobeItem(item);
+            // Ensure wearCount and status have defaults with proper types
+            const itemWithDefaults = {
+                ...item,
+                wearCount: item.wearCount ?? 0,
+                status: (item.status ?? "available") as "available" | "in_laundry" | "at_cleaners" | "in_storage" | "lent_out" | "archived",
+            };
+            const created = await storage.createWardrobeItem(itemWithDefaults);
             createdItems.push(created);
         }
 
