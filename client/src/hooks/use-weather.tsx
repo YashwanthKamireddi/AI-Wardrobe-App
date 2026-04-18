@@ -16,24 +16,29 @@ interface WeatherError {
 }
 
 export function useWeather(customLocation?: string) {
-  // Build query string with location parameter if provided
-  const queryString = customLocation ? `?location=${encodeURIComponent(customLocation)}` : "";
+  // Read saved location from localStorage as a fallback — avoids the useless
+  // 400 spam in the console when the user hasn't set a location yet.
+  const stored = typeof window !== "undefined" ? window.localStorage.getItem("weatherLocation") : null;
+  const effectiveLocation = customLocation || stored || "";
+  const queryString = effectiveLocation ? `?location=${encodeURIComponent(effectiveLocation)}` : "";
 
-  return useQuery<WeatherData, Error>({
-    queryKey: ["/api/weather", customLocation], // Include location in the query key for proper caching
+  return useQuery<WeatherData | null, Error>({
+    queryKey: ["/api/weather", effectiveLocation],
     queryFn: async () => {
       const response = await fetch(`/api/weather${queryString}`);
+      // If the user hasn't set a location, the server 400s by design. Treat
+      // that as "no data" rather than an error — callers use weather?.temperature
+      // with optional chaining.
+      if (response.status === 400) return null;
       const data = await response.json();
-
-      // Check if the response has an error property
-      if (response.status !== 200 || data.error) {
-        throw new Error(data.message || 'Weather data fetch failed');
+      if (!response.ok || data?.error) {
+        throw new Error(data?.message || "Weather data fetch failed");
       }
-
       return data;
     },
-    refetchInterval: 1000 * 60 * 30, // Refetch every 30 minutes
-    retry: 1, // Only retry once for invalid locations
+    refetchInterval: 1000 * 60 * 30,
+    retry: 1,
+    enabled: true,
   });
 }
 

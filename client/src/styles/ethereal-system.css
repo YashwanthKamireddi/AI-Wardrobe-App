@@ -9,11 +9,8 @@
 /* ===========================================
    CUSTOM FONTS - Load Satoshi for Neo-Grotesque
    =========================================== */
-@font-face {
-  font-family: 'Satoshi';
-  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
-  font-display: swap;
-}
+/* Satoshi @font-face removed — blocked by CSP font-src and never loaded
+   successfully. Fallback stack (Inter / system-ui) handles body copy. */
 
 /* ===========================================
    ROOT DESIGN TOKENS - THE ATELIER (LIGHT)

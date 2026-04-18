@@ -14,13 +14,8 @@
    1. LUXURY TYPOGRAPHY SYSTEM
    ============================================ */
 
-/* Import Satoshi - The Neo-Grotesque Luxury Font */
-@font-face {
-  font-family: 'Satoshi';
-  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
-  font-weight: 400 900;
-  font-display: swap;
-}
+/* Satoshi @font-face removed — blocked by CSP font-src and never loaded
+   successfully. Fallback stack (Inter / system-ui) is used. */
 
 /* Luxury Font Stack - with system fallbacks for FCP optimization */
 :root {

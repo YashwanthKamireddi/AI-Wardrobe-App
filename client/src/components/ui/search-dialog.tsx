@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Sparkles, ArrowRight, Grid3X3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -77,7 +78,11 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-3xl h-[80vh] bg-[#F9F9F7] border-0 rounded-3xl p-0 overflow-hidden">
+            <DialogContent className="max-w-3xl h-[80vh] w-[calc(100vw-2rem)] sm:w-auto bg-[#F9F9F7] border-0 rounded-3xl p-0 overflow-hidden">
+                <VisuallyHidden.Root>
+                    <DialogTitle>Global Search</DialogTitle>
+                    <DialogDescription>Search your wardrobe by name, category, color, brand, or tags.</DialogDescription>
+                </VisuallyHidden.Root>
                 {/* Search Input */}
                 <div className="sticky top-0 z-10 bg-[#F9F9F7] p-6 pb-4 border-b border-[#E5E5E5]">
                     <div className="relative">

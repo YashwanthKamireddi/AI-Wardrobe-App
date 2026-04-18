@@ -62,16 +62,14 @@ function TopNav() {
     return (
         <header className="fixed top-0 inset-x-0 z-50 border-b border-[#E8E3DA]/70 bg-[#FDFBF7]/75 backdrop-blur-xl">
             <div className="mx-auto max-w-7xl px-6 md:px-10 h-16 flex items-center justify-between">
-                <Link href="/">
-                    <a className="flex items-baseline gap-2 cursor-pointer" aria-label="Vessura home">
-                        <span
-                            className="text-[22px] leading-none tracking-tight text-[#1A1A1A]"
-                            style={SERIF}
-                        >
-                            Vessura
-                        </span>
-                        <span className="h-[6px] w-[6px] rounded-full bg-[#80163A]" aria-hidden />
-                    </a>
+                <Link href="/" className="flex items-baseline gap-2 cursor-pointer" aria-label="Vessura home">
+                    <span
+                        className="text-[22px] leading-none tracking-tight text-[#1A1A1A]"
+                        style={SERIF}
+                    >
+                        Vessura
+                    </span>
+                    <span className="h-[6px] w-[6px] rounded-full bg-[#80163A]" aria-hidden />
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-9" aria-label="Primary">
@@ -87,19 +85,19 @@ function TopNav() {
                 </nav>
 
                 <div className="flex items-center gap-2">
-                    <Link href="/auth">
-                        <a className="hidden sm:inline-flex text-[13px] tracking-wide text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors px-3 py-2">
-                            Sign in
-                        </a>
+                    <Link
+                        href="/auth"
+                        className="hidden sm:inline-flex min-h-[44px] items-center text-[13px] tracking-wide text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors px-3 py-2"
+                    >
+                        Sign in
                     </Link>
-                    <Link href="/auth">
-                        <a
-                            className="inline-flex items-center gap-1.5 rounded-full bg-[#1A1A1A] text-[#FDFBF7] text-[13px] tracking-wide min-h-[44px] px-5 py-2.5 hover:bg-[#80163A] transition-colors"
-                            aria-label="Get started with Vessura"
-                        >
-                            Get Started
-                            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                        </a>
+                    <Link
+                        href="/auth"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#1A1A1A] text-[#FDFBF7] text-[13px] tracking-wide min-h-[44px] px-5 py-2.5 hover:bg-[#80163A] transition-colors"
+                        aria-label="Get started with Vessura"
+                    >
+                        Get Started
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                     </Link>
                 </div>
             </div>
@@ -169,11 +167,12 @@ function Hero() {
                     </p>
 
                     <div className="mt-9 flex flex-wrap items-center gap-3">
-                        <Link href="/auth">
-                            <a className="group inline-flex items-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 py-3.5 text-[14px] tracking-wide hover:bg-[#80163A] transition-colors">
-                                Get Started
-                                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
-                            </a>
+                        <Link
+                            href="/auth"
+                            className="group inline-flex items-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 py-3.5 text-[14px] tracking-wide hover:bg-[#80163A] transition-colors"
+                        >
+                            Get Started
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
                         </Link>
                         <a
                             href="#how"
@@ -1212,11 +1211,12 @@ function CompareTable() {
                                 $0 <span className="text-[#9A9A9A] text-[14px]">— for now</span>
                             </div>
                         </div>
-                        <Link href="/auth">
-                            <a className="inline-flex items-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 py-3.5 text-[14px] tracking-wide hover:bg-[#80163A] transition-colors">
-                                Claim your seat
-                                <ArrowRight className="h-4 w-4" aria-hidden />
-                            </a>
+                        <Link
+                            href="/auth"
+                            className="inline-flex items-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 py-3.5 text-[14px] tracking-wide hover:bg-[#80163A] transition-colors"
+                        >
+                            Claim your seat
+                            <ArrowRight className="h-4 w-4" aria-hidden />
                         </Link>
                     </div>
                 </motion.div>
@@ -1275,11 +1275,12 @@ function FinalCta() {
                         onChange={(e) => setEmail(e.target.value)}
                         className="flex-1 rounded-full border border-[#E5DFD0] bg-white/80 px-5 py-3.5 text-[14px] text-[#1A1A1A] placeholder:text-[#9A9A9A] focus:outline-none focus:border-[#80163A] transition-colors"
                     />
-                    <Link href="/auth">
-                        <a className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 py-3.5 text-[14px] tracking-wide hover:bg-[#80163A] transition-colors">
-                            Request access
-                            <ArrowRight className="h-4 w-4" aria-hidden />
-                        </a>
+                    <Link
+                        href="/auth"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 py-3.5 text-[14px] tracking-wide hover:bg-[#80163A] transition-colors"
+                    >
+                        Request access
+                        <ArrowRight className="h-4 w-4" aria-hidden />
                     </Link>
                 </motion.form>
 
@@ -1377,10 +1378,11 @@ function FooterCol({
                 {links.map((l) => (
                     <li key={l.label}>
                         {l.href.startsWith("/") ? (
-                            <Link href={l.href}>
-                                <a className="text-[13px] text-[#1A1A1A] hover:text-[#80163A] transition-colors">
-                                    {l.label}
-                                </a>
+                            <Link
+                                href={l.href}
+                                className="text-[13px] text-[#1A1A1A] hover:text-[#80163A] transition-colors"
+                            >
+                                {l.label}
                             </Link>
                         ) : (
                             <a

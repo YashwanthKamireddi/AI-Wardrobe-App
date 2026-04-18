@@ -594,7 +594,7 @@ export function HomePage() {
 
                     <GreetingHeader
                         username={user?.name || user?.username || "friend"}
-                        weather={weather}
+                        weather={weather ?? undefined}
                         onOpenWeather={() => setShowWeatherModal(true)}
                     />
 
