@@ -1,7 +1,8 @@
 /**
  * Social Features Controller
  *
- * Handles outfit sharing, follows, likes, and community features
+ * Handles outfit sharing, follows, likes, challenges, and community feed.
+ * Backed by migration 004_social.sql.
  */
 
 import { Request, Response } from "express";
@@ -10,7 +11,6 @@ import { randomBytes } from "crypto";
 
 /**
  * POST /api/social/follow/:userId
- * Follow another user
  */
 export const followUser = async (req: Request, res: Response) => {
     try {
@@ -19,14 +19,20 @@ export const followUser = async (req: Request, res: Response) => {
         const followerId = req.user!.id;
         const followingId = parseInt(req.params.userId);
 
+        if (!Number.isFinite(followingId)) {
+            return res.status(400).json({ message: "Invalid user id" });
+        }
         if (followerId === followingId) {
             return res.status(400).json({ message: "Cannot follow yourself" });
         }
 
-        // TODO: Implement in storage layer
-        // await storage.followUser(followerId, followingId);
+        const target = await storage.getUser(followingId);
+        if (!target) return res.status(404).json({ message: "User not found" });
 
-        res.json({ success: true, message: "Followed successfully" });
+        const ok = await storage.followUser!(followerId, followingId);
+        if (!ok) return res.status(500).json({ message: "Failed to follow user" });
+
+        res.json({ success: true, following: true });
     } catch (error) {
         res.status(500).json({ message: "Failed to follow user" });
     }
@@ -34,7 +40,6 @@ export const followUser = async (req: Request, res: Response) => {
 
 /**
  * DELETE /api/social/unfollow/:userId
- * Unfollow a user
  */
 export const unfollowUser = async (req: Request, res: Response) => {
     try {
@@ -42,11 +47,12 @@ export const unfollowUser = async (req: Request, res: Response) => {
 
         const followerId = req.user!.id;
         const followingId = parseInt(req.params.userId);
+        if (!Number.isFinite(followingId)) {
+            return res.status(400).json({ message: "Invalid user id" });
+        }
 
-        // TODO: Implement in storage layer
-        // await storage.unfollowUser(followerId, followingId);
-
-        res.json({ success: true, message: "Unfollowed successfully" });
+        await storage.unfollowUser!(followerId, followingId);
+        res.json({ success: true, following: false });
     } catch (error) {
         res.status(500).json({ message: "Failed to unfollow user" });
     }
@@ -54,47 +60,60 @@ export const unfollowUser = async (req: Request, res: Response) => {
 
 /**
  * GET /api/social/feed
- * Get community feed of public outfits
+ * Community feed: newest outfits from other users, enriched with like/follow state.
  */
 export const getCommunityFeed = async (req: Request, res: Response) => {
     try {
         if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
-        const limit = parseInt(req.query.limit as string) || 20;
+        const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
         const userId = req.user!.id;
 
-        // Fetch REAL outfits from database
-        const rawOutfits = await storage.getOutfits(userId);
+        // Prefer a public feed (others' outfits). Fall back to own outfits so demo accounts aren't empty.
+        let rawOutfits = await (storage.getCommunityOutfits?.(limit, userId) ?? Promise.resolve([]));
+        if (rawOutfits.length === 0) {
+            rawOutfits = (await storage.getOutfits(userId)).slice(0, limit);
+        }
 
-        // Transform outfits into feed posts with real images
-        const feedPromises = rawOutfits.slice(0, limit).map(async (outfit: any, index: number) => {
-            // Get first wardrobe item's image as the outfit preview
-            let imageUrl = null;
+        const outfitIds = rawOutfits.map(o => o.id);
+        const likeCounts = await (storage.getLikeCountsForOutfits?.(outfitIds) ?? Promise.resolve({} as Record<number, number>));
+        const likedSet = await (storage.getLikedOutfitIdsForUser?.(userId, outfitIds) ?? Promise.resolve(new Set<number>()));
+
+        // Cache user + first-item image lookups so we avoid duplicate round-trips
+        const userCache = new Map<number, any>();
+        const itemCache = new Map<number, any>();
+
+        const feed = await Promise.all(rawOutfits.map(async (outfit: any) => {
+            let imageUrl: string | null = null;
             if (outfit.items && outfit.items.length > 0) {
                 const firstItemId = outfit.items[0];
-                const wardrobeItem = await storage.getWardrobeItem(firstItemId);
-                if (wardrobeItem) {
-                    imageUrl = wardrobeItem.imageUrl;
+                if (!itemCache.has(firstItemId)) {
+                    itemCache.set(firstItemId, await storage.getWardrobeItem(firstItemId));
                 }
+                const item = itemCache.get(firstItemId);
+                if (item) imageUrl = item.imageUrl;
             }
 
-            // Get user info (for real app, would look up other users too)
-            const user = await storage.getUser(outfit.userId);
+            if (!userCache.has(outfit.userId)) {
+                userCache.set(outfit.userId, await storage.getUser(outfit.userId));
+            }
+            const user = userCache.get(outfit.userId);
 
             return {
                 id: outfit.id,
                 type: "outfit",
+                userId: outfit.userId,
                 userName: user?.name || user?.username || "Style Curator",
+                userAvatar: user?.profilePicture || null,
                 caption: outfit.name || "Untitled Look",
-                imageUrl: imageUrl,
-                likes: outfit.wearCount || Math.floor(Math.random() * 50),
-                isLiked: false, // TODO: Check from likes table
-                comments: Math.floor(Math.random() * 10),
+                description: outfit.description || null,
+                imageUrl,
+                likes: likeCounts[outfit.id] || 0,
+                isLiked: likedSet.has(outfit.id),
+                comments: 0,
                 createdAt: outfit.createdAt || new Date(),
             };
-        });
-
-        const feed = await Promise.all(feedPromises);
+        }));
 
         res.json(feed);
     } catch (error) {
@@ -104,72 +123,77 @@ export const getCommunityFeed = async (req: Request, res: Response) => {
 };
 
 /**
- * POST /api/outfits/:id/like
- * Like an outfit
+ * POST /api/social/outfits/:id/like
  */
 export const likeOutfit = async (req: Request, res: Response) => {
     try {
         if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
         const userId = req.user!.id;
-        const outfitId = parseInt(req.params.id);
+        const outfitId = parseInt(req.params.outfitId);
+        if (!Number.isFinite(outfitId)) return res.status(400).json({ message: "Invalid outfit id" });
 
-        // TODO: Implement in storage layer
-        // await storage.likeOutfit(outfitId, userId);
+        const outfit = await storage.getOutfit(outfitId);
+        if (!outfit) return res.status(404).json({ message: "Outfit not found" });
 
-        res.json({ success: true, liked: true });
+        const ok = await storage.likeOutfit!(outfitId, userId);
+        if (!ok) return res.status(500).json({ message: "Failed to like outfit" });
+
+        const count = await (storage.getOutfitLikeCount?.(outfitId) ?? Promise.resolve(0));
+        res.json({ success: true, liked: true, likes: count });
     } catch (error) {
         res.status(500).json({ message: "Failed to like outfit" });
     }
 };
 
 /**
- * DELETE /api/outfits/:id/like
- * Unlike an outfit
+ * DELETE /api/social/outfits/:id/like
  */
 export const unlikeOutfit = async (req: Request, res: Response) => {
     try {
         if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
         const userId = req.user!.id;
-        const outfitId = parseInt(req.params.id);
+        const outfitId = parseInt(req.params.outfitId);
+        if (!Number.isFinite(outfitId)) return res.status(400).json({ message: "Invalid outfit id" });
 
-        // TODO: Implement in storage layer
-        // await storage.unlikeOutfit(outfitId, userId);
-
-        res.json({ success: true, liked: false });
+        await storage.unlikeOutfit!(outfitId, userId);
+        const count = await (storage.getOutfitLikeCount?.(outfitId) ?? Promise.resolve(0));
+        res.json({ success: true, liked: false, likes: count });
     } catch (error) {
         res.status(500).json({ message: "Failed to unlike outfit" });
     }
 };
 
 /**
- * POST /api/outfits/:id/share
- * Generate share link for outfit
+ * POST /api/social/outfits/:id/share
+ * Generate a durable share link persisted to the DB.
  */
 export const shareOutfit = async (req: Request, res: Response) => {
     try {
         if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
         const userId = req.user!.id;
-        const outfitId = parseInt(req.params.id);
-        const { platform } = req.body;
+        const outfitId = parseInt(req.params.outfitId);
+        if (!Number.isFinite(outfitId)) return res.status(400).json({ message: "Invalid outfit id" });
 
-        // Get the outfit
+        const { platform } = req.body || {};
+
         const outfit = await storage.getOutfit(outfitId);
         if (!outfit || outfit.userId !== userId) {
             return res.status(404).json({ message: "Outfit not found" });
         }
 
-        // Generate unique share link
         const shareLink = randomBytes(16).toString('hex');
-        const shareUrl = `${req.protocol}://${req.get('host')}/share/${shareLink}`;
+        const host = req.get('host');
+        const proto = req.protocol;
+        const shareUrl = `${proto}://${host}/share/${shareLink}`;
 
-        // TODO: Save to database
-        // await storage.createOutfitShare({ outfitId, userId, shareLink, platform });
+        await (storage.createOutfitShare?.(outfitId, userId, shareLink, platform) ?? Promise.resolve());
 
         res.json({
             shareUrl,
+            shareLink,
             platform: platform || 'link',
             message: "Share link generated successfully"
         });
@@ -179,62 +203,69 @@ export const shareOutfit = async (req: Request, res: Response) => {
 };
 
 /**
- * GET /api/challenges
- * Get active challenges
+ * GET /api/social/challenges
+ * Returns active challenges with participant counts and the current user's submission state.
  */
 export const getChallenges = async (req: Request, res: Response) => {
     try {
-        // Active challenges
-        const challenges = [
-            {
-                id: 1,
-                name: "Minimalist Monday",
-                description: "Create a complete outfit with only 3 pieces",
-                endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                participants: 156,
-                prize: "Featured on Vessura homepage",
-                status: "active",
-            },
-            {
-                id: 2,
-                name: "Color Pop Challenge",
-                description: "Style an outfit around a bold accent color",
-                endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-                participants: 89,
-                prize: "₹500 Vessura credits",
-                status: "active",
-            },
-            {
-                id: 3,
-                name: "Capsule Wardrobe",
-                description: "Build 7 unique outfits from only 10 items",
-                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-                participants: 312,
-                prize: "1 month Premium access",
-                status: "active",
-            },
-        ];
+        const userId = req.isAuthenticated() ? req.user!.id : null;
+        const rows = await (storage.getChallenges?.('active') ?? Promise.resolve([]));
 
-        res.json(challenges);
+        const enriched = await Promise.all(rows.map(async (c: any) => {
+            const participants = await (storage.getChallengeSubmissionCount?.(c.id) ?? Promise.resolve(0));
+            const submitted = userId
+                ? await (storage.hasUserSubmittedToChallenge?.(c.id, userId) ?? Promise.resolve(false))
+                : false;
+            return {
+                id: c.id,
+                name: c.name,
+                description: c.description,
+                prize: c.prize,
+                endDate: c.endDate,
+                status: c.status,
+                participants,
+                submitted,
+            };
+        }));
+
+        res.json(enriched);
     } catch (error) {
+        console.error("Error fetching challenges:", error);
         res.status(500).json({ message: "Failed to fetch challenges" });
     }
 };
 
 /**
- * POST /api/challenges/:id/submit
- * Submit outfit to challenge
+ * POST /api/social/challenges/:id/submit
  */
 export const submitToChallenge = async (req: Request, res: Response) => {
     try {
         if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
         const userId = req.user!.id;
-        const challengeId = parseInt(req.params.id);
-        const { outfitId } = req.body;
+        const challengeId = parseInt(req.params.challengeId);
+        const { outfitId } = req.body || {};
 
-        // TODO: Implement challenge submission
-        // await storage.submitToChallenge({ challengeId, userId, outfitId });
+        if (!Number.isFinite(challengeId)) return res.status(400).json({ message: "Invalid challenge id" });
+        if (!Number.isFinite(outfitId)) return res.status(400).json({ message: "outfitId required" });
+
+        const challenge = await (storage.getChallenge?.(challengeId) ?? Promise.resolve(undefined));
+        if (!challenge) return res.status(404).json({ message: "Challenge not found" });
+        if (challenge.status !== 'active') return res.status(400).json({ message: "Challenge is not active" });
+
+        const outfit = await storage.getOutfit(outfitId);
+        if (!outfit || outfit.userId !== userId) {
+            return res.status(404).json({ message: "Outfit not found or not yours" });
+        }
+
+        try {
+            await storage.submitToChallenge!(challengeId, userId, outfitId);
+        } catch (e: any) {
+            if (/already submitted/i.test(e?.message || "")) {
+                return res.status(409).json({ message: "You have already submitted to this challenge" });
+            }
+            throw e;
+        }
 
         res.json({ success: true, message: "Submitted to challenge" });
     } catch (error) {

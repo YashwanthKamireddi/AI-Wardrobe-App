@@ -94,6 +94,35 @@ export interface IStorage {
     createCalendarEvent(event: InsertOutfitCalendar): Promise<OutfitCalendar>;
     deleteCalendarEvent(id: number): Promise<boolean>;
 
+    // Social: follows
+    followUser?(followerId: number, followingId: number): Promise<boolean>;
+    unfollowUser?(followerId: number, followingId: number): Promise<boolean>;
+    isFollowing?(followerId: number, followingId: number): Promise<boolean>;
+    getFollowerIds?(userId: number): Promise<number[]>;
+    getFollowingIds?(userId: number): Promise<number[]>;
+
+    // Social: likes
+    likeOutfit?(outfitId: number, userId: number): Promise<boolean>;
+    unlikeOutfit?(outfitId: number, userId: number): Promise<boolean>;
+    isOutfitLikedBy?(outfitId: number, userId: number): Promise<boolean>;
+    getOutfitLikeCount?(outfitId: number): Promise<number>;
+    getLikedOutfitIdsForUser?(userId: number, outfitIds: number[]): Promise<Set<number>>;
+    getLikeCountsForOutfits?(outfitIds: number[]): Promise<Record<number, number>>;
+
+    // Social: community feed (all public outfits, newest first)
+    getCommunityOutfits?(limit: number, excludeUserId?: number): Promise<Outfit[]>;
+
+    // Social: challenges
+    getChallenges?(status?: string): Promise<any[]>;
+    getChallenge?(id: number): Promise<any | undefined>;
+    submitToChallenge?(challengeId: number, userId: number, outfitId: number): Promise<any>;
+    getChallengeSubmissionCount?(challengeId: number): Promise<number>;
+    hasUserSubmittedToChallenge?(challengeId: number, userId: number): Promise<boolean>;
+
+    // Social: shares
+    createOutfitShare?(outfitId: number, userId: number, shareLink: string, platform?: string): Promise<any>;
+    getOutfitShareByLink?(shareLink: string): Promise<any | undefined>;
+
     // Session store
     sessionStore: session.Store;
 }
@@ -487,6 +516,133 @@ export class MemoryStorage implements IStorage {
 
     async deleteCalendarEvent(id: number): Promise<boolean> {
         return this.outfitCalendar.delete(id);
+    }
+
+    // ============================================================
+    // Social: follows (in-memory)
+    // ============================================================
+    private follows: Set<string> = new Set(); // key: `${follower}->${following}`
+    private outfitLikesMem: Set<string> = new Set(); // key: `${outfitId}:${userId}`
+    private challengesMem: Map<number, any> = new Map();
+    private challengeSubmissionsMem: Set<string> = new Set(); // key: `${challengeId}:${userId}`
+    private outfitSharesMem: Map<string, any> = new Map();
+    private socialSeeded = false;
+
+    private seedSocialMem() {
+        if (this.socialSeeded) return;
+        this.socialSeeded = true;
+        const now = new Date();
+        this.challengesMem.set(1, { id: 1, name: 'Minimalist Monday', description: 'Create a complete outfit with only 3 pieces', prize: 'Featured on Vessura homepage', endDate: new Date(now.getTime() + 7 * 86400000), status: 'active', createdAt: now });
+        this.challengesMem.set(2, { id: 2, name: 'Color Pop Challenge', description: 'Style an outfit around a bold accent color', prize: 'Vessura credits', endDate: new Date(now.getTime() + 14 * 86400000), status: 'active', createdAt: now });
+        this.challengesMem.set(3, { id: 3, name: 'Capsule Wardrobe', description: 'Build 7 unique outfits from only 10 items', prize: '1 month Premium access', endDate: new Date(now.getTime() + 30 * 86400000), status: 'active', createdAt: now });
+    }
+
+    async followUser(followerId: number, followingId: number): Promise<boolean> {
+        if (followerId === followingId) return false;
+        this.follows.add(`${followerId}->${followingId}`);
+        return true;
+    }
+
+    async unfollowUser(followerId: number, followingId: number): Promise<boolean> {
+        return this.follows.delete(`${followerId}->${followingId}`);
+    }
+
+    async isFollowing(followerId: number, followingId: number): Promise<boolean> {
+        return this.follows.has(`${followerId}->${followingId}`);
+    }
+
+    async getFollowerIds(userId: number): Promise<number[]> {
+        const ids: number[] = [];
+        for (const key of this.follows) {
+            const [f, t] = key.split('->').map(Number);
+            if (t === userId) ids.push(f);
+        }
+        return ids;
+    }
+
+    async getFollowingIds(userId: number): Promise<number[]> {
+        const ids: number[] = [];
+        for (const key of this.follows) {
+            const [f, t] = key.split('->').map(Number);
+            if (f === userId) ids.push(t);
+        }
+        return ids;
+    }
+
+    async likeOutfit(outfitId: number, userId: number): Promise<boolean> {
+        this.outfitLikesMem.add(`${outfitId}:${userId}`);
+        return true;
+    }
+
+    async unlikeOutfit(outfitId: number, userId: number): Promise<boolean> {
+        return this.outfitLikesMem.delete(`${outfitId}:${userId}`);
+    }
+
+    async isOutfitLikedBy(outfitId: number, userId: number): Promise<boolean> {
+        return this.outfitLikesMem.has(`${outfitId}:${userId}`);
+    }
+
+    async getOutfitLikeCount(outfitId: number): Promise<number> {
+        let c = 0;
+        for (const k of this.outfitLikesMem) if (k.startsWith(`${outfitId}:`)) c++;
+        return c;
+    }
+
+    async getLikedOutfitIdsForUser(userId: number, outfitIds: number[]): Promise<Set<number>> {
+        const out = new Set<number>();
+        for (const oid of outfitIds) if (this.outfitLikesMem.has(`${oid}:${userId}`)) out.add(oid);
+        return out;
+    }
+
+    async getLikeCountsForOutfits(outfitIds: number[]): Promise<Record<number, number>> {
+        const counts: Record<number, number> = {};
+        for (const oid of outfitIds) counts[oid] = await this.getOutfitLikeCount(oid);
+        return counts;
+    }
+
+    async getCommunityOutfits(limit: number, excludeUserId?: number): Promise<Outfit[]> {
+        const all = Array.from(this.outfits.values())
+            .filter(o => excludeUserId === undefined || o.userId !== excludeUserId)
+            .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+        return all.slice(0, limit);
+    }
+
+    async getChallenges(status?: string): Promise<any[]> {
+        this.seedSocialMem();
+        const all = Array.from(this.challengesMem.values());
+        return status ? all.filter(c => c.status === status) : all;
+    }
+
+    async getChallenge(id: number): Promise<any | undefined> {
+        this.seedSocialMem();
+        return this.challengesMem.get(id);
+    }
+
+    async submitToChallenge(challengeId: number, userId: number, outfitId: number): Promise<any> {
+        const key = `${challengeId}:${userId}`;
+        if (this.challengeSubmissionsMem.has(key)) throw new Error('Already submitted to this challenge');
+        this.challengeSubmissionsMem.add(key);
+        return { challengeId, userId, outfitId, createdAt: new Date() };
+    }
+
+    async getChallengeSubmissionCount(challengeId: number): Promise<number> {
+        let c = 0;
+        for (const k of this.challengeSubmissionsMem) if (k.startsWith(`${challengeId}:`)) c++;
+        return c;
+    }
+
+    async hasUserSubmittedToChallenge(challengeId: number, userId: number): Promise<boolean> {
+        return this.challengeSubmissionsMem.has(`${challengeId}:${userId}`);
+    }
+
+    async createOutfitShare(outfitId: number, userId: number, shareLink: string, platform?: string): Promise<any> {
+        const record = { outfitId, userId, shareLink, platform: platform || null, createdAt: new Date() };
+        this.outfitSharesMem.set(shareLink, record);
+        return record;
+    }
+
+    async getOutfitShareByLink(shareLink: string): Promise<any | undefined> {
+        return this.outfitSharesMem.get(shareLink);
     }
 
     private addSampleData() {

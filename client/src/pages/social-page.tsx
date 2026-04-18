@@ -2,14 +2,22 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppLayout } from "@/components/layout/app-layout";
 import {
-    Heart, Share2, MessageCircle, Trophy, Users, Award, Sparkles, Camera,
-    Bookmark, TrendingUp, Sun, Shirt, Clock, Crown, Search, ExternalLink
+    Heart, Share2, Trophy, Users, Award, Sparkles, Camera,
+    Bookmark, TrendingUp, Sun, Shirt, Clock, Crown, Search, ExternalLink,
+    Check, X as XIcon
 } from "lucide-react";
-import { useCommunityFeed, useChallenges, useLikeOutfit, useUnlikeOutfit } from "@/hooks/use-social";
+import {
+    useCommunityFeed, useChallenges, useLikeOutfit, useUnlikeOutfit,
+    useShareOutfit, useSubmitToChallenge
+} from "@/hooks/use-social";
+import { useOutfits } from "@/hooks/use-outfits";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Inspiration } from "@shared/schema";
+import { Inspiration, Outfit } from "@shared/schema";
 
 /**
  * SOCIAL PAGE - "THE FRONT ROW"
@@ -42,17 +50,99 @@ const trendingStyles = [
     { name: "Parisian Chic", desc: "Effortless style", tag: "#parisian" },
 ];
 
+type FeedPost = {
+    id: number;
+    userId: number;
+    userName: string;
+    userAvatar: string | null;
+    caption: string;
+    description: string | null;
+    imageUrl: string | null;
+    likes: number;
+    isLiked: boolean;
+    comments: number;
+    createdAt: string | Date;
+};
+
+type ChallengeDTO = {
+    id: number;
+    name: string;
+    description: string | null;
+    prize: string | null;
+    endDate: string | Date | null;
+    status: string;
+    participants: number;
+    submitted: boolean;
+};
+
+function formatTimeRemaining(end: string | Date | null | undefined): string {
+    if (!end) return '—';
+    const ms = new Date(end).getTime() - Date.now();
+    if (ms <= 0) return 'Ended';
+    const days = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    if (days > 0) return `${days}d ${hours}h`;
+    const mins = Math.floor((ms % 3600000) / 60000);
+    return `${hours}h ${mins}m`;
+}
+
 export function SocialPage() {
     const [activeTab, setActiveTab] = useState<'feed' | 'challenges' | 'inspiration'>('feed');
     const [searchQuery, setSearchQuery] = useState('');
+    const [submitDialog, setSubmitDialog] = useState<ChallengeDTO | null>(null);
+    const [selectedOutfitId, setSelectedOutfitId] = useState<number | null>(null);
     const { data: feed } = useCommunityFeed();
-    const { data: challenges } = useChallenges();
+    const { data: challenges } = useChallenges() as { data?: ChallengeDTO[] };
     const { data: inspirations } = useQuery<Inspiration[], Error>({
         queryKey: ["/api/inspirations"],
     });
+    const { data: myOutfits } = useOutfits();
     const likeOutfit = useLikeOutfit();
     const unlikeOutfit = useUnlikeOutfit();
+    const shareOutfit = useShareOutfit();
+    const submitToChallenge = useSubmitToChallenge();
     const { toast } = useToast();
+
+    const handleToggleLike = (post: FeedPost) => {
+        if (post.isLiked) unlikeOutfit.mutate(post.id);
+        else likeOutfit.mutate(post.id);
+    };
+
+    const handleShare = async (outfitId: number) => {
+        try {
+            const result = (await shareOutfit.mutateAsync({ outfitId })) as { shareUrl?: string };
+            if (result?.shareUrl) {
+                await navigator.clipboard.writeText(result.shareUrl);
+                toast({ title: "Share link copied", description: "Paste it anywhere." });
+            }
+        } catch (e) {
+            toast({ title: "Could not share", description: "Only your own outfits can be shared.", variant: "destructive" });
+        }
+    };
+
+    const openSubmitDialog = (challenge: ChallengeDTO) => {
+        if (challenge.submitted) {
+            toast({ title: "Already submitted", description: "You've entered this challenge." });
+            return;
+        }
+        setSubmitDialog(challenge);
+        setSelectedOutfitId(null);
+    };
+
+    const handleSubmit = async () => {
+        if (!submitDialog || !selectedOutfitId) return;
+        try {
+            await submitToChallenge.mutateAsync({ challengeId: submitDialog.id, outfitId: selectedOutfitId });
+            toast({ title: "Submitted!", description: `Entered "${submitDialog.name}".` });
+            setSubmitDialog(null);
+            setSelectedOutfitId(null);
+        } catch (e: any) {
+            const msg = /already submitted/i.test(e?.message || "")
+                ? "You've already submitted to this challenge."
+                : "Could not submit entry.";
+            toast({ title: "Submission failed", description: msg, variant: "destructive" });
+        }
+    };
 
     // Filter inspirations by search
     const filteredInspirations = useMemo(() => {
@@ -143,7 +233,7 @@ export function SocialPage() {
 
                             {/* MASONRY FEED */}
                             <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
-                                {feed?.map((post: any, index: number) => (
+                                {(feed as FeedPost[] | undefined)?.map((post, index) => (
                                     <motion.div
                                         key={post.id}
                                         className="break-inside-avoid mb-8 group"
@@ -156,14 +246,24 @@ export function SocialPage() {
                                         <div className="bg-white p-4 pb-6 shadow-2xl shadow-black/5 rotate-1 hover:rotate-0 transition-transform duration-500 ease-out border border-gray-100">
                                             {/* Header */}
                                             <div className="flex items-center gap-3 mb-4">
-                                                <div className="w-8 h-8 rounded-full bg-gray-100 ring-1 ring-gray-100 flex items-center justify-center text-[10px] font-bold">
-                                                    {post.userName?.[0] || 'U'}
+                                                <div className="w-8 h-8 rounded-full bg-gray-100 ring-1 ring-gray-100 flex items-center justify-center text-[10px] font-bold overflow-hidden">
+                                                    {post.userAvatar ? (
+                                                        <img src={post.userAvatar} alt={post.userName} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        post.userName?.[0] || 'U'
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <p className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">{post.userName}</p>
-                                                    <p className="text-[10px] text-gray-400">Parisian Chic</p>
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A] truncate">{post.userName}</p>
+                                                    {post.description && (
+                                                        <p className="text-[10px] text-gray-400 truncate">{post.description}</p>
+                                                    )}
                                                 </div>
-                                                <button className="ml-auto text-gray-300 hover:text-[#80163A] transition-colors">
+                                                <button
+                                                    className="ml-auto min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-300 hover:text-[#80163A] transition-colors"
+                                                    aria-label="Share outfit"
+                                                    onClick={() => handleShare(post.id)}
+                                                >
                                                     <Share2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -190,13 +290,12 @@ export function SocialPage() {
                                                 {/* Overlay Actions */}
                                                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
                                                     <button
-                                                        className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#1A1A1A] hover:bg-[#80163A] hover:text-white transition-colors shadow-xl"
-                                                        onClick={() => likeOutfit.mutate(post.id)}
+                                                        className={`min-w-[44px] min-h-[44px] w-12 h-12 bg-white rounded-full flex items-center justify-center transition-colors shadow-xl ${post.isLiked ? 'text-[#80163A]' : 'text-[#1A1A1A] hover:bg-[#80163A] hover:text-white'}`}
+                                                        onClick={() => handleToggleLike(post)}
+                                                        aria-label={post.isLiked ? "Unlike outfit" : "Like outfit"}
+                                                        aria-pressed={post.isLiked}
                                                     >
                                                         <Heart className="w-5 h-5" fill={post.isLiked ? "currentColor" : "none"} />
-                                                    </button>
-                                                    <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors shadow-xl">
-                                                        <MessageCircle className="w-5 h-5" />
                                                     </button>
                                                 </div>
                                             </div>
@@ -205,9 +304,7 @@ export function SocialPage() {
                                             <div className="mt-2 text-center">
                                                 <p className="text-lg font-playfair italic text-[#1A1A1A] mb-2">"{post.caption}"</p>
                                                 <div className="flex items-center justify-center gap-4 text-[10px] text-gray-400 uppercase tracking-widest font-medium">
-                                                    <span>{post.likes} Admirers</span>
-                                                    <span>•</span>
-                                                    <span>{Math.floor(Math.random() * 20)} Comments</span>
+                                                    <span>{post.likes} {post.likes === 1 ? 'Admirer' : 'Admirers'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -409,79 +506,184 @@ export function SocialPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="space-y-24"
+                            className="space-y-16"
                         >
-                            {/* ACTIVE CHALLENGE - "THE FEATURE" */}
-                            <div className="relative bg-[#1A1A1A] text-[#F9F9F7] overflow-hidden min-h-[500px] flex items-center group">
-                                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-50 transition-all duration-1000 transform group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
-
-                                <div className="relative z-10 px-8 md:px-16 w-full md:w-1/2">
-                                    <div className="flex items-center gap-2 text-[#D4AF37] mb-6">
-                                        <Award className="w-5 h-5" />
-                                        <span className="text-xs font-bold uppercase tracking-[0.3em]">Editor's Challenge</span>
-                                    </div>
-                                    <h2 className="text-5xl md:text-7xl mb-6 leading-[0.9]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                        The <br /> <span className="italic font-light text-white/50">Monochrome</span> <br /> Edit
-                                    </h2>
-                                    <p className="text-lg text-white/80 font-light mb-8 max-w-sm">
-                                        Master the art of single-hue styling. Create a compelling look using varying shades of a single color.
-                                    </p>
-                                    <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-                                        <Button className="bg-[#FAF9F6] text-[#1A1A1A] hover:bg-white px-8 py-6 text-xs uppercase tracking-widest rounded-none border border-transparent hover:border-white transition-all">
-                                            Submit Entry
-                                        </Button>
-                                        <div>
-                                            <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Time Remaining</p>
-                                            <div className="font-playfair text-2xl">48 : 12 : 00</div>
+                            {/* FEATURED CHALLENGE — first active one */}
+                            {challenges && challenges.length > 0 && (
+                                <div className="relative bg-[#1A1A1A] text-[#F9F9F7] overflow-hidden min-h-[420px] flex items-center">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A1A] via-[#80163A]/30 to-[#1A1A1A]" />
+                                    <div className="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-[#D4AF37]/10 blur-3xl" />
+                                    <div className="relative z-10 px-8 md:px-16 w-full md:w-2/3">
+                                        <div className="flex items-center gap-2 text-[#D4AF37] mb-6">
+                                            <Award className="w-5 h-5" />
+                                            <span className="text-xs font-bold uppercase tracking-[0.3em]">Featured Challenge</span>
+                                        </div>
+                                        <h2 className="text-4xl md:text-6xl mb-6 leading-[0.95]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                            {challenges[0].name}
+                                        </h2>
+                                        {challenges[0].description && (
+                                            <p className="text-base md:text-lg text-white/75 font-light mb-8 max-w-xl">
+                                                {challenges[0].description}
+                                            </p>
+                                        )}
+                                        <div className="flex flex-col md:flex-row gap-6 md:items-center">
+                                            <Button
+                                                className="bg-[#FAF9F6] text-[#1A1A1A] hover:bg-white px-8 py-6 text-xs uppercase tracking-widest rounded-none min-h-[44px] disabled:opacity-60"
+                                                onClick={() => openSubmitDialog(challenges[0])}
+                                                disabled={challenges[0].submitted}
+                                            >
+                                                {challenges[0].submitted ? 'Entry Submitted' : 'Submit Entry'}
+                                            </Button>
+                                            <div className="flex gap-8">
+                                                <div>
+                                                    <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Time Remaining</p>
+                                                    <div className="font-playfair text-2xl">{formatTimeRemaining(challenges[0].endDate)}</div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Participants</p>
+                                                    <div className="font-playfair text-2xl flex items-center gap-2">
+                                                        <Users className="w-5 h-5 text-[#D4AF37]" />
+                                                        {challenges[0].participants}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* HALL OF FAME */}
-                            <div className="grid md:grid-cols-2 gap-12 items-center">
-                                <div>
-                                    <h3 className="text-4xl text-[#1A1A1A] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                        Hall of <span className="italic text-[#80163A]">Fame</span>
+                            {/* ALL ACTIVE CHALLENGES */}
+                            <div>
+                                <div className="flex items-center gap-3 mb-8">
+                                    <Trophy className="w-5 h-5 text-[#80163A]" />
+                                    <h3 className="text-3xl text-[#1A1A1A]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                        Open <span className="italic text-[#6B6B6B]">Challenges</span>
                                     </h3>
-                                    <p className="text-gray-500 mb-8 max-w-sm">
-                                        Celebrating the visionaries who defined the season's aesthetic.
-                                    </p>
-                                    <div className="space-y-4">
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} className="flex items-center gap-6 p-4 border-b border-[#E5E5E5] hover:border-[#1A1A1A] transition-colors group cursor-pointer">
-                                                <span className="text-2xl font-playfair text-[#E5E5E5] group-hover:text-[#D4AF37] transition-colors">0{i}</span>
-                                                <div>
-                                                    <p className="text-lg font-playfair italic text-[#1A1A1A] mb-1">"Date Night in Milan"</p>
-                                                    <p className="text-xs uppercase tracking-widest text-gray-400">Winner: @elena_fashion</p>
+                                </div>
+                                {(!challenges || challenges.length === 0) ? (
+                                    <div className="text-center py-20 border border-dashed border-gray-200 rounded-[2rem]">
+                                        <Trophy className="w-8 h-8 mx-auto text-[#D5D5D5] mb-4" />
+                                        <p className="text-gray-400 text-sm uppercase tracking-widest">No active challenges yet</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {challenges.map((c) => (
+                                            <div
+                                                key={c.id}
+                                                className="bg-white border border-[#E5E5E5] p-8 hover:border-[#1A1A1A] transition-colors shadow-sm flex flex-col"
+                                            >
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <Award className="w-6 h-6 text-[#D4AF37]" />
+                                                    {c.submitted && (
+                                                        <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-green-700 bg-green-50 px-2 py-1 rounded-full">
+                                                            <Check className="w-3 h-3" /> Submitted
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <ArrowDiagonal className="ml-auto w-4 h-4 text-gray-300 group-hover:text-[#1A1A1A]" />
+                                                <h4 className="text-xl font-playfair text-[#1A1A1A] mb-3">{c.name}</h4>
+                                                {c.description && (
+                                                    <p className="text-sm text-gray-500 mb-6 flex-grow leading-relaxed">{c.description}</p>
+                                                )}
+                                                <div className="space-y-3 text-xs uppercase tracking-widest text-gray-400 mb-6">
+                                                    {c.prize && (
+                                                        <div className="flex items-center gap-2">
+                                                            <Crown className="w-3 h-3 text-[#D4AF37]" />
+                                                            <span>{c.prize}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        <Users className="w-3 h-3" />
+                                                        <span>{c.participants} {c.participants === 1 ? 'entry' : 'entries'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="w-3 h-3" />
+                                                        <span>{formatTimeRemaining(c.endDate)}</span>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    onClick={() => openSubmitDialog(c)}
+                                                    disabled={c.submitted}
+                                                    className="w-full min-h-[44px] bg-[#1A1A1A] text-white hover:bg-[#80163A] uppercase tracking-widest text-xs rounded-none disabled:opacity-50"
+                                                >
+                                                    {c.submitted ? 'Already Entered' : 'Enter Challenge'}
+                                                </Button>
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    {/* Abstract Winners Visual */}
-                                    <div className="aspect-[3/4] bg-[#F5F5F5] translate-y-8"></div>
-                                    <div className="aspect-[3/4] bg-[#E5E5E5]"></div>
-                                </div>
+                                )}
                             </div>
-
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* SUBMIT-TO-CHALLENGE DIALOG */}
+                <Dialog open={!!submitDialog} onOpenChange={(open) => !open && setSubmitDialog(null)}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="font-playfair text-2xl">
+                                Enter "{submitDialog?.name}"
+                            </DialogTitle>
+                            <DialogDescription>
+                                Pick one of your outfits to submit as your entry.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="max-h-[50vh] overflow-y-auto -mx-2 px-2">
+                            {(!myOutfits || myOutfits.length === 0) ? (
+                                <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl">
+                                    <Sparkles className="w-6 h-6 mx-auto text-gray-300 mb-3" />
+                                    <p className="text-sm text-gray-500">You don't have any outfits yet.</p>
+                                    <p className="text-xs text-gray-400 mt-1">Create one in Outfits first, then come back.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {myOutfits.map((o: Outfit) => {
+                                        const picked = selectedOutfitId === o.id;
+                                        return (
+                                            <button
+                                                key={o.id}
+                                                type="button"
+                                                onClick={() => setSelectedOutfitId(o.id)}
+                                                className={`relative text-left p-4 border-2 rounded-xl transition-all min-h-[88px] ${picked ? 'border-[#80163A] bg-[#80163A]/5' : 'border-gray-200 hover:border-gray-400'}`}
+                                                aria-pressed={picked}
+                                            >
+                                                <p className="text-sm font-medium text-[#1A1A1A] truncate">{o.name}</p>
+                                                {o.occasion && (
+                                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">{o.occasion}</p>
+                                                )}
+                                                {picked && (
+                                                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#80163A] text-white flex items-center justify-center">
+                                                        <Check className="w-3 h-3" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setSubmitDialog(null)}
+                                className="min-h-[44px]"
+                            >
+                                <XIcon className="w-4 h-4 mr-2" /> Cancel
+                            </Button>
+                            <Button
+                                onClick={handleSubmit}
+                                disabled={!selectedOutfitId || submitToChallenge.isPending}
+                                className="min-h-[44px] bg-[#80163A] hover:bg-[#80163A]/90 text-white"
+                            >
+                                {submitToChallenge.isPending ? 'Submitting…' : 'Submit Entry'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );
 }
-
-const ArrowDiagonal = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <line x1="7" y1="17" x2="17" y2="7"></line>
-        <polyline points="7 7 17 7 17 17"></polyline>
-    </svg>
-);
 
 export default SocialPage;

@@ -812,6 +812,239 @@ export class SupabaseStorage implements IStorage {
         return !error;
     }
 
+    // ============================================================
+    // Social: follows
+    // ============================================================
+    async followUser(followerId: number, followingId: number): Promise<boolean> {
+        if (followerId === followingId) return false;
+        const { error } = await this.client
+            .from('follows')
+            .insert({ follower_id: followerId, following_id: followingId });
+        // 23505 = unique violation (already following) — treat as success (idempotent)
+        if (error && (error as any).code !== '23505') {
+            logger.error({ err: new Error(error.message) }, 'followUser failed');
+            return false;
+        }
+        return true;
+    }
+
+    async unfollowUser(followerId: number, followingId: number): Promise<boolean> {
+        const { error } = await this.client
+            .from('follows')
+            .delete()
+            .eq('follower_id', followerId)
+            .eq('following_id', followingId);
+        return !error;
+    }
+
+    async isFollowing(followerId: number, followingId: number): Promise<boolean> {
+        const { data, error } = await this.client
+            .from('follows')
+            .select('id')
+            .eq('follower_id', followerId)
+            .eq('following_id', followingId)
+            .maybeSingle();
+        return !error && !!data;
+    }
+
+    async getFollowerIds(userId: number): Promise<number[]> {
+        const { data, error } = await this.client
+            .from('follows')
+            .select('follower_id')
+            .eq('following_id', userId);
+        if (error || !data) return [];
+        return data.map((r: any) => r.follower_id);
+    }
+
+    async getFollowingIds(userId: number): Promise<number[]> {
+        const { data, error } = await this.client
+            .from('follows')
+            .select('following_id')
+            .eq('follower_id', userId);
+        if (error || !data) return [];
+        return data.map((r: any) => r.following_id);
+    }
+
+    // ============================================================
+    // Social: likes
+    // ============================================================
+    async likeOutfit(outfitId: number, userId: number): Promise<boolean> {
+        const { error } = await this.client
+            .from('outfit_likes')
+            .insert({ outfit_id: outfitId, user_id: userId });
+        if (error && (error as any).code !== '23505') {
+            logger.error({ err: new Error(error.message) }, 'likeOutfit failed');
+            return false;
+        }
+        return true;
+    }
+
+    async unlikeOutfit(outfitId: number, userId: number): Promise<boolean> {
+        const { error } = await this.client
+            .from('outfit_likes')
+            .delete()
+            .eq('outfit_id', outfitId)
+            .eq('user_id', userId);
+        return !error;
+    }
+
+    async isOutfitLikedBy(outfitId: number, userId: number): Promise<boolean> {
+        const { data, error } = await this.client
+            .from('outfit_likes')
+            .select('id')
+            .eq('outfit_id', outfitId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        return !error && !!data;
+    }
+
+    async getOutfitLikeCount(outfitId: number): Promise<number> {
+        const { count, error } = await this.client
+            .from('outfit_likes')
+            .select('id', { count: 'exact', head: true })
+            .eq('outfit_id', outfitId);
+        if (error) return 0;
+        return count || 0;
+    }
+
+    async getLikedOutfitIdsForUser(userId: number, outfitIds: number[]): Promise<Set<number>> {
+        if (outfitIds.length === 0) return new Set();
+        const { data, error } = await this.client
+            .from('outfit_likes')
+            .select('outfit_id')
+            .eq('user_id', userId)
+            .in('outfit_id', outfitIds);
+        if (error || !data) return new Set();
+        return new Set(data.map((r: any) => r.outfit_id));
+    }
+
+    async getLikeCountsForOutfits(outfitIds: number[]): Promise<Record<number, number>> {
+        if (outfitIds.length === 0) return {};
+        const { data, error } = await this.client
+            .from('outfit_likes')
+            .select('outfit_id')
+            .in('outfit_id', outfitIds);
+        const counts: Record<number, number> = {};
+        for (const id of outfitIds) counts[id] = 0;
+        if (error || !data) return counts;
+        for (const row of data) counts[(row as any).outfit_id] = (counts[(row as any).outfit_id] || 0) + 1;
+        return counts;
+    }
+
+    // ============================================================
+    // Social: community feed
+    // ============================================================
+    async getCommunityOutfits(limit: number, excludeUserId?: number): Promise<Outfit[]> {
+        let q = this.client
+            .from('outfits')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(limit);
+        if (excludeUserId !== undefined) q = q.neq('user_id', excludeUserId);
+        const { data, error } = await q;
+        if (error || !data) return [];
+        return data.map((o: any) => this.mapDbOutfitToOutfit(o));
+    }
+
+    // ============================================================
+    // Social: challenges
+    // ============================================================
+    async getChallenges(status?: string): Promise<any[]> {
+        let q = this.client.from('challenges').select('*').order('end_date', { ascending: true });
+        if (status) q = q.eq('status', status);
+        const { data, error } = await q;
+        if (error || !data) return [];
+        return data.map((c: any) => this.mapDbChallenge(c));
+    }
+
+    async getChallenge(id: number): Promise<any | undefined> {
+        const { data, error } = await this.client
+            .from('challenges')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error || !data) return undefined;
+        return this.mapDbChallenge(data);
+    }
+
+    async submitToChallenge(challengeId: number, userId: number, outfitId: number): Promise<any> {
+        const { data, error } = await this.client
+            .from('challenge_submissions')
+            .insert({ challenge_id: challengeId, user_id: userId, outfit_id: outfitId })
+            .select()
+            .single();
+        if (error) {
+            if ((error as any).code === '23505') {
+                throw new Error('Already submitted to this challenge');
+            }
+            logger.error({ err: new Error(error.message) }, 'submitToChallenge failed');
+            throw new Error('Failed to submit to challenge');
+        }
+        return data;
+    }
+
+    async getChallengeSubmissionCount(challengeId: number): Promise<number> {
+        const { count, error } = await this.client
+            .from('challenge_submissions')
+            .select('id', { count: 'exact', head: true })
+            .eq('challenge_id', challengeId);
+        if (error) return 0;
+        return count || 0;
+    }
+
+    async hasUserSubmittedToChallenge(challengeId: number, userId: number): Promise<boolean> {
+        const { data, error } = await this.client
+            .from('challenge_submissions')
+            .select('id')
+            .eq('challenge_id', challengeId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        return !error && !!data;
+    }
+
+    // ============================================================
+    // Social: shares
+    // ============================================================
+    async createOutfitShare(outfitId: number, userId: number, shareLink: string, platform?: string): Promise<any> {
+        const { data, error } = await this.client
+            .from('outfit_shares')
+            .insert({
+                outfit_id: outfitId,
+                user_id: userId,
+                share_link: shareLink,
+                platform: platform || null
+            })
+            .select()
+            .single();
+        if (error) {
+            logger.error({ err: new Error(error.message) }, 'createOutfitShare failed');
+            throw new Error('Failed to create share');
+        }
+        return data;
+    }
+
+    async getOutfitShareByLink(shareLink: string): Promise<any | undefined> {
+        const { data, error } = await this.client
+            .from('outfit_shares')
+            .select('*')
+            .eq('share_link', shareLink)
+            .single();
+        if (error || !data) return undefined;
+        return data;
+    }
+
+    private mapDbChallenge(data: any): any {
+        return {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            prize: data.prize,
+            endDate: data.end_date ? new Date(data.end_date) : null,
+            status: data.status,
+            createdAt: data.created_at ? new Date(data.created_at) : null,
+        };
+    }
+
     // Mapping helpers - Capsule
     private mapDbCapsuleToCapsule(data: any): any {
         return {
