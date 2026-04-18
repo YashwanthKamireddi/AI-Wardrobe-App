@@ -12,6 +12,7 @@ import {
     CalendarDays,
     Check,
     Minus,
+    Plus,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -46,6 +47,7 @@ export function LandingPage() {
             <GapAnalysisSpotlight />
             <Testimonials />
             <CompareTable />
+            <FaqSection />
             <FinalCta />
             <SiteFooter />
         </div>
@@ -81,6 +83,9 @@ function TopNav() {
                     </a>
                     <a href="#pricing" className="text-[13px] tracking-wide text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors">
                         Pricing
+                    </a>
+                    <a href="#faq" className="text-[13px] tracking-wide text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors">
+                        FAQ
                     </a>
                 </nav>
 
@@ -1220,6 +1225,137 @@ function CompareTable() {
                         </Link>
                     </div>
                 </motion.div>
+            </div>
+        </section>
+    );
+}
+
+/* ------------------------------------------------------------------ */
+/* FAQ                                                                  */
+/* ------------------------------------------------------------------ */
+
+const FAQ_ITEMS: { q: string; a: string }[] = [
+    {
+        q: "Is Vessura free?",
+        a: "Yes — every feature is free during beta. Unlimited pieces, full intelligence, no trial clock. When we leave beta there will be a considered pricing tier, and early users will keep their access at the launch-day rate.",
+    },
+    {
+        q: "Do I have to photograph every item?",
+        a: "No. You can start by adding a few anchor pieces and building from there. Studio can process several images at once — background removal, colour extraction, and category suggestions are automatic. Most users catalogue their core wardrobe in a single evening.",
+    },
+    {
+        q: "Is my wardrobe data private?",
+        a: "Your wardrobe is yours. Items and outfits are stored privately by default. Nothing is shared to the community feed or challenges unless you explicitly choose to. We do not sell data and we do not train external models on your images.",
+    },
+    {
+        q: "How does the Style DNA actually work?",
+        a: "It reads four signals from your real wardrobe: colour harmony (palette coherence), versatility (category and season spread), maturity (what you actually wear, not just own), and archetype (the shape of your wardrobe as a whole). No quiz, no personality questionnaire — the profile moves as your wardrobe moves.",
+    },
+    {
+        q: "Will Vessura tell me to shop?",
+        a: "Only when there is a real gap. The gap analysis flags categories you are missing — it will not push trend pieces or seasonal drops. Cost-per-wear and wear counts are designed to make impulse-buys quietly unattractive.",
+    },
+    {
+        q: "Does it work on my phone?",
+        a: "Yes. Vessura is built mobile-first — 44×44 tap targets, iOS safe-area aware, and the full web app runs in a modern browser. A dedicated native app is on the roadmap but the web experience is the canonical product.",
+    },
+    {
+        q: "Who is this for?",
+        a: "People who own clothes they care about and want to wear them more intentionally — not wardrobes at the extremes of quantity. If you have more than you can keep in your head, and every piece was a decision, you are our reader.",
+    },
+];
+
+function FaqItem({ q, a, isOpen, onToggle, index }: { q: string; a: string; isOpen: boolean; onToggle: () => void; index: number }) {
+    return (
+        <motion.div
+            className={`border-b border-[#E8E0CF] ${index === 0 ? "border-t" : ""}`}
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.5, delay: index * 0.04, ease: EASE }}
+        >
+            <button
+                type="button"
+                className="w-full flex items-center justify-between gap-6 py-6 md:py-7 text-left min-h-[44px] group"
+                onClick={onToggle}
+                aria-expanded={isOpen}
+            >
+                <span
+                    className="text-[17px] md:text-[20px] leading-[1.3] text-[#1A1A1A] tracking-tight pr-4"
+                    style={SERIF}
+                >
+                    {q}
+                </span>
+                <span
+                    className={`flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-full border transition-all duration-300 ${isOpen
+                        ? "bg-[#80163A] border-[#80163A] rotate-45"
+                        : "border-[#E5DFD0] bg-white group-hover:border-[#1A1A1A]"
+                        }`}
+                    aria-hidden
+                >
+                    <Plus className={`h-4 w-4 transition-colors ${isOpen ? "text-[#FDFBF7]" : "text-[#1A1A1A]"}`} />
+                </span>
+            </button>
+            <motion.div
+                initial={false}
+                animate={{
+                    height: isOpen ? "auto" : 0,
+                    opacity: isOpen ? 1 : 0,
+                }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="overflow-hidden"
+            >
+                <p className="pb-6 md:pb-8 pr-14 text-[15px] leading-[1.75] text-[#4A4A4A] max-w-[62ch]">
+                    {a}
+                </p>
+            </motion.div>
+        </motion.div>
+    );
+}
+
+function FaqSection() {
+    const [openIndex, setOpenIndex] = useState<number>(0);
+    return (
+        <section id="faq" className="py-24 md:py-32 bg-[#FDFBF7]">
+            <div className="mx-auto max-w-4xl px-6 md:px-10">
+                <motion.div {...fadeUp} className="mb-14 md:mb-16">
+                    <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
+                        Questions
+                    </span>
+                    <h2
+                        className="mt-3 text-[34px] md:text-[52px] leading-[1.05] tracking-[-0.01em] text-[#1A1A1A]"
+                        style={SERIF}
+                    >
+                        The answers worth asking for.
+                    </h2>
+                    <p className="mt-5 max-w-xl text-[15px] leading-[1.7] text-[#4A4A4A]">
+                        Short, honest answers to what people actually want to know before they
+                        catalogue a closet.
+                    </p>
+                </motion.div>
+
+                <div>
+                    {FAQ_ITEMS.map((item, i) => (
+                        <FaqItem
+                            key={item.q}
+                            q={item.q}
+                            a={item.a}
+                            index={i}
+                            isOpen={openIndex === i}
+                            onToggle={() => setOpenIndex(openIndex === i ? -1 : i)}
+                        />
+                    ))}
+                </div>
+
+                <motion.p
+                    {...fadeUp}
+                    className="mt-12 text-[13px] text-[#6B6B6B]"
+                >
+                    Still weighing it?{" "}
+                    <Link href="/auth" className="text-[#80163A] underline underline-offset-4 decoration-[#80163A]/40 hover:decoration-[#80163A]">
+                        Open an account and decide from the inside.
+                    </Link>
+                </motion.p>
             </div>
         </section>
     );

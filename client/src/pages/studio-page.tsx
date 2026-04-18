@@ -15,9 +15,8 @@ import {
 import FileUpload from "@/components/file-upload";
 import { processWardrobeImage, AIProcessingResult } from "@/lib/image-ai";
 import { useAddWardrobeItem } from "@/hooks/use-wardrobe";
-import { Progress } from "@/components/ui/progress";
-import { AIProcessingOverlay } from "@/components/ui/ai-processing-overlay";
 import { BeforeAfterComparison } from "@/components/ui/before-after-comparison";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * STUDIO PAGE - AI WARDROBE PROCESSING HUB
@@ -44,8 +43,10 @@ export function StudioPage() {
     const [currentlyProcessing, setCurrentlyProcessing] = useState<string | null>(null);
     const [showBeforeAfter, setShowBeforeAfter] = useState(false);
     const [beforeAfterItem, setBeforeAfterItem] = useState<ProcessedItem | null>(null);
+    const [isBulkAdding, setIsBulkAdding] = useState(false);
 
     const addItem = useAddWardrobeItem();
+    const { toast } = useToast();
 
     const handleFileSelect = async (file: File) => {
         const newItem: ProcessedItem = {
@@ -92,34 +93,65 @@ export function StudioPage() {
     };
 
     const handleBulkAddToWardrobe = async () => {
+        if (isBulkAdding) return;
         const completedItems = items.filter(i => i.status === 'complete' && i.result);
+        if (completedItems.length === 0) return;
+
+        setIsBulkAdding(true);
+
+        const blobToDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error("Failed to read image"));
+            reader.readAsDataURL(blob);
+        });
+
+        const addedIds = new Set<string>();
+        const failed: { id: string; reason: string }[] = [];
 
         for (const item of completedItems) {
             if (!item.result) continue;
+            try {
+                const base64 = await blobToDataUrl(item.result.processedImageBlob);
+                await addItem.mutateAsync({
+                    name: item.name || 'Untitled',
+                    category: item.category || 'tops',
+                    color: item.color,
+                    imageUrl: base64,
+                    tags: ['studio-processed'],
+                    favorite: false,
+                    wearCount: 0,
+                    status: 'available'
+                });
+                addedIds.add(item.id);
+            } catch (e) {
+                failed.push({ id: item.id, reason: e instanceof Error ? e.message : 'Unknown error' });
+            }
+        }
 
-            // Convert blob to base64
-            const reader = new FileReader();
-            const base64Promise = new Promise<string>((resolve) => {
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(item.result!.processedImageBlob);
+        // Only drop items that were actually added — leave failures so the user can retry.
+        setItems(prev => prev.filter(i => !addedIds.has(i.id)));
+
+        if (failed.length === 0) {
+            toast({
+                title: "Added to Wardrobe",
+                description: `${addedIds.size} ${addedIds.size === 1 ? 'piece' : 'pieces'} saved.`,
             });
-
-            const base64 = await base64Promise;
-
-            await addItem.mutateAsync({
-                name: item.name || 'Untitled',
-                category: item.category || 'tops',
-                color: item.color,
-                imageUrl: base64,
-                tags: ['studio-processed'],
-                favorite: false,
-                wearCount: 0,
-                status: 'available'
+        } else if (addedIds.size === 0) {
+            toast({
+                title: "Could not save",
+                description: "No items were added. Please try again.",
+                variant: "destructive",
+            });
+        } else {
+            toast({
+                title: "Partially saved",
+                description: `${addedIds.size} saved, ${failed.length} failed — failures stay in the queue.`,
+                variant: "destructive",
             });
         }
 
-        // Clear items after adding
-        setItems([]);
+        setIsBulkAdding(false);
     };
 
     const removeItem = (id: string) => {
@@ -204,13 +236,18 @@ export function StudioPage() {
                             {completedCount > 0 && (
                                 <motion.button
                                     onClick={handleBulkAddToWardrobe}
-                                    className="h-10 px-6 bg-[#1A1A1A] text-white text-sm font-medium rounded-full flex items-center gap-2"
-                                    whileHover={{ backgroundColor: "#80163A" }}
-                                    whileTap={{ scale: 0.98 }}
-                                    disabled={addItem.isPending}
+                                    className="min-h-[44px] h-11 px-6 bg-[#1A1A1A] text-white text-sm font-medium rounded-full flex items-center gap-2 disabled:opacity-60"
+                                    whileHover={{ backgroundColor: isBulkAdding ? "#1A1A1A" : "#80163A" }}
+                                    whileTap={{ scale: isBulkAdding ? 1 : 0.98 }}
+                                    disabled={isBulkAdding}
+                                    aria-busy={isBulkAdding}
                                 >
-                                    <Check className="w-4 h-4" />
-                                    {addItem.isPending ? 'Adding...' : `Add ${completedCount} to Wardrobe`}
+                                    {isBulkAdding ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <Check className="w-4 h-4" />
+                                    )}
+                                    {isBulkAdding ? 'Adding…' : `Add ${completedCount} to Wardrobe`}
                                 </motion.button>
                             )}
                         </div>
