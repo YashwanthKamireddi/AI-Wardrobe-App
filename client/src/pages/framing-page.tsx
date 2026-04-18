@@ -159,24 +159,40 @@ export function FramingPage() {
         return wardrobeItems.filter((item) => selectedItems.includes(item.id));
     }, [wardrobeItems, selectedItems]);
 
+    const [isExporting, setIsExporting] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const captureBlob = async (): Promise<Blob> => {
+        if (!frameRef.current) throw new Error("Preview not ready");
+        const canvas = await html2canvas(frameRef.current, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: null,
+        });
+        return new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(
+                (b) => (b ? resolve(b) : reject(new Error("Failed to encode image"))),
+                "image/png"
+            );
+        });
+    };
+
     const handleExport = async () => {
-        if (!frameRef.current) return;
-
+        if (isExporting) return;
+        setIsExporting(true);
         try {
-            const canvas = await html2canvas(frameRef.current, {
-                scale: 2, // High resolution
-                useCORS: true, // Allow cross-origin images
-                backgroundColor: null,
-            });
-
+            const blob = await captureBlob();
+            const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.download = `framed-style-${Date.now()}.png`;
-            link.href = canvas.toDataURL("image/png");
+            link.download = `vessura-frame-${Date.now()}.png`;
+            link.href = url;
             link.click();
-
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
             toast({
-                title: "Frame Saved!",
-                description: "Your masterpiece has been downloaded.",
+                title: "Frame Downloaded",
+                description: "Your masterpiece is saved to your device.",
             });
         } catch (error) {
             console.error("Export failed:", error);
@@ -185,135 +201,128 @@ export function FramingPage() {
                 description: "Could not save the image. Please try again.",
                 variant: "destructive",
             });
+        } finally {
+            setIsExporting(false);
         }
     };
 
-    // Mutation for uploading image
+    // Upload + wardrobe insertion kept as regular mutations but without noisy toasts —
+    // the composite handler below owns the user-facing feedback.
     const uploadMutation = useMutation({
         mutationFn: async (blob: Blob) => {
             const formData = new FormData();
             formData.append('image', blob);
-            // Use fetch directly for FormData support
             const response = await fetch("/api/upload-image", {
                 method: "POST",
                 body: formData
             });
-
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Upload failed: ${errorText}`);
             }
-
             return await response.json();
         }
     });
 
-    // Mutation for creating the wardrobe item (Frame)
     const createFrameItemMutation = useMutation({
-        mutationFn: async (data: any) => {
-            return await apiRequest({
-                method: "POST",
-                path: "/api/wardrobe",
-                body: data
-            });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
-            toast({
-                title: "Saved to Gallery",
-                description: "Your frame has been saved to your collection.",
-            });
-            setStep("select"); // Reset or stay?
-        },
-        onError: () => {
-            toast({
-                title: "Save Failed",
-                description: "Could not save to gallery.",
-                variant: "destructive",
-            });
-        }
+        mutationFn: async (data: any) =>
+            apiRequest({ method: "POST", path: "/api/wardrobe", body: data }),
     });
 
     const handleSaveToGallery = async () => {
-        if (!frameRef.current) return;
-
+        if (isSaving) return;
+        setIsSaving(true);
         try {
-            // 1. Capture Canvas
-            const canvas = await html2canvas(frameRef.current, {
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: null,
+            const blob = await captureBlob();
+            const uploadRes = await uploadMutation.mutateAsync(blob);
+            const imageUrl = uploadRes.url;
+
+            await createFrameItemMutation.mutateAsync({
+                name: frameTitle || `Style Frame ${new Date().toLocaleDateString()}`,
+                category: "accessories",
+                subcategory: "other",
+                imageUrl,
+                color: "multicolor",
+                season: "all",
+                tags: ["#frame", "style_dna", selectedFrame.name],
+                notes: JSON.stringify({
+                    frameId: selectedFrame.id,
+                    backgroundId: selectedBackground.id,
+                    overlay: selectedOverlay
+                })
             });
 
-            canvas.toBlob(async (blob) => {
-                if (!blob) throw new Error("Canvas blob creation failed");
-
-                // 2. Upload Image
-                const uploadRes = await uploadMutation.mutateAsync(blob);
-                const imageUrl = uploadRes.url;
-
-                // 3. Create Wardrobe Item (Frame)
-                await createFrameItemMutation.mutateAsync({
-                    name: frameTitle || `Style Frame ${new Date().toLocaleDateString()}`,
-                    category: "accessories", // Hack to fit schema
-                    subcategory: "other",
-                    imageUrl: imageUrl,
-                    color: "multicolor",
-                    season: "all",
-                    tags: ["#frame", "style_dna", selectedFrame.name],
-                    notes: JSON.stringify({
-                        frameId: selectedFrame.id,
-                        backgroundId: selectedBackground.id,
-                        overlay: selectedOverlay
-                    })
-                });
-
-            }, 'image/png');
-
+            queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
+            toast({
+                title: "Saved to Gallery",
+                description: "Your frame is now in your collection.",
+            });
+            setStep("select");
         } catch (error) {
             console.error("Gallery save failed:", error);
+            const message = error instanceof Error ? error.message : "Could not save to gallery.";
             toast({
-                title: "Error",
-                description: "Failed to render frame.",
+                title: "Save Failed",
+                description: message,
                 variant: "destructive",
             });
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleShare = async () => {
-        if (!frameRef.current) return;
-
+        if (isSharing) return;
+        setIsSharing(true);
         try {
-            const canvas = await html2canvas(frameRef.current, { scale: 2, useCORS: true, allowTaint: true });
-            canvas.toBlob(async (blob) => {
-                if (!blob) return;
-                const file = new File([blob], "outfit.png", { type: "image/png" });
+            const blob = await captureBlob();
+            const file = new File([blob], "vessura-frame.png", { type: "image/png" });
 
-                // If Web Share API is available and can share files
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        title: 'My Style Frame',
-                        text: 'Check out this outfit I curated!',
-                        files: [file]
-                    });
-                } else {
-                    // Fallback to clipboard
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
-                    ]);
-                    toast({
-                        title: "Copied to Clipboard!",
-                        description: "Image copied. Paste it anywhere.",
-                    });
-                }
+            if (typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] })) {
+                await navigator.share({
+                    title: 'My Style Frame',
+                    text: 'Check out this outfit I curated with Vessura.',
+                    files: [file]
+                });
+                return;
+            }
+
+            if (typeof navigator.clipboard?.write === 'function' && typeof ClipboardItem !== 'undefined') {
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                toast({
+                    title: "Copied to Clipboard",
+                    description: "Image copied — paste it anywhere.",
+                });
+                return;
+            }
+
+            // Last-resort fallback: trigger a download.
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.download = `vessura-frame-${Date.now()}.png`;
+            link.href = url;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            toast({
+                title: "Downloaded",
+                description: "Sharing wasn't supported — saved as a file instead.",
             });
         } catch (error) {
+            const name = (error as any)?.name;
+            if (name === 'AbortError') {
+                // User cancelled the share sheet — no error toast.
+                return;
+            }
+            console.error("Share failed:", error);
             toast({
                 title: "Share Failed",
                 description: "Could not share the image.",
                 variant: "destructive",
             });
+        } finally {
+            setIsSharing(false);
         }
     };
 
@@ -544,36 +553,49 @@ export function FramingPage() {
 
                                         <div className="space-y-3">
                                             <motion.button
-                                                className="w-full py-4 rounded-xl bg-[#1A1A1A] text-white text-sm tracking-wider flex items-center justify-center gap-2"
+                                                className="w-full min-h-[44px] py-4 rounded-xl bg-[#1A1A1A] text-white text-sm tracking-wider flex items-center justify-center gap-2 disabled:opacity-60"
                                                 onClick={handleExport}
-                                                whileHover={{ scale: 1.01 }}
-                                                whileTap={{ scale: 0.99 }}
+                                                disabled={isExporting}
+                                                aria-busy={isExporting}
+                                                whileHover={{ scale: isExporting ? 1 : 1.01 }}
+                                                whileTap={{ scale: isExporting ? 1 : 0.99 }}
                                             >
-                                                <Download className="w-4 h-4" />
-                                                DOWNLOAD IMAGE
+                                                {isExporting ? (
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <Download className="w-4 h-4" />
+                                                )}
+                                                {isExporting ? 'RENDERING…' : 'DOWNLOAD IMAGE'}
                                             </motion.button>
                                             <motion.button
-                                                className="w-full py-4 rounded-xl bg-[#1A1A1A] text-white text-sm tracking-wider flex items-center justify-center gap-2"
+                                                className="w-full min-h-[44px] py-4 rounded-xl bg-[#80163A] text-white text-sm tracking-wider flex items-center justify-center gap-2 disabled:opacity-60"
                                                 onClick={handleSaveToGallery}
-                                                disabled={createFrameItemMutation.isPending || uploadMutation.isPending}
-                                                whileHover={{ scale: 1.01 }}
-                                                whileTap={{ scale: 0.99 }}
+                                                disabled={isSaving}
+                                                aria-busy={isSaving}
+                                                whileHover={{ scale: isSaving ? 1 : 1.01 }}
+                                                whileTap={{ scale: isSaving ? 1 : 0.99 }}
                                             >
-                                                {createFrameItemMutation.isPending ? (
+                                                {isSaving ? (
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                 ) : (
                                                     <Layers className="w-4 h-4" />
                                                 )}
-                                                SAVE TO COLLECTION
+                                                {isSaving ? (uploadMutation.isPending ? 'UPLOADING…' : 'SAVING…') : 'SAVE TO COLLECTION'}
                                             </motion.button>
                                             <motion.button
-                                                className="w-full py-4 rounded-xl bg-white border border-[#E5E5E5] text-[#1A1A1A] text-sm tracking-wider flex items-center justify-center gap-2"
+                                                className="w-full min-h-[44px] py-4 rounded-xl bg-white border border-[#E5E5E5] text-[#1A1A1A] text-sm tracking-wider flex items-center justify-center gap-2 disabled:opacity-60"
                                                 onClick={handleShare}
-                                                whileHover={{ scale: 1.01, borderColor: "#1A1A1A" }}
-                                                whileTap={{ scale: 0.99 }}
+                                                disabled={isSharing}
+                                                aria-busy={isSharing}
+                                                whileHover={{ scale: isSharing ? 1 : 1.01, borderColor: "#1A1A1A" }}
+                                                whileTap={{ scale: isSharing ? 1 : 0.99 }}
                                             >
-                                                <Share2 className="w-4 h-4" />
-                                                SHARE LINK
+                                                {isSharing ? (
+                                                    <div className="w-4 h-4 border-2 border-[#1A1A1A]/30 border-t-[#1A1A1A] rounded-full animate-spin" />
+                                                ) : (
+                                                    <Share2 className="w-4 h-4" />
+                                                )}
+                                                {isSharing ? 'PREPARING…' : 'SHARE'}
                                             </motion.button>
                                         </div>
                                     </div>

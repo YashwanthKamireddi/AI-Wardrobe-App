@@ -15,6 +15,7 @@ import * as inspirationsController from "./controllers/inspirations-controller";
 import * as advancedController from "./controllers/advanced-controller";
 import * as socialController from "./controllers/social-controller";
 import * as intelligenceController from "./controllers/intelligence-controller";
+import * as styleDnaController from "./controllers/style-dna-controller";
 
 
 export async function registerRoutes(app: Express): Promise<void> {
@@ -143,5 +144,11 @@ export async function registerRoutes(app: Express): Promise<void> {
     // ============================================
     app.get("/api/wardrobe/intelligence", intelligenceController.getWardrobeIntelligence);
     app.get("/api/wardrobe/shopping-recommendations", intelligenceController.getShoppingRecommendations);
+
+    // ============================================
+    // STYLE DNA — computed style profile with persistence
+    // ============================================
+    app.get("/api/style-dna", styleDnaController.getStyleDna);
+    app.post("/api/style-dna/refresh", styleDnaController.refreshStyleDna);
 
 }

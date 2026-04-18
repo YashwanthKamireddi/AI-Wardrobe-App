@@ -123,6 +123,10 @@ export interface IStorage {
     createOutfitShare?(outfitId: number, userId: number, shareLink: string, platform?: string): Promise<any>;
     getOutfitShareByLink?(shareLink: string): Promise<any | undefined>;
 
+    // Style DNA
+    getStyleProfile?(userId: number): Promise<any | undefined>;
+    upsertStyleProfile?(userId: number, profile: any): Promise<any>;
+
     // Session store
     sessionStore: session.Store;
 }
@@ -643,6 +647,19 @@ export class MemoryStorage implements IStorage {
 
     async getOutfitShareByLink(shareLink: string): Promise<any | undefined> {
         return this.outfitSharesMem.get(shareLink);
+    }
+
+    // Style DNA (in-memory)
+    private styleProfilesMem: Map<number, any> = new Map();
+
+    async getStyleProfile(userId: number): Promise<any | undefined> {
+        return this.styleProfilesMem.get(userId);
+    }
+
+    async upsertStyleProfile(userId: number, profile: any): Promise<any> {
+        const record = { ...profile, userId, updatedAt: new Date() };
+        this.styleProfilesMem.set(userId, record);
+        return record;
     }
 
     private addSampleData() {

@@ -1033,6 +1033,66 @@ export class SupabaseStorage implements IStorage {
         return data;
     }
 
+    // ============================================================
+    // Style DNA profiles
+    // ============================================================
+    async getStyleProfile(userId: number): Promise<any | undefined> {
+        const { data, error } = await this.client
+            .from('style_profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (error || !data) return undefined;
+        return this.mapDbStyleProfile(data);
+    }
+
+    async upsertStyleProfile(userId: number, profile: any): Promise<any> {
+        const payload = {
+            user_id: userId,
+            archetype: profile.archetype,
+            style_score: profile.styleScore,
+            color_harmony: profile.colorHarmony,
+            versatility_score: profile.versatilityScore,
+            maturity_score: profile.maturityScore,
+            dominant_colors: profile.dominantColors || [],
+            category_breakdown: profile.categoryBreakdown || {},
+            traits: profile.traits || [],
+            total_items: profile.totalItems || 0,
+            computed_at: profile.computedAt ? new Date(profile.computedAt).toISOString() : new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        };
+
+        const { data, error } = await this.client
+            .from('style_profiles')
+            .upsert(payload, { onConflict: 'user_id' })
+            .select()
+            .single();
+
+        if (error || !data) {
+            logger.error({ err: error ? new Error(error.message) : undefined }, 'upsertStyleProfile failed');
+            throw new Error('Failed to persist style profile');
+        }
+        return this.mapDbStyleProfile(data);
+    }
+
+    private mapDbStyleProfile(data: any): any {
+        return {
+            id: data.id,
+            userId: data.user_id,
+            archetype: data.archetype,
+            styleScore: data.style_score,
+            colorHarmony: data.color_harmony,
+            versatilityScore: data.versatility_score,
+            maturityScore: data.maturity_score,
+            dominantColors: data.dominant_colors || [],
+            categoryBreakdown: data.category_breakdown || {},
+            traits: data.traits || [],
+            totalItems: data.total_items || 0,
+            computedAt: data.computed_at ? new Date(data.computed_at) : null,
+            updatedAt: data.updated_at ? new Date(data.updated_at) : null,
+        };
+    }
+
     private mapDbChallenge(data: any): any {
         return {
             id: data.id,
