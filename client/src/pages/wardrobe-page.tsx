@@ -459,25 +459,31 @@ export function WardrobePage() {
 
     return (
         <AppLayout>
-            <div className="min-h-screen bg-[#FDFBF7] pb-24 md:pb-12"> {/* Added pb-24 for mobile bottom bar */}
+            <div className="min-h-screen bg-[#FDFBF7]">
 
-                {/* V2.0: MOBILE HEADER (Sticky) */}
-                <motion.header
-                    className="md:hidden sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-black/5"
-                    initial={{ y: -20, opacity: 0 }}
+                {/* MOBILE PAGE HEADER — inline, not sticky.
+                    AppLayout already provides the fixed top navbar + bottom dock;
+                    stacking another sticky header here was creating a double-bar
+                    that hid the dock area. Keep the page context (title + count +
+                    add CTA + tab switcher) as regular top-of-page content. */}
+                <motion.section
+                    className="md:hidden px-4 pt-4 pb-3 border-b border-black/5 bg-[#FDFBF7]"
+                    initial={{ y: -10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                 >
-                    <div className="px-4 h-14 flex items-center justify-between">
-                        <div className="flex flex-col">
-                            <h1 className="text-[#151515] font-playfair text-lg font-bold leading-none">Wardrobe</h1>
-                            <span className="text-[9px] text-gray-400 font-mono tracking-widest uppercase">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-[#151515] font-playfair text-2xl font-bold leading-tight truncate">
+                                Wardrobe
+                            </h1>
+                            <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase mt-0.5">
                                 {activeTab === 'items' ? `${filteredItems.length} ITEMS` : `${capsules?.length || 0} COLLECTIONS`}
                             </span>
                         </div>
                         <motion.button
                             onClick={() => activeTab === 'items' ? setIsAddDialogOpen(true) : setCapsuleDialogOpen(true)}
                             aria-label={activeTab === 'items' ? 'Add item' : 'Create collection'}
-                            className="w-11 h-11 rounded-full bg-[#151515] flex items-center justify-center text-white active:scale-95 transition-transform"
+                            className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-[#151515] flex items-center justify-center text-white active:scale-95 transition-transform flex-shrink-0"
                             whileTap={{ scale: 0.9 }}
                         >
                             <Plus className="w-5 h-5" />
@@ -485,29 +491,29 @@ export function WardrobePage() {
                     </div>
 
                     {/* Tab Bar */}
-                    <div className="px-4 py-2 flex gap-2">
+                    <div className="mt-3 flex gap-2">
                         <button
                             onClick={() => setActiveTab('items')}
-                            className={`flex-1 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-1.5 ${activeTab === 'items'
+                            className={`flex-1 min-h-[44px] rounded-lg text-[11px] uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-1.5 ${activeTab === 'items'
                                 ? 'bg-[#1A1A1A] text-white'
                                 : 'bg-white border border-gray-200 text-gray-500'
                                 }`}
                         >
-                            <Shirt className="w-3 h-3" />
+                            <Shirt className="w-3.5 h-3.5" />
                             Items
                         </button>
                         <button
                             onClick={() => setActiveTab('collections')}
-                            className={`flex-1 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-1.5 ${activeTab === 'collections'
+                            className={`flex-1 min-h-[44px] rounded-lg text-[11px] uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-1.5 ${activeTab === 'collections'
                                 ? 'bg-[#1A1A1A] text-white'
                                 : 'bg-white border border-gray-200 text-gray-500'
                                 }`}
                         >
-                            <FolderOpen className="w-3 h-3" />
+                            <FolderOpen className="w-3.5 h-3.5" />
                             Collections
                         </button>
                     </div>
-                </motion.header>
+                </motion.section>
 
                 <div className="max-w-[1920px] mx-auto md:px-10 md:py-8">
 

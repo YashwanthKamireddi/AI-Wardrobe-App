@@ -113,7 +113,7 @@ function GreetingHeader({
 
             <button
                 onClick={onOpenWeather}
-                className="group self-start md:self-end flex items-center gap-3 pl-4 pr-5 py-3 bg-white border border-[#E5E5E5] hover:border-[#80163A]/40 transition-colors rounded-full"
+                className="group self-start md:self-end flex items-center gap-3 pl-4 pr-5 min-h-[44px] py-3 bg-white border border-[#E5E5E5] hover:border-[#80163A]/40 transition-colors rounded-full"
                 aria-label="Change weather location"
             >
                 <MapPin className="w-4 h-4 text-[#4A4A4A] group-hover:text-[#80163A] transition-colors" strokeWidth={1.75} />
@@ -154,7 +154,7 @@ function EmptyState({ onSeed, isSeeding }: { onSeed: () => void; isSeeding: bool
                     <button
                         onClick={onSeed}
                         disabled={isSeeding}
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#1A1A1A] text-white text-sm font-medium tracking-wide rounded-full hover:bg-[#2A2A2A] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex items-center justify-center gap-2 px-6 min-h-[48px] bg-[#1A1A1A] text-white text-sm font-medium tracking-wide rounded-full hover:bg-[#2A2A2A] disabled:opacity-60 disabled:cursor-not-allowed transition-colors w-full sm:w-auto"
                     >
                         {isSeeding ? (
                             <>
@@ -166,8 +166,8 @@ function EmptyState({ onSeed, isSeeding }: { onSeed: () => void; isSeeding: bool
                             </>
                         )}
                     </button>
-                    <Link href="/wardrobe">
-                        <button className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-[#E5E5E5] text-[#1A1A1A] text-sm font-medium tracking-wide rounded-full hover:border-[#1A1A1A] transition-colors">
+                    <Link href="/wardrobe" className="w-full sm:w-auto">
+                        <button className="inline-flex items-center justify-center gap-2 px-6 min-h-[48px] bg-white border border-[#E5E5E5] text-[#1A1A1A] text-sm font-medium tracking-wide rounded-full hover:border-[#1A1A1A] transition-colors w-full">
                             <Plus className="w-4 h-4" /> Add your own items
                         </button>
                     </Link>
@@ -287,18 +287,18 @@ function TodaysEdit({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                         onClick={onReroll}
                         disabled={isRerolling}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 disabled:opacity-50 transition-colors text-sm"
+                        className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-full bg-white/10 hover:bg-white/15 disabled:opacity-50 transition-colors text-sm"
                         aria-label="Suggest another outfit"
                     >
                         <RefreshCw className={`w-4 h-4 ${isRerolling ? "animate-spin" : ""}`} />
                         <span>Re-roll</span>
                     </button>
                     <Link href={`/outfits?id=${outfit.id}`}>
-                        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#D4AF37] text-[#1A1A1A] hover:bg-[#C9A959] transition-colors text-sm font-medium">
+                        <button className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-full bg-[#D4AF37] text-[#1A1A1A] hover:bg-[#C9A959] transition-colors text-sm font-medium">
                             <span>View</span>
                             <ArrowUpRight className="w-4 h-4" />
                         </button>

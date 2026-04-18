@@ -63,10 +63,10 @@ export default LandingPage;
 function TopNav() {
     return (
         <header className="fixed top-0 inset-x-0 z-50 border-b border-[#E8E3DA]/70 bg-[#FDFBF7]/75 backdrop-blur-xl">
-            <div className="mx-auto max-w-7xl px-6 md:px-10 h-16 flex items-center justify-between">
-                <Link href="/" className="flex items-baseline gap-2 cursor-pointer" aria-label="Vessura home">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 h-16 flex items-center justify-between gap-2">
+                <Link href="/" className="flex items-baseline gap-2 cursor-pointer min-h-[44px] py-2" aria-label="Vessura home">
                     <span
-                        className="text-[22px] leading-none tracking-tight text-[#1A1A1A]"
+                        className="text-[20px] sm:text-[22px] leading-none tracking-tight text-[#1A1A1A]"
                         style={SERIF}
                     >
                         Vessura
@@ -89,7 +89,7 @@ function TopNav() {
                     </a>
                 </nav>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                     <Link
                         href="/auth"
                         className="hidden sm:inline-flex min-h-[44px] items-center text-[13px] tracking-wide text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors px-3 py-2"
@@ -98,7 +98,7 @@ function TopNav() {
                     </Link>
                     <Link
                         href="/auth"
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#1A1A1A] text-[#FDFBF7] text-[13px] tracking-wide min-h-[44px] px-5 py-2.5 hover:bg-[#80163A] transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#1A1A1A] text-[#FDFBF7] text-[12px] sm:text-[13px] tracking-wide min-h-[44px] px-4 sm:px-5 py-2.5 hover:bg-[#80163A] transition-colors whitespace-nowrap"
                         aria-label="Get started with Vessura"
                     >
                         Get Started
@@ -141,7 +141,7 @@ function Hero() {
                 </svg>
             </div>
 
-            <div className="mx-auto max-w-7xl px-6 md:px-10 grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
                 {/* Copy */}
                 <motion.div
                     initial={{ opacity: 0, y: 28 }}
@@ -157,7 +157,7 @@ function Hero() {
                     </div>
 
                     <h1
-                        className="text-[44px] sm:text-[56px] lg:text-[76px] leading-[1.03] tracking-[-0.02em] text-[#1A1A1A]"
+                        className="text-[34px] xs:text-[40px] sm:text-[56px] lg:text-[76px] leading-[1.05] tracking-[-0.02em] text-[#1A1A1A]"
                         style={SERIF}
                     >
                         Your wardrobe,
@@ -165,23 +165,23 @@ function Hero() {
                         <span className="italic text-[#80163A]">elevated.</span>
                     </h1>
 
-                    <p className="mt-6 max-w-xl text-[16px] md:text-[17px] leading-[1.65] text-[#4A4A4A]">
+                    <p className="mt-5 sm:mt-6 max-w-xl text-[15px] sm:text-[16px] md:text-[17px] leading-[1.65] text-[#4A4A4A]">
                         Vessura is an intelligence layer for the clothes you already own.
                         Digitize every piece, compose outfits with precision, and let a
                         quiet system reveal the patterns beneath how you actually dress.
                     </p>
 
-                    <div className="mt-9 flex flex-wrap items-center gap-3">
+                    <div className="mt-8 sm:mt-9 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
                         <Link
                             href="/auth"
-                            className="group inline-flex items-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 py-3.5 text-[14px] tracking-wide hover:bg-[#80163A] transition-colors"
+                            className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#1A1A1A] text-[#FDFBF7] px-6 min-h-[48px] text-[14px] tracking-wide hover:bg-[#80163A] transition-colors w-full sm:w-auto"
                         >
                             Get Started
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
                         </Link>
                         <a
                             href="#how"
-                            className="inline-flex items-center gap-2 rounded-full border border-[#1A1A1A]/15 bg-transparent px-6 py-3.5 text-[14px] tracking-wide text-[#1A1A1A] hover:border-[#1A1A1A]/40 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 rounded-full border border-[#1A1A1A]/15 bg-transparent px-6 min-h-[48px] text-[14px] tracking-wide text-[#1A1A1A] hover:border-[#1A1A1A]/40 transition-colors w-full sm:w-auto"
                         >
                             See how it works
                         </a>
@@ -472,13 +472,13 @@ function EditorialStats() {
     ];
     return (
         <section className="border-y border-[#ECE4D3] bg-[#FDFBF7]">
-            <div className="mx-auto max-w-7xl px-6 md:px-10 py-16 md:py-20">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 py-16 md:py-20">
                 <motion.div {...fadeUp} className="mb-10 md:mb-14">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
                         Built for how you actually dress
                     </span>
                     <h2
-                        className="mt-3 max-w-3xl text-[30px] md:text-[42px] leading-[1.1] tracking-[-0.01em]"
+                        className="mt-3 max-w-3xl text-[24px] sm:text-[30px] md:text-[42px] leading-[1.15] tracking-[-0.01em]"
                         style={SERIF}
                     >
                         Most wardrobes fail quietly. Vessura makes the failure legible —
@@ -497,7 +497,7 @@ function EditorialStats() {
                             className="border-t border-[#E5DFD0] pt-6"
                         >
                             <div
-                                className="text-[46px] md:text-[58px] leading-[1] tracking-[-0.02em] text-[#80163A]"
+                                className="text-[32px] sm:text-[46px] md:text-[58px] leading-[1.05] tracking-[-0.02em] text-[#80163A]"
                                 style={SERIF}
                             >
                                 {it.figure}
@@ -566,13 +566,13 @@ const FEATURES: Feature[] = [
 function FeatureGrid() {
     return (
         <section id="features" className="relative py-24 md:py-32">
-            <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10">
                 <motion.div {...fadeUp} className="max-w-2xl mb-14 md:mb-20">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
                         The platform
                     </span>
                     <h2
-                        className="mt-3 text-[34px] md:text-[48px] leading-[1.08] tracking-[-0.01em]"
+                        className="mt-3 text-[26px] sm:text-[34px] md:text-[48px] leading-[1.1] tracking-[-0.01em]"
                         style={SERIF}
                     >
                         Six instruments for one deliberate wardrobe.
@@ -660,14 +660,14 @@ function HowItWorks() {
     ];
     return (
         <section id="how" className="relative py-24 md:py-32 bg-[#FAF6EE] border-y border-[#ECE4D3]">
-            <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10">
                 <motion.div {...fadeUp} className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14 md:mb-20">
                     <div>
                         <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
                             How it works
                         </span>
                         <h2
-                            className="mt-3 text-[34px] md:text-[48px] leading-[1.08] tracking-[-0.01em] max-w-xl"
+                            className="mt-3 text-[26px] sm:text-[34px] md:text-[48px] leading-[1.1] tracking-[-0.01em] max-w-xl"
                             style={SERIF}
                         >
                             Three motions. The rest is ambient.
@@ -723,7 +723,7 @@ function HowItWorks() {
 function StyleDnaSpotlight() {
     return (
         <section className="py-24 md:py-32">
-            <div className="mx-auto max-w-7xl px-6 md:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
                 <motion.div {...fadeUp} className="lg:col-span-6 order-2 lg:order-1">
                     <StyleDnaMock />
                 </motion.div>
@@ -733,7 +733,7 @@ function StyleDnaSpotlight() {
                         Deep dive · Style DNA
                     </span>
                     <h2
-                        className="mt-3 text-[34px] md:text-[48px] leading-[1.08] tracking-[-0.01em] max-w-xl"
+                        className="mt-3 text-[26px] sm:text-[34px] md:text-[48px] leading-[1.1] tracking-[-0.01em] max-w-xl"
                         style={SERIF}
                     >
                         A style profile that earns its own conclusions.
@@ -904,13 +904,13 @@ function Stat({ label, value }: { label: string; value: string }) {
 function GapAnalysisSpotlight() {
     return (
         <section className="py-24 md:py-32 bg-[#FAF6EE] border-y border-[#ECE4D3]">
-            <div className="mx-auto max-w-7xl px-6 md:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
                 <motion.div {...fadeUp} className="lg:col-span-6">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
                         Deep dive · Gap Analysis
                     </span>
                     <h2
-                        className="mt-3 text-[34px] md:text-[48px] leading-[1.08] tracking-[-0.01em] max-w-xl"
+                        className="mt-3 text-[26px] sm:text-[34px] md:text-[48px] leading-[1.1] tracking-[-0.01em] max-w-xl"
                         style={SERIF}
                     >
                         One precise recommendation is worth a thousand capsule lists.
@@ -1072,13 +1072,13 @@ function Testimonials() {
     ];
     return (
         <section className="py-24 md:py-32">
-            <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10">
                 <motion.div {...fadeUp} className="max-w-2xl mb-14 md:mb-20">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
                         Said plainly
                     </span>
                     <h2
-                        className="mt-3 text-[34px] md:text-[48px] leading-[1.08] tracking-[-0.01em]"
+                        className="mt-3 text-[26px] sm:text-[34px] md:text-[48px] leading-[1.1] tracking-[-0.01em]"
                         style={SERIF}
                     >
                         Used by people whose wardrobes are their instruments.
@@ -1146,13 +1146,13 @@ function CompareTable() {
     ];
     return (
         <section id="pricing" className="py-24 md:py-32 bg-[#FAF6EE] border-y border-[#ECE4D3]">
-            <div className="mx-auto max-w-5xl px-6 md:px-10">
+            <div className="mx-auto max-w-5xl px-4 sm:px-6 md:px-10">
                 <motion.div {...fadeUp} className="text-center mb-14 md:mb-16">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
                         Early access
                     </span>
                     <h2
-                        className="mt-3 text-[34px] md:text-[48px] leading-[1.08] tracking-[-0.01em]"
+                        className="mt-3 text-[26px] sm:text-[34px] md:text-[48px] leading-[1.1] tracking-[-0.01em]"
                         style={SERIF}
                     >
                         Free during beta. A considered pricing tier will follow.
@@ -1317,13 +1317,13 @@ function FaqSection() {
     const [openIndex, setOpenIndex] = useState<number>(0);
     return (
         <section id="faq" className="py-24 md:py-32 bg-[#FDFBF7]">
-            <div className="mx-auto max-w-4xl px-6 md:px-10">
+            <div className="mx-auto max-w-4xl px-4 sm:px-6 md:px-10">
                 <motion.div {...fadeUp} className="mb-14 md:mb-16">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-[#80163A]">
                         Questions
                     </span>
                     <h2
-                        className="mt-3 text-[34px] md:text-[52px] leading-[1.05] tracking-[-0.01em] text-[#1A1A1A]"
+                        className="mt-3 text-[26px] sm:text-[34px] md:text-[52px] leading-[1.08] tracking-[-0.01em] text-[#1A1A1A]"
                         style={SERIF}
                     >
                         The answers worth asking for.
@@ -1377,10 +1377,10 @@ function FinalCta() {
                         "radial-gradient(800px 500px at 50% 30%, rgba(212,175,55,0.18), transparent 60%), radial-gradient(900px 600px at 50% 110%, rgba(128,22,58,0.10), transparent 65%), linear-gradient(180deg, #FDFBF7 0%, #F8F2E4 100%)",
                 }}
             />
-            <div className="mx-auto max-w-4xl px-6 md:px-10 text-center">
+            <div className="mx-auto max-w-4xl px-4 sm:px-6 md:px-10 text-center">
                 <motion.h2
                     {...fadeUp}
-                    className="text-[48px] sm:text-[64px] md:text-[88px] leading-[0.95] tracking-[-0.02em] text-[#1A1A1A]"
+                    className="text-[38px] xs:text-[48px] sm:text-[64px] md:text-[88px] leading-[0.98] tracking-[-0.02em] text-[#1A1A1A]"
                     style={SERIF}
                 >
                     Dress
@@ -1436,7 +1436,7 @@ function SiteFooter() {
     const year = new Date().getFullYear();
     return (
         <footer className="border-t border-[#E8E0CF] bg-[#FDFBF7]">
-            <div className="mx-auto max-w-7xl px-6 md:px-10 py-14 md:py-16 grid md:grid-cols-12 gap-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 py-14 md:py-16 grid md:grid-cols-12 gap-10">
                 <div className="md:col-span-5">
                     <div className="flex items-baseline gap-2">
                         <span className="text-[22px] tracking-tight text-[#1A1A1A]" style={SERIF}>
@@ -1485,7 +1485,7 @@ function SiteFooter() {
                 />
             </div>
             <div className="border-t border-[#EFE9DC]">
-                <div className="mx-auto max-w-7xl px-6 md:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <span className="text-[11px] tracking-wide text-[#9A9A9A]">
                         © {year} Vessura. All rights reserved.
                     </span>
