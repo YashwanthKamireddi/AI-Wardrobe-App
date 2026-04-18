@@ -38,7 +38,7 @@ export const logger = pino({
     level: process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info'),
     // Inject trace IDs from OpenTelemetry
     mixin: traceMixin,
-    base: { service: 'cher-closet-api' },
+    base: { service: 'vessura-api' },
     transport: isProduction
         ? undefined
         : {

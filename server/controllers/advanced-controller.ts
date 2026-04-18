@@ -285,9 +285,19 @@ export async function removeFromWishlist(req: Request, res: Response) {
 
         const userId = (req.user as any).id;
         const id = parseInt(req.params.id);
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ message: "Invalid wishlist id" });
+        }
 
         if (hasSupabase() && typeof (storage as any).removeFromWishlist === 'function') {
-            // For Supabase, we trust the delete will succeed if item exists
+            // Verify the wishlist item belongs to the authed user before deleting.
+            const userWishlist = typeof (storage as any).getWishlist === 'function'
+                ? await (storage as any).getWishlist(userId)
+                : [];
+            const owned = userWishlist.find((w: any) => w.id === id);
+            if (!owned) {
+                return res.status(404).json({ message: "Item not found" });
+            }
             await (storage as any).removeFromWishlist(id);
         } else {
             const item = wishlistItems.get(id);
@@ -477,11 +487,27 @@ export async function deleteWearLog(req: Request, res: Response) {
             return res.status(401).json({ message: "Authentication required" });
         }
 
+        const userId = (req.user as any).id;
         const id = parseInt(req.params.id);
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ message: "Invalid wear log id" });
+        }
 
         if (hasSupabase() && typeof storage.deleteWearLog === 'function') {
+            // Ownership check: load the user's logs and confirm this id belongs to them.
+            const userLogs = typeof storage.getWearLogs === 'function'
+                ? await storage.getWearLogs(userId)
+                : [];
+            const owned = userLogs.find((l: any) => l.id === id);
+            if (!owned) {
+                return res.status(404).json({ message: "Wear log not found" });
+            }
             await storage.deleteWearLog(id);
         } else {
+            const log = wearLogs.get(id);
+            if (!log || log.userId !== userId) {
+                return res.status(404).json({ message: "Wear log not found" });
+            }
             wearLogs.delete(id);
         }
 

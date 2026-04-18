@@ -1,7 +1,7 @@
 /**
  * SEASONAL FILTER COMPONENT
  *
- * Premium seasonal filter cards following Celura Design System.
+ * Premium seasonal filter cards following Vessura Design System.
  * Visual filter buttons for season and weather-based wardrobe filtering.
  */
 

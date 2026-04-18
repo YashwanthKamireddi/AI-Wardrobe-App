@@ -38,7 +38,7 @@ app.set('trust proxy', 1);
 // Session Setup
 const MemorySessionStore = MemoryStore(session);
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'celura-session-secret',
+    secret: process.env.SESSION_SECRET || 'vessura-session-secret',
     resave: false,
     saveUninitialized: false,
     store: new MemorySessionStore({ checkPeriod: 86400000 }),

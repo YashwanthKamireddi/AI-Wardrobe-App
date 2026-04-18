@@ -1,7 +1,7 @@
 /**
- * Database Schema Definitions for Cher's Closet Application
+ * Database Schema Definitions for Vessura Application
  *
- * This file contains all database table definitions and related types for the Cher's Closet
+ * This file contains all database table definitions and related types for the Vessura
  * wardrobe management application. It serves as the central source of truth for the data model
  * across both frontend and backend parts of the application.
  *

@@ -109,7 +109,7 @@ export function AuthPage() {
     if (isLoading || user) {
         return (
             <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center">
-                <div className="w-12 h-12 bg-[#80163a] text-white flex items-center justify-center font-playfair font-bold text-xl rounded-sm animate-pulse">C</div>
+                <div className="w-12 h-12 bg-[#80163a] text-white flex items-center justify-center font-playfair font-bold text-xl rounded-sm animate-pulse">V</div>
             </div>
         )
     }
@@ -135,7 +135,7 @@ export function AuthPage() {
                 <Link href="/">
                     <div className="flex items-center gap-3 cursor-pointer group">
                         <div className="w-8 h-8 bg-[#1a1a1a] text-white flex items-center justify-center font-playfair font-bold text-lg rounded-sm group-hover:bg-[#80163a] transition-colors">C</div>
-                        <span className="font-playfair font-bold text-xl tracking-wider hidden md:block">CELURA</span>
+                        <span className="font-playfair font-bold text-xl tracking-wider hidden md:block">VESSURA</span>
                     </div>
                 </Link>
                 <Link href="/">
@@ -191,7 +191,7 @@ export function AuthPage() {
                             <span className="text-[#80163a] text-xs font-bold uppercase tracking-[0.2em] mb-3 block">
                                 {isRegister ? "New Member" : "Members Only"}
                             </span>
-                            <h1 className="text-5xl md:text-6xl font-playfair text-[#1a1a1a] mb-4 leading-[0.9]">
+                            <h1 className="text-4xl md:text-6xl font-playfair text-[#1a1a1a] mb-4 leading-[0.95] md:leading-[0.9]">
                                 {isRegister ? "Join the" : "Enter the"} <br />
                                 <span className="italic">Atelier.</span>
                             </h1>
@@ -214,7 +214,7 @@ export function AuthPage() {
                                 {isRegister ? (
                                     <Form {...registerForm}>
                                         <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-8">
-                                            <div className="grid grid-cols-2 gap-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                                 <FormField
                                                     control={registerForm.control}
                                                     name="name"
@@ -317,7 +317,7 @@ export function AuthPage() {
                                                             <FormControl>
                                                                 <Input type={showPassword ? "text" : "password"} placeholder="••••••••" className="border-0 border-b border-[#ddd] rounded-none px-0 py-2 h-auto text-lg focus-visible:ring-0 focus-visible:border-[#80163a] bg-transparent pr-8" {...field} />
                                                             </FormControl>
-                                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-2 text-[#999] hover:text-[#1a1a1a]">
+                                                            <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-0 top-0 w-11 h-11 flex items-center justify-center text-[#999] hover:text-[#1a1a1a]">
                                                                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                                             </button>
                                                         </div>

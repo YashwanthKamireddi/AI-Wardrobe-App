@@ -1,6 +1,18 @@
 
 import { Request, Response } from "express";
+import { z } from "zod";
 import storage from "../storage";
+
+// Validate the wear-log create body. Dates accepted as ISO strings or Date,
+// and at least one of wardrobeItemId / outfitId is required (checked below).
+const createWearLogBodySchema = z.object({
+    wardrobeItemId: z.number().int().positive().optional().nullable(),
+    outfitId: z.number().int().positive().optional().nullable(),
+    wornDate: z.union([z.string(), z.date()]).optional(),
+    occasion: z.string().max(200).optional().nullable(),
+    notes: z.string().max(2000).optional().nullable(),
+    rating: z.number().int().min(1).max(5).optional().nullable(),
+});
 
 export const getWearLogs = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
@@ -39,9 +51,12 @@ export const createWearLog = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const { wardrobeItemId, outfitId, wornDate, occasion, notes, rating } = req.body;
+        const parsed = createWearLogBodySchema.safeParse(req.body);
+        if (!parsed.success) {
+            return res.status(400).json({ message: "Invalid wear log data", errors: parsed.error.format() });
+        }
+        const { wardrobeItemId, outfitId, wornDate, occasion, notes, rating } = parsed.data;
 
-        // Validate that at least one of itemId or outfitId is provided
         if (!wardrobeItemId && !outfitId) {
             return res.status(400).json({ message: "Either wardrobeItemId or outfitId is required" });
         }
@@ -89,6 +104,17 @@ export const deleteWearLog = async (req: Request, res: Response) => {
 
     try {
         const id = parseInt(req.params.id);
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ message: "Invalid wear log id" });
+        }
+
+        // Ownership check: only delete logs belonging to the authed user.
+        const userLogs = await storage.getWearLogs(req.user!.id);
+        const owned = userLogs.find(l => l.id === id);
+        if (!owned) {
+            return res.status(404).json({ message: "Wear log not found" });
+        }
+
         const deleted = await storage.deleteWearLog(id);
         if (!deleted) {
             return res.status(404).json({ message: "Wear log not found" });

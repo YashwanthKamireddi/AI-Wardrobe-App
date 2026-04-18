@@ -38,7 +38,6 @@ const HomePage = lazy(() => import("@/pages/home-page").then(m => ({ default: m.
 const WardrobePage = lazy(() => import("@/pages/wardrobe-page").then(m => ({ default: m.WardrobePage })));
 const OutfitPage = lazy(() => import("@/pages/outfit-page").then(m => ({ default: m.OutfitPage })));
 const CalendarPage = lazy(() => import("@/pages/calendar-page").then(m => ({ default: m.CalendarPage })));
-const TripsPage = lazy(() => import("@/pages/trips-page").then(m => ({ default: m.TripsPage })));
 const SocialPage = lazy(() => import("@/pages/social-page").then(m => ({ default: m.SocialPage })));
 
 // System Menu Pages
@@ -46,10 +45,6 @@ const AnalyticsPage = lazy(() => import("@/pages/analytics-page").then(m => ({ d
 const StyleProfilePage = lazy(() => import("@/pages/style-profile-page").then(m => ({ default: m.StyleProfilePage })));
 const WishlistPage = lazy(() => import("@/pages/wishlist-page").then(m => ({ default: m.WishlistPage })));
 const ProfilePage = lazy(() => import("@/pages/profile-page").then(m => ({ default: m.ProfilePage })));
-
-// Legacy pages (for backward compatibility)
-const ComposePage = lazy(() => import("@/pages/compose-page").then(m => ({ default: m.ComposePage })));
-const CapsulesPage = lazy(() => import("@/pages/capsules-page").then(m => ({ default: m.CapsulesPage })));
 
 // Additional Feature Pages
 const FramingPage = lazy(() => import("@/pages/framing-page").then(m => ({ default: m.FramingPage })));

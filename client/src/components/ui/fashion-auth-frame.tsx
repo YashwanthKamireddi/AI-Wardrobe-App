@@ -32,7 +32,7 @@ interface FashionAuthFrameProps {
  */
 const FashionAuthFrame: React.FC<FashionAuthFrameProps> = ({
   children,
-  title = "Cher's Closet",
+  title = "Vessura",
   subtitle = "Where fashion meets technology",
   brandName = "CC",
   logoImage,

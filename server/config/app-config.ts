@@ -82,7 +82,7 @@ export const openai = {
 
 // Application-specific configuration
 export const app = {
-    name: 'Cher\'s Closet',
+    name: 'Vessura',
     version: process.env.npm_package_version || '1.0.0',
     defaultAdminUser: process.env.DEFAULT_ADMIN_USER || 'admin',
     defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD,

@@ -17,7 +17,7 @@ import { Season, WeatherCondition } from "@/hooks/use-seasonal-filter";
 /**
  * COMPOSE PAGE - "THE ATELIER"
  *
- * Complete redesign following Celura Design System
+ * Complete redesign following Vessura Design System
  * Inspired by: Clueless closet, fashion editorial layouts
  * Mobile-first with desktop side panel
  */

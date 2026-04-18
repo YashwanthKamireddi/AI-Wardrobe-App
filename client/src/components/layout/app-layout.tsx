@@ -171,37 +171,61 @@ export function AppLayout({ children, fullWidth = false, hideMobileNav = false }
                 </div>
             </nav>
 
-            {/* MOBILE HEADER (Minimal) */}
+            {/* MOBILE HEADER (Minimal) — now with safe-area top padding + 44px tap targets */}
             {!hideMobileNav && (
-                <nav className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-black/5 px-4 py-3 flex justify-between items-center">
-                    <Link href="/home">
-                        <span className="text-lg font-playfair font-bold text-[#151515]">VESSURA.</span>
+                <nav
+                    className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-black/5 px-4 flex justify-between items-center"
+                    style={{
+                        paddingTop: "calc(0.625rem + env(safe-area-inset-top))",
+                        paddingBottom: "0.625rem",
+                    }}
+                >
+                    <Link href="/home" aria-label="Vessura home">
+                        <span className="text-lg font-playfair font-bold text-[#151515] tracking-wide py-2 inline-block">
+                            VESSURA<span className="text-[#80163A]">.</span>
+                        </span>
                     </Link>
-                    <div className="flex gap-4">
-                        <button onClick={() => setSearchOpen(true)}>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            aria-label="Search"
+                            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10 transition-colors"
+                        >
                             <Search className="w-5 h-5 text-[#151515]" strokeWidth={1.5} />
                         </button>
-                        <button onClick={() => setShowSystemMenu(!showSystemMenu)}>
+                        <button
+                            onClick={() => setShowSystemMenu(!showSystemMenu)}
+                            aria-label="Open menu"
+                            aria-expanded={showSystemMenu}
+                            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10 transition-colors"
+                        >
                             <Menu className="w-5 h-5 text-[#151515]" strokeWidth={1.5} />
                         </button>
                     </div>
                 </nav>
             )}
 
-            {/* MAIN CONTENT */}
-            <main className={`pt-14 md:pt-24 pb-24 md:pb-0 min-h-screen ${hideMobileNav ? '!pt-0 !pb-0' : ''}`}>
+            {/* MAIN CONTENT — dock clearance respects safe-area-inset-bottom for iOS home indicator. */}
+            <main
+                className={`pt-[calc(3.5rem+env(safe-area-inset-top))] md:pt-24 min-h-screen ${hideMobileNav ? '!pt-0 !pb-0' : ''}`}
+                style={hideMobileNav ? undefined : { paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom))" }}
+            >
                 {children}
             </main>
 
-            {/* MOBILE DOCK ("THE ISLAND") - With Animated Indicator */}
+            {/* MOBILE DOCK ("THE ISLAND") - 48px tap targets + safe-area offset */}
             {!hideMobileNav && (
-                <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40">
-                    <div className="bg-[#151515] text-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.25)] px-4 py-3.5 flex justify-around items-center backdrop-blur-md bg-opacity-95">
+                <nav
+                    className="md:hidden fixed left-3 right-3 z-40"
+                    style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+                    aria-label="Primary"
+                >
+                    <div className="bg-[#151515] text-white rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.35)] px-2 py-2 flex justify-around items-center backdrop-blur-md bg-opacity-95">
                         {primaryNav.map((item) => (
-                            <Link key={item.href} href={item.href}>
+                            <Link key={item.href} href={item.href} aria-label={item.label}>
                                 <motion.div
-                                    className="relative flex flex-col items-center justify-center w-14 h-10"
-                                    whileTap={{ scale: 0.9 }}
+                                    className="relative flex flex-col items-center justify-center w-14 h-12 rounded-xl"
+                                    whileTap={{ scale: 0.92 }}
                                 >
                                     {/* Animated Background Pill */}
                                     {isActive(item.href) && (
@@ -212,7 +236,7 @@ export function AppLayout({ children, fullWidth = false, hideMobileNav = false }
                                         />
                                     )}
                                     <item.icon
-                                        className={`w-5 h-5 relative z-10 transition-colors duration-200 ${isActive(item.href) ? 'text-white' : 'text-white/40'}`}
+                                        className={`w-5 h-5 relative z-10 transition-colors duration-200 ${isActive(item.href) ? 'text-white' : 'text-white/60'}`}
                                         strokeWidth={1.5}
                                     />
                                     {/* Active Dot */}

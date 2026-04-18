@@ -1,5 +1,5 @@
 -- ============================================
--- Celura - Supabase Database Schema
+-- Vessura - Supabase Database Schema
 -- ============================================
 -- Run this SQL in your Supabase SQL Editor to create all tables
 -- Go to: Your Project -> SQL Editor -> New Query

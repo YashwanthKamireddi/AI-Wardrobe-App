@@ -1,5 +1,5 @@
 -- ============================================
--- Celura - Performance Indexes Migration
+-- Vessura - Performance Indexes Migration
 -- ============================================
 -- Additional indexes for optimized query performance
 -- ============================================

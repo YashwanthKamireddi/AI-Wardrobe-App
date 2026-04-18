@@ -125,8 +125,9 @@ export function useSeedWardrobeItems() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/wardrobe/seed", {
+    mutationFn: async (opts?: { reset?: boolean }) => {
+      const query = opts?.reset ? "?reset=true" : "";
+      const res = await fetch(`/api/wardrobe/seed${query}`, {
         method: "POST",
         credentials: "include",
       });
@@ -137,9 +138,14 @@ export function useSeedWardrobeItems() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/wardrobe"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/outfits"] });
+      const itemCount = data.itemCount ?? data.count ?? 0;
+      const outfitCount = data.outfitCount ?? 0;
       toast({
-        title: "Demo items added!",
-        description: `Successfully added ${data.count} sample wardrobe items.`,
+        title: "Sample wardrobe loaded",
+        description: outfitCount > 0
+          ? `Added ${itemCount} items and ${outfitCount} curated outfits.`
+          : `Added ${itemCount} items.`,
       });
     },
     onError: (error: Error) => {

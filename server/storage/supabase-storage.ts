@@ -161,19 +161,33 @@ export class SupabaseStorage implements IStorage {
     }
 
     async createWardrobeItem(insertItem: InsertWardrobeItem): Promise<WardrobeItem> {
+        // Requires migration 003_wardrobe_extended.sql for brand/size/purchase_price/
+        // wear_count/last_worn/status/lent_to/return_date/purchase_date/notes columns.
+        const payload: Record<string, unknown> = {
+            user_id: insertItem.userId,
+            name: insertItem.name,
+            category: insertItem.category,
+            subcategory: insertItem.subcategory ?? null,
+            color: insertItem.color ?? null,
+            season: insertItem.season ?? null,
+            image_url: insertItem.imageUrl,
+            tags: insertItem.tags ?? null,
+            favorite: insertItem.favorite ?? false,
+            brand: (insertItem as any).brand ?? null,
+            size: (insertItem as any).size ?? null,
+            purchase_price: (insertItem as any).purchasePrice ?? null,
+            purchase_date: (insertItem as any).purchaseDate ?? null,
+            wear_count: (insertItem as any).wearCount ?? 0,
+            last_worn: (insertItem as any).lastWorn ?? null,
+            status: (insertItem as any).status ?? 'available',
+            lent_to: (insertItem as any).lentTo ?? null,
+            return_date: (insertItem as any).returnDate ?? null,
+            notes: (insertItem as any).notes ?? null,
+        };
+
         const { data, error } = await this.client
             .from('wardrobe_items')
-            .insert({
-                user_id: insertItem.userId,
-                name: insertItem.name,
-                category: insertItem.category,
-                subcategory: insertItem.subcategory || null,
-                color: insertItem.color || null,
-                season: insertItem.season || null,
-                image_url: insertItem.imageUrl,
-                tags: insertItem.tags || null,
-                favorite: insertItem.favorite || false
-            })
+            .insert(payload)
             .select()
             .single();
 
@@ -195,6 +209,13 @@ export class SupabaseStorage implements IStorage {
         if (itemData.imageUrl) updateData.image_url = itemData.imageUrl;
         if (itemData.tags !== undefined) updateData.tags = itemData.tags;
         if (itemData.favorite !== undefined) updateData.favorite = itemData.favorite;
+        // Extended fields (requires migration 003):
+        if ((itemData as any).brand !== undefined) updateData.brand = (itemData as any).brand;
+        if ((itemData as any).size !== undefined) updateData.size = (itemData as any).size;
+        if ((itemData as any).purchasePrice !== undefined) updateData.purchase_price = (itemData as any).purchasePrice;
+        if ((itemData as any).wearCount !== undefined) updateData.wear_count = (itemData as any).wearCount;
+        if ((itemData as any).lastWorn !== undefined) updateData.last_worn = (itemData as any).lastWorn;
+        if ((itemData as any).status !== undefined) updateData.status = (itemData as any).status;
 
         const { data, error } = await this.client
             .from('wardrobe_items')

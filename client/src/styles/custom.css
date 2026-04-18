@@ -1,13 +1,13 @@
-/* Celura - Custom Luxury Styles */
+/* Vessura - Custom Luxury Styles */
 
 /* Brand Color Variables */
 :root {
-  --celura-burgundy: hsl(337, 73%, 26%);
-  --celura-burgundy-dark: hsl(337, 73%, 18%);
-  --celura-burgundy-light: hsl(337, 73%, 35%);
-  --celura-gold: hsl(38, 75%, 55%);
-  --celura-gold-light: hsl(38, 75%, 70%);
-  --celura-gold-dark: hsl(38, 75%, 45%);
+  --vessura-burgundy: hsl(337, 73%, 26%);
+  --vessura-burgundy-dark: hsl(337, 73%, 18%);
+  --vessura-burgundy-light: hsl(337, 73%, 35%);
+  --vessura-gold: hsl(38, 75%, 55%);
+  --vessura-gold-light: hsl(38, 75%, 70%);
+  --vessura-gold-dark: hsl(38, 75%, 45%);
 }
 
 /* Smooth Page Transitions */
@@ -155,14 +155,14 @@
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--celura-burgundy) 0%, var(--celura-burgundy-dark) 100%);
+  background: linear-gradient(135deg, var(--vessura-burgundy) 0%, var(--vessura-burgundy-dark) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-text-gold {
-  background: linear-gradient(135deg, var(--celura-gold) 0%, var(--celura-gold-dark) 100%);
+  background: linear-gradient(135deg, var(--vessura-gold) 0%, var(--vessura-gold-dark) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -184,7 +184,7 @@
 /* Luxury Border */
 .luxury-border {
   border: 1px solid;
-  border-image: linear-gradient(135deg, var(--celura-gold) 0%, transparent 50%, var(--celura-gold) 100%) 1;
+  border-image: linear-gradient(135deg, var(--vessura-gold) 0%, transparent 50%, var(--vessura-gold) 100%) 1;
 }
 
 /* Pulse Glow Effect */
@@ -203,7 +203,7 @@
 
 /* Progress Bar Gradient */
 .progress-gradient {
-  background: linear-gradient(90deg, var(--celura-burgundy) 0%, var(--celura-gold) 100%);
+  background: linear-gradient(90deg, var(--vessura-burgundy) 0%, var(--vessura-gold) 100%);
 }
 
 /* Scrollbar Styling */
@@ -247,7 +247,7 @@ html {
 /* Selection Highlight */
 ::selection {
   background: rgba(133, 54, 73, 0.2);
-  color: var(--celura-burgundy-dark);
+  color: var(--vessura-burgundy-dark);
 }
 
 /* Responsive Typography */
@@ -273,7 +273,7 @@ html {
 /* Loading Spinner */
 .spinner {
   border: 3px solid rgba(133, 54, 73, 0.2);
-  border-top-color: var(--celura-burgundy);
+  border-top-color: var(--vessura-burgundy);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -296,7 +296,7 @@ html {
   left: 50%;
   transform: translateX(-50%) translateY(-8px);
   padding: 0.5rem 1rem;
-  background: var(--celura-burgundy-dark);
+  background: var(--vessura-burgundy-dark);
   color: white;
   font-size: 0.75rem;
   border-radius: 0.5rem;

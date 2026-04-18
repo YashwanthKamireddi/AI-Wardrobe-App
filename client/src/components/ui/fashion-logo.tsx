@@ -1,7 +1,7 @@
 /**
  * FashionLogo Component
  * 
- * A stylized logo component for the Cher's Closet application featuring a custom clothing hanger icon
+ * A stylized logo component for the Vessura application featuring a custom clothing hanger icon
  * with luxury fashion branding. The component supports different sizes, animation options,
  * and a compact mode for space-constrained UI areas.
  * 
@@ -17,7 +17,7 @@
  * 
  * UI Elements:
  * - SVG hanger icon with geometric styling
- * - Gradient text treatment for the "Cher's Closet" brand name
+ * - Gradient text treatment for the "Vessura" brand name
  * - Configurable animation effects
  * 
  * Usage:
@@ -64,7 +64,7 @@ interface FashionLogoProps {
 /**
  * FashionLogo Component Function
  * 
- * Renders the Cher's Closet brand logo with customizable size, animation, and display options.
+ * Renders the Vessura brand logo with customizable size, animation, and display options.
  * The logo consists of a custom SVG hanger icon and optional gradient text branding.
  * 
  * @function FashionLogo
@@ -146,7 +146,7 @@ export function FashionLogo({
           "text-3xl": size === "xl",
         })}>
           <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
-            Cher's Closet
+            Vessura
           </span>
         </div>
       )}

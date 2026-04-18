@@ -253,7 +253,7 @@ export function CalendarPage() {
                                     <button
                                         onClick={() => setViewMode("month")}
                                         className={cn(
-                                            "w-10 h-10 flex items-center justify-center transition-all",
+                                            "w-11 h-11 flex items-center justify-center transition-all",
                                             viewMode === "month" ? "bg-[#1A1A1A] text-white" : "text-[#1A1A1A]/40 hover:text-[#1A1A1A]"
                                         )}
                                     >
@@ -262,7 +262,7 @@ export function CalendarPage() {
                                     <button
                                         onClick={() => setViewMode("week")}
                                         className={cn(
-                                            "w-10 h-10 flex items-center justify-center transition-all",
+                                            "w-11 h-11 flex items-center justify-center transition-all",
                                             viewMode === "week" ? "bg-[#1A1A1A] text-white" : "text-[#1A1A1A]/40 hover:text-[#1A1A1A]"
                                         )}
                                     >
@@ -272,13 +272,13 @@ export function CalendarPage() {
 
                                 {/* Navigation */}
                                 <div className="flex items-center gap-2">
-                                    <button onClick={prevPeriod} className="w-10 h-10 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white">
+                                    <button onClick={prevPeriod} className="w-11 h-11 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white">
                                         <ArrowLeft className="w-4 h-4" />
                                     </button>
-                                    <button onClick={goToToday} className="h-10 px-4 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white font-mono text-[10px] uppercase tracking-wider">
+                                    <button onClick={goToToday} className="h-11 px-4 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white font-mono text-[10px] uppercase tracking-wider">
                                         Current
                                     </button>
-                                    <button onClick={nextPeriod} className="w-10 h-10 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white">
+                                    <button onClick={nextPeriod} className="w-11 h-11 border border-[#1A1A1A]/10 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-white transition-colors bg-white">
                                         <ArrowRight className="w-4 h-4" />
                                     </button>
                                 </div>

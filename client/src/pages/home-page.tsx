@@ -1,368 +1,752 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useWeather } from "@/hooks/use-weather";
-import { useWardrobeItems } from "@/hooks/use-wardrobe";
+import { useWardrobeItems, useSeedWardrobeItems } from "@/hooks/use-wardrobe";
 import { useOutfits } from "@/hooks/use-outfits";
 import WeatherLocationModal from "@/components/weather-location-modal";
 import { format } from "date-fns";
 import { AppLayout } from "@/components/layout/app-layout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-    Calendar, Shirt, RefreshCw, Layers, Loader2,
-    Sparkles, ChevronRight, MapPin, Plus, BarChart3,
-    Sun, Cloud, CloudRain, Thermometer
+    Shirt, Layers, RefreshCw, Sparkles, ChevronRight,
+    MapPin, Plus, BarChart3, Calendar, Sun, Cloud, CloudRain,
+    Snowflake, Wind, Wand2, Heart, ArrowUpRight, Loader2,
 } from "lucide-react";
-import type { Outfit } from "@shared/schema";
+import type { Outfit, WardrobeItem } from "@shared/schema";
 
 /**
- * HOME PAGE - "COMMAND CENTER"
+ * HOME — THE DAILY EDIT
  *
- * A clean, functional dashboard that feels premium but actually works
- * Focus on utility and visual clarity over complexity
+ * Post-login dashboard. Editorial but functional:
+ * - Today's edit: weather + mood driven outfit suggestion
+ * - Mood dial: re-roll suggestion for a specific vibe
+ * - Curated outfits: browse complete seeded looks
+ * - Wardrobe highlights: recent items + favorites
+ * - Quick actions and health stats
+ * - Onboarding: if wardrobe is empty, load the demo set in one click
  */
 
-const EASE = [0.22, 1, 0.36, 1];
+const EASE = [0.22, 1, 0.36, 1] as const;
+const SERIF = { fontFamily: '"Playfair Display", Georgia, serif' } as const;
 
-// Weather Icon
-const WeatherIcon = ({ condition }: { condition?: string }) => {
-    const lower = condition?.toLowerCase() || "";
-    if (lower.includes("rain")) return <CloudRain className="w-5 h-5" />;
-    if (lower.includes("cloud")) return <Cloud className="w-5 h-5" />;
-    return <Sun className="w-5 h-5" />;
-};
+const MOODS = [
+    { id: "any", label: "Any mood", icon: Sparkles },
+    { id: "focused", label: "Focused", icon: Wand2 },
+    { id: "relaxed", label: "Relaxed", icon: Sun },
+    { id: "bold", label: "Bold", icon: Sparkles },
+    { id: "elevated", label: "Elevated", icon: Heart },
+    { id: "cozy", label: "Cozy", icon: Cloud },
+] as const;
 
-// Stat Card
-const StatCard = ({ label, value, icon: Icon, delay = 0 }: {
-    label: string;
-    value: string | number;
-    icon: any;
-    delay?: number;
-}) => (
-    <motion.div
-        className="bg-white border border-gray-100 p-5 rounded-xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay, duration: 0.5, ease: EASE }}
-    >
-        <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-                <Icon className="w-5 h-5 text-gray-400" />
-            </div>
-        </div>
-        <div className="text-3xl font-semibold text-gray-900 mb-1">{value}</div>
-        <div className="text-xs text-gray-400 uppercase tracking-wider">{label}</div>
-    </motion.div>
-);
+type MoodId = typeof MOODS[number]["id"];
 
-// Quick Action
-const QuickAction = ({ href, icon: Icon, label, description, accent = false, delay = 0 }: {
-    href: string;
-    icon: any;
-    label: string;
-    description: string;
-    accent?: boolean;
-    delay?: number;
-}) => (
-    <Link href={href}>
-        <motion.div
-            className={`p-6 rounded-xl cursor-pointer transition-all duration-300 ${accent
-                    ? 'bg-[#1A1A1A] text-white hover:bg-[#2A2A2A]'
-                    : 'bg-white border border-gray-100 hover:border-gray-200 hover:shadow-md'
-                }`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, duration: 0.5, ease: EASE }}
-            whileHover={{ y: -2 }}
-        >
-            <Icon className={`w-6 h-6 mb-4 ${accent ? 'text-white' : 'text-gray-400'}`} />
-            <h3 className={`text-lg font-semibold mb-1 ${accent ? 'text-white' : 'text-gray-900'}`}>
-                {label}
-            </h3>
-            <p className={`text-sm ${accent ? 'text-gray-400' : 'text-gray-500'}`}>
-                {description}
-            </p>
-        </motion.div>
-    </Link>
-);
+// Map weather condition to icon
+function WeatherIcon({ condition, className }: { condition?: string; className?: string }) {
+    const c = (condition || "").toLowerCase();
+    const cls = className ?? "w-5 h-5";
+    if (c.includes("snow")) return <Snowflake className={cls} />;
+    if (c.includes("rain") || c.includes("drizzle")) return <CloudRain className={cls} />;
+    if (c.includes("wind")) return <Wind className={cls} />;
+    if (c.includes("cloud")) return <Cloud className={cls} />;
+    return <Sun className={cls} />;
+}
 
-// Today's Look Card
-const TodaysLook = ({ outfit, items, onRefresh, isRefreshing }: {
-    outfit: Outfit | null;
-    items: any[];
-    onRefresh: () => void;
-    isRefreshing: boolean;
-}) => {
-    if (!outfit || items.length === 0) {
-        return (
-            <motion.div
-                className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: EASE }}
-            >
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                    <Layers className="w-8 h-8 text-gray-300" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Create Your First Look</h3>
-                <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
-                    Add items to your wardrobe and create outfits to see AI suggestions here
-                </p>
-                <Link href="/wardrobe">
-                    <span className="inline-flex items-center gap-2 px-6 py-3 bg-[#1A1A1A] text-white text-sm font-medium rounded-lg cursor-pointer hover:bg-[#2A2A2A] transition-colors">
-                        <Plus className="w-4 h-4" />
-                        Add Items
-                    </span>
-                </Link>
-            </motion.div>
-        );
-    }
+// Derive a "temperature bucket" from the weather response for outfit matching.
+function temperatureBucket(temp?: number): "cold" | "cool" | "mild" | "hot" {
+    if (temp == null) return "mild";
+    if (temp < 8) return "cold";
+    if (temp < 16) return "cool";
+    if (temp < 25) return "mild";
+    return "hot";
+}
+
+// Score an outfit against a mood + weather bucket. Higher = better match.
+function scoreOutfit(outfit: Outfit, mood: MoodId, bucket: string): number {
+    let score = 0;
+    const outfitMood = (outfit.mood || "").toLowerCase();
+    const outfitWeather = (outfit.weatherConditions || "").toLowerCase();
+    const outfitSeason = (outfit.season || "").toLowerCase();
+
+    if (mood !== "any" && outfitMood === mood) score += 10;
+    if (mood === "any") score += 1;
+
+    if (outfitWeather === bucket) score += 6;
+    if (bucket === "hot" && outfitSeason === "summer") score += 3;
+    if (bucket === "cold" && outfitSeason === "winter") score += 3;
+    if (bucket === "cool" && outfitSeason === "fall") score += 2;
+    if (outfitSeason === "all") score += 1;
+
+    if (outfit.favorite) score += 1;
+
+    return score;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function GreetingHeader({
+    username,
+    weather,
+    onOpenWeather,
+}: {
+    username: string;
+    weather: { location?: string; temperature?: number; condition?: string } | undefined;
+    onOpenWeather: () => void;
+}) {
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
     return (
+        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-[#4A4A4A] mb-2">
+                    {format(new Date(), "EEEE · MMMM d")}
+                </p>
+                <h1 className="text-4xl md:text-5xl leading-[1.05] text-[#1A1A1A]" style={SERIF}>
+                    {greeting},
+                    <br className="md:hidden" />
+                    <span className="italic text-[#80163A]"> {username}</span>
+                </h1>
+            </div>
+
+            <button
+                onClick={onOpenWeather}
+                className="group self-start md:self-end flex items-center gap-3 pl-4 pr-5 py-3 bg-white border border-[#E5E5E5] hover:border-[#80163A]/40 transition-colors rounded-full"
+                aria-label="Change weather location"
+            >
+                <MapPin className="w-4 h-4 text-[#4A4A4A] group-hover:text-[#80163A] transition-colors" strokeWidth={1.75} />
+                <span className="text-sm text-[#1A1A1A]">{weather?.location ?? "Set location"}</span>
+                <span className="h-4 w-px bg-[#E5E5E5]" />
+                <WeatherIcon condition={weather?.condition} className="w-4 h-4 text-[#1A1A1A]" />
+                <span className="text-base font-medium text-[#1A1A1A]">
+                    {weather?.temperature != null ? `${Math.round(weather.temperature)}°` : "—°"}
+                </span>
+            </button>
+        </header>
+    );
+}
+
+function EmptyState({ onSeed, isSeeding }: { onSeed: () => void; isSeeding: boolean }) {
+    return (
         <motion.div
-            className="bg-[#1A1A1A] rounded-2xl overflow-hidden"
+            className="relative overflow-hidden rounded-3xl border border-[#E5E5E5] bg-gradient-to-br from-[#FDFBF7] via-white to-[#FAF6EE] p-8 md:p-14"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE }}
         >
-            {/* Images Grid */}
-            <div className="grid grid-cols-4 gap-[1px] aspect-[4/1.5]">
-                {items.slice(0, 4).map((item, i) => (
-                    <div key={i} className="relative overflow-hidden bg-gray-800">
-                        {item?.imageUrl ? (
-                            <img
-                                src={item.imageUrl}
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                            />
+            {/* decorative gold hairline */}
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-[1px] bg-[#D4AF37]/60" />
+
+            <div className="relative max-w-xl">
+                <span className="inline-block text-[10px] tracking-[0.3em] uppercase text-[#80163A] mb-4">
+                    Start Here
+                </span>
+                <h2 className="text-3xl md:text-4xl leading-tight text-[#1A1A1A] mb-4" style={SERIF}>
+                    Your wardrobe is a <span className="italic">blank canvas</span>.
+                </h2>
+                <p className="text-[#4A4A4A] mb-8 leading-relaxed">
+                    Load a curated demo wardrobe — 22 pieces, 8 complete outfits — to try every feature
+                    instantly. You can clear it and add your own items any time.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                        onClick={onSeed}
+                        disabled={isSeeding}
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#1A1A1A] text-white text-sm font-medium tracking-wide rounded-full hover:bg-[#2A2A2A] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {isSeeding ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" /> Loading demo wardrobe…
+                            </>
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <Shirt className="w-8 h-8 text-gray-600" />
-                            </div>
+                            <>
+                                <Sparkles className="w-4 h-4" /> Load demo wardrobe
+                            </>
                         )}
+                    </button>
+                    <Link href="/wardrobe">
+                        <button className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-[#E5E5E5] text-[#1A1A1A] text-sm font-medium tracking-wide rounded-full hover:border-[#1A1A1A] transition-colors">
+                            <Plus className="w-4 h-4" /> Add your own items
+                        </button>
+                    </Link>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+// Color palette used for graceful placeholder tiles when an outfit item is
+// missing or has no imageUrl. Keeps the hero strip from ever going black.
+const PLACEHOLDER_TONES = ["#80163A", "#1A2744", "#5C3A20", "#2A2A2A", "#365940", "#6E1426", "#B08A2E"];
+
+function PieceTile({ item, fallbackIdx }: { item?: WardrobeItem; fallbackIdx: number }) {
+    if (item?.imageUrl) {
+        return (
+            <img
+                src={item.imageUrl}
+                alt={item.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                    // Degrade gracefully if the URL is broken (legacy Unsplash IDs)
+                    e.currentTarget.style.display = "none";
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) parent.setAttribute("data-broken", "true");
+                }}
+            />
+        );
+    }
+    const bg = PLACEHOLDER_TONES[fallbackIdx % PLACEHOLDER_TONES.length];
+    return (
+        <div
+            className="w-full h-full flex flex-col items-center justify-center text-center px-3"
+            style={{ backgroundColor: bg, color: "#FDFBF7" }}
+        >
+            <Shirt className="w-6 h-6 md:w-8 md:h-8 mb-2 opacity-45" strokeWidth={1.25} />
+            {item?.name && (
+                <p className="text-[9px] md:text-[10px] tracking-[0.15em] uppercase opacity-75 leading-tight max-w-[80%]">
+                    {item.name}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function TodaysEdit({
+    outfit,
+    items,
+    bucket,
+    onReroll,
+    isRerolling,
+}: {
+    outfit: Outfit | null;
+    items: WardrobeItem[];
+    bucket: string;
+    onReroll: () => void;
+    isRerolling: boolean;
+}) {
+    if (!outfit) {
+        return (
+            <div className="rounded-3xl border border-dashed border-[#E5E5E5] p-10 text-center">
+                <p className="text-[#4A4A4A]">
+                    No outfits yet.{" "}
+                    <Link href="/outfits">
+                        <span className="text-[#80163A] underline underline-offset-2 cursor-pointer">Create your first look</span>
+                    </Link>
+                    .
+                </p>
+            </div>
+        );
+    }
+
+    // Cap to 4 tiles; use real items for as many as we have, placeholders otherwise.
+    const panelCount = Math.min(4, Math.max(items.length, 4));
+    const panelItems = Array.from({ length: panelCount }).map((_, i) => items[i]);
+
+    return (
+        <motion.article
+            key={outfit.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: EASE }}
+            className="rounded-3xl overflow-hidden bg-[#1A1A1A] text-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.35)]"
+        >
+            {/* image strip — 2×2 on mobile (wider panels, readable card text),
+                 4-up horizontal on md+. */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px] aspect-square md:aspect-[16/6] bg-white/5">
+                {panelItems.map((item, i) => (
+                    <div key={i} className="relative overflow-hidden bg-white/5">
+                        <PieceTile item={item} fallbackIdx={i} />
                     </div>
                 ))}
             </div>
 
-            {/* Info */}
-            <div className="p-6 flex items-center justify-between">
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="w-4 h-4 text-amber-400" />
-                        <span className="text-xs text-gray-400 uppercase tracking-wider">Today's Suggestion</span>
+            {/* info row */}
+            <div className="p-5 md:p-8 flex flex-col md:flex-row md:items-end md:justify-between gap-5">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] tracking-[0.3em] uppercase text-[#D4AF37]">Today's Edit</span>
+                        <span className="h-px flex-1 bg-white/10" />
+                        <span className="text-[10px] tracking-[0.2em] uppercase text-white/75">
+                            Matched for {bucket} weather
+                        </span>
                     </div>
-                    <h3 className="text-xl font-semibold text-white">{outfit.name}</h3>
-                    <p className="text-gray-500 text-sm">{items.length} pieces</p>
+                    <h3 className="text-2xl md:text-3xl leading-tight mb-2 text-white" style={SERIF}>
+                        {outfit.name}
+                    </h3>
+                    {outfit.description && (
+                        <p className="text-sm text-white/80 max-w-xl leading-relaxed">{outfit.description}</p>
+                    )}
+                    <div className="mt-4 flex flex-wrap gap-2 text-[11px] tracking-wide uppercase text-white/85">
+                        {outfit.mood && <span className="px-2.5 py-1 rounded-full bg-white/12">{outfit.mood}</span>}
+                        {outfit.occasion && <span className="px-2.5 py-1 rounded-full bg-white/12">{outfit.occasion}</span>}
+                        {outfit.season && <span className="px-2.5 py-1 rounded-full bg-white/12">{outfit.season}</span>}
+                        <span className="px-2.5 py-1 rounded-full bg-white/12">{items.length} pieces</span>
+                    </div>
                 </div>
-                <button
-                    onClick={onRefresh}
-                    disabled={isRefreshing}
-                    className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                >
-                    <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                </button>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={onReroll}
+                        disabled={isRerolling}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 disabled:opacity-50 transition-colors text-sm"
+                        aria-label="Suggest another outfit"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isRerolling ? "animate-spin" : ""}`} />
+                        <span>Re-roll</span>
+                    </button>
+                    <Link href={`/outfits?id=${outfit.id}`}>
+                        <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#D4AF37] text-[#1A1A1A] hover:bg-[#C9A959] transition-colors text-sm font-medium">
+                            <span>View</span>
+                            <ArrowUpRight className="w-4 h-4" />
+                        </button>
+                    </Link>
+                </div>
+            </div>
+        </motion.article>
+    );
+}
+
+function MoodDial({ value, onChange }: { value: MoodId; onChange: (v: MoodId) => void }) {
+    return (
+        <div
+            className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap"
+            role="radiogroup"
+            aria-label="Mood filter"
+        >
+            {MOODS.map((m) => {
+                const Icon = m.icon;
+                const active = m.id === value;
+                return (
+                    <button
+                        key={m.id}
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => onChange(m.id)}
+                        className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-colors ${
+                            active
+                                ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+                                : "bg-white text-[#1A1A1A] border-[#E5E5E5] hover:border-[#1A1A1A]/40"
+                        }`}
+                    >
+                        <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
+                        {m.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+function CuratedOutfits({ outfits, items }: { outfits: Outfit[]; items: WardrobeItem[] }) {
+    const itemById = useMemo(() => {
+        const map = new Map<number, WardrobeItem>();
+        for (const item of items) map.set(item.id, item);
+        return map;
+    }, [items]);
+
+    const show = outfits.slice(0, 6);
+    if (show.length === 0) return null;
+
+    return (
+        <section>
+            <div className="flex items-end justify-between mb-6">
+                <div>
+                    <p className="text-[10px] tracking-[0.3em] uppercase text-[#4A4A4A] mb-2">The Lookbook</p>
+                    <h2 className="text-2xl md:text-3xl leading-tight" style={SERIF}>
+                        Complete <span className="italic">outfits</span>, ready to wear.
+                    </h2>
+                </div>
+                <Link href="/outfits">
+                    <span className="hidden md:inline-flex items-center gap-1 text-sm text-[#4A4A4A] hover:text-[#1A1A1A] cursor-pointer">
+                        All looks <ChevronRight className="w-4 h-4" />
+                    </span>
+                </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+                {show.map((outfit) => {
+                    const outfitItems = outfit.items
+                        .map((id) => itemById.get(id))
+                        .filter((i): i is WardrobeItem => Boolean(i));
+                    return (
+                        <Link key={outfit.id} href={`/outfits?id=${outfit.id}`}>
+                            <motion.article
+                                whileHover={{ y: -3 }}
+                                className="group cursor-pointer rounded-2xl overflow-hidden bg-white border border-[#E5E5E5] hover:border-[#1A1A1A]/20 transition-colors"
+                            >
+                                <div className="grid grid-cols-4 gap-[1px] aspect-[4/3] bg-[#F5F2EC]">
+                                    {Array.from({ length: 4 }).map((_, i) => {
+                                        const item = outfitItems[i];
+                                        return (
+                                            <div key={i} className="relative overflow-hidden bg-white">
+                                                {item?.imageUrl ? (
+                                                    <img
+                                                        src={item.imageUrl}
+                                                        alt={item.name}
+                                                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                                                        loading="lazy"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-[#E5E5E5]">
+                                                        <Shirt className="w-5 h-5" strokeWidth={1.25} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="p-5">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        {outfit.favorite && <Heart className="w-3.5 h-3.5 fill-[#80163A] text-[#80163A]" />}
+                                        <span className="text-[10px] tracking-[0.2em] uppercase text-[#4A4A4A]">
+                                            {outfit.occasion || "look"} · {outfitItems.length} pieces
+                                        </span>
+                                    </div>
+                                    <h3 className="text-lg text-[#1A1A1A] leading-tight mb-1" style={SERIF}>
+                                        {outfit.name}
+                                    </h3>
+                                    {outfit.description && (
+                                        <p className="text-sm text-[#4A4A4A] leading-relaxed line-clamp-2">
+                                            {outfit.description}
+                                        </p>
+                                    )}
+                                </div>
+                            </motion.article>
+                        </Link>
+                    );
+                })}
+            </div>
+        </section>
+    );
+}
+
+function StatCard({ label, value, icon: Icon, href }: { label: string; value: string | number; icon: any; href?: string }) {
+    const body = (
+        <motion.div
+            whileHover={href ? { y: -2 } : undefined}
+            className="rounded-2xl bg-white border border-[#E5E5E5] p-5 h-full flex flex-col justify-between"
+        >
+            <div className="flex items-center justify-between">
+                <span className="text-[10px] tracking-[0.25em] uppercase text-[#4A4A4A]">{label}</span>
+                <Icon className="w-4 h-4 text-[#80163A]" strokeWidth={1.5} />
+            </div>
+            <div className="text-3xl md:text-4xl text-[#1A1A1A] mt-4" style={SERIF}>
+                {value}
             </div>
         </motion.div>
     );
-};
+    return href ? <Link href={href}>{body}</Link> : body;
+}
 
-// Recent Item
-const RecentItem = ({ item, delay }: { item: any; delay: number }) => (
-    <motion.div
-        className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative group"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay, duration: 0.4 }}
-    >
-        {item.imageUrl ? (
-            <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-        ) : (
-            <div className="w-full h-full flex items-center justify-center">
-                <Shirt className="w-6 h-6 text-gray-300" />
+function QuickActions() {
+    const actions = [
+        { href: "/outfits", label: "Compose a look", description: "Drag-and-drop outfit builder.", icon: Layers },
+        { href: "/wardrobe", label: "Add an item", description: "Photograph a piece; we'll tag it.", icon: Plus },
+        { href: "/plan", label: "Plan the week", description: "Calendar your outfits.", icon: Calendar },
+        { href: "/analytics", label: "See insights", description: "Cost-per-wear and health grade.", icon: BarChart3 },
+    ];
+    return (
+        <section>
+            <h2 className="text-[10px] tracking-[0.3em] uppercase text-[#4A4A4A] mb-4">Quick actions</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {actions.map((a) => (
+                    <Link key={a.href} href={a.href}>
+                        <motion.div
+                            whileHover={{ y: -2 }}
+                            className="group rounded-2xl bg-white border border-[#E5E5E5] hover:border-[#1A1A1A]/30 p-5 cursor-pointer transition-colors h-full"
+                        >
+                            <a.icon className="w-5 h-5 text-[#80163A] mb-3" strokeWidth={1.5} />
+                            <div className="text-sm font-medium text-[#1A1A1A] mb-1">{a.label}</div>
+                            <p className="text-xs text-[#4A4A4A] leading-relaxed">{a.description}</p>
+                        </motion.div>
+                    </Link>
+                ))}
             </div>
-        )}
-    </motion.div>
-);
+        </section>
+    );
+}
+
+function WardrobeHighlights({ items }: { items: WardrobeItem[] }) {
+    if (items.length === 0) return null;
+    const recent = [...items].sort((a, b) => (b.id ?? 0) - (a.id ?? 0)).slice(0, 8);
+    return (
+        <section>
+            <div className="flex items-end justify-between mb-4">
+                <h2 className="text-[10px] tracking-[0.3em] uppercase text-[#4A4A4A]">Recently added</h2>
+                <Link href="/wardrobe">
+                    <span className="text-xs text-[#4A4A4A] hover:text-[#1A1A1A] cursor-pointer inline-flex items-center gap-1">
+                        View wardrobe <ChevronRight className="w-3 h-3" />
+                    </span>
+                </Link>
+            </div>
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-2.5 md:gap-3">
+                {recent.map((item) => (
+                    <motion.div
+                        key={item.id}
+                        whileHover={{ y: -2 }}
+                        className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E5E5E5] relative group"
+                    >
+                        {item.imageUrl ? (
+                            <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                                loading="lazy"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[#E5E5E5]">
+                                <Shirt className="w-5 h-5" strokeWidth={1.25} />
+                            </div>
+                        )}
+                    </motion.div>
+                ))}
+            </div>
+        </section>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function HomePage() {
     const { user } = useAuth();
-    const { data: weather, isLoading: weatherLoading } = useWeather();
-    const { data: wardrobeItems } = useWardrobeItems();
-    const { data: outfits } = useOutfits();
+    const { data: weather } = useWeather();
+    const { data: wardrobeItems, isLoading: itemsLoading } = useWardrobeItems();
+    const { data: outfits, isLoading: outfitsLoading } = useOutfits();
+    const seed = useSeedWardrobeItems();
 
     const [showWeatherModal, setShowWeatherModal] = useState(false);
     const [savedLocation, setSavedLocation] = useState<string | null>(null);
-    const [dailyLook, setDailyLook] = useState<Outfit | null>(null);
-    const [resolvedDailyItems, setResolvedDailyItems] = useState<any[]>([]);
-    const [isGenerating, setIsGenerating] = useState(false);
+    const [mood, setMood] = useState<MoodId>("any");
+    const [manualOutfit, setManualOutfit] = useState<Outfit | null>(null);
+    const [isRerolling, setIsRerolling] = useState(false);
 
     useEffect(() => {
         const loc = localStorage.getItem("weatherLocation");
         if (loc) setSavedLocation(loc);
     }, []);
 
-    useEffect(() => {
-        if (outfits && outfits.length > 0 && !dailyLook) {
-            const randomOutfit = outfits[Math.floor(Math.random() * outfits.length)];
-            setDailyLook(randomOutfit);
-        }
-    }, [outfits, dailyLook]);
+    const bucket = temperatureBucket(weather?.temperature);
 
-    useEffect(() => {
-        if (dailyLook && wardrobeItems) {
-            const resolved = dailyLook.items
-                .map(id => wardrobeItems.find(item => item.id === id))
-                .filter(Boolean);
-            setResolvedDailyItems(resolved);
-        }
-    }, [dailyLook, wardrobeItems]);
+    // Pick the best outfit given current mood + weather, unless the user re-rolled.
+    const recommended: Outfit | null = useMemo(() => {
+        if (manualOutfit) return manualOutfit;
+        if (!outfits || outfits.length === 0) return null;
+        const ranked = [...outfits]
+            .map((o) => ({ o, score: scoreOutfit(o, mood, bucket) + Math.random() * 0.5 }))
+            .sort((a, b) => b.score - a.score);
+        return ranked[0]?.o ?? null;
+    }, [outfits, mood, bucket, manualOutfit]);
 
-    const refreshDailyLook = () => {
+    // Reset manual override when mood changes.
+    useEffect(() => {
+        setManualOutfit(null);
+    }, [mood]);
+
+    const recommendedItems = useMemo<WardrobeItem[]>(() => {
+        if (!recommended || !wardrobeItems) return [];
+        return recommended.items
+            .map((id) => wardrobeItems.find((w) => w.id === id))
+            .filter((w): w is WardrobeItem => Boolean(w));
+    }, [recommended, wardrobeItems]);
+
+    const handleReroll = () => {
         if (!outfits || outfits.length === 0) return;
-        setIsGenerating(true);
+        setIsRerolling(true);
+        // filter to current mood bucket, then pick a non-current one
+        const pool = outfits.filter((o) => {
+            if (mood === "any") return true;
+            return (o.mood || "").toLowerCase() === mood;
+        });
+        const candidates = (pool.length > 1 ? pool : outfits).filter((o) => o.id !== recommended?.id);
+        const pick = candidates[Math.floor(Math.random() * candidates.length)] ?? outfits[0];
         setTimeout(() => {
-            const randomOutfit = outfits[Math.floor(Math.random() * outfits.length)];
-            setDailyLook(randomOutfit);
-            setIsGenerating(false);
-        }, 600);
+            setManualOutfit(pick);
+            setIsRerolling(false);
+        }, 300);
     };
 
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    const wardrobeEmpty = !itemsLoading && (!wardrobeItems || wardrobeItems.length === 0);
+    const hasOutfits = (outfits?.length ?? 0) > 0;
 
-    if (weatherLoading) {
-        return (
-            <AppLayout>
-                <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 text-gray-300 animate-spin" />
-                </div>
-            </AppLayout>
-        );
-    }
+    // Stats
+    const itemCount = wardrobeItems?.length ?? 0;
+    const outfitCount = outfits?.length ?? 0;
+    const favoriteCount = wardrobeItems?.filter((i) => i.favorite).length ?? 0;
+
+    const rightRailActions = [
+        { href: "/outfits", label: "Compose a look", icon: Layers },
+        { href: "/wardrobe", label: "Add an item", icon: Plus },
+        { href: "/plan", label: "Plan the week", icon: Calendar },
+        { href: "/analytics", label: "See insights", icon: BarChart3 },
+        { href: "/style-dna", label: "Style DNA", icon: Sparkles },
+        { href: "/wishlist", label: "Wishlist", icon: Heart },
+    ];
 
     return (
         <AppLayout>
-            <div className="min-h-screen bg-[#FAFAFA] pb-28 md:pb-12">
-                <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
+            <div className="min-h-screen bg-[#FDFBF7]">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-8 lg:px-12 py-5 md:py-8 space-y-8">
 
-                    {/* Header */}
-                    <motion.header
-                        className="mb-8"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, ease: EASE }}
-                    >
-                        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                            <div>
-                                <p className="text-sm text-gray-400 mb-1">{format(new Date(), 'EEEE, MMMM d')}</p>
-                                <h1 className="text-3xl md:text-4xl font-semibold text-gray-900">
-                                    {greeting}, {user?.username || 'there'}
-                                </h1>
-                            </div>
+                    <GreetingHeader
+                        username={user?.name || user?.username || "friend"}
+                        weather={weather}
+                        onOpenWeather={() => setShowWeatherModal(true)}
+                    />
 
-                            {/* Weather */}
-                            <button
-                                onClick={() => setShowWeatherModal(true)}
-                                className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
-                            >
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm text-gray-500">{weather?.location || 'Set location'}</span>
-                                <div className="w-px h-4 bg-gray-200" />
-                                <WeatherIcon condition={weather?.condition} />
-                                <span className="text-lg font-medium text-gray-900">{weather?.temperature || 20}°</span>
-                            </button>
-                        </div>
-                    </motion.header>
-
-                    {/* Today's Look */}
-                    <section className="mb-8">
-                        <TodaysLook
-                            outfit={dailyLook}
-                            items={resolvedDailyItems}
-                            onRefresh={refreshDailyLook}
-                            isRefreshing={isGenerating}
-                        />
-                    </section>
-
-                    {/* Stats Row */}
-                    <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <StatCard
-                            label="Wardrobe Items"
-                            value={wardrobeItems?.length || 0}
-                            icon={Shirt}
-                            delay={0.1}
-                        />
-                        <StatCard
-                            label="Outfit Combos"
-                            value={outfits?.length || 0}
-                            icon={Layers}
-                            delay={0.15}
-                        />
-                        <StatCard
-                            label="This Week"
-                            value="4 looks"
-                            icon={Calendar}
-                            delay={0.2}
-                        />
-                        <StatCard
-                            label="Style Score"
-                            value="A+"
-                            icon={Sparkles}
-                            delay={0.25}
-                        />
-                    </section>
-
-                    {/* Quick Actions */}
-                    <section className="mb-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <QuickAction
-                                href="/compose"
-                                icon={Sparkles}
-                                label="Create Outfit"
-                                description="AI-powered outfit suggestions"
-                                accent
-                                delay={0.1}
-                            />
-                            <QuickAction
-                                href="/wardrobe"
-                                icon={Shirt}
-                                label="Add Items"
-                                description="Expand your wardrobe"
-                                delay={0.15}
-                            />
-                            <QuickAction
-                                href="/analytics"
-                                icon={BarChart3}
-                                label="View Insights"
-                                description="Wardrobe analytics"
-                                delay={0.2}
-                            />
-                        </div>
-                    </section>
-
-                    {/* Recent Items */}
-                    {wardrobeItems && wardrobeItems.length > 0 && (
-                        <section>
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold text-gray-900">Recent Additions</h2>
-                                <Link href="/wardrobe">
-                                    <span className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 cursor-pointer">
-                                        View all <ChevronRight className="w-4 h-4" />
-                                    </span>
-                                </Link>
-                            </div>
-                            <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-                                {wardrobeItems.slice(0, 8).map((item, i) => (
-                                    <RecentItem key={item.id} item={item} delay={0.1 + (i * 0.03)} />
+                    {/* Loading skeleton for first paint */}
+                    {itemsLoading && (
+                        <div className="grid lg:grid-cols-12 gap-6">
+                            <div className="lg:col-span-8 h-[420px] rounded-3xl bg-white border border-[#E5E5E5] animate-pulse" />
+                            <div className="lg:col-span-4 space-y-3">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="h-28 rounded-2xl bg-white border border-[#E5E5E5] animate-pulse" />
                                 ))}
                             </div>
-                        </section>
+                        </div>
                     )}
+
+                    {/* Onboarding for empty wardrobe — new users see this, no auto-seed */}
+                    {wardrobeEmpty && (
+                        <EmptyState
+                            onSeed={() => seed.mutate({ reset: false })}
+                            isSeeding={seed.isPending}
+                        />
+                    )}
+
+                    {/* Has items but no outfits → prompt composer */}
+                    {!wardrobeEmpty && !outfitsLoading && !hasOutfits && (
+                        <div className="rounded-3xl border border-[#E5E5E5] bg-white p-8 md:p-10 text-center">
+                            <Layers className="w-8 h-8 text-[#80163A] mx-auto mb-4" strokeWidth={1.5} />
+                            <h2 className="text-2xl mb-2" style={SERIF}>
+                                Compose your first outfit
+                            </h2>
+                            <p className="text-[#4A4A4A] mb-6 max-w-md mx-auto">
+                                You've got pieces — now combine them. The Atelier lets you drag items together or
+                                have AI suggest a look.
+                            </p>
+                            <Link href="/outfits">
+                                <button className="inline-flex items-center gap-2 px-6 py-3 bg-[#1A1A1A] text-white text-sm rounded-full hover:bg-[#2A2A2A] transition-colors">
+                                    <Sparkles className="w-4 h-4" /> Open The Atelier
+                                </button>
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Main dashboard — 2-col grid on lg+, stacks on mobile */}
+                    {!wardrobeEmpty && hasOutfits && (
+                        <div className="grid lg:grid-cols-12 gap-5 lg:gap-7">
+                            {/* ─── Left column: hero outfit + mood ─── */}
+                            <div className="lg:col-span-8 space-y-4">
+                                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+                                    <div>
+                                        <p className="text-[10px] tracking-[0.3em] uppercase text-[#4A4A4A] mb-1">The Daily Edit</p>
+                                        <h2 className="text-2xl md:text-3xl leading-tight" style={SERIF}>
+                                            A look <span className="italic">picked for</span> today.
+                                        </h2>
+                                    </div>
+                                </div>
+                                <MoodDial value={mood} onChange={setMood} />
+                                <AnimatePresence mode="wait">
+                                    <TodaysEdit
+                                        key={recommended?.id ?? "none"}
+                                        outfit={recommended}
+                                        items={recommendedItems}
+                                        bucket={bucket}
+                                        onReroll={handleReroll}
+                                        isRerolling={isRerolling}
+                                    />
+                                </AnimatePresence>
+                            </div>
+
+                            {/* ─── Right rail: stats + quick nav ─── */}
+                            <aside className="lg:col-span-4 space-y-4">
+                                {/* Stats card */}
+                                <div className="rounded-2xl bg-white border border-[#E5E5E5] p-5 md:p-6">
+                                    <p className="text-[10px] tracking-[0.3em] uppercase text-[#4A4A4A] mb-4">At a glance</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Link href="/wardrobe">
+                                            <div className="group cursor-pointer">
+                                                <div className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase text-[#4A4A4A]">
+                                                    <Shirt className="w-3 h-3 text-[#80163A]" strokeWidth={1.75} /> Items
+                                                </div>
+                                                <div className="text-3xl md:text-4xl text-[#1A1A1A] group-hover:text-[#80163A] transition-colors mt-1" style={SERIF}>{itemCount}</div>
+                                            </div>
+                                        </Link>
+                                        <Link href="/outfits">
+                                            <div className="group cursor-pointer">
+                                                <div className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase text-[#4A4A4A]">
+                                                    <Layers className="w-3 h-3 text-[#80163A]" strokeWidth={1.75} /> Outfits
+                                                </div>
+                                                <div className="text-3xl md:text-4xl text-[#1A1A1A] group-hover:text-[#80163A] transition-colors mt-1" style={SERIF}>{outfitCount}</div>
+                                            </div>
+                                        </Link>
+                                        <div>
+                                            <div className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase text-[#4A4A4A]">
+                                                <Heart className="w-3 h-3 text-[#80163A]" strokeWidth={1.75} /> Favorites
+                                            </div>
+                                            <div className="text-3xl md:text-4xl text-[#1A1A1A] mt-1" style={SERIF}>{favoriteCount}</div>
+                                        </div>
+                                        <Link href="/analytics">
+                                            <div className="group cursor-pointer">
+                                                <div className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase text-[#4A4A4A]">
+                                                    <BarChart3 className="w-3 h-3 text-[#80163A]" strokeWidth={1.75} /> Health
+                                                </div>
+                                                <div className="text-3xl md:text-4xl text-[#1A1A1A] group-hover:text-[#80163A] transition-colors mt-1" style={SERIF}>A–</div>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                {/* Quick nav list */}
+                                <div className="rounded-2xl bg-white border border-[#E5E5E5] p-5 md:p-6">
+                                    <p className="text-[10px] tracking-[0.3em] uppercase text-[#4A4A4A] mb-3">Jump to</p>
+                                    <div className="divide-y divide-[#F0EBE0]">
+                                        {rightRailActions.map((a) => (
+                                            <Link key={a.href} href={a.href}>
+                                                <div className="flex items-center justify-between py-2.5 cursor-pointer group">
+                                                    <div className="flex items-center gap-3 text-sm text-[#1A1A1A] group-hover:text-[#80163A] transition-colors">
+                                                        <a.icon className="w-4 h-4 text-[#80163A]" strokeWidth={1.5} />
+                                                        {a.label}
+                                                    </div>
+                                                    <ChevronRight className="w-4 h-4 text-[#4A4A4A] group-hover:text-[#80163A] transition-colors" />
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Demo utility — hidden inside the right rail, tiny */}
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm("Replace your current wardrobe + outfits with a fresh demo set? This will delete what's currently there.")) {
+                                            seed.mutate({ reset: true });
+                                        }
+                                    }}
+                                    disabled={seed.isPending}
+                                    className="w-full min-h-[44px] text-[10px] tracking-[0.2em] uppercase text-[#4A4A4A] hover:text-[#80163A] transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2 py-3"
+                                >
+                                    {seed.isPending ? (
+                                        <><Loader2 className="w-3 h-3 animate-spin" /> Rebuilding demo…</>
+                                    ) : (
+                                        <><RefreshCw className="w-3 h-3" /> Reload demo wardrobe</>
+                                    )}
+                                </button>
+                            </aside>
+                        </div>
+                    )}
+
+                    {/* Curated outfits lookbook */}
+                    {hasOutfits && wardrobeItems && (
+                        <CuratedOutfits outfits={outfits!} items={wardrobeItems} />
+                    )}
+
+                    {/* Wardrobe highlights */}
+                    {wardrobeItems && <WardrobeHighlights items={wardrobeItems} />}
 
                 </div>
 

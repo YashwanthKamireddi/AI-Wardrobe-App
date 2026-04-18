@@ -192,7 +192,7 @@ export const getChallenges = async (req: Request, res: Response) => {
                 description: "Create a complete outfit with only 3 pieces",
                 endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 participants: 156,
-                prize: "Featured on Celura homepage",
+                prize: "Featured on Vessura homepage",
                 status: "active",
             },
             {
@@ -201,7 +201,7 @@ export const getChallenges = async (req: Request, res: Response) => {
                 description: "Style an outfit around a bold accent color",
                 endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
                 participants: 89,
-                prize: "₹500 Celura credits",
+                prize: "₹500 Vessura credits",
                 status: "active",
             },
             {

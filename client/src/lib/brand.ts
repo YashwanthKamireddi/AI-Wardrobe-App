@@ -2,7 +2,7 @@
  * VESSURA BRAND CONSTANTS
  *
  * Central source of truth for all branding elements.
- * Updated from "Celura" to "Vessura" based on brand viability research.
+ * Brand name: Vessura (selected based on brand viability research).
  */
 
 export const BRAND = {

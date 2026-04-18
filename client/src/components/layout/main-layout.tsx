@@ -49,7 +49,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                             className="text-lg tracking-[0.2em] text-[#1A1A1A] cursor-pointer"
                             style={{ fontFamily: "'Playfair Display', serif" }}
                         >
-                            CELURA
+                            VESSURA
                         </span>
                     </Link>
 

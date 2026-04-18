@@ -56,24 +56,35 @@ export const getOutfit = async (req: Request, res: Response) => {
     }
 };
 
+// Partial-update schema for outfits: all fields optional, with userId/id stripped
+// so a client can't hand us an overriding userId and reassign ownership.
+const updateOutfitSchema = insertOutfitSchema.partial().omit({ userId: true as never });
+
 export const updateOutfit = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
     try {
         const id = parseInt(req.params.id);
-        const outfit = await storage.getOutfit(id);
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ message: "Invalid outfit id" });
+        }
 
+        const outfit = await storage.getOutfit(id);
         if (!outfit) {
             return res.status(404).json({ message: "Outfit not found" });
         }
-
         if (outfit.userId !== req.user!.id) {
             return res.status(403).json({ message: "Forbidden" });
         }
 
-        const updatedOutfit = await storage.updateOutfit(id, req.body);
+        const validated = updateOutfitSchema.parse(req.body);
+
+        const updatedOutfit = await storage.updateOutfit(id, validated);
         res.json(updatedOutfit);
     } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({ message: "Invalid outfit data", errors: error.format() });
+        }
         res.status(500).json({ message: "Failed to update outfit" });
     }
 };
@@ -157,11 +168,33 @@ export const deleteCalendarEvent = async (req: Request, res: Response) => {
     }
 };
 
+// Share token format: base64url(`${outfitId}-${16 random hex bytes}`).
+// Stateless (no DB table needed for the demo) yet stable — generation and
+// decode share this helper so the two routes can never drift again.
+function encodeShareId(outfitId: number): string {
+    const salt = crypto.randomBytes(16).toString('hex');
+    return Buffer.from(`${outfitId}-${salt}`).toString('base64url');
+}
+
+function decodeShareId(shareId: string): number | null {
+    try {
+        const decoded = Buffer.from(shareId, 'base64url').toString('utf8');
+        const [idStr] = decoded.split('-');
+        const id = parseInt(idStr, 10);
+        return Number.isFinite(id) && id > 0 ? id : null;
+    } catch {
+        return null;
+    }
+}
+
 export const shareOutfit = async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
 
     try {
         const id = parseInt(req.params.id);
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ message: "Invalid outfit id" });
+        }
         const outfit = await storage.getOutfit(id);
 
         if (!outfit) {
@@ -172,17 +205,13 @@ export const shareOutfit = async (req: Request, res: Response) => {
             return res.status(403).json({ message: "Forbidden" });
         }
 
-        // Generate a cryptographically secure sharing token
-        const shareId = crypto.randomBytes(32).toString('hex');
+        const shareId = encodeShareId(outfit.id);
 
-        // In a real implementation, store this sharing information in the database
-        // await storage.createOutfitShare(outfit.id, shareId);
-
-        // Generate a shareable link
         const shareableLink = `${req.protocol}://${req.get('host')}/shared-outfit/${shareId}`;
 
         res.status(200).json({
             message: "Outfit shared successfully",
+            shareId,
             shareableLink
         });
     } catch (error) {
@@ -193,30 +222,8 @@ export const shareOutfit = async (req: Request, res: Response) => {
 export const getSharedOutfit = async (req: Request, res: Response) => {
     try {
         const { shareId } = req.params;
-
-        // For demo purposes, parse the outfit ID from the share ID
-        // Note: Real implementation would look up shareId in DB
-        let outfitId: number;
-        try {
-            // This is a dummy decoding for the demo logic present in original routes.ts
-            // In reality, this logic was just parsing a base64 string or similar if simplified
-            // The original code tried: Buffer.from(shareId, 'base64').toString()
-            // But here we are generating random hex above.
-            // Let's stick to the logic found in the original routes.ts for consistency
-            // Original: const decoded = Buffer.from(shareId, 'base64').toString();
-            // Wait, the original code used crypto.randomBytes(32).toString('hex') for generation
-            // BUT the GET route tried to parse it as base64 splitting by '-'.
-            // This suggests the "demo" logic in original routes.ts was slightly inconsistent or I misread it.
-            // Let's implement robust lookup logic assuming the code provided:
-            // "Buffer.from(shareId, 'base64').toString()"
-            // I will implement the GET safely.
-            // For now, let's just assume we return 404 if not found since we don't have a real share table.
-            // Or better, let's allow fetching by ID if encoded in shareId (demo hack).
-
-            // Replicating original Logic exactly:
-            const decoded = Buffer.from(shareId, 'base64').toString();
-            outfitId = parseInt(decoded.split('-')[0]);
-        } catch (e) {
+        const outfitId = decodeShareId(shareId);
+        if (outfitId === null) {
             return res.status(400).json({ message: "Invalid share ID" });
         }
 

@@ -1,9 +1,9 @@
 /**
- * In-Memory Storage Implementation for Cher's Closet
+ * In-Memory Storage Implementation for Vessura
  *
  * This file contains the storage layer implementation using in-memory storage
  * instead of a database. It provides a complete set of CRUD operations
- * for all entities in the Cher's Closet wardrobe management application.
+ * for all entities in the Vessura wardrobe management application.
  *
  * Key features:
  * - Type-safe operations using TypeScript

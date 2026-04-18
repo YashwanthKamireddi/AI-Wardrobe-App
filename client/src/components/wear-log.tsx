@@ -1,7 +1,7 @@
 /**
  * WEAR LOG COMPONENT
  *
- * Premium wear tracking interface following Celura Design System.
+ * Premium wear tracking interface following Vessura Design System.
  * Allows users to log what they wore today with outfit/item selection.
  */
 

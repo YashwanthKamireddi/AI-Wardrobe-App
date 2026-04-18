@@ -197,16 +197,18 @@ export function OutfitPage() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setShowSearch(!showSearch)}
-                                className="w-9 h-9 rounded-full bg-black/5 flex items-center justify-center text-[#1A1A1A]"
+                                aria-label={showSearch ? "Close search" : "Open search"}
+                                className="w-11 h-11 rounded-full bg-black/5 flex items-center justify-center text-[#1A1A1A] active:bg-black/10 transition-colors"
                             >
-                                {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                                {showSearch ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
                             </button>
                             <motion.button
                                 onClick={() => setShowCreateModal(true)}
-                                className="w-9 h-9 rounded-full bg-[#1A1A1A] flex items-center justify-center text-white"
+                                aria-label="Create outfit"
+                                className="w-11 h-11 rounded-full bg-[#1A1A1A] flex items-center justify-center text-white"
                                 whileTap={{ scale: 0.9 }}
                             >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-5 h-5" />
                             </motion.button>
                         </div>
                     </div>
@@ -441,13 +443,13 @@ export function OutfitPage() {
                                             </span>
                                             <button
                                                 onClick={handleResetCreate}
-                                                className="text-[10px] text-gray-400 hover:text-[#1A1A1A] flex items-center gap-1"
+                                                className="min-h-[32px] px-2 text-[10px] text-gray-400 hover:text-[#1A1A1A] flex items-center gap-1"
                                             >
-                                                <RotateCcw className="w-3 h-3" />
+                                                <RotateCcw className="w-3.5 h-3.5" />
                                                 Clear
                                             </button>
                                         </div>
-                                        <div className="grid grid-cols-4 gap-2">
+                                        <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                                             {selectedItems.map((item) => (
                                                 <motion.div
                                                     key={item.id}

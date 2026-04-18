@@ -91,7 +91,7 @@ export function generateOutfitOGTemplate(data: OGImageData) {
             text-transform: uppercase;
             color: #999999;
           ">
-            Cher's Closet
+            Vessura
           </p>
         </div>
       </div>

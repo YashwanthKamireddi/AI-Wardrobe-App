@@ -2,7 +2,7 @@
  * Capsule Dialog Component
  *
  * Create and edit capsule wardrobes.
- * Follows Celura "Quiet Luxury" design system.
+ * Follows Vessura "Quiet Luxury" design system.
  */
 
 import { useState, useEffect } from "react";

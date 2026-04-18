@@ -23,15 +23,28 @@ export class AuthService {
     }
 
     static setup(app: Express) {
+        const isProd = process.env.NODE_ENV === "production";
+
+        // Fail fast in production if SESSION_SECRET isn't configured — a weak
+        // hardcoded fallback would let anyone forge valid session cookies.
+        if (isProd && !process.env.SESSION_SECRET) {
+            throw new Error(
+                "SESSION_SECRET env var is required in production. Refusing to boot with an insecure fallback."
+            );
+        }
+        if (!process.env.SESSION_SECRET) {
+            logger.warn("[Auth] SESSION_SECRET not set. Using insecure dev fallback — do NOT run this in production.");
+        }
+
         const sessionSettings: session.SessionOptions = {
-            secret: process.env.SESSION_SECRET || "chers-closet-secret-key",
+            secret: process.env.SESSION_SECRET || "vessura-dev-only-insecure-fallback",
             resave: false,
             saveUninitialized: false,
             store: storage.sessionStore,
             cookie: {
                 maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
                 httpOnly: true,
-                secure: false, // Set to false for development on Replit/Local
+                secure: isProd, // HTTPS only in prod; off in dev for localhost
                 sameSite: "lax",
             },
         };

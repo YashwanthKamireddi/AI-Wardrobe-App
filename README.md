@@ -1,9 +1,9 @@
-# Celura - Luxury AI-Powered Wardrobe
+# Vessura - Luxury AI-Powered Wardrobe
 
 <div align="center">
-  <img src="client/public/celura-logo.png" alt="Celura Logo" width="120" height="120" />
+  <img src="client/public/vessura-logo.png" alt="Vessura Logo" width="120" height="120" />
 
-  **Celura** — Your Personal Style Curator
+  **Vessura** — Your Personal Style Curator
 
   *Established 2026*
 </div>
@@ -12,13 +12,13 @@
 
 ## Brand Overview
 
-**Celura** is a luxury AI-powered wardrobe management application designed to organize closets and provide intelligent outfit recommendations tailored to your unique style and occasions.
+**Vessura** is a luxury AI-powered wardrobe management application designed to organize closets and provide intelligent outfit recommendations tailored to your unique style and occasions.
 
 ### Brand Identity
 
 | Attribute | Value |
 |-----------|-------|
-| **Brand Name** | Celura |
+| **Brand Name** | Vessura |
 | **Tagline** | Luxury AI-Powered Wardrobe |
 | **Established** | 2026 |
 | **Primary Color** | Deep Burgundy — `hsl(337, 73%, 26%)` |
@@ -32,7 +32,7 @@
 Organize your entire wardrobe with high-quality photos, categories, colors, and seasons. Every piece catalogued with luxury in mind.
 
 ### 🤖 AI-Powered Recommendations
-Intelligent outfit suggestions based on weather, mood, and occasion. Celura learns your style preferences over time.
+Intelligent outfit suggestions based on weather, mood, and occasion. Vessura learns your style preferences over time.
 
 ### ☀️ Weather-Aware Styling
 Real-time weather integration ensures you're always dressed appropriately while maintaining your signature look.
@@ -55,7 +55,7 @@ npm install
 npm run dev
 ```
 
-Visit **http://localhost:5000** to experience Celura.
+Visit **http://localhost:5000** to experience Vessura.
 
 ---
 
@@ -86,7 +86,7 @@ Weather features work automatically using your location (with permission).
 ## Color Palette
 
 ```css
-/* Celura Brand Colors */
+/* Vessura Brand Colors */
 --primary: hsl(337, 73%, 26%);      /* Deep Burgundy Enamel */
 --accent: hsl(38, 75%, 55%);        /* Brushed Gold */
 --background: hsl(30, 30%, 98%);    /* Warm Cream */
@@ -99,12 +99,12 @@ Weather features work automatically using your location (with permission).
 
 ### Deploy to Vercel
 
-Celura can be deployed as a full-stack application on Vercel:
+Vessura can be deployed as a full-stack application on Vercel:
 
 #### 1. Push to GitHub
 ```bash
 git add .
-git commit -m "feat: Celura luxury wardrobe app"
+git commit -m "feat: Vessura luxury wardrobe app"
 git push origin main
 ```
 
@@ -145,7 +145,7 @@ Click **Deploy** — Vercel will build and deploy automatically.
 
 <div align="center">
 
-  **© 2026 Celura. Crafted with elegance.**
+  **© 2026 Vessura. Crafted with elegance.**
 
   *Luxury AI-Powered Wardrobe Management*
 

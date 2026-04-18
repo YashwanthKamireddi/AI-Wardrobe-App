@@ -476,10 +476,11 @@ export function WardrobePage() {
                         </div>
                         <motion.button
                             onClick={() => activeTab === 'items' ? setIsAddDialogOpen(true) : setCapsuleDialogOpen(true)}
-                            className="w-8 h-8 rounded-full bg-[#151515] flex items-center justify-center text-white"
+                            aria-label={activeTab === 'items' ? 'Add item' : 'Create collection'}
+                            className="w-11 h-11 rounded-full bg-[#151515] flex items-center justify-center text-white active:scale-95 transition-transform"
                             whileTap={{ scale: 0.9 }}
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-5 h-5" />
                         </motion.button>
                     </div>
 
@@ -832,9 +833,15 @@ export function WardrobePage() {
                     </div>
                 </div>
 
-                {/* V2.0: MOBILE THUMB ZONE (Fixed Bottom Bar) - Only show for Items tab */}
+                {/* V2.0: MOBILE THUMB ZONE (Fixed Bottom Bar) - Only show for Items tab.
+                    Positioned ABOVE the AppLayout mobile dock (which sits at
+                    `bottom-[calc(1rem + env(safe-area-inset-bottom))]`, ~80 px tall).
+                    Without this offset, the filter bar covers the dock → no navbar on mobile. */}
                 {activeTab === 'items' && (
-                    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/5 pb-safe">
+                    <div
+                        className="md:hidden fixed left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-black/5"
+                        style={{ bottom: "calc(5.25rem + env(safe-area-inset-bottom))" }}
+                    >
                         {/* Search/Filter Context Bar (Collapsible or just integrated icons) */}
                         {showFilters && (
                             <div className="flex overflow-x-auto gap-2 p-2 border-b border-gray-100 bg-gray-50/50">
@@ -882,7 +889,7 @@ export function WardrobePage() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmitAdd)} className="space-y-5">
-                            {/* AI Processing Status - Celura Theme */}
+                            {/* AI Processing Status - Vessura Theme */}
                             <AnimatePresence>
                                 {isAIProcessing && (
                                     <motion.div
@@ -915,7 +922,7 @@ export function WardrobePage() {
                                 )}
                             </AnimatePresence>
 
-                            {/* AI Results - Celura Theme */}
+                            {/* AI Results - Vessura Theme */}
                             {aiResult && !isAIProcessing && (
                                 <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FAF9F6] to-[#F5F4F0] border border-[#80163A]/20">
                                     <div className="flex items-center gap-2 mb-3">
