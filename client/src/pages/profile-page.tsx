@@ -316,7 +316,7 @@ export function ProfilePage() {
                     <button
                         onClick={handleLogout}
                         disabled={logoutMutation.isPending}
-                        className="w-full py-4 rounded-2xl bg-white border border-gray-100 text-red-500 text-sm font-medium flex items-center justify-center gap-2 hover:bg-red-50 hover:border-red-100 transition-colors disabled:opacity-50"
+                        className="w-full min-h-[48px] py-4 rounded-2xl bg-white border border-gray-100 text-[#80163A] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#80163A]/5 hover:border-[#80163A]/20 transition-colors disabled:opacity-50"
                     >
                         <LogOut className="w-4 h-4" />
                         Sign Out

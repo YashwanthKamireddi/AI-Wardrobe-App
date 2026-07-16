@@ -179,33 +179,32 @@ export function OutfitPage() {
         <AppLayout>
             <div className="min-h-screen bg-[#FDFBF7]">
 
-                {/* ========================================== */}
-                {/* MOBILE HEADER - Sticky */}
-                {/* ========================================== */}
-                <motion.header
-                    className="md:hidden sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-black/5"
-                    initial={{ y: -20, opacity: 0 }}
+                {/* MOBILE PAGE HEADER — inline (not sticky) so AppLayout's
+                    fixed navbar + bottom dock remain the only chrome. */}
+                <motion.section
+                    className="md:hidden px-4 pt-4 pb-3 border-b border-black/5 bg-[#FDFBF7]"
+                    initial={{ y: -10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                 >
-                    <div className="px-4 h-14 flex items-center justify-between">
-                        <div>
-                            <h1 className="text-[#1A1A1A] font-playfair text-lg font-bold leading-none">Outfits</h1>
-                            <span className="text-[9px] text-gray-400 font-mono tracking-widest uppercase">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                            <h1 className="text-[#1A1A1A] font-playfair text-2xl font-bold leading-tight truncate">Outfits</h1>
+                            <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase mt-0.5">
                                 {filteredOutfits.length} LOOKS
                             </span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                             <button
                                 onClick={() => setShowSearch(!showSearch)}
                                 aria-label={showSearch ? "Close search" : "Open search"}
-                                className="w-11 h-11 rounded-full bg-black/5 flex items-center justify-center text-[#1A1A1A] active:bg-black/10 transition-colors"
+                                className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-black/5 flex items-center justify-center text-[#1A1A1A] active:bg-black/10 transition-colors"
                             >
                                 {showSearch ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
                             </button>
                             <motion.button
                                 onClick={() => setShowCreateModal(true)}
                                 aria-label="Create outfit"
-                                className="w-11 h-11 rounded-full bg-[#1A1A1A] flex items-center justify-center text-white"
+                                className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-[#1A1A1A] flex items-center justify-center text-white"
                                 whileTap={{ scale: 0.9 }}
                             >
                                 <Plus className="w-5 h-5" />
@@ -213,22 +212,21 @@ export function OutfitPage() {
                         </div>
                     </div>
 
-                    {/* Mobile Search Bar */}
                     <AnimatePresence>
                         {showSearch && (
                             <motion.div
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden border-t border-black/5"
+                                className="overflow-hidden"
                             >
-                                <div className="p-3">
+                                <div className="pt-3">
                                     <input
                                         type="text"
                                         placeholder="Search looks..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full h-10 px-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1A1A1A]"
+                                        className="w-full min-h-[44px] h-11 px-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1A1A1A]"
                                         autoFocus
                                     />
                                 </div>
@@ -236,25 +234,24 @@ export function OutfitPage() {
                         )}
                     </AnimatePresence>
 
-                    {/* Mobile Tab Filter */}
-                    <div className="px-4 py-2 flex gap-2 overflow-x-auto scrollbar-hide">
+                    <div className="mt-3 flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
                         {['all', 'favorites'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setSelectedTab(tab)}
                                 className={cn(
-                                    "px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold whitespace-nowrap transition-all",
+                                    "px-5 min-h-[44px] rounded-full text-[11px] uppercase tracking-widest font-bold whitespace-nowrap transition-all flex items-center justify-center gap-1.5",
                                     selectedTab === tab
                                         ? "bg-[#1A1A1A] text-white"
                                         : "bg-white border border-gray-200 text-gray-500"
                                 )}
                             >
-                                {tab === 'favorites' && <Heart className="w-3 h-3 inline mr-1" />}
+                                {tab === 'favorites' && <Heart className="w-3.5 h-3.5" />}
                                 {tab}
                             </button>
                         ))}
                     </div>
-                </motion.header>
+                </motion.section>
 
                 {/* ========================================== */}
                 {/* DESKTOP HEADER */}

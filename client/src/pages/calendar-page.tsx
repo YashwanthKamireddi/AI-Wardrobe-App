@@ -217,7 +217,7 @@ export function CalendarPage() {
                             <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="text-5xl md:text-7xl font-playfair text-[#1A1A1A] leading-[0.9] mb-1"
+                                className="text-3xl sm:text-5xl md:text-7xl font-playfair text-[#1A1A1A] leading-[1] mb-1"
                             >
                                 {viewMode === "month" ? monthName : "Weekly View"}
                             </motion.h1>
