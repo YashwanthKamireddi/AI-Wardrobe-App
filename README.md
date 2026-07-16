@@ -1,11 +1,12 @@
 # Vessura - Luxury AI-Powered Wardrobe
 
 <div align="center">
-  <img src="client/public/vessura-logo.png" alt="Vessura Logo" width="120" height="120" />
 
   **Vessura** — Your Personal Style Curator
 
   *Established 2026*
+
+  <img src="docs/screenshots/land-1.png" alt="Vessura landing page" width="720" />
 </div>
 
 ---
@@ -64,7 +65,7 @@ Visit **http://localhost:5000** to experience Vessura.
 ### AI Features
 For intelligent outfit recommendations:
 1. Obtain an API key from [OpenAI](https://platform.openai.com/api-keys)
-2. Add it when prompted in the application settings
+2. Set it as the `OPENAI_API_KEY` environment variable (see the table below)
 
 ### Weather Integration
 Weather features work automatically using your location (with permission).
@@ -76,10 +77,18 @@ Weather features work automatically using your location (with permission).
 | Layer | Technologies |
 |-------|-------------|
 | **Frontend** | React 18, TypeScript, Tailwind CSS, shadcn/ui |
-| **Backend** | Node.js, Express, TypeScript |
+| **Backend** | Node.js, Express, TypeScript (serverless entry `api/index.ts` on Vercel) |
+| **Database** | Supabase PostgreSQL via Drizzle ORM (`drizzle.config.ts`, `npm run db:push`) |
+| **Auth** | Passport + express-session (Postgres-backed sessions) |
 | **AI** | OpenAI GPT for recommendations |
-| **Database** | Supabase PostgreSQL |
 | **Styling** | Tailwind CSS with luxury design system |
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Home](docs/screenshots/home-1.png) | ![Wardrobe](docs/screenshots/wardrobe.png) |
+| ![Outfits](docs/screenshots/outfits.png) | ![Discover](docs/screenshots/discover-2.png) |
 
 ---
 
